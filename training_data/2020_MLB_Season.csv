@@ -1,0 +1,899 @@
+Date,Tm,Home_Away,Opp,W/L,R,RA,D/N,Streak
+"Friday, Jul 24",BOS,Home,BAL,W,13.0,2.0,N,1
+"Saturday, Jul 25",BOS,Home,BAL,L,2.0,7.0,D,-1
+"Sunday, Jul 26",BOS,Home,BAL,L,4.0,7.0,D,-2
+"Monday, Jul 27",BOS,Home,NYM,L,4.0,7.0,N,-3
+"Tuesday, Jul 28",BOS,Home,NYM,L,3.0,8.0,N,-4
+"Wednesday, Jul 29",BOS,@,NYM,W,6.0,5.0,N,1
+"Thursday, Jul 30",BOS,@,NYM,W,4.0,2.0,N,2
+"Friday, Jul 31",BOS,@,NYY,L,1.0,5.0,N,-1
+"Saturday, Aug 1",BOS,@,NYY,L,2.0,5.0,N,-2
+"Sunday, Aug 2",BOS,@,NYY,L,7.0,9.0,N,-3
+"Tuesday, Aug 4",BOS,@,TBR,L,1.0,5.0,N,-4
+"Wednesday, Aug 5",BOS,@,TBR,W,5.0,0.0,N,1
+"Friday, Aug 7",BOS,Home,TOR,W,5.0,3.0,N,2
+"Saturday, Aug 8",BOS,Home,TOR,L,1.0,2.0,N,-1
+"Sunday, Aug 9",BOS,Home,TOR,W-wo,5.0,3.0,D,1
+"Monday, Aug 10",BOS,Home,TBR,L,7.0,8.0,N,-1
+"Tuesday, Aug 11",BOS,Home,TBR,L,2.0,8.0,N,-2
+"Wednesday, Aug 12",BOS,Home,TBR,L,5.0,9.0,N,-3
+"Thursday, Aug 13",BOS,Home,TBR,L,8.0,17.0,D,-4
+"Friday, Aug 14",BOS,@,NYY,L,3.0,10.0,N,-5
+"Saturday, Aug 15",BOS,@,NYY,L,5.0,11.0,N,-6
+"Sunday, Aug 16",BOS,@,NYY,L,2.0,4.0,N,-7
+"Monday, Aug 17",BOS,@,NYY,L,3.0,6.0,N,-8
+"Tuesday, Aug 18",BOS,Home,PHI,L,6.0,13.0,N,-9
+"Wednesday, Aug 19",BOS,Home,PHI,W,6.0,3.0,D,1
+"Thursday, Aug 20",BOS,@,BAL,W,7.0,1.0,N,2
+"Friday, Aug 21",BOS,@,BAL,W,8.0,5.0,N,3
+"Saturday, Aug 22",BOS,@,BAL,L-wo,4.0,5.0,N,-1
+"Sunday, Aug 23",BOS,@,BAL,L,4.0,5.0,D,-2
+"Tuesday, Aug 25",BOS,@,TOR,W,9.0,7.0,N,1
+"Wednesday, Aug 26",BOS,@,TOR,L,1.0,9.0,N,-1
+"Friday, Aug 28",BOS,Home,WSN,L,2.0,10.0,N,-2
+"Saturday, Aug 29",BOS,Home,WSN,W,5.0,3.0,N,1
+"Sunday, Aug 30",BOS,Home,WSN,W,9.0,5.0,D,2
+"Monday, Aug 31",BOS,Home,ATL,L,3.0,6.0,N,-1
+"Tuesday, Sep 1",BOS,Home,ATL,L,3.0,10.0,N,-2
+"Wednesday, Sep 2",BOS,Home,ATL,L,5.0,7.0,N,-3
+"Thursday, Sep 3",BOS,Home,TOR,L,2.0,6.0,N,-4
+"Friday, Sep 4 (1)",BOS,Home,TOR,L,7.0,8.0,D,-5
+"Friday, Sep 4 (2)",BOS,Home,TOR,W,3.0,2.0,N,1
+"Saturday, Sep 5",BOS,Home,TOR,W-wo,9.0,8.0,N,2
+"Sunday, Sep 6",BOS,Home,TOR,L,8.0,10.0,D,-1
+"Tuesday, Sep 8 (1)",BOS,@,PHI,L-wo,5.0,6.0,D,-2
+"Tuesday, Sep 8 (2)",BOS,@,PHI,W,5.0,2.0,N,1
+"Thursday, Sep 10",BOS,@,TBR,W,4.0,3.0,N,2
+"Friday, Sep 11",BOS,@,TBR,L,1.0,11.0,N,-1
+"Saturday, Sep 12",BOS,@,TBR,L,4.0,5.0,N,-2
+"Sunday, Sep 13",BOS,@,TBR,W,6.0,3.0,D,1
+"Tuesday, Sep 15",BOS,@,MIA,W,2.0,0.0,N,2
+"Wednesday, Sep 16",BOS,@,MIA,L,4.0,8.0,N,-1
+"Thursday, Sep 17",BOS,@,MIA,W,5.0,3.0,D,1
+"Friday, Sep 18",BOS,Home,NYY,L,5.0,6.0,N,-1
+"Saturday, Sep 19",BOS,Home,NYY,L,0.0,8.0,N,-2
+"Sunday, Sep 20",BOS,Home,NYY,W,10.0,2.0,D,1
+"Tuesday, Sep 22",BOS,Home,BAL,W,8.0,3.0,N,2
+"Wednesday, Sep 23",BOS,Home,BAL,W,9.0,1.0,N,3
+"Thursday, Sep 24",BOS,Home,BAL,L,1.0,13.0,N,-1
+"Friday, Sep 25",BOS,@,ATL,L-wo,7.0,8.0,N,-2
+"Saturday, Sep 26",BOS,@,ATL,W,8.0,2.0,N,1
+"Sunday, Sep 27",BOS,@,ATL,W,9.0,1.0,D,2
+"Wednesday, Jul 29",BAL,Home,NYY,L,3.0,9.0,N,-1
+"Thursday, Jul 30",BAL,Home,NYY,L,6.0,8.0,N,-2
+"Friday, Jul 31",BAL,Home,TBR,W,6.0,3.0,N,1
+"Saturday, Aug 1",BAL,Home,TBR,W-wo,5.0,4.0,N,2
+"Sunday, Aug 2",BAL,Home,TBR,W,5.0,1.0,D,3
+"Tuesday, Aug 4",BAL,Home,MIA,L,0.0,4.0,N,-1
+"Wednesday, Aug 5 (1)",BAL,Home,MIA,L,0.0,1.0,N,-2
+"Wednesday, Aug 5 (2)",BAL,Home,MIA,L,1.0,2.0,N,-3
+"Thursday, Aug 6",BAL,Home,MIA,L,7.0,8.0,N,-4
+"Friday, Aug 7",BAL,@,WSN,W,11.0,0.0,N,1
+"Saturday, Aug 8",BAL,@,WSN,W,5.0,3.0,N,2
+"Sunday, Aug 9",BAL,@,WSN,W,6.0,2.0,N,3
+"Tuesday, Aug 11",BAL,@,PHI,W,10.0,9.0,N,4
+"Wednesday, Aug 12",BAL,@,PHI,W,5.0,4.0,N,5
+"Thursday, Aug 13",BAL,@,PHI,W,11.0,4.0,D,6
+"Friday, Aug 14",BAL,Home,WSN,L,3.0,15.0,N,-1
+"Saturday, Aug 15",BAL,Home,WSN,W,7.0,3.0,N,1
+"Sunday, Aug 16",BAL,Home,WSN,L,5.0,6.0,D,-1
+"Monday, Aug 17",BAL,Home,TOR,L,2.0,7.0,N,-2
+"Tuesday, Aug 18",BAL,Home,TOR,L,7.0,8.0,N,-3
+"Wednesday, Aug 19",BAL,Home,TOR,L,2.0,5.0,D,-4
+"Tuesday, Aug 25",BAL,@,TBR,L,2.0,4.0,N,-1
+"Wednesday, Aug 26",BAL,@,TBR,L,3.0,4.0,N,-2
+"Friday, Aug 28",BAL,@,TOR,L-wo,4.0,5.0,N,-3
+"Saturday, Aug 29",BAL,@,TOR,L,0.0,5.0,N,-4
+"Sunday, Aug 30",BAL,@,TOR,L-wo,5.0,6.0,D,-5
+"Monday, Aug 31",BAL,@,TOR,W,4.0,3.0,D,1
+"Tuesday, Sep 1",BAL,Home,NYM,W,9.0,5.0,N,2
+"Wednesday, Sep 2",BAL,Home,NYM,L,4.0,9.0,D,-1
+"Friday, Sep 4 (1)",BAL,Home,NYY,L,5.0,6.0,N,-2
+"Friday, Sep 4 (2)",BAL,Home,NYY,W,6.0,3.0,N,1
+"Saturday, Sep 5",BAL,Home,NYY,W,6.0,1.0,N,2
+"Sunday, Sep 6",BAL,Home,NYY,W,5.0,1.0,D,3
+"Tuesday, Sep 8",BAL,@,NYM,W,11.0,2.0,N,4
+"Wednesday, Sep 9",BAL,@,NYM,L,6.0,7.0,N,-1
+"Friday, Sep 11 (1)",BAL,@,NYY,L,0.0,6.0,D,-2
+"Friday, Sep 11 (2)",BAL,@,NYY,L,1.0,10.0,N,-3
+"Saturday, Sep 12",BAL,@,NYY,L-wo,1.0,2.0,D,-4
+"Sunday, Sep 13",BAL,@,NYY,L,1.0,3.0,D,-5
+"Monday, Sep 14",BAL,Home,ATL,W,14.0,1.0,N,1
+"Tuesday, Sep 15",BAL,Home,ATL,L,1.0,5.0,N,-1
+"Wednesday, Sep 16",BAL,Home,ATL,W,5.0,1.0,N,1
+"Thursday, Sep 17 (1)",BAL,Home,TBR,L,1.0,3.0,D,-1
+"Thursday, Sep 17 (2)",BAL,Home,TBR,L,6.0,10.0,N,-2
+"Friday, Sep 18",BAL,Home,TBR,L,1.0,2.0,N,-3
+"Saturday, Sep 19",BAL,Home,TBR,L,1.0,3.0,N,-4
+"Sunday, Sep 20",BAL,Home,TBR,W,2.0,1.0,D,1
+"Friday, Sep 25",BAL,@,TOR,L,5.0,10.0,N,-1
+"Saturday, Sep 26",BAL,@,TOR,L,2.0,5.0,N,-2
+"Sunday, Sep 27",BAL,@,TOR,W,7.0,5.0,D,1
+"Thursday, Jul 23",NYY,@,WSN,W,4.0,1.0,N,1
+"Saturday, Jul 25",NYY,@,WSN,L,2.0,9.0,N,-1
+"Sunday, Jul 26",NYY,@,WSN,W,3.0,2.0,D,1
+"Monday, Aug 3",NYY,Home,PHI,W,6.0,3.0,N,7
+"Wednesday, Aug 5 (1)",NYY,@,PHI,L,7.0,11.0,D,-1
+"Wednesday, Aug 5 (2)",NYY,@,PHI,W,3.0,1.0,D,1
+"Thursday, Aug 6",NYY,@,PHI,L,4.0,5.0,N,-1
+"Friday, Aug 7",NYY,@,TBR,L,0.0,1.0,N,-2
+"Saturday, Aug 8 (1)",NYY,@,TBR,W,8.0,4.0,D,1
+"Saturday, Aug 8 (2)",NYY,@,TBR,L,3.0,5.0,D,-1
+"Sunday, Aug 9",NYY,@,TBR,L-wo,3.0,4.0,D,-2
+"Tuesday, Aug 11",NYY,Home,ATL,W,9.0,6.0,N,1
+"Wednesday, Aug 12",NYY,Home,ATL,W,6.0,3.0,N,2
+"Tuesday, Aug 18",NYY,Home,TBR,L,3.0,6.0,N,-1
+"Wednesday, Aug 19",NYY,Home,TBR,L,2.0,4.0,N,-2
+"Thursday, Aug 20",NYY,Home,TBR,L,5.0,10.0,D,-3
+"Wednesday, Aug 26 (1)",NYY,@,ATL,L,1.0,5.0,D,-4
+"Wednesday, Aug 26 (2)",NYY,@,ATL,L,1.0,2.0,N,-5
+"Friday, Aug 28 (1)",NYY,Home,NYM,L,4.0,6.0,D,-6
+"Friday, Aug 28 (2)",NYY,Home,NYM,L-wo,3.0,4.0,N,-7
+"Saturday, Aug 29",NYY,Home,NYM,W-wo,2.0,1.0,D,1
+"Sunday, Aug 30 (1)",NYY,Home,NYM,W-wo,8.0,7.0,D,2
+"Sunday, Aug 30 (2)",NYY,Home,NYM,W,5.0,2.0,N,3
+"Monday, Aug 31",NYY,Home,TBR,L,3.0,5.0,N,-1
+"Tuesday, Sep 1",NYY,Home,TBR,W,5.0,3.0,N,1
+"Wednesday, Sep 2",NYY,Home,TBR,L,2.0,5.0,N,-1
+"Thursday, Sep 3",NYY,@,NYM,L-wo,7.0,9.0,D,-2
+"Monday, Sep 7",NYY,@,TOR,L,7.0,12.0,N,-4
+"Tuesday, Sep 8",NYY,@,TOR,L,1.0,2.0,N,-5
+"Wednesday, Sep 9",NYY,@,TOR,W,7.0,2.0,N,1
+"Tuesday, Sep 15",NYY,Home,TOR,W,20.0,6.0,N,6
+"Wednesday, Sep 16",NYY,Home,TOR,W,13.0,2.0,N,7
+"Thursday, Sep 17",NYY,Home,TOR,W,10.0,7.0,N,8
+"Monday, Sep 21",NYY,@,TOR,L,5.0,11.0,N,-2
+"Tuesday, Sep 22",NYY,@,TOR,W,12.0,1.0,N,1
+"Wednesday, Sep 23",NYY,@,TOR,L,1.0,14.0,N,-1
+"Thursday, Sep 24",NYY,@,TOR,L,1.0,4.0,N,-2
+"Friday, Sep 25",NYY,Home,MIA,L,3.0,4.0,N,-3
+"Saturday, Sep 26",NYY,Home,MIA,W,11.0,4.0,D,1
+"Sunday, Sep 27",NYY,Home,MIA,L,0.0,5.0,D,-1
+"Friday, Jul 24",TBR,Home,TOR,L,4.0,6.0,N,-1
+"Saturday, Jul 25",TBR,Home,TOR,W,4.0,1.0,D,1
+"Sunday, Jul 26",TBR,Home,TOR,W-wo,6.0,5.0,D,2
+"Monday, Jul 27",TBR,Home,ATL,W,14.0,5.0,N,3
+"Tuesday, Jul 28",TBR,Home,ATL,W,5.0,2.0,N,4
+"Wednesday, Jul 29",TBR,@,ATL,L,4.0,7.0,N,-1
+"Thursday, Jul 30",TBR,@,ATL,L,1.0,2.0,N,-2
+"Friday, Aug 14",TBR,@,TOR,L,4.0,12.0,N,-1
+"Saturday, Aug 15",TBR,@,TOR,W,3.0,2.0,D,1
+"Sunday, Aug 16",TBR,@,TOR,W,7.0,5.0,D,2
+"Friday, Aug 21",TBR,Home,TOR,L,5.0,6.0,N,-1
+"Saturday, Aug 22",TBR,Home,TOR,W-wo,2.0,1.0,N,1
+"Sunday, Aug 23",TBR,Home,TOR,W,5.0,4.0,D,2
+"Monday, Aug 24",TBR,Home,TOR,L,4.0,6.0,D,-1
+"Friday, Aug 28",TBR,@,MIA,W,2.0,0.0,N,3
+"Saturday, Aug 29",TBR,@,MIA,W,4.0,0.0,N,4
+"Sunday, Aug 30",TBR,@,MIA,W,12.0,7.0,D,5
+"Friday, Sep 4",TBR,Home,MIA,W,5.0,4.0,N,2
+"Saturday, Sep 5",TBR,Home,MIA,L,3.0,7.0,N,-1
+"Sunday, Sep 6",TBR,Home,MIA,W-wo,5.0,4.0,D,1
+"Monday, Sep 7",TBR,@,WSN,L,1.0,6.0,N,-1
+"Tuesday, Sep 8",TBR,@,WSN,L,3.0,5.0,N,-2
+"Tuesday, Sep 15",TBR,Home,WSN,W,6.0,1.0,N,1
+"Wednesday, Sep 16",TBR,Home,WSN,L,2.0,4.0,D,-1
+"Monday, Sep 21",TBR,@,NYM,W,2.0,1.0,N,1
+"Tuesday, Sep 22",TBR,@,NYM,L,2.0,5.0,N,-1
+"Wednesday, Sep 23",TBR,@,NYM,W,8.0,5.0,N,1
+"Friday, Sep 25",TBR,Home,PHI,W,6.0,4.0,N,2
+"Saturday, Sep 26",TBR,Home,PHI,W,4.0,3.0,N,3
+"Sunday, Sep 27",TBR,Home,PHI,W,5.0,0.0,D,4
+"Monday, Jul 27",TOR,@,WSN,W,4.0,1.0,N,1
+"Tuesday, Jul 28",TOR,@,WSN,W,5.0,1.0,N,2
+"Wednesday, Jul 29",TOR,@,WSN,L,0.0,4.0,N,-1
+"Thursday, Jul 30",TOR,@,WSN,L,4.0,6.0,D,-2
+"Tuesday, Aug 4",TOR,@,ATL,L,1.0,10.0,N,-3
+"Wednesday, Aug 5",TOR,@,ATL,W,2.0,1.0,N,1
+"Thursday, Aug 6",TOR,@,ATL,L-wo,3.0,4.0,N,-1
+"Tuesday, Aug 11",TOR,Home,MIA,W-wo,5.0,4.0,N,1
+"Wednesday, Aug 12",TOR,Home,MIA,L,11.0,14.0,N,-1
+"Thursday, Aug 20 (1)",TOR,Home,PHI,W-wo,3.0,2.0,D,4
+"Thursday, Aug 20 (2)",TOR,Home,PHI,W,9.0,8.0,D,5
+"Tuesday, Sep 1",TOR,@,MIA,L,2.0,3.0,N,-2
+"Wednesday, Sep 2",TOR,@,MIA,W,2.0,1.0,N,1
+"Friday, Sep 11",TOR,Home,NYM,L,1.0,18.0,N,-2
+"Saturday, Sep 12",TOR,Home,NYM,W,3.0,2.0,N,1
+"Sunday, Sep 13",TOR,Home,NYM,W,7.0,3.0,D,2
+"Friday, Sep 18 (1)",TOR,@,PHI,L,0.0,7.0,D,-4
+"Friday, Sep 18 (2)",TOR,@,PHI,L,7.0,8.0,N,-5
+"Saturday, Sep 19",TOR,@,PHI,L,1.0,3.0,N,-6
+"Sunday, Sep 20",TOR,@,PHI,W,6.0,3.0,D,1
+"Friday, Jul 24",CHW,Home,MIN,L,5.0,10.0,N,-1
+"Saturday, Jul 25",CHW,Home,MIN,W,10.0,3.0,D,1
+"Sunday, Jul 26",CHW,Home,MIN,L,2.0,14.0,D,-1
+"Tuesday, Jul 28 (1)",CHW,@,CLE,L,3.0,4.0,D,-2
+"Tuesday, Jul 28 (2)",CHW,@,CLE,L,3.0,5.0,D,-3
+"Wednesday, Jul 29",CHW,@,CLE,W,4.0,0.0,N,1
+"Friday, Jul 31",CHW,@,KCR,W,3.0,2.0,N,2
+"Saturday, Aug 1",CHW,@,KCR,W,11.0,5.0,N,3
+"Sunday, Aug 2",CHW,@,KCR,W,9.0,2.0,D,4
+"Monday, Aug 3",CHW,@,MIL,W,6.0,4.0,N,5
+"Tuesday, Aug 4",CHW,@,MIL,W,3.0,2.0,N,6
+"Wednesday, Aug 5",CHW,Home,MIL,L,0.0,1.0,N,-1
+"Thursday, Aug 6",CHW,Home,MIL,L,3.0,8.0,N,-2
+"Friday, Aug 7",CHW,Home,CLE,W,2.0,0.0,N,1
+"Saturday, Aug 8",CHW,Home,CLE,L,1.0,7.0,D,-1
+"Sunday, Aug 9",CHW,Home,CLE,L,4.0,5.0,N,-2
+"Monday, Aug 10",CHW,@,DET,L,1.0,5.0,N,-3
+"Tuesday, Aug 11",CHW,@,DET,W,8.0,4.0,N,1
+"Wednesday, Aug 12",CHW,@,DET,W,7.0,5.0,D,2
+"Saturday, Aug 15 (1)",CHW,Home,STL,L,1.0,5.0,D,-1
+"Saturday, Aug 15 (2)",CHW,Home,STL,L,3.0,6.0,N,-2
+"Sunday, Aug 16",CHW,Home,STL,W,7.0,2.0,D,1
+"Monday, Aug 17",CHW,Home,DET,W,7.0,2.0,N,2
+"Tuesday, Aug 18",CHW,Home,DET,W,10.0,4.0,N,3
+"Wednesday, Aug 19",CHW,Home,DET,W,5.0,3.0,N,4
+"Thursday, Aug 20",CHW,Home,DET,W,9.0,0.0,D,5
+"Friday, Aug 21",CHW,@,CHC,W,10.0,1.0,N,6
+"Saturday, Aug 22",CHW,@,CHC,W,7.0,4.0,N,7
+"Sunday, Aug 23",CHW,@,CHC,L,1.0,2.0,D,-1
+"Tuesday, Aug 25",CHW,Home,PIT,W,4.0,0.0,N,1
+"Wednesday, Aug 26",CHW,Home,PIT,W,10.0,3.0,D,2
+"Friday, Aug 28",CHW,Home,KCR,W-wo,6.0,5.0,N,3
+"Saturday, Aug 29",CHW,Home,KCR,L,6.0,9.0,D,-1
+"Sunday, Aug 30",CHW,Home,KCR,W-wo,5.0,2.0,D,1
+"Monday, Aug 31",CHW,@,MIN,W,8.0,5.0,N,2
+"Tuesday, Sep 1",CHW,@,MIN,L,2.0,3.0,N,-1
+"Wednesday, Sep 2",CHW,@,MIN,L,1.0,8.0,N,-2
+"Thursday, Sep 3",CHW,@,KCR,W,11.0,6.0,N,1
+"Friday, Sep 4",CHW,@,KCR,W,7.0,4.0,N,2
+"Saturday, Sep 5",CHW,@,KCR,W,5.0,3.0,N,3
+"Sunday, Sep 6",CHW,@,KCR,W,8.0,2.0,D,4
+"Tuesday, Sep 8",CHW,@,PIT,L-wo,4.0,5.0,N,-1
+"Wednesday, Sep 9",CHW,@,PIT,W,8.0,1.0,N,1
+"Friday, Sep 11",CHW,Home,DET,W,4.0,3.0,N,2
+"Saturday, Sep 12",CHW,Home,DET,W,14.0,0.0,N,3
+"Sunday, Sep 13",CHW,Home,DET,W,5.0,2.0,D,4
+"Monday, Sep 14",CHW,Home,MIN,W,3.0,1.0,N,5
+"Tuesday, Sep 15",CHW,Home,MIN,W,6.0,2.0,N,6
+"Wednesday, Sep 16",CHW,Home,MIN,L,1.0,5.0,N,-1
+"Thursday, Sep 17",CHW,Home,MIN,W,4.0,3.0,D,1
+"Friday, Sep 18",CHW,@,CIN,L,1.0,7.0,N,-1
+"Saturday, Sep 19",CHW,@,CIN,W,5.0,0.0,N,1
+"Sunday, Sep 20",CHW,@,CIN,L,3.0,7.0,D,-1
+"Monday, Sep 21",CHW,@,CLE,L,4.0,7.0,N,-2
+"Tuesday, Sep 22",CHW,@,CLE,L-wo,3.0,5.0,N,-3
+"Wednesday, Sep 23",CHW,@,CLE,L-wo,2.0,3.0,N,-4
+"Thursday, Sep 24",CHW,@,CLE,L,4.0,5.0,N,-5
+"Friday, Sep 25",CHW,Home,CHC,L,0.0,10.0,N,-6
+"Saturday, Sep 26",CHW,Home,CHC,W,9.0,5.0,N,1
+"Sunday, Sep 27",CHW,Home,CHC,L,8.0,10.0,D,-1
+"Friday, Jul 24",CLE,Home,KCR,W,2.0,0.0,N,1
+"Saturday, Jul 25",CLE,Home,KCR,L,2.0,3.0,N,-1
+"Sunday, Jul 26",CLE,Home,KCR,W,9.0,2.0,D,1
+"Thursday, Jul 30",CLE,@,MIN,W,2.0,0.0,N,1
+"Friday, Jul 31",CLE,@,MIN,L,1.0,4.0,N,-1
+"Saturday, Aug 1",CLE,@,MIN,L,0.0,3.0,N,-2
+"Sunday, Aug 2",CLE,@,MIN,L,1.0,3.0,D,-3
+"Monday, Aug 3",CLE,@,CIN,L,2.0,3.0,N,-4
+"Tuesday, Aug 4",CLE,@,CIN,W,4.0,2.0,N,1
+"Wednesday, Aug 5",CLE,Home,CIN,W,2.0,0.0,N,2
+"Thursday, Aug 6",CLE,Home,CIN,W,13.0,0.0,N,3
+"Tuesday, Aug 11",CLE,Home,CHC,L,1.0,7.0,N,-1
+"Wednesday, Aug 12",CLE,Home,CHC,L,2.0,7.0,N,-2
+"Friday, Aug 14",CLE,@,DET,W,10.0,5.0,N,1
+"Saturday, Aug 15",CLE,@,DET,W,3.0,1.0,N,2
+"Sunday, Aug 16",CLE,@,DET,W,8.0,5.0,D,3
+"Tuesday, Aug 18",CLE,@,PIT,W,6.0,3.0,N,4
+"Wednesday, Aug 19",CLE,@,PIT,W,6.0,1.0,N,5
+"Thursday, Aug 20",CLE,@,PIT,W,2.0,0.0,N,6
+"Friday, Aug 21",CLE,Home,DET,L,5.0,10.0,N,-1
+"Saturday, Aug 22",CLE,Home,DET,W,6.0,1.0,N,1
+"Sunday, Aug 23",CLE,Home,DET,L,4.0,7.0,D,-1
+"Monday, Aug 24",CLE,Home,MIN,L,2.0,3.0,N,-2
+"Tuesday, Aug 25",CLE,Home,MIN,W,4.0,2.0,N,1
+"Wednesday, Aug 26",CLE,Home,MIN,W,6.0,3.0,N,2
+"Friday, Aug 28",CLE,@,STL,W,14.0,2.0,N,3
+"Saturday, Aug 29",CLE,@,STL,W,2.0,1.0,D,4
+"Sunday, Aug 30",CLE,@,STL,L,2.0,7.0,D,-1
+"Monday, Aug 31",CLE,@,KCR,L,1.0,2.0,N,-2
+"Tuesday, Sep 1",CLE,@,KCR,W,10.0,1.0,N,1
+"Wednesday, Sep 2",CLE,@,KCR,W,5.0,0.0,N,2
+"Friday, Sep 4",CLE,Home,MIL,L,1.0,7.0,N,-1
+"Saturday, Sep 5",CLE,Home,MIL,W-wo,4.0,3.0,N,1
+"Sunday, Sep 6",CLE,Home,MIL,W,4.0,1.0,D,2
+"Monday, Sep 7",CLE,Home,KCR,W,5.0,2.0,N,3
+"Tuesday, Sep 8",CLE,Home,KCR,L,6.0,8.0,N,-1
+"Wednesday, Sep 9",CLE,Home,KCR,L,0.0,3.0,N,-2
+"Thursday, Sep 10",CLE,Home,KCR,L,1.0,11.0,N,-3
+"Friday, Sep 11",CLE,@,MIN,L,1.0,3.0,N,-4
+"Saturday, Sep 12",CLE,@,MIN,L,4.0,8.0,N,-5
+"Sunday, Sep 13",CLE,@,MIN,L,5.0,7.0,D,-6
+"Tuesday, Sep 15",CLE,@,CHC,L-wo,5.0,6.0,N,-7
+"Wednesday, Sep 16",CLE,@,CHC,L-wo,2.0,3.0,N,-8
+"Thursday, Sep 17",CLE,@,DET,W,10.0,3.0,N,1
+"Friday, Sep 18",CLE,@,DET,W,1.0,0.0,N,2
+"Saturday, Sep 19",CLE,@,DET,L,2.0,5.0,N,-1
+"Sunday, Sep 20",CLE,@,DET,W,7.0,4.0,D,1
+"Friday, Sep 25",CLE,Home,PIT,W-wo,4.0,3.0,N,6
+"Saturday, Sep 26",CLE,Home,PIT,L,0.0,8.0,N,-1
+"Sunday, Sep 27",CLE,Home,PIT,W,8.0,6.0,D,1
+"Friday, Jul 24",DET,@,CIN,L,1.0,7.0,N,-1
+"Saturday, Jul 25",DET,@,CIN,W,6.0,4.0,N,1
+"Sunday, Jul 26",DET,@,CIN,W,3.0,2.0,D,2
+"Monday, Jul 27",DET,Home,KCR,L,6.0,14.0,N,-1
+"Tuesday, Jul 28",DET,Home,KCR,W,4.0,3.0,N,1
+"Wednesday, Jul 29",DET,Home,KCR,W,5.0,4.0,N,2
+"Thursday, Jul 30",DET,Home,KCR,L,3.0,5.0,N,-1
+"Friday, Jul 31",DET,Home,CIN,W,7.0,2.0,N,1
+"Sunday, Aug 2 (1)",DET,Home,CIN,L,3.0,4.0,D,-1
+"Sunday, Aug 2 (2)",DET,Home,CIN,L,0.0,4.0,D,-2
+"Friday, Aug 7",DET,@,PIT,W,17.0,13.0,N,1
+"Saturday, Aug 8",DET,@,PIT,W,11.0,5.0,D,2
+"Sunday, Aug 9",DET,@,PIT,W,2.0,1.0,D,3
+"Monday, Aug 24",DET,Home,CHC,L,3.0,9.0,N,-1
+"Tuesday, Aug 25",DET,Home,CHC,W,7.0,1.0,N,1
+"Wednesday, Aug 26",DET,Home,CHC,W,7.0,6.0,N,2
+"Saturday, Aug 29 (1)",DET,Home,MIN,W,8.0,2.0,D,3
+"Saturday, Aug 29 (2)",DET,Home,MIN,W,4.0,2.0,D,4
+"Sunday, Aug 30",DET,Home,MIN,W,3.0,2.0,D,5
+"Tuesday, Sep 1",DET,@,MIL,W,12.0,1.0,N,6
+"Wednesday, Sep 2",DET,@,MIL,L,5.0,8.0,N,-1
+"Friday, Sep 4 (1)",DET,@,MIN,L,0.0,2.0,D,-2
+"Friday, Sep 4 (2)",DET,@,MIN,L,2.0,3.0,D,-3
+"Saturday, Sep 5",DET,@,MIN,L-wo,3.0,4.0,N,-4
+"Sunday, Sep 6",DET,@,MIN,W,10.0,8.0,D,1
+"Monday, Sep 7",DET,@,MIN,L,2.0,6.0,D,-1
+"Tuesday, Sep 8",DET,Home,MIL,W,8.0,3.0,N,1
+"Wednesday, Sep 9",DET,Home,MIL,L,0.0,19.0,D,-1
+"Thursday, Sep 10 (1)",DET,@,STL,L,2.0,12.0,D,-2
+"Thursday, Sep 10 (2)",DET,@,STL,W,6.0,3.0,D,1
+"Tuesday, Sep 15",DET,Home,KCR,W,6.0,0.0,N,1
+"Wednesday, Sep 16",DET,Home,KCR,L,0.0,4.0,N,-1
+"Tuesday, Sep 22",DET,@,MIN,L-wo,4.0,5.0,N,-2
+"Wednesday, Sep 23",DET,@,MIN,L,6.0,7.0,N,-3
+"Thursday, Sep 24",DET,@,KCR,L,7.0,8.0,N,-4
+"Friday, Sep 25",DET,@,KCR,L,2.0,3.0,N,-5
+"Saturday, Sep 26",DET,@,KCR,W,4.0,3.0,N,1
+"Sunday, Sep 27",DET,@,KCR,L,1.0,3.0,D,-1
+"Monday, Aug 3",KCR,@,CHC,L,0.0,2.0,N,-4
+"Tuesday, Aug 4",KCR,@,CHC,L,4.0,5.0,N,-5
+"Wednesday, Aug 5",KCR,Home,CHC,L,1.0,6.0,N,-6
+"Thursday, Aug 6",KCR,Home,CHC,W,13.0,2.0,N,1
+"Friday, Aug 7",KCR,Home,MIN,W,3.0,2.0,N,2
+"Saturday, Aug 8",KCR,Home,MIN,W,9.0,6.0,N,3
+"Sunday, Aug 9",KCR,Home,MIN,W,4.0,2.0,D,4
+"Tuesday, Aug 11",KCR,@,CIN,L-wo,5.0,6.0,N,-1
+"Wednesday, Aug 12",KCR,@,CIN,W,5.0,4.0,N,1
+"Saturday, Aug 15 (1)",KCR,@,MIN,L,2.0,4.0,D,-1
+"Saturday, Aug 15 (2)",KCR,@,MIN,W,4.0,2.0,D,1
+"Sunday, Aug 16",KCR,@,MIN,L,2.0,4.0,D,-1
+"Monday, Aug 17",KCR,@,MIN,L,1.0,4.0,N,-2
+"Wednesday, Aug 19 (1)",KCR,Home,CIN,W,4.0,0.0,D,1
+"Wednesday, Aug 19 (2)",KCR,Home,CIN,L,0.0,5.0,N,-1
+"Friday, Aug 21",KCR,Home,MIN,W,7.0,2.0,N,1
+"Saturday, Aug 22",KCR,Home,MIN,L,2.0,7.0,N,-1
+"Sunday, Aug 23",KCR,Home,MIN,L,4.0,5.0,D,-2
+"Monday, Aug 24",KCR,@,STL,L,3.0,9.0,N,-3
+"Tuesday, Aug 25",KCR,@,STL,W,5.0,4.0,N,1
+"Wednesday, Aug 26",KCR,@,STL,L-wo,5.0,6.0,N,-1
+"Friday, Sep 11",KCR,Home,PIT,W,4.0,3.0,N,4
+"Saturday, Sep 12",KCR,Home,PIT,W,7.0,4.0,N,5
+"Sunday, Sep 13",KCR,Home,PIT,W,11.0,0.0,D,6
+"Friday, Sep 18",KCR,@,MIL,L,5.0,9.0,N,-1
+"Saturday, Sep 19",KCR,@,MIL,L,0.0,5.0,N,-2
+"Sunday, Sep 20",KCR,@,MIL,L,3.0,5.0,D,-3
+"Monday, Sep 21",KCR,Home,STL,W,4.0,1.0,N,1
+"Tuesday, Sep 22",KCR,Home,STL,L,0.0,5.0,N,-1
+"Wednesday, Sep 23",KCR,Home,STL,W,12.0,3.0,N,1
+"Tuesday, Jul 28",MIN,Home,STL,W,6.0,3.0,N,2
+"Wednesday, Jul 29",MIN,Home,STL,W,3.0,0.0,N,3
+"Monday, Aug 3",MIN,Home,PIT,W-wo,5.0,4.0,N,4
+"Tuesday, Aug 4",MIN,Home,PIT,W,7.0,3.0,D,5
+"Wednesday, Aug 5",MIN,@,PIT,W,5.0,2.0,N,6
+"Thursday, Aug 6",MIN,@,PIT,L-wo,5.0,6.0,D,-1
+"Monday, Aug 10",MIN,@,MIL,W,4.0,2.0,N,1
+"Tuesday, Aug 11",MIN,@,MIL,L,4.0,6.0,N,-1
+"Wednesday, Aug 12",MIN,@,MIL,W,12.0,2.0,N,1
+"Tuesday, Aug 18",MIN,Home,MIL,W-wo,4.0,3.0,N,3
+"Wednesday, Aug 19",MIN,Home,MIL,L,3.0,9.0,N,-1
+"Thursday, Aug 20",MIN,Home,MIL,W,7.0,1.0,N,1
+"Tuesday, Sep 8 (1)",MIN,@,STL,W,7.0,3.0,D,2
+"Tuesday, Sep 8 (2)",MIN,@,STL,L,4.0,6.0,N,-1
+"Friday, Sep 18",MIN,@,CHC,L,0.0,1.0,N,-2
+"Saturday, Sep 19",MIN,@,CHC,W,8.0,1.0,N,1
+"Sunday, Sep 20",MIN,@,CHC,W,4.0,0.0,N,2
+"Friday, Sep 25",MIN,Home,CIN,L,2.0,7.0,N,-1
+"Saturday, Sep 26",MIN,Home,CIN,W,7.0,3.0,N,1
+"Sunday, Sep 27",MIN,Home,CIN,L,3.0,5.0,D,-1
+"Friday, Jul 24",HOU,Home,SEA,W,8.0,2.0,N,1
+"Saturday, Jul 25",HOU,Home,SEA,W,7.0,2.0,D,2
+"Sunday, Jul 26",HOU,Home,SEA,L,6.0,7.0,D,-1
+"Monday, Jul 27",HOU,Home,SEA,W,8.0,5.0,N,1
+"Tuesday, Jul 28",HOU,Home,LAD,L,2.0,5.0,N,-1
+"Wednesday, Jul 29",HOU,Home,LAD,L,2.0,4.0,N,-2
+"Friday, Jul 31",HOU,@,LAA,W,9.0,6.0,N,1
+"Saturday, Aug 1",HOU,@,LAA,L-wo,4.0,5.0,D,-1
+"Sunday, Aug 2",HOU,@,LAA,W,6.0,5.0,D,1
+"Tuesday, Aug 4",HOU,@,ARI,W,8.0,2.0,N,2
+"Wednesday, Aug 5",HOU,@,ARI,L,7.0,14.0,N,-1
+"Thursday, Aug 6",HOU,@,ARI,L-wo,4.0,5.0,D,-2
+"Friday, Aug 7",HOU,@,OAK,L-wo,2.0,3.0,N,-3
+"Saturday, Aug 8",HOU,@,OAK,L,1.0,3.0,D,-4
+"Sunday, Aug 9",HOU,@,OAK,L,2.0,7.0,D,-5
+"Monday, Aug 10",HOU,Home,SFG,W,6.0,4.0,N,1
+"Tuesday, Aug 11",HOU,Home,SFG,L,6.0,7.0,N,-1
+"Wednesday, Aug 12",HOU,Home,SFG,W,5.0,1.0,N,1
+"Friday, Aug 14",HOU,Home,SEA,W,11.0,1.0,N,2
+"Saturday, Aug 15",HOU,Home,SEA,W,2.0,1.0,N,3
+"Sunday, Aug 16",HOU,Home,SEA,W-wo,3.0,2.0,D,4
+"Monday, Aug 17",HOU,Home,COL,W,2.0,1.0,N,5
+"Tuesday, Aug 18",HOU,Home,COL,W-wo,2.0,1.0,D,6
+"Wednesday, Aug 19",HOU,@,COL,W,13.0,6.0,N,7
+"Thursday, Aug 20",HOU,@,COL,W,10.0,8.0,D,8
+"Friday, Aug 21",HOU,@,SDP,L,3.0,4.0,N,-1
+"Saturday, Aug 22",HOU,@,SDP,L,2.0,13.0,N,-2
+"Sunday, Aug 23",HOU,@,SDP,L,3.0,5.0,D,-3
+"Monday, Aug 24",HOU,Home,LAA,W,11.0,4.0,N,1
+"Tuesday, Aug 25 (1)",HOU,Home,LAA,W,6.0,3.0,D,2
+"Tuesday, Aug 25 (2)",HOU,Home,LAA,L,5.0,12.0,N,-1
+"Saturday, Aug 29 (1)",HOU,Home,OAK,W,4.0,2.0,D,1
+"Saturday, Aug 29 (2)",HOU,Home,OAK,W,6.0,3.0,N,2
+"Tuesday, Sep 1",HOU,Home,TEX,L,5.0,6.0,N,-1
+"Wednesday, Sep 2",HOU,Home,TEX,W,2.0,1.0,N,1
+"Thursday, Sep 3",HOU,Home,TEX,W,8.0,4.0,D,2
+"Friday, Sep 4",HOU,@,LAA,L-wo,5.0,6.0,N,-1
+"Saturday, Sep 5 (1)",HOU,@,LAA,L-wo,9.0,10.0,D,-2
+"Saturday, Sep 5 (2)",HOU,@,LAA,L,6.0,7.0,N,-3
+"Sunday, Sep 6",HOU,@,LAA,L,5.0,9.0,D,-4
+"Monday, Sep 7",HOU,@,OAK,L,0.0,6.0,N,-5
+"Tuesday, Sep 8 (1)",HOU,@,OAK,L,2.0,4.0,D,-6
+"Tuesday, Sep 8 (2)",HOU,@,OAK,W,5.0,4.0,N,1
+"Wednesday, Sep 9",HOU,@,OAK,L-wo,2.0,3.0,N,-1
+"Thursday, Sep 10",HOU,@,OAK,L,1.0,3.0,D,-2
+"Saturday, Sep 12",HOU,@,LAD,W,7.0,5.0,N,1
+"Sunday, Sep 13",HOU,@,LAD,L,1.0,8.0,N,-1
+"Tuesday, Sep 15",HOU,Home,TEX,W,4.0,1.0,N,1
+"Wednesday, Sep 16",HOU,Home,TEX,L,0.0,1.0,N,-1
+"Thursday, Sep 17",HOU,Home,TEX,W,2.0,1.0,N,1
+"Friday, Sep 18",HOU,Home,ARI,L,3.0,6.0,N,-1
+"Saturday, Sep 19",HOU,Home,ARI,W,3.0,2.0,N,1
+"Sunday, Sep 20",HOU,Home,ARI,W,3.0,2.0,D,2
+"Monday, Sep 21",HOU,@,SEA,L,1.0,6.0,N,-1
+"Tuesday, Sep 22",HOU,@,SEA,W,6.0,1.0,N,1
+"Wednesday, Sep 23",HOU,@,SEA,L,2.0,3.0,D,-1
+"Thursday, Sep 24",HOU,@,TEX,W,12.0,4.0,N,1
+"Friday, Sep 25",HOU,@,TEX,L-wo,4.0,5.0,N,-1
+"Saturday, Sep 26",HOU,@,TEX,L,1.0,6.0,N,-2
+"Sunday, Sep 27",HOU,@,TEX,L,4.0,8.0,D,-3
+"Friday, Jul 24",LAA,@,OAK,L-wo,3.0,7.0,N,-1
+"Saturday, Jul 25",LAA,@,OAK,W,4.0,1.0,D,1
+"Sunday, Jul 26",LAA,@,OAK,L,4.0,6.0,D,-1
+"Monday, Jul 27",LAA,@,OAK,L,0.0,3.0,D,-2
+"Tuesday, Jul 28",LAA,Home,SEA,W,10.0,2.0,N,1
+"Wednesday, Jul 29",LAA,Home,SEA,L,7.0,10.0,N,-1
+"Thursday, Jul 30",LAA,Home,SEA,L,5.0,8.0,N,-2
+"Tuesday, Aug 4",LAA,@,SEA,W,5.0,3.0,N,1
+"Wednesday, Aug 5",LAA,@,SEA,L,6.0,7.0,N,-1
+"Thursday, Aug 6",LAA,@,SEA,W,6.0,1.0,D,1
+"Friday, Aug 7",LAA,@,TEX,L,3.0,4.0,N,-1
+"Saturday, Aug 8",LAA,@,TEX,L,0.0,2.0,N,-2
+"Sunday, Aug 9",LAA,@,TEX,L,3.0,7.0,D,-3
+"Monday, Aug 10",LAA,Home,OAK,W,10.0,9.0,N,1
+"Tuesday, Aug 11",LAA,Home,OAK,W,6.0,0.0,N,2
+"Wednesday, Aug 12",LAA,Home,OAK,L,4.0,8.0,D,-1
+"Friday, Aug 14",LAA,Home,LAD,L,4.0,7.0,N,-2
+"Saturday, Aug 15",LAA,Home,LAD,L,5.0,6.0,N,-3
+"Sunday, Aug 16",LAA,Home,LAD,L,3.0,8.0,D,-4
+"Monday, Aug 17",LAA,Home,SFG,W-wo,7.0,6.0,N,1
+"Tuesday, Aug 18",LAA,Home,SFG,L,2.0,8.0,D,-1
+"Wednesday, Aug 19",LAA,@,SFG,L,2.0,7.0,N,-2
+"Thursday, Aug 20",LAA,@,SFG,L,5.0,10.0,N,-3
+"Friday, Aug 21",LAA,@,OAK,L,3.0,5.0,N,-4
+"Saturday, Aug 22",LAA,@,OAK,W,4.0,3.0,D,1
+"Sunday, Aug 23",LAA,@,OAK,L-wo,4.0,5.0,D,-1
+"Friday, Aug 28",LAA,Home,SEA,W,3.0,2.0,N,2
+"Saturday, Aug 29",LAA,Home,SEA,W,16.0,3.0,N,3
+"Sunday, Aug 30",LAA,Home,SEA,L,1.0,2.0,D,-1
+"Monday, Aug 31",LAA,Home,SEA,L,1.0,2.0,D,-2
+"Wednesday, Sep 2",LAA,Home,SDP,L,4.0,11.0,N,-3
+"Thursday, Sep 3",LAA,Home,SDP,W,2.0,0.0,D,1
+"Tuesday, Sep 8",LAA,@,TEX,L,1.0,7.0,N,-1
+"Wednesday, Sep 9",LAA,@,TEX,L,3.0,7.0,N,-2
+"Thursday, Sep 10",LAA,@,TEX,W,6.0,2.0,D,1
+"Friday, Sep 11",LAA,@,COL,L-wo,4.0,8.0,N,-1
+"Saturday, Sep 12",LAA,@,COL,W,5.0,2.0,N,1
+"Sunday, Sep 13",LAA,@,COL,W,5.0,3.0,D,2
+"Tuesday, Sep 15",LAA,Home,ARI,L,8.0,9.0,N,-1
+"Wednesday, Sep 16",LAA,Home,ARI,L,6.0,9.0,N,-2
+"Thursday, Sep 17",LAA,Home,ARI,W,7.0,3.0,D,1
+"Friday, Sep 18",LAA,Home,TEX,W,6.0,2.0,N,2
+"Saturday, Sep 19",LAA,Home,TEX,W,4.0,3.0,N,3
+"Sunday, Sep 20",LAA,Home,TEX,L,2.0,7.0,D,-1
+"Monday, Sep 21",LAA,Home,TEX,W,8.0,5.0,D,1
+"Tuesday, Sep 22",LAA,@,SDP,W,4.0,2.0,N,2
+"Wednesday, Sep 23",LAA,@,SDP,W,5.0,2.0,D,3
+"Friday, Sep 25",LAA,@,LAD,L,5.0,9.0,N,-1
+"Saturday, Sep 26",LAA,@,LAD,L,6.0,7.0,N,-2
+"Sunday, Sep 27",LAA,@,LAD,L,0.0,5.0,D,-3
+"Tuesday, Jul 28",OAK,Home,COL,L,3.0,8.0,N,-1
+"Wednesday, Jul 29",OAK,Home,COL,L,1.0,5.0,D,-2
+"Friday, Jul 31",OAK,@,SEA,L,3.0,5.0,N,-3
+"Saturday, Aug 1",OAK,@,SEA,W,3.0,2.0,N,1
+"Sunday, Aug 2",OAK,@,SEA,W,3.0,2.0,D,2
+"Monday, Aug 3",OAK,@,SEA,W,11.0,1.0,N,3
+"Tuesday, Aug 4",OAK,Home,TEX,W-wo,5.0,1.0,N,4
+"Wednesday, Aug 5",OAK,Home,TEX,W,6.0,4.0,N,5
+"Thursday, Aug 6",OAK,Home,TEX,W,6.0,4.0,D,6
+"Friday, Aug 14",OAK,@,SFG,W,8.0,7.0,N,2
+"Saturday, Aug 15",OAK,@,SFG,W,7.0,6.0,D,3
+"Sunday, Aug 16",OAK,@,SFG,W,15.0,3.0,D,4
+"Monday, Aug 17",OAK,@,ARI,L-wo,3.0,4.0,N,-1
+"Tuesday, Aug 18",OAK,@,ARI,L,1.0,10.0,D,-2
+"Wednesday, Aug 19",OAK,Home,ARI,W,4.0,1.0,N,1
+"Thursday, Aug 20",OAK,Home,ARI,W,5.0,1.0,N,2
+"Monday, Aug 24",OAK,@,TEX,L,2.0,3.0,N,-1
+"Tuesday, Aug 25",OAK,@,TEX,W,10.0,3.0,N,1
+"Wednesday, Aug 26",OAK,@,TEX,W,3.0,1.0,N,2
+"Friday, Sep 4",OAK,Home,SDP,L,0.0,7.0,N,-3
+"Saturday, Sep 5",OAK,Home,SDP,W,8.0,4.0,D,1
+"Sunday, Sep 6",OAK,Home,SDP,L,3.0,5.0,D,-1
+"Friday, Sep 11",OAK,@,TEX,W,10.0,6.0,N,3
+"Saturday, Sep 12 (1)",OAK,@,TEX,L,2.0,5.0,D,-1
+"Saturday, Sep 12 (2)",OAK,@,TEX,W,10.0,1.0,N,1
+"Sunday, Sep 13",OAK,@,TEX,L,3.0,6.0,D,-1
+"Monday, Sep 14 (1)",OAK,@,SEA,L,5.0,6.0,D,-2
+"Monday, Sep 14 (2)",OAK,@,SEA,W,9.0,0.0,N,1
+"Tuesday, Sep 15",OAK,@,COL,L,1.0,3.0,N,-1
+"Wednesday, Sep 16",OAK,@,COL,W,3.0,1.0,D,1
+"Friday, Sep 18",OAK,Home,SFG,W,6.0,0.0,N,2
+"Saturday, Sep 19",OAK,Home,SFG,W,6.0,0.0,D,3
+"Sunday, Sep 20",OAK,Home,SFG,L,2.0,14.0,D,-1
+"Tuesday, Sep 22",OAK,@,LAD,L,2.0,7.0,N,-2
+"Wednesday, Sep 23",OAK,@,LAD,W,6.0,4.0,N,1
+"Thursday, Sep 24",OAK,@,LAD,L,1.0,5.0,N,-1
+"Friday, Sep 25",OAK,Home,SEA,W-wo,3.0,1.0,N,1
+"Saturday, Sep 26 (1)",OAK,Home,SEA,L,1.0,5.0,D,-1
+"Saturday, Sep 26 (2)",OAK,Home,SEA,L,3.0,12.0,D,-2
+"Sunday, Sep 27",OAK,Home,SEA,W,6.0,2.0,D,1
+"Friday, Aug 7",SEA,Home,COL,L,4.0,8.0,N,-2
+"Saturday, Aug 8",SEA,Home,COL,L,0.0,5.0,N,-3
+"Sunday, Aug 9",SEA,Home,COL,W,5.0,3.0,D,1
+"Monday, Aug 10",SEA,@,TEX,W,10.0,2.0,N,2
+"Tuesday, Aug 11",SEA,@,TEX,L,2.0,4.0,N,-1
+"Wednesday, Aug 12",SEA,@,TEX,L,4.0,7.0,N,-2
+"Monday, Aug 17",SEA,@,LAD,L,9.0,11.0,N,-6
+"Tuesday, Aug 18",SEA,@,LAD,L,1.0,2.0,D,-7
+"Wednesday, Aug 19",SEA,Home,LAD,W,6.0,4.0,N,1
+"Thursday, Aug 20",SEA,Home,LAD,L,1.0,6.0,D,-1
+"Friday, Aug 21",SEA,Home,TEX,W,7.0,4.0,N,1
+"Saturday, Aug 22",SEA,Home,TEX,W,10.0,1.0,N,2
+"Sunday, Aug 23",SEA,Home,TEX,W,4.0,1.0,D,3
+"Tuesday, Aug 25",SEA,@,SDP,W,8.0,3.0,N,4
+"Thursday, Aug 27 (1)",SEA,@,SDP,L-wo,7.0,10.0,D,-1
+"Thursday, Aug 27 (2)",SEA,@,SDP,W,8.0,3.0,D,1
+"Friday, Sep 4",SEA,Home,TEX,W,6.0,3.0,N,3
+"Saturday, Sep 5",SEA,Home,TEX,W,5.0,3.0,N,4
+"Sunday, Sep 6",SEA,Home,TEX,W,4.0,3.0,D,5
+"Monday, Sep 7",SEA,Home,TEX,W,8.0,4.0,D,6
+"Tuesday, Sep 8",SEA,@,SFG,L,5.0,6.0,N,-1
+"Wednesday, Sep 9",SEA,@,SFG,L,1.0,10.0,N,-2
+"Friday, Sep 11",SEA,@,ARI,L,3.0,4.0,N,-3
+"Saturday, Sep 12",SEA,@,ARI,W,7.0,3.0,N,1
+"Sunday, Sep 13",SEA,@,ARI,W,7.0,3.0,D,2
+"Wednesday, Sep 16",SEA,@,SFG,L,3.0,9.0,N,-2
+"Thursday, Sep 17",SEA,@,SFG,L,4.0,6.0,D,-3
+"Friday, Sep 18",SEA,@,SDP,L,1.0,6.0,N,-4
+"Saturday, Sep 19",SEA,@,SDP,W,4.0,1.0,N,1
+"Sunday, Sep 20",SEA,@,SDP,L,4.0,7.0,D,-1
+"Friday, Jul 24",TEX,Home,COL,W,1.0,0.0,N,1
+"Saturday, Jul 25",TEX,Home,COL,L,2.0,3.0,D,-1
+"Sunday, Jul 26",TEX,Home,COL,L,2.0,5.0,D,-2
+"Tuesday, Jul 28",TEX,Home,ARI,L,1.0,4.0,N,-3
+"Wednesday, Jul 29",TEX,Home,ARI,W,7.0,4.0,D,1
+"Friday, Jul 31",TEX,@,SFG,L,2.0,9.0,N,-1
+"Saturday, Aug 1",TEX,@,SFG,L,3.0,7.0,N,-2
+"Sunday, Aug 2",TEX,@,SFG,W,9.0,5.0,D,1
+"Friday, Aug 14",TEX,@,COL,W,3.0,2.0,N,3
+"Saturday, Aug 15",TEX,@,COL,W,6.0,4.0,N,4
+"Sunday, Aug 16",TEX,@,COL,L,6.0,10.0,D,-1
+"Monday, Aug 17",TEX,Home,SDP,L,4.0,14.0,N,-2
+"Tuesday, Aug 18",TEX,Home,SDP,L,4.0,6.0,D,-3
+"Wednesday, Aug 19",TEX,@,SDP,L-wo,3.0,6.0,N,-4
+"Thursday, Aug 20",TEX,@,SDP,L-wo,7.0,8.0,N,-5
+"Friday, Aug 28",TEX,Home,LAD,W,6.0,2.0,N,1
+"Saturday, Aug 29",TEX,Home,LAD,L,4.0,7.0,N,-1
+"Sunday, Aug 30",TEX,Home,LAD,L,2.0,7.0,D,-2
+"Tuesday, Sep 22",TEX,@,ARI,L,0.0,7.0,N,-2
+"Wednesday, Sep 23",TEX,@,ARI,L,3.0,7.0,D,-3
+"Friday, Jul 24",ARI,@,SDP,L,2.0,7.0,N,-1
+"Saturday, Jul 25",ARI,@,SDP,L,1.0,5.0,N,-2
+"Sunday, Jul 26",ARI,@,SDP,W,4.0,3.0,D,1
+"Monday, Jul 27",ARI,@,SDP,L,2.0,6.0,D,-1
+"Thursday, Jul 30",ARI,Home,LAD,L,3.0,6.0,N,-2
+"Friday, Jul 31",ARI,Home,LAD,W,5.0,3.0,N,1
+"Saturday, Aug 1",ARI,Home,LAD,L,2.0,11.0,N,-1
+"Sunday, Aug 2",ARI,Home,LAD,L,0.0,3.0,D,-2
+"Friday, Aug 7",ARI,@,SDP,L,0.0,3.0,N,-1
+"Saturday, Aug 8",ARI,@,SDP,W,3.0,2.0,N,1
+"Sunday, Aug 9",ARI,@,SDP,L,5.0,9.0,D,-1
+"Monday, Aug 10",ARI,@,COL,W,12.0,8.0,N,1
+"Tuesday, Aug 11",ARI,@,COL,L,7.0,8.0,N,-1
+"Wednesday, Aug 12",ARI,@,COL,W,13.0,7.0,D,1
+"Friday, Aug 14",ARI,Home,SDP,W,5.0,1.0,N,2
+"Saturday, Aug 15",ARI,Home,SDP,W,7.0,6.0,N,3
+"Sunday, Aug 16",ARI,Home,SDP,W,5.0,4.0,D,4
+"Friday, Aug 21",ARI,@,SFG,L,2.0,6.0,N,-3
+"Saturday, Aug 22",ARI,@,SFG,L,1.0,5.0,N,-4
+"Sunday, Aug 23",ARI,@,SFG,L,1.0,6.0,D,-5
+"Monday, Aug 24",ARI,Home,COL,L,2.0,3.0,N,-6
+"Tuesday, Aug 25",ARI,Home,COL,L,4.0,5.0,N,-7
+"Wednesday, Aug 26",ARI,Home,COL,L,7.0,8.0,N,-8
+"Friday, Aug 28",ARI,Home,SFG,W,7.0,4.0,N,1
+"Saturday, Aug 29",ARI,Home,SFG,L,2.0,5.0,N,-1
+"Sunday, Aug 30",ARI,Home,SFG,L,1.0,4.0,D,-2
+"Tuesday, Sep 1",ARI,@,LAD,L,3.0,6.0,N,-3
+"Wednesday, Sep 2",ARI,@,LAD,L-wo,2.0,3.0,N,-4
+"Thursday, Sep 3",ARI,@,LAD,L,1.0,5.0,N,-5
+"Friday, Sep 4",ARI,@,SFG,W,6.0,5.0,N,1
+"Saturday, Sep 5",ARI,@,SFG,L,3.0,4.0,N,-1
+"Sunday, Sep 6",ARI,@,SFG,L,2.0,4.0,D,-2
+"Monday, Sep 7",ARI,@,SFG,L,2.0,4.0,N,-3
+"Tuesday, Sep 8",ARI,Home,LAD,L,9.0,10.0,N,-4
+"Wednesday, Sep 9",ARI,Home,LAD,L,4.0,6.0,N,-5
+"Thursday, Sep 10",ARI,Home,LAD,W,5.0,2.0,N,1
+"Friday, Sep 25 (1)",ARI,Home,COL,W,4.0,0.0,D,3
+"Friday, Sep 25 (2)",ARI,Home,COL,W,11.0,5.0,N,4
+"Saturday, Sep 26",ARI,Home,COL,L,3.0,10.0,N,-1
+"Sunday, Sep 27",ARI,Home,COL,W,11.0,3.0,D,1
+"Friday, Jul 24",ATL,@,NYM,L,0.0,1.0,D,-1
+"Saturday, Jul 25",ATL,@,NYM,W,5.0,3.0,D,1
+"Sunday, Jul 26",ATL,@,NYM,W,14.0,1.0,N,2
+"Friday, Jul 31",ATL,Home,NYM,W,11.0,10.0,N,3
+"Saturday, Aug 1",ATL,Home,NYM,W,7.0,1.0,N,4
+"Sunday, Aug 2",ATL,Home,NYM,W,4.0,0.0,D,5
+"Monday, Aug 3",ATL,Home,NYM,L,2.0,7.0,N,-1
+"Saturday, Aug 8",ATL,@,PHI,L,0.0,5.0,N,-1
+"Sunday, Aug 9 (1)",ATL,@,PHI,W,5.0,2.0,D,1
+"Sunday, Aug 9 (2)",ATL,@,PHI,W,8.0,0.0,D,2
+"Monday, Aug 10",ATL,@,PHI,L,8.0,13.0,N,-1
+"Friday, Aug 14",ATL,@,MIA,L,2.0,8.0,N,-4
+"Saturday, Aug 15",ATL,@,MIA,W,2.0,1.0,N,1
+"Sunday, Aug 16",ATL,@,MIA,W,4.0,0.0,D,2
+"Monday, Aug 17",ATL,Home,WSN,W-wo,7.0,6.0,N,3
+"Tuesday, Aug 18",ATL,Home,WSN,L,5.0,8.0,N,-1
+"Friday, Aug 21",ATL,Home,PHI,W,11.0,2.0,N,1
+"Saturday, Aug 22",ATL,Home,PHI,W-wo,6.0,5.0,N,2
+"Sunday, Aug 23",ATL,Home,PHI,L,4.0,5.0,N,-1
+"Friday, Aug 28",ATL,@,PHI,L-wo,4.0,7.0,N,-1
+"Saturday, Aug 29",ATL,@,PHI,L,1.0,4.0,D,-2
+"Sunday, Aug 30",ATL,@,PHI,W,12.0,10.0,N,1
+"Friday, Sep 4 (1)",ATL,Home,WSN,W,7.0,1.0,D,5
+"Friday, Sep 4 (2)",ATL,Home,WSN,L,9.0,10.0,N,-1
+"Saturday, Sep 5",ATL,Home,WSN,L,4.0,10.0,N,-2
+"Sunday, Sep 6",ATL,Home,WSN,W,10.0,3.0,D,1
+"Monday, Sep 7",ATL,Home,MIA,L,4.0,5.0,D,-1
+"Tuesday, Sep 8",ATL,Home,MIA,L,0.0,8.0,N,-2
+"Wednesday, Sep 9",ATL,Home,MIA,W,29.0,9.0,N,1
+"Thursday, Sep 10",ATL,@,WSN,W,7.0,6.0,N,2
+"Friday, Sep 11",ATL,@,WSN,L-wo,7.0,8.0,N,-1
+"Saturday, Sep 12",ATL,@,WSN,W,2.0,1.0,N,1
+"Sunday, Sep 13",ATL,@,WSN,W,8.0,4.0,D,2
+"Friday, Sep 18",ATL,@,NYM,W,15.0,2.0,N,1
+"Saturday, Sep 19",ATL,@,NYM,L,2.0,7.0,N,-1
+"Sunday, Sep 20",ATL,@,NYM,W,7.0,0.0,D,1
+"Monday, Sep 21",ATL,Home,MIA,W,5.0,4.0,N,2
+"Tuesday, Sep 22",ATL,Home,MIA,W,11.0,1.0,N,3
+"Wednesday, Sep 23",ATL,Home,MIA,W,9.0,4.0,N,4
+"Thursday, Sep 24",ATL,Home,MIA,L,2.0,4.0,N,-1
+"Friday, Jul 24",MIA,@,PHI,W,5.0,2.0,N,1
+"Saturday, Jul 25",MIA,@,PHI,L,1.0,7.0,D,-1
+"Sunday, Jul 26",MIA,@,PHI,W,11.0,6.0,D,1
+"Friday, Aug 7",MIA,@,NYM,W,4.0,3.0,N,6
+"Saturday, Aug 8",MIA,@,NYM,L,4.0,8.0,N,-1
+"Sunday, Aug 9",MIA,@,NYM,L,2.0,4.0,D,-2
+"Monday, Aug 17",MIA,Home,NYM,L,4.0,11.0,N,-3
+"Tuesday, Aug 18",MIA,Home,NYM,L,3.0,8.0,N,-4
+"Wednesday, Aug 19",MIA,Home,NYM,L,3.0,5.0,N,-5
+"Friday, Aug 21",MIA,@,WSN,W,3.0,2.0,N,1
+"Saturday, Aug 22 (1)",MIA,@,WSN,L,4.0,5.0,D,-1
+"Saturday, Aug 22 (2)",MIA,@,WSN,W,5.0,3.0,N,1
+"Sunday, Aug 23",MIA,@,WSN,L,3.0,9.0,D,-1
+"Monday, Aug 24",MIA,@,WSN,W,11.0,8.0,N,1
+"Tuesday, Aug 25 (1)",MIA,@,NYM,W,4.0,0.0,N,2
+"Tuesday, Aug 25 (2)",MIA,@,NYM,W,3.0,0.0,N,3
+"Wednesday, Aug 26",MIA,@,NYM,L,4.0,5.0,N,-1
+"Monday, Aug 31",MIA,@,NYM,W,5.0,3.0,D,1
+"Thursday, Sep 10",MIA,Home,PHI,W-wo,7.0,6.0,N,1
+"Friday, Sep 11 (1)",MIA,Home,PHI,L,0.0,11.0,N,-1
+"Friday, Sep 11 (2)",MIA,Home,PHI,W,5.0,3.0,N,1
+"Saturday, Sep 12",MIA,Home,PHI,L,6.0,12.0,N,-1
+"Sunday, Sep 13 (1)",MIA,Home,PHI,W,2.0,1.0,D,1
+"Sunday, Sep 13 (2)",MIA,Home,PHI,W,8.0,1.0,D,2
+"Monday, Sep 14",MIA,Home,PHI,W,6.0,2.0,D,3
+"Friday, Sep 18 (1)",MIA,Home,WSN,L,0.0,5.0,N,-2
+"Friday, Sep 18 (2)",MIA,Home,WSN,W,14.0,3.0,N,1
+"Saturday, Sep 19",MIA,Home,WSN,W,7.0,3.0,N,2
+"Sunday, Sep 20 (1)",MIA,Home,WSN,W,2.0,1.0,D,3
+"Sunday, Sep 20 (2)",MIA,Home,WSN,L,0.0,15.0,D,-1
+"Tuesday, Aug 4",NYM,@,WSN,L,3.0,5.0,N,-1
+"Wednesday, Aug 5",NYM,@,WSN,W,3.0,1.0,N,1
+"Monday, Aug 10",NYM,Home,WSN,L,4.0,16.0,N,-1
+"Tuesday, Aug 11",NYM,Home,WSN,L,1.0,2.0,N,-2
+"Wednesday, Aug 12",NYM,Home,WSN,W,11.0,6.0,N,1
+"Thursday, Aug 13",NYM,Home,WSN,W,8.0,2.0,D,2
+"Friday, Aug 14",NYM,@,PHI,L-wo,5.0,6.0,N,-1
+"Saturday, Aug 15",NYM,@,PHI,L,2.0,6.0,N,-2
+"Sunday, Aug 16",NYM,@,PHI,L,2.0,6.0,D,-3
+"Friday, Sep 4",NYM,Home,PHI,L,3.0,5.0,N,-1
+"Saturday, Sep 5",NYM,Home,PHI,W,5.0,1.0,N,1
+"Sunday, Sep 6",NYM,Home,PHI,W,14.0,1.0,D,2
+"Monday, Sep 7",NYM,Home,PHI,L,8.0,9.0,D,-1
+"Tuesday, Sep 15",NYM,@,PHI,L,1.0,4.0,N,-3
+"Wednesday, Sep 16",NYM,@,PHI,W,5.0,4.0,N,1
+"Thursday, Sep 17",NYM,@,PHI,W,10.0,6.0,N,2
+"Thursday, Sep 24",NYM,@,WSN,W,3.0,2.0,N,1
+"Saturday, Sep 26 (1)",NYM,@,WSN,L,3.0,4.0,D,-1
+"Saturday, Sep 26 (2)",NYM,@,WSN,L,3.0,5.0,N,-2
+"Sunday, Sep 27",NYM,@,WSN,L,5.0,15.0,D,-3
+"Tuesday, Aug 25",PHI,@,WSN,W,8.0,3.0,N,2
+"Wednesday, Aug 26",PHI,@,WSN,W,3.0,2.0,N,3
+"Monday, Aug 31",PHI,Home,WSN,W,8.0,6.0,N,1
+"Tuesday, Sep 1",PHI,Home,WSN,W,6.0,0.0,N,2
+"Wednesday, Sep 2",PHI,Home,WSN,W,3.0,0.0,N,3
+"Thursday, Sep 3",PHI,Home,WSN,W-wo,6.0,5.0,D,4
+"Monday, Sep 21",PHI,@,WSN,L,1.0,5.0,N,-2
+"Tuesday, Sep 22 (1)",PHI,@,WSN,L,1.0,5.0,D,-3
+"Tuesday, Sep 22 (2)",PHI,@,WSN,L-wo,7.0,8.0,N,-4
+"Wednesday, Sep 23",PHI,@,WSN,W,12.0,3.0,N,1
+"Friday, Jul 24",CHC,Home,MIL,W,3.0,0.0,N,1
+"Saturday, Jul 25",CHC,Home,MIL,L,3.0,8.0,D,-1
+"Sunday, Jul 26",CHC,Home,MIL,W,9.0,1.0,D,1
+"Monday, Jul 27",CHC,@,CIN,W,8.0,7.0,N,2
+"Tuesday, Jul 28",CHC,@,CIN,W,8.0,5.0,N,3
+"Wednesday, Jul 29",CHC,@,CIN,L,7.0,12.0,N,-1
+"Friday, Jul 31",CHC,Home,PIT,W,6.0,3.0,N,1
+"Saturday, Aug 1",CHC,Home,PIT,W,4.0,3.0,N,2
+"Sunday, Aug 2",CHC,Home,PIT,W-wo,2.0,1.0,D,3
+"Thursday, Aug 13",CHC,Home,MIL,W,4.0,2.0,N,3
+"Friday, Aug 14",CHC,Home,MIL,L,3.0,4.0,N,-1
+"Saturday, Aug 15",CHC,Home,MIL,L,5.0,6.0,D,-2
+"Sunday, Aug 16",CHC,Home,MIL,L,5.0,6.0,D,-3
+"Monday, Aug 17 (1)",CHC,Home,STL,L,1.0,3.0,D,-4
+"Monday, Aug 17 (2)",CHC,Home,STL,W,5.0,4.0,N,1
+"Tuesday, Aug 18",CHC,Home,STL,W,6.0,3.0,N,2
+"Wednesday, Aug 19 (1)",CHC,Home,STL,L,3.0,9.0,D,-1
+"Wednesday, Aug 19 (2)",CHC,Home,STL,W,4.0,2.0,N,1
+"Friday, Aug 28",CHC,@,CIN,L,5.0,6.0,N,-3
+"Saturday, Aug 29 (1)",CHC,@,CIN,W,3.0,0.0,D,1
+"Saturday, Aug 29 (2)",CHC,@,CIN,L-wo,5.0,6.0,N,-1
+"Sunday, Aug 30",CHC,@,CIN,W,10.0,1.0,D,1
+"Tuesday, Sep 1",CHC,@,PIT,W,8.0,7.0,N,2
+"Wednesday, Sep 2",CHC,@,PIT,W,8.0,2.0,N,3
+"Thursday, Sep 3",CHC,@,PIT,L,2.0,6.0,D,-1
+"Friday, Sep 4",CHC,Home,STL,W,4.0,1.0,N,1
+"Saturday, Sep 5 (1)",CHC,Home,STL,L,2.0,4.0,D,-1
+"Saturday, Sep 5 (2)",CHC,Home,STL,L,1.0,5.0,N,-2
+"Sunday, Sep 6",CHC,Home,STL,L,3.0,7.0,N,-3
+"Monday, Sep 7",CHC,Home,STL,W,5.0,1.0,D,1
+"Tuesday, Sep 8",CHC,Home,CIN,W,3.0,0.0,N,2
+"Wednesday, Sep 9",CHC,Home,CIN,L,0.0,3.0,N,-1
+"Thursday, Sep 10",CHC,Home,CIN,W,8.0,5.0,N,1
+"Friday, Sep 11",CHC,@,MIL,L-wo,0.0,1.0,N,-1
+"Saturday, Sep 12",CHC,@,MIL,W,4.0,2.0,N,1
+"Sunday, Sep 13",CHC,@,MIL,W,12.0,0.0,D,2
+"Monday, Sep 21",CHC,@,PIT,W,5.0,0.0,N,1
+"Tuesday, Sep 22",CHC,@,PIT,L-wo,2.0,3.0,N,-1
+"Wednesday, Sep 23",CHC,@,PIT,L,1.0,2.0,N,-2
+"Thursday, Sep 24",CHC,@,PIT,L,0.0,7.0,D,-3
+"Friday, Aug 7",CIN,@,MIL,W,8.0,3.0,N,1
+"Saturday, Aug 8",CIN,@,MIL,W,4.0,1.0,N,2
+"Sunday, Aug 9",CIN,@,MIL,L,3.0,9.0,D,-1
+"Thursday, Aug 13",CIN,Home,PIT,L,6.0,9.0,N,-2
+"Friday, Aug 14",CIN,Home,PIT,W,8.0,1.0,N,1
+"Thursday, Aug 20",CIN,@,STL,L-wo,4.0,5.0,N,-1
+"Friday, Aug 21",CIN,@,STL,W,4.0,2.0,N,1
+"Saturday, Aug 22",CIN,@,STL,L,0.0,3.0,N,-1
+"Sunday, Aug 23",CIN,@,STL,L,2.0,6.0,D,-2
+"Monday, Aug 24",CIN,@,MIL,L,2.0,4.0,N,-3
+"Tuesday, Aug 25",CIN,@,MIL,L,2.0,3.0,N,-4
+"Thursday, Aug 27 (1)",CIN,@,MIL,W,6.0,1.0,D,1
+"Thursday, Aug 27 (2)",CIN,@,MIL,W,6.0,0.0,N,2
+"Monday, Aug 31",CIN,Home,STL,L,5.0,7.0,N,-2
+"Tuesday, Sep 1",CIN,Home,STL,L,2.0,16.0,N,-3
+"Wednesday, Sep 2",CIN,Home,STL,W-wo,4.0,3.0,N,1
+"Friday, Sep 4 (1)",CIN,@,PIT,W,4.0,2.0,D,2
+"Friday, Sep 4 (2)",CIN,@,PIT,L,3.0,4.0,N,-1
+"Saturday, Sep 5",CIN,@,PIT,W,6.0,2.0,N,1
+"Sunday, Sep 6",CIN,@,PIT,L-wo,2.0,3.0,D,-1
+"Friday, Sep 11",CIN,@,STL,W,3.0,1.0,N,1
+"Saturday, Sep 12",CIN,@,STL,L,1.0,7.0,N,-1
+"Sunday, Sep 13",CIN,@,STL,W,10.0,5.0,D,1
+"Monday, Sep 14 (1)",CIN,Home,PIT,W-wo,3.0,1.0,D,2
+"Monday, Sep 14 (2)",CIN,Home,PIT,W,9.0,4.0,N,3
+"Tuesday, Sep 15",CIN,Home,PIT,W,4.0,1.0,N,4
+"Wednesday, Sep 16",CIN,Home,PIT,W,1.0,0.0,N,5
+"Monday, Sep 21",CIN,Home,MIL,W,6.0,3.0,N,2
+"Tuesday, Sep 22",CIN,Home,MIL,L,2.0,3.0,N,-1
+"Wednesday, Sep 23",CIN,Home,MIL,W,6.0,1.0,N,1
+"Friday, Jul 31",COL,Home,SDP,L,7.0,8.0,N,-1
+"Saturday, Aug 1",COL,Home,SDP,W,6.0,1.0,N,1
+"Sunday, Aug 2",COL,Home,SDP,W,9.0,6.0,D,2
+"Monday, Aug 3",COL,Home,SFG,W,7.0,6.0,N,3
+"Tuesday, Aug 4",COL,Home,SFG,W,5.0,2.0,N,4
+"Wednesday, Aug 5",COL,Home,SFG,L,3.0,4.0,N,-1
+"Thursday, Aug 6",COL,Home,SFG,W,6.0,4.0,D,1
+"Friday, Aug 21",COL,@,LAD,L,1.0,5.0,N,-5
+"Saturday, Aug 22",COL,@,LAD,L-wo,3.0,4.0,N,-6
+"Sunday, Aug 23",COL,@,LAD,L,3.0,11.0,D,-7
+"Friday, Aug 28",COL,Home,SDP,L,4.0,10.0,N,-1
+"Saturday, Aug 29",COL,Home,SDP,W-wo,4.0,3.0,N,1
+"Sunday, Aug 30",COL,Home,SDP,L,2.0,13.0,D,-1
+"Monday, Aug 31",COL,Home,SDP,L,0.0,6.0,N,-2
+"Tuesday, Sep 1",COL,Home,SFG,L,5.0,23.0,N,-3
+"Wednesday, Sep 2",COL,Home,SFG,W,9.0,6.0,D,1
+"Friday, Sep 4",COL,@,LAD,L,6.0,10.0,N,-1
+"Saturday, Sep 5",COL,@,LAD,W,5.0,2.0,N,1
+"Sunday, Sep 6",COL,@,LAD,W,7.0,6.0,N,2
+"Monday, Sep 7",COL,@,SDP,L-wo,0.0,1.0,N,-1
+"Tuesday, Sep 8",COL,@,SDP,L,5.0,14.0,N,-2
+"Wednesday, Sep 9",COL,@,SDP,L,3.0,5.0,N,-3
+"Thursday, Sep 17",COL,Home,LAD,L,3.0,9.0,N,-2
+"Friday, Sep 18",COL,Home,LAD,L,6.0,15.0,N,-3
+"Saturday, Sep 19",COL,Home,LAD,L,1.0,6.0,N,-4
+"Sunday, Sep 20",COL,Home,LAD,W,6.0,3.0,D,1
+"Monday, Sep 21",COL,@,SFG,W,7.0,2.0,N,2
+"Tuesday, Sep 22",COL,@,SFG,L,2.0,5.0,N,-1
+"Wednesday, Sep 23",COL,@,SFG,L,2.0,7.0,N,-2
+"Thursday, Sep 24",COL,@,SFG,W,5.0,4.0,D,1
+"Thursday, Jul 23",LAD,Home,SFG,W,8.0,1.0,N,1
+"Friday, Jul 24",LAD,Home,SFG,W,9.0,1.0,N,2
+"Saturday, Jul 25",LAD,Home,SFG,L,4.0,5.0,D,-1
+"Sunday, Jul 26",LAD,Home,SFG,L,1.0,3.0,N,-2
+"Monday, Aug 3",LAD,@,SDP,L,4.0,5.0,N,-1
+"Tuesday, Aug 4",LAD,@,SDP,W,5.0,2.0,N,1
+"Wednesday, Aug 5",LAD,@,SDP,W,7.0,6.0,N,2
+"Friday, Aug 7",LAD,Home,SFG,W,7.0,2.0,N,3
+"Saturday, Aug 8",LAD,Home,SFG,L,4.0,5.0,N,-1
+"Sunday, Aug 9",LAD,Home,SFG,W,6.0,2.0,D,1
+"Monday, Aug 10",LAD,Home,SDP,L,1.0,2.0,N,-1
+"Tuesday, Aug 11",LAD,Home,SDP,L,2.0,6.0,N,-2
+"Wednesday, Aug 12",LAD,Home,SDP,W,6.0,0.0,N,1
+"Thursday, Aug 13",LAD,Home,SDP,W,11.0,2.0,N,2
+"Tuesday, Aug 25",LAD,@,SFG,L-wo,8.0,10.0,N,-1
+"Thursday, Aug 27 (1)",LAD,@,SFG,W,7.0,0.0,D,1
+"Thursday, Aug 27 (2)",LAD,@,SFG,W,2.0,0.0,D,2
+"Monday, Sep 14",LAD,@,SDP,L,2.0,7.0,N,-1
+"Tuesday, Sep 15",LAD,@,SDP,W,3.0,1.0,N,1
+"Wednesday, Sep 16",LAD,@,SDP,W,7.0,5.0,D,2
+"Monday, Jul 27",MIL,@,PIT,W,6.0,5.0,N,1
+"Tuesday, Jul 28",MIL,@,PIT,L,6.0,8.0,N,-1
+"Wednesday, Jul 29",MIL,@,PIT,W,3.0,0.0,N,1
+"Friday, Aug 21",MIL,@,PIT,L,2.0,7.0,N,-2
+"Saturday, Aug 22",MIL,@,PIT,L,5.0,12.0,D,-3
+"Sunday, Aug 23",MIL,@,PIT,L,4.0,5.0,D,-4
+"Friday, Aug 28",MIL,Home,PIT,W,9.0,1.0,N,1
+"Saturday, Aug 29",MIL,Home,PIT,W-wo,7.0,6.0,N,2
+"Sunday, Aug 30",MIL,Home,PIT,L,1.0,5.0,D,-1
+"Monday, Aug 31",MIL,Home,PIT,W,6.0,5.0,N,1
+"Monday, Sep 14 (1)",MIL,Home,STL,W-wo,2.0,1.0,D,1
+"Monday, Sep 14 (2)",MIL,Home,STL,L,2.0,3.0,N,-1
+"Tuesday, Sep 15",MIL,Home,STL,W,18.0,3.0,N,1
+"Wednesday, Sep 16 (1)",MIL,Home,STL,L,2.0,4.0,D,-1
+"Wednesday, Sep 16 (2)",MIL,Home,STL,W,6.0,0.0,N,1
+"Thursday, Sep 24",MIL,@,STL,L,2.0,4.0,N,-2
+"Friday, Sep 25 (1)",MIL,@,STL,W,3.0,0.0,D,1
+"Friday, Sep 25 (2)",MIL,@,STL,L,1.0,9.0,N,-1
+"Saturday, Sep 26",MIL,@,STL,W,3.0,0.0,N,1
+"Sunday, Sep 27",MIL,@,STL,L,2.0,5.0,D,-1
+"Friday, Jul 24",STL,Home,PIT,W,5.0,4.0,N,1
+"Saturday, Jul 25",STL,Home,PIT,W,9.0,1.0,D,2
+"Sunday, Jul 26",STL,Home,PIT,L,1.0,5.0,D,-1
+"Thursday, Aug 27 (1)",STL,Home,PIT,L,3.0,4.0,D,-1
+"Thursday, Aug 27 (2)",STL,Home,PIT,L,0.0,2.0,N,-2
+"Thursday, Sep 17",STL,@,PIT,L,1.0,5.0,N,-2
+"Friday, Sep 18 (1)",STL,@,PIT,W,6.0,5.0,D,1
+"Friday, Sep 18 (2)",STL,@,PIT,W,7.0,2.0,N,2
+"Saturday, Sep 19",STL,@,PIT,W,5.0,4.0,N,3
+"Sunday, Sep 20",STL,@,PIT,W,2.0,1.0,D,4
+"Tuesday, Jul 28",SDP,@,SFG,W,5.0,3.0,N,2
+"Wednesday, Jul 29",SDP,@,SFG,L-wo,6.0,7.0,N,-1
+"Thursday, Jul 30",SDP,@,SFG,W,12.0,7.0,N,1
+"Thursday, Sep 10",SDP,Home,SFG,W,6.0,1.0,N,5
+"Sunday, Sep 13 (1)",SDP,Home,SFG,W,6.0,0.0,D,6
+"Sunday, Sep 13 (2)",SDP,Home,SFG,W,3.0,1.0,D,7
+"Friday, Sep 25 (1)",SDP,@,SFG,L,4.0,5.0,D,-3
+"Friday, Sep 25 (2)",SDP,@,SFG,W-wo,6.0,5.0,N,1
+"Saturday, Sep 26",SDP,@,SFG,W,6.0,2.0,N,2
+"Sunday, Sep 27",SDP,@,SFG,W,5.0,4.0,D,3

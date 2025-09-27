@@ -83,34 +83,43 @@ def grabParkFactor(loaded_data: pd.DataFrame, year: int):
         else:
             print(False)
 
+def grabOdds(loaded)
+
 
 #Organize columns
 def organizeColumns(loaded_data: pd.DataFrame):
     column_order = [
-        'date', 'home_team', 'away_team', 'game_id', 'opening_bet_total', 
-        'closing_bet_total', 'actual_total_runs', 'over_hit', 'total_diff_vs_line', 'home_runs_per_game_L10', 
-        'away_runs_per_game_L10', 'home_team_ops_L10', 'away_team_ops_L10', 'home_hr_per_game_L10',	'away_hr_per_game_L10', 
-        'home_team_era_L10', 'away_team_era_L10', 'home_team_whip_L10',	'away_team_whip_L10', 'home_sp_era',
-        'away_sp_era', 'home_sp_whip', 'away_sp_whip', 'home_sp_k_per_9', 'away_sp_k_per_9',
-        'day', 'park_factor', 'line_movement', 'combined_offense_L10', 'combined_era_L10', 'sp_era_average'
+        'game_id', 'date', 'home_team', 'away_team', 
+        'betonline_opening_home_ml', 'betonline_closing_home_ml',
+        'betonline_opening_away_ml', 'betonline_closing_away_ml',
+        'home_score', 'away_score', 'home_won'
     ]
 
     updated_data = loaded_data[column_order]
 
     return updated_data
 
-def createCsv(load_data: pd.DataFrame, year):
-    master_df = pd.concat(load_data, ignore_index=True)
+def buildDataFrame(loaded_data: pd.DataFrame):
+    master_df = pd.concat(loaded_data, ignore_index=True)
     master_df['game_id'] = master_df.apply(
         lambda row: f"{row['date']}_{sorted([row['home_team'], row['away_team']])[0]}_{sorted([row['home_team'], row['away_team']])[1]}", 
         axis=1
     )
 
-    master_df.to_csv(f'./training_data/{year}_MLB_Season.csv', index=False)
+def createCsv(loaded_data: pd.DataFrame, year):
+    loaded_data.to_csv(f'./training_data/{year}_MLB_Season.csv', index=False)
 
-# for i in range(2020, 2025):
-#     data = grabGameData(i)
-#     data = grabParkFactor(data, i)
+errors = []
+
+for i in range(2019, 2025):
+    try:
+        game_data = grabGameData(i)
+        park_data = grabParkFactor(game_data, i)
+        final_data = buildDataFrame(park_data)
+        organized_data = organizeColumns(final_data)
+        createCsv(organized_data, i)
+    except Exception as e:
+        errors.append(f'Problem running loop for data collection: {e}')
 
 data = pd.read_csv('./training_data/2020_MLB_Season.csv')
 print(grabParkFactor(data, 2020))

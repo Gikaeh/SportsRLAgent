@@ -1,0 +1,343 @@
+,name,price,commence_time,home_team,away_team,bookmakers_key,bookmakers_markets_key
+0,Chicago White Sox,110,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,fanduel,h2h
+1,Washington Nationals,-130,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,fanduel,h2h
+2,Chicago White Sox,102,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,betrivers,h2h
+3,Washington Nationals,-125,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,betrivers,h2h
+4,Chicago White Sox,110,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,mybookieag,h2h
+5,Washington Nationals,-130,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,mybookieag,h2h
+6,Chicago White Sox,116,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,betonlineag,h2h
+7,Washington Nationals,-128,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,betonlineag,h2h
+8,Chicago White Sox,116,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,lowvig,h2h
+9,Washington Nationals,-128,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,lowvig,h2h
+10,Chicago White Sox,109,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,draftkings,h2h
+11,Washington Nationals,-132,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,draftkings,h2h
+12,Chicago White Sox,110,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,betmgm,h2h
+13,Washington Nationals,-130,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,betmgm,h2h
+14,Chicago White Sox,110,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,bovada,h2h
+15,Washington Nationals,-132,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,bovada,h2h
+16,Chicago White Sox,116,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,betus,h2h
+17,Washington Nationals,-127,2025-09-26T22:46:00Z,Washington Nationals,Chicago White Sox,betus,h2h
+18,Minnesota Twins,134,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,fanduel,h2h
+19,Philadelphia Phillies,-158,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,fanduel,h2h
+20,Minnesota Twins,140,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,betrivers,h2h
+21,Philadelphia Phillies,-167,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,betrivers,h2h
+22,Minnesota Twins,127,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,mybookieag,h2h
+23,Philadelphia Phillies,-149,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,mybookieag,h2h
+24,Minnesota Twins,130,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,betmgm,h2h
+25,Philadelphia Phillies,-155,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,betmgm,h2h
+26,Minnesota Twins,132,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,betonlineag,h2h
+27,Philadelphia Phillies,-146,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,betonlineag,h2h
+28,Minnesota Twins,132,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,lowvig,h2h
+29,Philadelphia Phillies,-146,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,lowvig,h2h
+30,Minnesota Twins,124,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,draftkings,h2h
+31,Philadelphia Phillies,-151,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,draftkings,h2h
+32,Minnesota Twins,130,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,bovada,h2h
+33,Philadelphia Phillies,-155,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,bovada,h2h
+34,Minnesota Twins,131,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,betus,h2h
+35,Philadelphia Phillies,-146,2025-09-26T22:46:00Z,Philadelphia Phillies,Minnesota Twins,betus,h2h
+36,Baltimore Orioles,120,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,fanduel,h2h
+37,New York Yankees,-142,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,fanduel,h2h
+38,Baltimore Orioles,124,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,mybookieag,h2h
+39,New York Yankees,-145,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,mybookieag,h2h
+40,Baltimore Orioles,120,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,betrivers,h2h
+41,New York Yankees,-143,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,betrivers,h2h
+42,Baltimore Orioles,125,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,betmgm,h2h
+43,New York Yankees,-150,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,betmgm,h2h
+44,Baltimore Orioles,123,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,lowvig,h2h
+45,New York Yankees,-136,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,lowvig,h2h
+46,Baltimore Orioles,123,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,betonlineag,h2h
+47,New York Yankees,-136,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,betonlineag,h2h
+48,Baltimore Orioles,122,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,draftkings,h2h
+49,New York Yankees,-149,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,draftkings,h2h
+50,Baltimore Orioles,126,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,bovada,h2h
+51,New York Yankees,-150,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,bovada,h2h
+52,Baltimore Orioles,123,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,betus,h2h
+53,New York Yankees,-136,2025-09-26T23:06:00Z,New York Yankees,Baltimore Orioles,betus,h2h
+54,Tampa Bay Rays,160,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,fanduel,h2h
+55,Toronto Blue Jays,-190,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,fanduel,h2h
+56,Tampa Bay Rays,156,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,lowvig,h2h
+57,Toronto Blue Jays,-173,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,lowvig,h2h
+58,Tampa Bay Rays,156,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,betonlineag,h2h
+59,Toronto Blue Jays,-173,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,betonlineag,h2h
+60,Tampa Bay Rays,149,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,draftkings,h2h
+61,Toronto Blue Jays,-182,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,draftkings,h2h
+62,Tampa Bay Rays,152,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,mybookieag,h2h
+63,Toronto Blue Jays,-182,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,mybookieag,h2h
+64,Tampa Bay Rays,155,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,betus,h2h
+65,Toronto Blue Jays,-176,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,betus,h2h
+66,Tampa Bay Rays,150,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,betrivers,h2h
+67,Toronto Blue Jays,-186,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,betrivers,h2h
+68,Tampa Bay Rays,150,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,betmgm,h2h
+69,Toronto Blue Jays,-185,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,betmgm,h2h
+70,Tampa Bay Rays,158,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,bovada,h2h
+71,Toronto Blue Jays,-193,2025-09-26T23:08:00Z,Toronto Blue Jays,Tampa Bay Rays,bovada,h2h
+72,Boston Red Sox,-120,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,fanduel,h2h
+73,Detroit Tigers,102,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,fanduel,h2h
+74,Boston Red Sox,-124,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,betrivers,h2h
+75,Detroit Tigers,102,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,betrivers,h2h
+76,Boston Red Sox,-119,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,mybookieag,h2h
+77,Detroit Tigers,101,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,mybookieag,h2h
+78,Boston Red Sox,-118,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,betonlineag,h2h
+79,Detroit Tigers,107,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,betonlineag,h2h
+80,Boston Red Sox,-118,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,lowvig,h2h
+81,Detroit Tigers,107,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,lowvig,h2h
+82,Boston Red Sox,-123,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,draftkings,h2h
+83,Detroit Tigers,102,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,draftkings,h2h
+84,Boston Red Sox,-120,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,betmgm,h2h
+85,Detroit Tigers,100,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,betmgm,h2h
+86,Boston Red Sox,-122,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,bovada,h2h
+87,Detroit Tigers,102,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,bovada,h2h
+88,Boston Red Sox,-117,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,betus,h2h
+89,Detroit Tigers,107,2025-09-26T23:11:00Z,Boston Red Sox,Detroit Tigers,betus,h2h
+90,Cleveland Guardians,-154,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,fanduel,h2h
+91,Texas Rangers,130,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,fanduel,h2h
+92,Cleveland Guardians,-152,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,lowvig,h2h
+93,Texas Rangers,138,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,lowvig,h2h
+94,Cleveland Guardians,-152,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,betonlineag,h2h
+95,Texas Rangers,138,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,betonlineag,h2h
+96,Cleveland Guardians,-158,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,draftkings,h2h
+97,Texas Rangers,129,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,draftkings,h2h
+98,Cleveland Guardians,-154,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,mybookieag,h2h
+99,Texas Rangers,130,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,mybookieag,h2h
+100,Cleveland Guardians,-147,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,betus,h2h
+101,Texas Rangers,132,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,betus,h2h
+102,Cleveland Guardians,-167,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,betrivers,h2h
+103,Texas Rangers,138,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,betrivers,h2h
+104,Cleveland Guardians,-160,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,betmgm,h2h
+105,Texas Rangers,135,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,betmgm,h2h
+106,Cleveland Guardians,-159,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,bovada,h2h
+107,Texas Rangers,133,2025-09-26T23:11:00Z,Cleveland Guardians,Texas Rangers,bovada,h2h
+108,Miami Marlins,120,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,fanduel,h2h
+109,New York Mets,-142,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,fanduel,h2h
+110,Miami Marlins,122,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,lowvig,h2h
+111,New York Mets,-135,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,lowvig,h2h
+112,Miami Marlins,122,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,betonlineag,h2h
+113,New York Mets,-135,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,betonlineag,h2h
+114,Miami Marlins,118,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,draftkings,h2h
+115,New York Mets,-143,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,draftkings,h2h
+116,Miami Marlins,121,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,mybookieag,h2h
+117,New York Mets,-143,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,mybookieag,h2h
+118,Miami Marlins,122,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,betus,h2h
+119,New York Mets,-135,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,betus,h2h
+120,Miami Marlins,125,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,betrivers,h2h
+121,New York Mets,-155,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,betrivers,h2h
+122,Miami Marlins,120,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,betmgm,h2h
+123,New York Mets,-140,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,betmgm,h2h
+124,Miami Marlins,115,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,bovada,h2h
+125,New York Mets,-138,2025-09-26T23:11:00Z,Miami Marlins,New York Mets,bovada,h2h
+126,Atlanta Braves,-156,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,fanduel,h2h
+127,Pittsburgh Pirates,132,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,fanduel,h2h
+128,Atlanta Braves,-154,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,lowvig,h2h
+129,Pittsburgh Pirates,139,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,lowvig,h2h
+130,Atlanta Braves,-154,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,betonlineag,h2h
+131,Pittsburgh Pirates,139,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,betonlineag,h2h
+132,Atlanta Braves,-158,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,draftkings,h2h
+133,Pittsburgh Pirates,129,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,draftkings,h2h
+134,Atlanta Braves,-156,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,mybookieag,h2h
+135,Pittsburgh Pirates,132,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,mybookieag,h2h
+136,Atlanta Braves,-151,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,betus,h2h
+137,Pittsburgh Pirates,135,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,betus,h2h
+138,Atlanta Braves,-162,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,betrivers,h2h
+139,Pittsburgh Pirates,128,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,betrivers,h2h
+140,Atlanta Braves,-165,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,betmgm,h2h
+141,Pittsburgh Pirates,135,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,betmgm,h2h
+142,Atlanta Braves,-162,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,bovada,h2h
+143,Pittsburgh Pirates,136,2025-09-26T23:16:00Z,Atlanta Braves,Pittsburgh Pirates,bovada,h2h
+144,Cincinnati Reds,144,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,fanduel,h2h
+145,Milwaukee Brewers,-172,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,fanduel,h2h
+146,Cincinnati Reds,146,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,lowvig,h2h
+147,Milwaukee Brewers,-161,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,lowvig,h2h
+148,Cincinnati Reds,146,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,betonlineag,h2h
+149,Milwaukee Brewers,-161,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,betonlineag,h2h
+150,Cincinnati Reds,139,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,draftkings,h2h
+151,Milwaukee Brewers,-170,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,draftkings,h2h
+152,Cincinnati Reds,140,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,mybookieag,h2h
+153,Milwaukee Brewers,-167,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,mybookieag,h2h
+154,Cincinnati Reds,140,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,betus,h2h
+155,Milwaukee Brewers,-157,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,betus,h2h
+156,Cincinnati Reds,145,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,betrivers,h2h
+157,Milwaukee Brewers,-182,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,betrivers,h2h
+158,Cincinnati Reds,135,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,betmgm,h2h
+159,Milwaukee Brewers,-165,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,betmgm,h2h
+160,Cincinnati Reds,142,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,bovada,h2h
+161,Milwaukee Brewers,-172,2025-09-27T00:10:00Z,Milwaukee Brewers,Cincinnati Reds,bovada,h2h
+162,Houston Astros,-128,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,betonlineag,h2h
+163,Los Angeles Angels,116,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,betonlineag,h2h
+164,Houston Astros,-128,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,lowvig,h2h
+165,Los Angeles Angels,116,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,lowvig,h2h
+166,Houston Astros,-138,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,fanduel,h2h
+167,Los Angeles Angels,118,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,fanduel,h2h
+168,Houston Astros,-137,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,mybookieag,h2h
+169,Los Angeles Angels,116,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,mybookieag,h2h
+170,Houston Astros,-135,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,betmgm,h2h
+171,Los Angeles Angels,115,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,betmgm,h2h
+172,Houston Astros,-138,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,draftkings,h2h
+173,Los Angeles Angels,114,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,draftkings,h2h
+174,Houston Astros,-136,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,bovada,h2h
+175,Los Angeles Angels,114,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,bovada,h2h
+176,Houston Astros,-143,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,betrivers,h2h
+177,Los Angeles Angels,118,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,betrivers,h2h
+178,Houston Astros,-128,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,betus,h2h
+179,Los Angeles Angels,117,2025-09-27T01:38:00Z,Los Angeles Angels,Houston Astros,betus,h2h
+180,Los Angeles Dodgers,108,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,draftkings,h2h
+181,Seattle Mariners,-132,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,draftkings,h2h
+182,Los Angeles Dodgers,110,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,mybookieag,h2h
+183,Seattle Mariners,-130,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,mybookieag,h2h
+184,Los Angeles Dodgers,116,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,betrivers,h2h
+185,Seattle Mariners,-141,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,betrivers,h2h
+186,Los Angeles Dodgers,105,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,betmgm,h2h
+187,Seattle Mariners,-125,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,betmgm,h2h
+188,Los Angeles Dodgers,108,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,bovada,h2h
+189,Seattle Mariners,-130,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,bovada,h2h
+190,Los Angeles Dodgers,110,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,fanduel,h2h
+191,Seattle Mariners,-130,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,fanduel,h2h
+192,Los Angeles Dodgers,115,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,betus,h2h
+193,Seattle Mariners,-126,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,betus,h2h
+194,Los Angeles Dodgers,117,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,lowvig,h2h
+195,Seattle Mariners,-129,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,lowvig,h2h
+196,Los Angeles Dodgers,117,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,betonlineag,h2h
+197,Seattle Mariners,-129,2025-09-27T01:40:00Z,Seattle Mariners,Los Angeles Dodgers,betonlineag,h2h
+198,Arizona Diamondbacks,122,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,fanduel,h2h
+199,San Diego Padres,-144,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,fanduel,h2h
+200,Arizona Diamondbacks,123,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,mybookieag,h2h
+201,San Diego Padres,-145,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,mybookieag,h2h
+202,Arizona Diamondbacks,127,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,lowvig,h2h
+203,San Diego Padres,-140,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,lowvig,h2h
+204,Arizona Diamondbacks,127,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,betonlineag,h2h
+205,San Diego Padres,-140,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,betonlineag,h2h
+206,Arizona Diamondbacks,122,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,draftkings,h2h
+207,San Diego Padres,-148,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,draftkings,h2h
+208,Arizona Diamondbacks,116,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,betrivers,h2h
+209,San Diego Padres,-141,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,betrivers,h2h
+210,Arizona Diamondbacks,125,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,betus,h2h
+211,San Diego Padres,-138,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,betus,h2h
+212,Arizona Diamondbacks,120,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,betmgm,h2h
+213,San Diego Padres,-140,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,betmgm,h2h
+214,Arizona Diamondbacks,116,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,bovada,h2h
+215,San Diego Padres,-139,2025-09-27T01:41:00Z,San Diego Padres,Arizona Diamondbacks,bovada,h2h
+216,Kansas City Royals,-116,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,fanduel,h2h
+217,Oakland Athletics,-102,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,fanduel,h2h
+218,Kansas City Royals,-114,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,mybookieag,h2h
+219,Oakland Athletics,-103,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,mybookieag,h2h
+220,Kansas City Royals,-120,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,bovada,h2h
+221,Oakland Athletics,100,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,bovada,h2h
+222,Kansas City Royals,-121,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,betrivers,h2h
+223,Oakland Athletics,100,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,betrivers,h2h
+224,Kansas City Royals,-115,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,draftkings,h2h
+225,Oakland Athletics,-105,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,draftkings,h2h
+226,Kansas City Royals,-115,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,betmgm,h2h
+227,Oakland Athletics,-105,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,betmgm,h2h
+228,Kansas City Royals,-110,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,lowvig,h2h
+229,Oakland Athletics,100,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,lowvig,h2h
+230,Kansas City Royals,-110,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,betonlineag,h2h
+231,Oakland Athletics,100,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,betonlineag,h2h
+232,Kansas City Royals,-112,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,betus,h2h
+233,Oakland Athletics,102,2025-09-27T02:06:00Z,Oakland Athletics,Kansas City Royals,betus,h2h
+234,Colorado Rockies,198,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,fanduel,h2h
+235,San Francisco Giants,-240,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,fanduel,h2h
+236,Colorado Rockies,210,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,betrivers,h2h
+237,San Francisco Giants,-265,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,betrivers,h2h
+238,Colorado Rockies,202,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,mybookieag,h2h
+239,San Francisco Giants,-244,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,mybookieag,h2h
+240,Colorado Rockies,210,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,lowvig,h2h
+241,San Francisco Giants,-235,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,lowvig,h2h
+242,Colorado Rockies,210,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,betonlineag,h2h
+243,San Francisco Giants,-235,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,betonlineag,h2h
+244,Colorado Rockies,200,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,draftkings,h2h
+245,San Francisco Giants,-250,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,draftkings,h2h
+246,Colorado Rockies,200,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,betmgm,h2h
+247,San Francisco Giants,-250,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,betmgm,h2h
+248,Colorado Rockies,200,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,bovada,h2h
+249,San Francisco Giants,-245,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,bovada,h2h
+250,Colorado Rockies,198,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,betus,h2h
+251,San Francisco Giants,-230,2025-09-27T02:16:00Z,San Francisco Giants,Colorado Rockies,betus,h2h
+252,Baltimore Orioles,180,2025-09-27T17:06:00Z,New York Yankees,Baltimore Orioles,fanduel,h2h
+253,New York Yankees,-215,2025-09-27T17:06:00Z,New York Yankees,Baltimore Orioles,fanduel,h2h
+254,Baltimore Orioles,193,2025-09-27T17:06:00Z,New York Yankees,Baltimore Orioles,lowvig,h2h
+255,New York Yankees,-215,2025-09-27T17:06:00Z,New York Yankees,Baltimore Orioles,lowvig,h2h
+256,Baltimore Orioles,193,2025-09-27T17:06:00Z,New York Yankees,Baltimore Orioles,betonlineag,h2h
+257,New York Yankees,-215,2025-09-27T17:06:00Z,New York Yankees,Baltimore Orioles,betonlineag,h2h
+258,Baltimore Orioles,190,2025-09-27T17:06:00Z,New York Yankees,Baltimore Orioles,mybookieag,h2h
+259,New York Yankees,-227,2025-09-27T17:06:00Z,New York Yankees,Baltimore Orioles,mybookieag,h2h
+260,Baltimore Orioles,188,2025-09-27T17:06:00Z,New York Yankees,Baltimore Orioles,draftkings,h2h
+261,New York Yankees,-233,2025-09-27T17:06:00Z,New York Yankees,Baltimore Orioles,draftkings,h2h
+262,Chicago Cubs,-168,2025-09-27T18:21:00Z,Chicago Cubs,St. Louis Cardinals,fanduel,h2h
+263,St. Louis Cardinals,142,2025-09-27T18:21:00Z,Chicago Cubs,St. Louis Cardinals,fanduel,h2h
+264,Chicago Cubs,-167,2025-09-27T18:21:00Z,Chicago Cubs,St. Louis Cardinals,lowvig,h2h
+265,St. Louis Cardinals,151,2025-09-27T18:21:00Z,Chicago Cubs,St. Louis Cardinals,lowvig,h2h
+266,Chicago Cubs,-167,2025-09-27T18:21:00Z,Chicago Cubs,St. Louis Cardinals,betonlineag,h2h
+267,St. Louis Cardinals,151,2025-09-27T18:21:00Z,Chicago Cubs,St. Louis Cardinals,betonlineag,h2h
+268,Chicago Cubs,-172,2025-09-27T18:21:00Z,Chicago Cubs,St. Louis Cardinals,mybookieag,h2h
+269,St. Louis Cardinals,146,2025-09-27T18:21:00Z,Chicago Cubs,St. Louis Cardinals,mybookieag,h2h
+270,Chicago Cubs,-176,2025-09-27T18:21:00Z,Chicago Cubs,St. Louis Cardinals,draftkings,h2h
+271,St. Louis Cardinals,144,2025-09-27T18:21:00Z,Chicago Cubs,St. Louis Cardinals,draftkings,h2h
+272,Tampa Bay Rays,132,2025-09-27T19:09:00Z,Toronto Blue Jays,Tampa Bay Rays,fanduel,h2h
+273,Toronto Blue Jays,-156,2025-09-27T19:09:00Z,Toronto Blue Jays,Tampa Bay Rays,fanduel,h2h
+274,Tampa Bay Rays,136,2025-09-27T19:09:00Z,Toronto Blue Jays,Tampa Bay Rays,lowvig,h2h
+275,Toronto Blue Jays,-150,2025-09-27T19:09:00Z,Toronto Blue Jays,Tampa Bay Rays,lowvig,h2h
+276,Tampa Bay Rays,136,2025-09-27T19:09:00Z,Toronto Blue Jays,Tampa Bay Rays,betonlineag,h2h
+277,Toronto Blue Jays,-150,2025-09-27T19:09:00Z,Toronto Blue Jays,Tampa Bay Rays,betonlineag,h2h
+278,Tampa Bay Rays,136,2025-09-27T19:09:00Z,Toronto Blue Jays,Tampa Bay Rays,mybookieag,h2h
+279,Toronto Blue Jays,-161,2025-09-27T19:09:00Z,Toronto Blue Jays,Tampa Bay Rays,mybookieag,h2h
+280,Tampa Bay Rays,134,2025-09-27T19:09:00Z,Toronto Blue Jays,Tampa Bay Rays,draftkings,h2h
+281,Toronto Blue Jays,-164,2025-09-27T19:09:00Z,Toronto Blue Jays,Tampa Bay Rays,draftkings,h2h
+282,Chicago White Sox,102,2025-09-27T20:06:00Z,Washington Nationals,Chicago White Sox,fanduel,h2h
+283,Washington Nationals,-120,2025-09-27T20:06:00Z,Washington Nationals,Chicago White Sox,fanduel,h2h
+284,Chicago White Sox,106,2025-09-27T20:06:00Z,Washington Nationals,Chicago White Sox,lowvig,h2h
+285,Washington Nationals,-117,2025-09-27T20:06:00Z,Washington Nationals,Chicago White Sox,lowvig,h2h
+286,Chicago White Sox,106,2025-09-27T20:06:00Z,Washington Nationals,Chicago White Sox,betonlineag,h2h
+287,Washington Nationals,-117,2025-09-27T20:06:00Z,Washington Nationals,Chicago White Sox,betonlineag,h2h
+288,Chicago White Sox,-102,2025-09-27T20:06:00Z,Washington Nationals,Chicago White Sox,draftkings,h2h
+289,Washington Nationals,-119,2025-09-27T20:06:00Z,Washington Nationals,Chicago White Sox,draftkings,h2h
+290,Chicago White Sox,100,2025-09-27T20:06:00Z,Washington Nationals,Chicago White Sox,mybookieag,h2h
+291,Washington Nationals,-118,2025-09-27T20:06:00Z,Washington Nationals,Chicago White Sox,mybookieag,h2h
+292,Colorado Rockies,198,2025-09-27T20:06:00Z,San Francisco Giants,Colorado Rockies,fanduel,h2h
+293,San Francisco Giants,-240,2025-09-27T20:06:00Z,San Francisco Giants,Colorado Rockies,fanduel,h2h
+294,Colorado Rockies,206,2025-09-27T20:06:00Z,San Francisco Giants,Colorado Rockies,lowvig,h2h
+295,San Francisco Giants,-230,2025-09-27T20:06:00Z,San Francisco Giants,Colorado Rockies,lowvig,h2h
+296,Colorado Rockies,206,2025-09-27T20:06:00Z,San Francisco Giants,Colorado Rockies,betonlineag,h2h
+297,San Francisco Giants,-230,2025-09-27T20:06:00Z,San Francisco Giants,Colorado Rockies,betonlineag,h2h
+298,Colorado Rockies,199,2025-09-27T20:06:00Z,San Francisco Giants,Colorado Rockies,mybookieag,h2h
+299,San Francisco Giants,-238,2025-09-27T20:06:00Z,San Francisco Giants,Colorado Rockies,mybookieag,h2h
+300,Colorado Rockies,193,2025-09-27T20:06:00Z,San Francisco Giants,Colorado Rockies,draftkings,h2h
+301,San Francisco Giants,-241,2025-09-27T20:06:00Z,San Francisco Giants,Colorado Rockies,draftkings,h2h
+302,Minnesota Twins,175,2025-09-27T22:05:00Z,Philadelphia Phillies,Minnesota Twins,betonlineag,h2h
+303,Philadelphia Phillies,-195,2025-09-27T22:05:00Z,Philadelphia Phillies,Minnesota Twins,betonlineag,h2h
+304,Minnesota Twins,175,2025-09-27T22:05:00Z,Philadelphia Phillies,Minnesota Twins,lowvig,h2h
+305,Philadelphia Phillies,-195,2025-09-27T22:05:00Z,Philadelphia Phillies,Minnesota Twins,lowvig,h2h
+306,Minnesota Twins,172,2025-09-27T22:05:00Z,Philadelphia Phillies,Minnesota Twins,fanduel,h2h
+307,Philadelphia Phillies,-205,2025-09-27T22:05:00Z,Philadelphia Phillies,Minnesota Twins,fanduel,h2h
+308,Minnesota Twins,168,2025-09-27T22:05:00Z,Philadelphia Phillies,Minnesota Twins,draftkings,h2h
+309,Philadelphia Phillies,-208,2025-09-27T22:05:00Z,Philadelphia Phillies,Minnesota Twins,draftkings,h2h
+310,Minnesota Twins,167,2025-09-27T22:05:00Z,Philadelphia Phillies,Minnesota Twins,mybookieag,h2h
+311,Philadelphia Phillies,-208,2025-09-27T22:05:00Z,Philadelphia Phillies,Minnesota Twins,mybookieag,h2h
+312,Atlanta Braves,-160,2025-09-27T23:15:00Z,Atlanta Braves,Pittsburgh Pirates,betonlineag,h2h
+313,Pittsburgh Pirates,145,2025-09-27T23:15:00Z,Atlanta Braves,Pittsburgh Pirates,betonlineag,h2h
+314,Atlanta Braves,-160,2025-09-27T23:15:00Z,Atlanta Braves,Pittsburgh Pirates,lowvig,h2h
+315,Pittsburgh Pirates,145,2025-09-27T23:15:00Z,Atlanta Braves,Pittsburgh Pirates,lowvig,h2h
+316,Atlanta Braves,-158,2025-09-27T23:15:00Z,Atlanta Braves,Pittsburgh Pirates,fanduel,h2h
+317,Pittsburgh Pirates,134,2025-09-27T23:15:00Z,Atlanta Braves,Pittsburgh Pirates,fanduel,h2h
+318,Atlanta Braves,-172,2025-09-27T23:15:00Z,Atlanta Braves,Pittsburgh Pirates,draftkings,h2h
+319,Pittsburgh Pirates,140,2025-09-27T23:15:00Z,Atlanta Braves,Pittsburgh Pirates,draftkings,h2h
+320,Atlanta Braves,-172,2025-09-27T23:15:00Z,Atlanta Braves,Pittsburgh Pirates,mybookieag,h2h
+321,Pittsburgh Pirates,139,2025-09-27T23:15:00Z,Atlanta Braves,Pittsburgh Pirates,mybookieag,h2h
+322,Arizona Diamondbacks,125,2025-09-28T00:40:00Z,San Diego Padres,Arizona Diamondbacks,betonlineag,h2h
+323,San Diego Padres,-138,2025-09-28T00:40:00Z,San Diego Padres,Arizona Diamondbacks,betonlineag,h2h
+324,Arizona Diamondbacks,125,2025-09-28T00:40:00Z,San Diego Padres,Arizona Diamondbacks,lowvig,h2h
+325,San Diego Padres,-138,2025-09-28T00:40:00Z,San Diego Padres,Arizona Diamondbacks,lowvig,h2h
+326,Arizona Diamondbacks,120,2025-09-28T00:40:00Z,San Diego Padres,Arizona Diamondbacks,fanduel,h2h
+327,San Diego Padres,-142,2025-09-28T00:40:00Z,San Diego Padres,Arizona Diamondbacks,fanduel,h2h
+328,Arizona Diamondbacks,118,2025-09-28T00:40:00Z,San Diego Padres,Arizona Diamondbacks,mybookieag,h2h
+329,San Diego Padres,-145,2025-09-28T00:40:00Z,San Diego Padres,Arizona Diamondbacks,mybookieag,h2h
+330,Arizona Diamondbacks,118,2025-09-28T00:40:00Z,San Diego Padres,Arizona Diamondbacks,draftkings,h2h
+331,San Diego Padres,-144,2025-09-28T00:40:00Z,San Diego Padres,Arizona Diamondbacks,draftkings,h2h
+332,Kansas City Royals,104,2025-09-28T02:05:00Z,Oakland Athletics,Kansas City Royals,betonlineag,h2h
+333,Oakland Athletics,-115,2025-09-28T02:05:00Z,Oakland Athletics,Kansas City Royals,betonlineag,h2h
+334,Kansas City Royals,104,2025-09-28T02:05:00Z,Oakland Athletics,Kansas City Royals,lowvig,h2h
+335,Oakland Athletics,-115,2025-09-28T02:05:00Z,Oakland Athletics,Kansas City Royals,lowvig,h2h
+336,Kansas City Royals,101,2025-09-28T02:05:00Z,Oakland Athletics,Kansas City Royals,draftkings,h2h
+337,Oakland Athletics,-123,2025-09-28T02:05:00Z,Oakland Athletics,Kansas City Royals,draftkings,h2h
+338,Kansas City Royals,101,2025-09-28T02:05:00Z,Oakland Athletics,Kansas City Royals,mybookieag,h2h
+339,Oakland Athletics,-123,2025-09-28T02:05:00Z,Oakland Athletics,Kansas City Royals,mybookieag,h2h
+340,Kansas City Royals,100,2025-09-28T02:05:00Z,Oakland Athletics,Kansas City Royals,fanduel,h2h
+341,Oakland Athletics,-118,2025-09-28T02:05:00Z,Oakland Athletics,Kansas City Royals,fanduel,h2h

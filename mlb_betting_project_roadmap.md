@@ -1,445 +1,473 @@
-# MLB Betting Project: Complete Implementation Roadmap
+
+# MLB Betting Project: Corrected Implementation Roadmap
+
 **ML Baseline → RL Injury-Adaptive Betting System**
 
-## 🎯 Project Overview
+## Project Overview
 
-**Goal**: Build a betting system that uses ML for base predictions and RL to dynamically adjust confidence based on real-time player availability/injuries.
+ **Goal** : Build a betting system that uses ML for base predictions and RL to dynamically adjust confidence based on real-time player availability/injuries.
 
-**Why This Works**: 
-- ML handles static game prediction (pitcher quality, team strength, weather)
-- RL handles dynamic adaptation (injuries, lineup changes, player impact learning)
-- Creates a system that can adapt in real-time without full model retraining
+ **Strategy** :
+
+* **Phase 1-2** : Build profitable ML baseline with static features only
+* **Phase 3** : Add injury data collection and RL system when actually needed
+* **Phase 4-5** : Integration and production deployment
+
+ **Key Insight** : Prove the foundation works before adding complexity.
 
 ---
 
-## 📊 Phase 1: Data Foundation (Weeks 1-3)
+## Phase 1: Minimal Data Foundation (Weeks 1-3)
 
-### 1.1 Core Data Collection
-**Priority Order:**
+### 1.1 Core Data Collection (Priority Order)
 
-1. **Betting Data** (Essential)
-   - Single sportsbook for ML baseline (recommend Pinnacle - most accurate)
-   - Multiple books for RL phase (DraftKings, FanDuel, BetMGM, Pinnacle)
-   - Focus on **moneyline odds** (home/away win probabilities)
-   - Data structure:
-   ```python
-   columns = ['game_id', 'date', 'home_team', 'away_team', 
-              'pinnacle_opening_home_ml', 'pinnacle_closing_home_ml',
-              'home_score', 'away_score', 'home_won']
-   ```
+**Priority 1: Essential Betting Data**
 
-2. **Team/Player Stats** (Core Features)
-   - Recent team performance (last 10 games)
-   - Starting pitcher stats (ERA, WHIP, K/9, recent form)
-   - Team offensive stats (runs per game, OPS, vs lefty/righty)
-   - Rest days, travel schedule
-   - Source: Baseball-Reference, FanGraphs
+* Single sportsbook for ML baseline (BetOnline - sharpest available)
+* Historical moneyline odds (2020-2024)
+* Game results and scores
+* Data structure:
 
-3. **Park Factors** (Contextual)
-   - Use Baseball Savant scraper (already built)
-   - Stadium-specific run environment adjustments
-   - Weather impact on scoring
+```
+columns = ['game_id', 'date', 'home_team', 'away_team', 
+           'betonline_opening_home_ml', 'betonline_closing_home_ml',
+           'betonline_opening_away_ml', 'betonline_closing_away_ml',
+           'home_score', 'away_score', 'home_won']
+```
 
-4. **Injury/Player Availability** (RL Component)
-   - Daily injury reports (ESPN, MLB.com, CBS Sports)
-   - Starting lineups (announced ~2 hours before games)
-   - Player importance weights (to be learned by RL)
+**Priority 2: Basic Team Performance**
+
+* Team wins/losses and recent form (last 10 games)
+* Runs scored/allowed per game (season and L10)
+* Team ERA and basic pitching stats (season and L10)
+* Home/away record splits
+
+**Priority 3: Starting Pitcher Stats**
+
+* Season stats: ERA, WHIP, K/9, BB/9, innings pitched
+* Recent form: Last 5 starts performance
+* Career stats vs opposing team (if available)
+
+**Priority 4: Game Context**
+
+* Park factors (using Baseball Savant scraper)
+* Weather data: temperature, wind speed/direction
+* Game timing: day/night, rest days for teams
 
 ### 1.2 Data Pipeline Setup
+
 ```python
-# Daily data collection routine
-def daily_data_update():
-    # 1. Scrape today's games and odds
-    # 2. Update injury reports  
-    # 3. Collect yesterday's results
-    # 4. Update historical database
-    # 5. Trigger model updates if needed
+# One-time historical backfill
+def backfill_historical_data():
+    # 1. Scrape 2020-2024 game results
+    # 2. Collect BetOnline historical odds
+    # 3. Gather team/pitcher stats by season
+    # 4. Park factors for each stadium/year
+  
+# Simple validation
+def validate_data_quality():
+    # Check for missing games, odd score combinations
+    # Validate odds format (American to probability)
+    # Ensure no future data leakage
 ```
 
-### 1.3 Data Quality Validation
-- Missing data handling (games postponed, rain delays)
-- Odds format standardization (American → implied probability)
-- Player name disambiguation (Mike Trout vs M. Trout)
-- Historical data backfill (2020-2024 minimum)
+### 1.3 Success Criteria for Phase 1
+
+* Complete 2020-2024 game dataset (11,000+ games)
+* <2% missing critical features (odds, scores, starting pitchers)
+* Clean team performance metrics for all 30 teams
+* Functional park factor data for all stadiums
+
+**EXPLICITLY EXCLUDED FROM PHASE 1:**
+
+* ❌ Injury data collection (not needed until Phase 3)
+* ❌ Multiple sportsbook odds (not needed until Phase 3)
+* ❌ Player-level availability tracking (RL component)
+* ❌ Complex real-time data pipelines
 
 ---
 
-## 🤖 Phase 2: ML Baseline Model (Weeks 4-6)
+## Phase 2: ML Baseline Model (Weeks 4-6)
 
 ### 2.1 Feature Engineering
-**Static Game Features:**
+
+**Core Features (Static Game Data Only):**
+
 ```python
-core_features = [
+ml_features = [
     # Pitching matchup
     'home_sp_era', 'away_sp_era', 'home_sp_whip', 'away_sp_whip',
-    'home_sp_k9', 'away_sp_k9', 'home_sp_recent_form', 'away_sp_recent_form',
-    
+    'home_sp_era_l5', 'away_sp_era_l5',
+  
     # Team recent performance  
     'home_wins_l10', 'away_wins_l10', 'home_runs_l10', 'away_runs_l10',
-    'home_era_l10', 'away_era_l10', 'home_vs_rhp', 'away_vs_lhp',
-    
+    'home_era_l10', 'away_era_l10',
+  
     # Game context
-    'is_day_game', 'temperature', 'park_run_factor', 'rest_days_home', 'rest_days_away',
-    
-    # Market signals
-    'home_implied_prob', 'line_movement', 'market_consensus'
+    'temperature', 'park_run_factor', 'is_day_game',
+    'home_rest_days', 'away_rest_days',
+  
+    # Market signals (single book only)
+    'home_implied_prob', 'line_movement'
 ]
 ```
 
-### 2.2 Model Selection & Training
-**Recommended Models (test multiple):**
-1. **XGBoost** - Usually best for tabular data
-2. **Random Forest** - Good interpretability  
+### 2.2 Model Development
+
+**Model Candidates:**
+
+1. **XGBoost** - Primary choice for tabular data
+2. **Random Forest** - Interpretability backup
 3. **Logistic Regression** - Simple baseline
-4. **Neural Network** - Deep learning baseline
 
 **Training Strategy:**
-- **Time series split** (train on 2020-2022, validate on 2023, test on 2024)
-- **Walk-forward validation** (retrain monthly)
-- **Cross-validation within time periods** (avoid look-ahead bias)
 
-### 2.3 Model Evaluation
-**Metrics:**
-- **Accuracy** - Basic win rate
-- **Log Loss** - Calibrated probability assessment  
-- **ROC AUC** - Discrimination ability
-- **Betting ROI** - Actual profitability simulation
-- **Kelly Criterion** - Optimal bet sizing
+* Time-based splits: Train 2020-2022, Validate 2023, Test 2024
+* Walk-forward validation within training period
+* No look-ahead bias in feature creation
 
-**Baseline Targets:**
-- >52.38% accuracy (break-even at -110 odds)
-- >55% accuracy (sustainable profitability)
-- Low log loss (well-calibrated probabilities)
+### 2.3 Success Metrics
 
-### 2.4 Model Interpretation
-- **Feature importance** - Which stats matter most?
-- **SHAP values** - Individual prediction explanations
-- **Confidence intervals** - Uncertainty quantification
-- **Worst case analysis** - When does model fail?
+**Technical Performance:**
+
+* Accuracy >53% (break-even threshold at -110 odds)
+* Log loss <0.68 (well-calibrated probabilities)
+* ROC AUC >0.55
+
+**Business Performance:**
+
+* Positive ROI on 2024 test data
+* Kelly criterion bet sizing
+* Maximum drawdown <20%
+
+### 2.4 Phase 2 Deliverable
+
+**Working ML betting system that:**
+
+* Predicts game outcomes with >53% accuracy
+* Makes profitable betting decisions on historical data
+* Uses only static, easily obtainable features
+* Provides confidence intervals for predictions
 
 ---
 
-## 🎮 Phase 3: RL Injury-Adaptive System (Weeks 7-10)
+## Phase 3: RL System + Injury Data (Weeks 7-10)
 
-### 3.1 RL Problem Definition
-**State Space:**
+### 3.1 NOW Add Injury Data Collection
+
+**Real-Time Player Monitoring:**
+
+* Daily injury reports (ESPN, MLB.com, CBS Sports)
+* Starting lineup announcements (~2 hours before games)
+* Player importance classification system
+
+**Data Structure:**
+
 ```python
-state = [
-    base_ml_confidence,           # From Phase 2 model
-    home_key_player_statuses,     # 5 key players * 2 features each
-    away_key_player_statuses,     # 5 key players * 2 features each  
-    learned_player_weights,       # Historical impact scores
-    recent_adjustment_accuracy,   # How well is RL performing?
-    market_volatility,           # Odds movement magnitude
-    days_since_last_update       # Temporal context
+injury_data = [
+    'player_name', 'team', 'date', 'injury_status', 
+    'expected_return', 'games_missed', 'position', 'importance_weight'
 ]
-# Total: ~25-30 dimensional state space
+
+lineup_data = [
+    'game_id', 'team', 'batting_order', 'player_name', 
+    'position', 'vs_handedness_ops'
+]
+```
+
+### 3.2 RL Problem Definition
+
+**State Space:**
+
+```python
+rl_state = [
+    base_ml_confidence,           # From Phase 2 model
+    home_key_player_statuses,     # 5 players × 2 features  
+    away_key_player_statuses,     # 5 players × 2 features
+    learned_player_weights,       # Historical impact scores
+    recent_rl_accuracy,          # How well is RL performing?
+    market_context               # Basic market signals
+]
+# Total: ~20-25 dimensional state space
 ```
 
 **Action Space:**
-```python
-actions = [
-    # Confidence adjustments from -1.0 to +1.0 in 0.1 increments
-    -1.0, -0.9, -0.8, ..., 0.8, 0.9, 1.0  # 21 total actions
-]
-```
+Confidence adjustments: [-1.0, -0.9, ..., +0.9, +1.0] (21 actions)
 
 **Reward Function:**
+
 ```python
 def calculate_reward(base_confidence, adjusted_confidence, actual_result):
     base_error = abs(base_confidence - actual_result)
-    adjusted_error = abs(adjusted_confidence - actual_result) 
-    
-    # Reward improvement in prediction accuracy
+    adjusted_error = abs(adjusted_confidence - actual_result)
+  
     improvement = base_error - adjusted_error
-    
-    # Scale reward by magnitude of improvement
+  
     if improvement > 0.1:
-        return +2  # Significant improvement
+        return +2      # Significant improvement
     elif improvement > 0.05:
-        return +1  # Moderate improvement  
+        return +1      # Moderate improvement  
     elif improvement > -0.05:
-        return 0   # No change
+        return 0       # No meaningful change
     else:
-        return -1  # Made prediction worse
+        return -1      # Made prediction worse
 ```
 
-### 3.2 RL Architecture
-**Deep Q-Network (DQN):**
-```python
-class InjuryAdaptiveDQN(nn.Module):
-    def __init__(self, state_dim=30, action_dim=21):
-        super().__init__()
-        self.network = nn.Sequential(
-            nn.Linear(state_dim, 128),
-            nn.ReLU(),
-            nn.BatchNorm1d(128),
-            nn.Linear(128, 64),
-            nn.ReLU(),
-            nn.BatchNorm1d(64), 
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, action_dim)
-        )
-    
-    def forward(self, state):
-        return self.network(state)
-```
+### 3.3 RL Architecture
 
-**Training Components:**
-- **Experience Replay Buffer** (10,000 transitions)
-- **Target Network** (updated every 1000 steps)
-- **Epsilon-greedy exploration** (start 0.9, decay to 0.05)
-- **Learning rate scheduling** (start 0.001, decay)
+**Deep Q-Network Implementation:**
 
-### 3.3 Player Impact Learning
-**Dynamic Player Importance:**
-```python
-class PlayerImpactTracker:
-    def __init__(self):
-        self.player_weights = {}  # {player_name: importance_score}
-        self.impact_history = {}  # {player_name: [impact_observations]}
-    
-    def update_impact(self, player_name, game_context, impact_observed):
-        # Exponential moving average with context awareness
-        current_weight = self.player_weights.get(player_name, 0.1)
-        context_multiplier = self.get_context_multiplier(game_context)
-        
-        new_observation = impact_observed * context_multiplier
-        updated_weight = 0.1 * new_observation + 0.9 * current_weight
-        
-        self.player_weights[player_name] = np.clip(updated_weight, 0.0, 1.0)
-```
+* Input: State vector (25 dimensions)
+* Hidden layers: [128, 64, 32] with ReLU activation
+* Output: Q-values for 21 possible confidence adjustments
+* Experience replay buffer (10,000 transitions)
+* Target network updated every 1000 steps
 
-### 3.4 Real-Time Data Integration
-**Injury Monitoring Pipeline:**
-```python
-def monitor_player_status():
-    sources = [
-        'https://www.mlb.com/news/topic/injury-report',
-        'https://www.espn.com/mlb/injuries',
-        'https://rotoworld.com/baseball/mlb/injury-report'
-    ]
-    
-    # Scrape every 30 minutes during season
-    # Parse injury severity: [Out, Doubtful, Questionable, Probable, Active]
-    # Update player status database
-    # Trigger RL confidence adjustments if needed
-```
+### 3.4 Success Criteria for Phase 3
+
+**Technical:**
+
+* RL agent learns to make meaningful confidence adjustments
+* Player impact weights converge to reasonable values
+* System maintains stability during training
+
+**Business:**
+
+* RL enhancement improves ROI by >1% over ML baseline
+* No catastrophic confidence adjustments (>±0.5)
+* Successful adaptation to major injury news
 
 ---
 
-## 📈 Phase 4: Integration & Backtesting (Weeks 11-12)
+## Phase 4: Multi-Book Integration & Backtesting (Weeks 11-12)
 
-### 4.1 System Integration
-**Complete Pipeline:**
+### 4.1 Expand Betting Data
+
+**NOW Add Multiple Sportsbooks:**
+
+* Sharp books: BetOnline, LowVig (training comparison)
+* Soft books: DraftKings, BetMGM (betting targets)
+* Line shopping optimization
+
+**Market Efficiency Features:**
+
+```python
+multi_book_features = [
+    'sharp_consensus', 'public_consensus', 'sharp_public_diff',
+    'best_home_odds', 'best_away_odds', 'market_disagreement',
+    'line_shopping_value'
+]
+```
+
+### 4.2 Complete System Integration
+
+**Betting Decision Pipeline:**
+
 ```python
 def make_betting_decision(game_data, current_date):
-    # 1. Get base ML prediction
+    # 1. Get base ML prediction (trained on sharp book)
     base_confidence = ml_model.predict_proba(game_data)[0][1]
-    
-    # 2. Get current player statuses
-    player_statuses = injury_tracker.get_current_status(current_date)
-    
-    # 3. Build RL state
+  
+    # 2. Get current player statuses  
+    player_statuses = injury_tracker.get_status(current_date)
+  
+    # 3. RL confidence adjustment
     rl_state = build_rl_state(base_confidence, game_data, player_statuses)
-    
-    # 4. Get RL confidence adjustment  
     adjustment = rl_agent.choose_action(rl_state)
-    
-    # 5. Calculate final confidence
     final_confidence = np.clip(base_confidence + adjustment, 0.01, 0.99)
-    
-    # 6. Make betting decision
-    if final_confidence > betting_threshold:
-        bet_size = kelly_criterion(final_confidence, odds)
-        return {'bet': True, 'confidence': final_confidence, 'size': bet_size}
+  
+    # 4. Find best available odds (line shopping)
+    best_odds = find_best_odds_across_books(game_data)
+  
+    # 5. Calculate betting edge and size
+    edge = calculate_betting_edge(final_confidence, best_odds)
+    if edge > 0.05:  # 5% minimum edge
+        bet_size = kelly_criterion(final_confidence, best_odds)
+        return {'bet': True, 'size': bet_size, 'book': best_book}
     else:
         return {'bet': False}
 ```
 
-### 4.2 Backtesting Framework
-**Historical Simulation:**
-- **Walk-forward testing** (2020-2024 data)
-- **Injury data replay** - Simulate real-time injury discovery
-- **Multiple betting strategies** - Fixed size vs Kelly vs RL-optimized
-- **Transaction costs** - Account for betting fees, line shopping time
-- **Bankroll management** - Drawdown limits, position sizing
+### 4.3 Backtesting Framework
 
-**Performance Metrics:**
-```python
-backtest_metrics = {
-    'total_return': 0.0,
-    'roi': 0.0,
-    'sharpe_ratio': 0.0,
-    'max_drawdown': 0.0,
-    'win_rate': 0.0,
-    'avg_bet_size': 0.0,
-    'total_bets_placed': 0,
-    'ml_only_performance': 0.0,  # Baseline comparison
-    'rl_improvement': 0.0,       # Added value from RL
-    'best_month': 0.0,
-    'worst_month': 0.0
-}
-```
+**Historical Walk-Forward Testing:**
+
+* Simulate real-time injury data discovery
+* Account for line shopping time and transaction costs
+* Test multiple bet sizing strategies
+* Risk management stress testing
+
+**Performance Comparison:**
+
+* ML-only baseline performance
+* ML + RL performance
+* Statistical significance testing
+* Risk-adjusted returns (Sharpe ratio)
 
 ---
 
-## 🚀 Phase 5: Production Deployment (Weeks 13-14)
+## Phase 5: Production Deployment (Weeks 13-14)
 
-### 5.1 Production Architecture
-**System Components:**
+### 5.1 Production Infrastructure
+
+**Daily Automated Pipeline:**
+
 ```python
-# Daily workflow
-def production_pipeline():
-    # 6:00 AM: Update injury reports
-    # 8:00 AM: Collect overnight line movements  
-    # 10:00 AM: Generate predictions for today's games
-    # 2:00 PM: Final injury check & lineup confirmations
-    # 3:00 PM: Place bets (games start ~7 PM)
-    # 11:00 PM: Collect results & update models
+# 6:00 AM: Update injury reports and lineup changes
+# 10:00 AM: Generate predictions for today's games  
+# 2:00 PM: Final injury/lineup check
+# 3:00 PM: Place bets (games typically start 7 PM)
+# 11:00 PM: Collect results and update models
 ```
 
-**Infrastructure:**
-- **Database** - PostgreSQL for game data, Redis for real-time odds
-- **Monitoring** - Track model performance, data pipeline health
-- **Alerts** - Email/SMS for significant injury news, model anomalies
-- **Logging** - All predictions, bets, and outcomes for analysis
+**System Components:**
+
+* PostgreSQL: Historical data storage
+* Redis: Real-time odds and injury caching
+* Docker: Containerized deployment
+* Monitoring: System health and model performance
+* Alerting: Critical injury news, model anomalies
 
 ### 5.2 Risk Management
-**Safeguards:**
-- **Maximum bet size** - Never risk more than 2% of bankroll per game
-- **Daily loss limits** - Stop betting if down >5% of bankroll in one day
-- **Model confidence thresholds** - Only bet on games with >60% confidence
-- **Injury impact limits** - Cap RL adjustments at ±0.3 confidence points
-- **Manual override** - Human can disable system if needed
 
-### 5.3 Continuous Improvement
-**Model Updates:**
-- **Weekly performance review** - Analyze wins/losses, model drift
-- **Monthly model retraining** - Incorporate new data, feature engineering
-- **Seasonal adjustments** - Different strategies for April vs September
-- **A/B testing** - Compare model variations on subset of bets
+**Automated Safeguards:**
 
----
+* Maximum bet size: 2% of bankroll per game
+* Daily loss limit: Stop at 5% bankroll drawdown
+* Confidence thresholds: Only bet games >60% final confidence
+* Manual override: Human can disable system
+* RL adjustment caps: ±0.3 maximum confidence adjustment
 
-## 📋 Implementation Checklist
+### 5.3 Success Criteria for Production
 
-### Phase 1: Data Foundation ✅
-- [ ] Set up data collection pipeline
-- [ ] Historical data backfill (2020-2024)
-- [ ] Park factors scraper (completed)
-- [ ] Injury monitoring system
-- [ ] Data quality validation
-- [ ] Database schema design
+**6-Month Live Performance Targets:**
 
-### Phase 2: ML Baseline ✅
-- [ ] Feature engineering pipeline
-- [ ] Model training framework
-- [ ] Cross-validation setup
-- [ ] Performance evaluation metrics
-- [ ] Model interpretation tools
-- [ ] Baseline profitability assessment
-
-### Phase 3: RL System ✅
-- [ ] RL environment design
-- [ ] DQN architecture implementation
-- [ ] Player impact tracking system
-- [ ] Experience replay buffer
-- [ ] Training loop & hyperparameter tuning
-- [ ] RL model evaluation
-
-### Phase 4: Integration ✅
-- [ ] End-to-end pipeline
-- [ ] Backtesting framework
-- [ ] Performance comparison (ML vs ML+RL)
-- [ ] Sensitivity analysis
-- [ ] Risk assessment
-- [ ] Documentation
-
-### Phase 5: Production ✅
-- [ ] Production deployment
-- [ ] Monitoring & alerting
-- [ ] Risk management controls
-- [ ] Performance tracking
-- [ ] Continuous improvement process
+* Positive ROI (>3% minimum)
+* Maximum drawdown <15%
+* System uptime >99% during betting hours
+* Successful handling of major injury situations
 
 ---
 
-## 🎯 Success Criteria
+## Implementation Checklist
 
-### Technical Milestones
-- **ML Baseline**: >55% accuracy on 2024 test data
-- **RL Enhancement**: >2% improvement in ROI over ML baseline
-- **System Reliability**: <1% downtime during betting hours
-- **Data Quality**: <0.5% missing critical features
+### Phase 1: Minimal Data Foundation
 
-### Business Objectives
-- **Profitability**: Positive ROI over 6-month live period
-- **Risk Management**: Maximum 15% drawdown
-- **Scalability**: Handle 15+ games per day during peak season
-- **Adaptability**: Successfully adapt to mid-season injury situations
+* [ ] Historical game results (2020-2024)
+* [ ] BetOnline odds data (single book only)
+* [ ] Team performance statistics
+* [ ] Starting pitcher stats
+* [ ] Park factors and weather data
+* [ ] Data quality validation
 
----
+### Phase 2: ML Baseline Model
 
-## 🔧 Technology Stack
+* [ ] Feature engineering pipeline
+* [ ] ML model training and validation
+* [ ] Backtesting on historical data
+* [ ] Performance evaluation (>53% accuracy)
+* [ ] Working betting decision system
+* [ ] Profitability confirmation
 
-### Core Technologies
-- **Python 3.9+** - Main development language
-- **PostgreSQL** - Primary database
-- **Redis** - Real-time data caching
-- **PyTorch** - RL model implementation
-- **Scikit-learn** - ML baseline models
-- **XGBoost** - Gradient boosting models
-- **Pandas/NumPy** - Data manipulation
-- **Docker** - Containerization
-- **GitHub Actions** - CI/CD pipeline
+### Phase 3: RL + Injury System
 
-### External APIs & Data Sources
-- **The Odds API** - Real-time betting odds
-- **Baseball-Reference** - Historical stats
-- **Baseball Savant** - Advanced metrics
-- **OpenWeatherMap** - Weather data
-- **ESPN/MLB.com** - Injury reports
+* [ ] Injury data collection infrastructure
+* [ ] Player importance classification
+* [ ] RL environment and agent implementation
+* [ ] RL training and validation
+* [ ] Player impact learning system
+* [ ] RL performance evaluation vs ML baseline
 
----
+### Phase 4: Multi-Book Integration
 
-## 📊 Expected Outcomes
+* [ ] Additional sportsbook data collection
+* [ ] Line shopping optimization
+* [ ] Complete system integration
+* [ ] Comprehensive backtesting
+* [ ] Risk assessment and stress testing
+* [ ] Performance comparison and validation
 
-### Pessimistic Scenario
-- ML Baseline: 53% accuracy, 2% annual ROI
-- RL Enhancement: +0.5% ROI improvement
-- Total System: 2.5% annual ROI
+### Phase 5: Production Deployment
 
-### Realistic Scenario  
-- ML Baseline: 55% accuracy, 5% annual ROI
-- RL Enhancement: +2% ROI improvement  
-- Total System: 7% annual ROI
-
-### Optimistic Scenario
-- ML Baseline: 57% accuracy, 8% annual ROI
-- RL Enhancement: +4% ROI improvement
-- Total System: 12% annual ROI
+* [ ] Production infrastructure setup
+* [ ] Automated daily pipelines
+* [ ] Monitoring and alerting systems
+* [ ] Risk management implementation
+* [ ] Live performance tracking
+* [ ] Continuous improvement process
 
 ---
 
-## 🚨 Risk Factors & Mitigation
+## Expected Outcomes
 
-### Technical Risks
-- **Data source reliability** → Multiple backup sources
-- **Model overfitting** → Rigorous cross-validation
-- **RL instability** → Conservative exploration, experience replay
+### Realistic Scenario (Target)
 
-### Market Risks  
-- **Odds movement** → Real-time monitoring, quick execution
-- **Market efficiency improvement** → Continuous model updates
-- **Betting limits** → Multiple sportsbook accounts
+* **Phase 2 ML Baseline** : 55% accuracy, 4% annual ROI
+* **Phase 3 RL Enhancement** : +2% ROI improvement
+* **Total System** : 6% annual ROI with <15% max drawdown
 
-### Operational Risks
-- **Injury data delays** → Multiple monitoring sources
-- **System downtime** → Redundant infrastructure
-- **Human error** → Automated safeguards, logging
+### Conservative Scenario (Minimum Acceptable)
+
+* **Phase 2 ML Baseline** : 53% accuracy, 1% annual ROI
+* **Phase 3 RL Enhancement** : +1% ROI improvement
+* **Total System** : 2% annual ROI
+
+### Stretch Goal (Optimistic)
+
+* **Phase 2 ML Baseline** : 57% accuracy, 7% annual ROI
+* **Phase 3 RL Enhancement** : +3% ROI improvement
+* **Total System** : 10% annual ROI
 
 ---
 
-*This roadmap serves as a complete reference for the MLB betting project. Each phase builds upon the previous one, with clear milestones and success criteria. The combination of ML baseline + RL adaptation addresses a genuine sequential learning problem while maintaining practical viability.*
+## Technology Stack
+
+**Core Technologies:**
+
+* Python 3.9+ (primary language)
+* PostgreSQL (historical data)
+* Redis (real-time caching)
+* PyTorch (RL implementation)
+* XGBoost/Scikit-learn (ML models)
+* Docker (deployment)
+
+**Data Sources:**
+
+* The Odds API (betting lines)
+* Baseball-Reference (historical stats)
+* Baseball Savant (park factors)
+* ESPN/MLB.com (injury reports - Phase 3 only)
+
+---
+
+## Risk Factors & Mitigation
+
+**Project Risks:**
+
+* **Scope creep** → Strict phase boundaries, resist feature additions
+* **Data complexity** → Start minimal, add complexity only when needed
+* **Overfitting** → Rigorous time-based validation, walk-forward testing
+
+**Market Risks:**
+
+* **Line movement** → Real-time monitoring in production phase
+* **Market efficiency** → Continuous model evaluation and updates
+* **Betting limits** → Multiple sportsbook accounts in Phase 4
+
+**Technical Risks:**
+
+* **RL instability** → Conservative exploration, experience replay
+* **Data source reliability** → Multiple backup sources
+* **System downtime** → Redundant infrastructure in production
+
+---
+
+## Key Improvements from Original Roadmap
+
+1. **Clear Sequential Logic** : Each phase builds naturally on the previous
+2. **Immediate Value** : Working profitable system after Phase 2
+3. **Reduced Complexity** : No unused data collection in early phases
+4. **Risk Management** : Can stop at any phase with working system
+5. **Realistic Scope** : Focus on core functionality before advanced features
+
+*This corrected roadmap prioritizes building a solid foundation before adding complexity. Each phase delivers immediate value and can serve as a natural stopping point if resources or time become constrained.*

@@ -1,0 +1,133 @@
+{
+	"folder": "pointclouds",
+	"filename": "1758743121.459829807.pcd",
+	"path": "pointclouds\\1758743121.459829807.pcd",
+	"objects": [
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": -1.28042844,
+				"y": -0.23648571,
+				"z": -0.05269061
+			},
+			"dimensions": {
+				"length": 0.72,
+				"width": 0.79,
+				"height": 1.17
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": -4.07582423,
+				"y": 2.26055676,
+				"z": 0.0136551
+			},
+			"dimensions": {
+				"length": 0.78,
+				"width": 0.7,
+				"height": 1.77
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 356
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": -4.00673824,
+				"y": 2.9054053,
+				"z": -0.05649102
+			},
+			"dimensions": {
+				"length": 0.81,
+				"width": 0.76,
+				"height": 1.65
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 316.5
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": -2.31539966,
+				"y": 5.31800343,
+				"z": -0.10623097
+			},
+			"dimensions": {
+				"length": 0.93,
+				"width": 0.64,
+				"height": 1.8
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 155.5
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": -4.72844991,
+				"y": 1.39658248,
+				"z": 0.16015394
+			},
+			"dimensions": {
+				"length": 0.75,
+				"width": 0.7,
+				"height": 2.07
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 349
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": -2.1247551,
+				"y": 6.0487914,
+				"z": -0.04747771
+			},
+			"dimensions": {
+				"length": 0.81,
+				"width": 0.67,
+				"height": 1.86
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 157.0
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": 5.30082669,
+				"y": 0.17731439,
+				"z": -0.05018466
+			},
+			"dimensions": {
+				"length": 0.81,
+				"width": 0.76,
+				"height": 1.8
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 122
+			}
+		}
+	]
+}

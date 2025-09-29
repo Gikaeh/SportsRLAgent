@@ -23,15 +23,15 @@
 
 **Priority 1: Essential Betting Data**
 
-* Single sportsbook for ML baseline (BetOnline - sharpest available)
+* Single sportsbook for ML baseline (BetOnline/BetUs/LowVig)
 * Historical moneyline odds (2020-2024)
 * Game results and scores
 * Data structure:
 
 ```
 columns = ['game_id', 'date', 'home_team', 'away_team', 
-           'betonline_opening_home_ml', 'betonline_closing_home_ml',
-           'betonline_opening_away_ml', 'betonline_closing_away_ml',
+           'bookmaker_opening_home_ml', 'bookmaker_closing_home_ml',
+           'bookmaker_opening_away_ml', 'bookmaker_closing_away_ml',
            'home_score', 'away_score', 'home_won']
 ```
 

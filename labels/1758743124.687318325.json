@@ -1,0 +1,187 @@
+{
+	"folder": "pointclouds",
+	"filename": "1758743124.687318325.pcd",
+	"path": "pointclouds\\1758743124.687318325.pcd",
+	"objects": [
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": -0.89042844,
+				"y": -0.07448571,
+				"z": -0.02269061
+			},
+			"dimensions": {
+				"length": 0.69,
+				"width": 0.79,
+				"height": 1.17
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": -4.922695,
+				"y": 2.29753002,
+				"z": 0.0436551
+			},
+			"dimensions": {
+				"length": 0.75,
+				"width": 0.82,
+				"height": 1.83
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 356
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": -4.87714131,
+				"y": 3.00803189,
+				"z": -0.05649102
+			},
+			"dimensions": {
+				"length": 0.66,
+				"width": 0.76,
+				"height": 1.65
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 316.5
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": -4.05211766,
+				"y": 9.04090454,
+				"z": -0.07623097
+			},
+			"dimensions": {
+				"length": 0.87,
+				"width": 0.91,
+				"height": 1.62
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 114
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": -5.37958778,
+				"y": 1.52530689,
+				"z": 0.04015394
+			},
+			"dimensions": {
+				"length": 0.75,
+				"width": 0.67,
+				"height": 1.83
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 349
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": 1.26016466,
+				"y": 1.14906309,
+				"z": -0.00518466
+			},
+			"dimensions": {
+				"length": 0.96,
+				"width": 0.79,
+				"height": 1.89
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 175.0
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": 2.98665206,
+				"y": 1.38809977,
+				"z": -0.02148601
+			},
+			"dimensions": {
+				"length": 0.93,
+				"width": 0.88,
+				"height": 1.86
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 180.0
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": -7.30180791,
+				"y": 1.20847484,
+				"z": -0.09524842
+			},
+			"dimensions": {
+				"length": 1.11,
+				"width": 0.97,
+				"height": 2.52
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 344.0
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": 4.09566937,
+				"y": 0.68995847,
+				"z": -0.04183166
+			},
+			"dimensions": {
+				"length": 0.93,
+				"width": 0.79,
+				"height": 1.98
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 144.0
+			}
+		},
+		{
+			"name": "Pedestrian",
+			"centroid": {
+				"x": 4.75455823,
+				"y": -0.24288803,
+				"z": 0.00148185
+			},
+			"dimensions": {
+				"length": 0.78,
+				"width": 0.85,
+				"height": 1.83
+			},
+			"rotations": {
+				"x": 0,
+				"y": 0,
+				"z": 104
+			}
+		}
+	]
+}

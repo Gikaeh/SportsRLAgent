@@ -8,7 +8,7 @@ def scrape_park_factors(year: int) -> pd.DataFrame:
     team_mapping = {
         'Athletics': 'OAK', 'White Sox': 'CHW', 'Cardinals': 'STL', 'Astros': 'HOU',
         'Padres': 'SDP', 'Guardians': 'CLE', 'Blue Jays': 'TOR', 'Brewers': 'MIL',
-        'Reds': 'CIN', 'Nationals': 'WSN', 'Mariners': 'SEA', 'Royals': 'KC',
+        'Reds': 'CIN', 'Nationals': 'WSN', 'Mariners': 'SEA', 'Royals': 'KCR',
         'Tigers': 'DET', 'Red Sox': 'BOS', 'Orioles': 'BAL', 'Angels': 'LAA',
         'Pirates': 'PIT', 'D-backs': 'ARI', 'Yankees': 'NYY', 'Dodgers': 'LAD',
         'Phillies': 'PHI', 'Rockies': 'COL', 'Rangers': 'TEX', 'Mets': 'NYM',
@@ -54,6 +54,7 @@ def scrape_park_factors(year: int) -> pd.DataFrame:
                             park_factors.append(park_factor)
                         
                         df = pd.DataFrame(park_factors)
+                        df.to_csv(f'./data/park_data/{year}')
                         return df
                         
                     except json.JSONDecodeError as e:

@@ -47,3 +47,12 @@ result_df = pd.DataFrame(result_rows)
 result_df.sort_values(['commence_time', 'home_team', 'bookmakers_key'], inplace=True)
 result_df.to_csv('./data/odds_data/combined_data/combined_bookmaker_prices.csv', index=False)
     
+
+
+
+# df = pd.read_csv('./data/odds_data/combined_data/combined_bookmaker_prices.csv')
+# df_date = df[df['commence_time'] == '2025-10-01 12:08:00-07:00']
+# df_team = df_date[df_date['name'] == 'SDP']
+# print(df_team['price_1'].max())
+# df_team_2 = df_date[df_date['name'] == 'CHC']
+# print(df_team_2['price_1'].max())

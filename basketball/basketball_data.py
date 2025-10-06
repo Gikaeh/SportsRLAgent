@@ -6,37 +6,45 @@ from tqdm import tqdm
 
 class BasketballData:
     def __init__(self):
-        pass
+        self.teams_to_keep = ['ATL', 'BOS', 'BKN', 'CHA', 'CHI', 'CLE', 'DAL', 'DEN', 'DET', 'GSW', 'HOU', 'IND', 'LAC', 'LAL', 'MEM', 'MIA', 'MIL', 'MIN', 'NOP', 'NYK', 'OKC', 'ORL', 'PHI', 'PHX', 'POR', 'SAC', 'SAS', 'TOR', 'UTA', 'WAS']
     
-    def get_all_season_data(self):
+    def getAllSeasonData(self):
         seasons = [f'{i}-{i-1999}' for i in range(2015, 2025)]
         for season in tqdm(seasons, desc="Overall Progress"):
-            # 1. Game results
-            print(f"Fetching game results for {season}...")
-            gamefinder = leaguegamefinder.LeagueGameFinder(season_nullable=season)
-            games = gamefinder.get_data_frames()[0]
-            games.to_csv(f'././data/basketball/game_data/{season}_game_stats.csv', index=False)
-            time.sleep(1)
+            self.getSeasonGames(season)
+            self.getTeamGames(season)
+            self.getPlayerGames(season)
             
-            # 2. Team game logs (all teams)
-            all_team_logs = []
-            team_list = teams.get_teams()
-            print(f"Fetching team stats for {season}...")
-            for team in tqdm(team_list, desc=f"Teams ({season})"):
-                team_logs = teamgamelogs.TeamGameLogs(season_nullable=season, team_id_nullable=team['id'])
-                all_team_logs.append(team_logs.get_data_frames()[0])
-                time.sleep(0.6)
-            
-            team_data = pd.concat(all_team_logs)
-            team_data.to_csv(f'././data/basketball/team_data/{season}_team_stats.csv', index=False)
-            
-            print(f"Fetching player stats for {season}...")
-            player_logs = playergamelogs.PlayerGameLogs(season_nullable=season)
-            player_data = player_logs.get_data_frames()[0]
-            player_data.to_csv(f'././data/basketball/player_data/{season}_player_stats.csv', index=False)
+    def getSeasonGames(self, season):
+        print(f"Fetching game results for {season}...")
+        gamefinder = leaguegamefinder.LeagueGameFinder(season_nullable=season)
+        games = gamefinder.get_data_frames()[0]
+        games = games[games['TEAM_ABBREVIATION'].isin(self.teams_to_keep)]
+        games.to_csv(f'././data/basketball/game_data/{season}_game_stats.csv', index=False)
+        time.sleep(1)
+        
+    def getTeamGames(self, season):
+        all_team_logs = []
+        team_list = teams.get_teams()
+        print(f"Fetching team stats for {season}...")
+        for team in tqdm(team_list, desc=f"Teams ({season})"):
+            team_logs = teamgamelogs.TeamGameLogs(season_nullable=season, team_id_nullable=team['id'])
+            all_team_logs.append(team_logs.get_data_frames()[0])
+            time.sleep(0.6)
+        
+        team_data = pd.concat(all_team_logs)
+        team_data = team_data[team_data['TEAM_ABBREVIATION'].isin(self.teams_to_keep)]
+        team_data.to_csv(f'././data/basketball/team_data/{season}_team_stats.csv', index=False)
+        
+    def getPlayerGames(self, season):
+        print(f"Fetching player stats for {season}...")
+        player_logs = playergamelogs.PlayerGameLogs(season_nullable=season)
+        player_data = player_logs.get_data_frames()[0]
+        player_data.to_csv(f'././data/basketball/player_data/{season}_player_stats.csv', index=False)
 
-            print(f"Exported all {season} data to CSV files")
+        print(f"Exported all {season} data to CSV files")
 
+    def getTeamYearlyStats(self):
         for team in tqdm(teams.get_teams(), desc="Teams"):
             team_abbreviation = team['abbreviation'].lower()
             print(f"Fetching team yearly stats for {team_abbreviation}...")

@@ -72,6 +72,9 @@ class BasketballModel:
         # 3. Calibration Plot (Reliability Diagram)
         self._plot_calibration(y_val, val_proba, y_test, test_proba, save_dir)
         
+        # 4. Confidence vs Accuracy Plot
+        self._plot_confidence_accuracy(y_val, val_proba, y_test, test_proba, save_dir)
+        
         print(f"\nAll diagnostic plots saved to: {save_dir}/")
     
     def _plot_feature_importance(self, save_dir):
@@ -88,10 +91,8 @@ class BasketballModel:
         plt.tight_layout()
         plt.savefig(f'{save_dir}/feature_importance.png', dpi=300, bbox_inches='tight')
         plt.close()
-        print("✓ Feature importance plot saved")
     
     def _plot_roc_curves(self, y_val, val_proba, y_test, test_proba, save_dir):
-        """Plot ROC curves for validation and test sets"""
         fpr_val, tpr_val, _ = roc_curve(y_val, val_proba)
         fpr_test, tpr_test, _ = roc_curve(y_test, test_proba)
         
@@ -141,6 +142,44 @@ class BasketballModel:
         
         plt.tight_layout()
         plt.savefig(f'{save_dir}/calibration_plot.png', dpi=300, bbox_inches='tight')
+        plt.close()
+
+    def _plot_confidence_accuracy(self, y_val, val_proba, y_test, test_proba, save_dir):
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+        
+        for ax, y_true, y_prob, title in [(ax1, y_val, val_proba, 'Validation'),
+                                           (ax2, y_test, test_proba, 'Test')]:
+            # Convert probabilities to confidence (distance from 0.5)
+            confidence = np.abs(y_prob - 0.5) * 2  # Scale to 0-1
+            predictions = (y_prob > 0.5).astype(int)
+            correct = (predictions == y_true).astype(int)
+            
+            # Bin by confidence
+            bins = np.linspace(0, 1, 11)
+            bin_centers = (bins[:-1] + bins[1:]) / 2
+            bin_indices = np.digitize(confidence, bins) - 1
+            bin_indices = np.clip(bin_indices, 0, len(bin_centers) - 1)
+            
+            bin_accuracy = [correct[bin_indices == i].mean() if (bin_indices == i).sum() > 0 else np.nan
+                           for i in range(len(bin_centers))]
+            bin_counts = [(bin_indices == i).sum() for i in range(len(bin_centers))]
+            
+            # Plot
+            ax.bar(bin_centers, bin_accuracy, width=0.08, alpha=0.7, color='steelblue', edgecolor='black')
+            ax2_twin = ax.twinx()
+            ax2_twin.plot(bin_centers, bin_counts, 'ro-', linewidth=2, markersize=6, label='Sample Count')
+            ax2_twin.set_ylabel('Number of Predictions', fontsize=10, color='red')
+            ax2_twin.tick_params(axis='y', labelcolor='red')
+            
+            ax.set_xlabel('Confidence Level', fontsize=11)
+            ax.set_ylabel('Accuracy', fontsize=11)
+            ax.set_title(f'{title} Set - Accuracy by Confidence', fontsize=12, fontweight='bold')
+            ax.set_ylim(0, 1)
+            ax.grid(alpha=0.3, axis='y')
+            ax2_twin.legend(loc='upper left', fontsize=9)
+        
+        plt.tight_layout()
+        plt.savefig(f'{save_dir}/confidence_accuracy.png', dpi=300, bbox_inches='tight')
         plt.close()
     
     def print_prediction_summary(self, X_test, y_test, team_col='home_team'):

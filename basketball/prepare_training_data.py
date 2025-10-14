@@ -330,6 +330,7 @@ class NBATrainingDataPreparer:
     def prepareAllSeasons(self, seasons=None, output_dir='./data/training_data/basketball/phase1'):
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
+        files = [f.stem.replace('_training_data', '') for f in output_path.glob('*_training_data.csv')]
 
         for f in self.game_data_dir.glob('*_game_stats.csv'):
             seasons = [f.stem.replace('_game_stats', '')]
@@ -338,6 +339,10 @@ class NBATrainingDataPreparer:
         all_training_data = []
         
         for season in seasons:
+            if season in files:
+                print(f"Skipping {season} as it already exists")
+                continue
+            
             print(f"\n{'='*60}")
             print(f"Processing season: {season}")
             print(f"{'='*60}")

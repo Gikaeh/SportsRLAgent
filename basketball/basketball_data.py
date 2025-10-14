@@ -3,14 +3,19 @@ from nba_api.stats.static import teams, players
 import pandas as pd
 import time
 from tqdm import tqdm
+from pathlib import Path
 
 class BasketballData:
     def __init__(self):
         self.teams_to_keep = ['ATL', 'BOS', 'BKN', 'CHA', 'CHI', 'CLE', 'DAL', 'DEN', 'DET', 'GSW', 'HOU', 'IND', 'LAC', 'LAL', 'MEM', 'MIA', 'MIL', 'MIN', 'NOP', 'NYK', 'OKC', 'ORL', 'PHI', 'PHX', 'POR', 'SAC', 'SAS', 'TOR', 'UTA', 'WAS']
     
     def getAllSeasonData(self):
-        seasons = [f'{i}-{i-1999}' for i in range(2015, 2025)]
+        seasons = [f'{i}-0{i-1999}' if (i < 2009) else f'{i}-{i-1899}' if (i < 1999) else f'{i}-{i-1999}' for i in range(2000, 2025)]
+        files = [f.stem.replace('_game_stats', '') for f in Path('./data/basketball/game_data').glob('*_game_stats.csv')]
         for season in tqdm(seasons, desc="Overall Progress"):
+            if season in files:
+                print(f"Skipping {season} as it already exists")
+                continue
             self.getSeasonGames(season)
             self.getTeamGames(season)
             self.getPlayerGames(season)

@@ -1,7 +1,6 @@
 import pandas as pd
 from pathlib import Path
 from tqdm import tqdm
-from basketball_data import BasketballData
 
 
 class NBATrainingDataPreparer:
@@ -23,7 +22,6 @@ class NBATrainingDataPreparer:
         df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'])
         df = df.sort_values(['TEAM_ABBREVIATION', 'GAME_DATE'])
         
-        # Calculate opponent points from PLUS_MINUS
         df['OPP_PTS'] = df['PTS'] - df['PLUS_MINUS']
         
         # Initialize result columns
@@ -33,19 +31,30 @@ class NBATrainingDataPreparer:
         for team, team_df in df.groupby('TEAM_ABBREVIATION'):
             team_df = team_df.reset_index(drop=True)
             
-            # Calculate rolling 10-game statistics
-            team_df['wins_l10'] = team_df['WL'].apply(lambda x: 1 if x == 'W' else 0).rolling(window=10, min_periods=1).sum()
-            team_df['ppg_l10'] = team_df['PTS'].rolling(window=10, min_periods=1).mean()
-            team_df['opp_ppg_l10'] = team_df['OPP_PTS'].rolling(window=10, min_periods=1).mean()
-            team_df['fg_pct_l10'] = team_df['FG_PCT'].rolling(window=10, min_periods=1).mean()
-            team_df['fg3_pct_l10'] = team_df['FG3_PCT'].rolling(window=10, min_periods=1).mean()
-            # team_df['reb_l10'] = team_df['REB'].rolling(window=10, min_periods=1).mean()
-            # team_df['ast_l10'] = team_df['AST'].rolling(window=10, min_periods=1).mean()
-            # team_df['tov_l10'] = team_df['TOV'].rolling(window=10, min_periods=1).mean()
-            team_df['plus_minus_l10'] = team_df['PLUS_MINUS'].rolling(window=10, min_periods=1).mean()
+            # Calculate rolling 10-game statistics (shifted by 1 to exclude current game)
+            # This prevents data leakage by only using previous games
+            team_df['wins_l10'] = team_df['WL'].apply(lambda x: 1 if x == 'W' else 0).rolling(window=10, min_periods=1).sum().shift(1)
+            team_df['ppg_l10'] = team_df['PTS'].rolling(window=10, min_periods=1).mean().shift(1)
+            team_df['opp_ppg_l10'] = team_df['OPP_PTS'].rolling(window=10, min_periods=1).mean().shift(1)
+            team_df['fg_pct_l10'] = team_df['FG_PCT'].rolling(window=10, min_periods=1).mean().shift(1)
+            team_df['fg3_pct_l10'] = team_df['FG3_PCT'].rolling(window=10, min_periods=1).mean().shift(1)
+            # team_df['reb_l10'] = team_df['REB'].rolling(window=10, min_periods=1).mean().shift(1)
+            # team_df['ast_l10'] = team_df['AST'].rolling(window=10, min_periods=1).mean().shift(1)
+            # team_df['tov_l10'] = team_df['TOV'].rolling(window=10, min_periods=1).mean().shift(1)
+            team_df['plus_minus_l10'] = team_df['PLUS_MINUS'].rolling(window=10, min_periods=1).mean().shift(1)
             
             # Calculate net rating (simplified: point differential per game)
             team_df['net_rating_l10'] = team_df['plus_minus_l10']
+            
+            # Fill NaN values for first game (no previous games available)
+            # Use 0 as default for first game statistics
+            team_df['wins_l10'] = team_df['wins_l10'].fillna(0)
+            team_df['ppg_l10'] = team_df['ppg_l10'].fillna(0)
+            team_df['opp_ppg_l10'] = team_df['opp_ppg_l10'].fillna(0)
+            team_df['fg_pct_l10'] = team_df['fg_pct_l10'].fillna(0)
+            team_df['fg3_pct_l10'] = team_df['fg3_pct_l10'].fillna(0)
+            team_df['plus_minus_l10'] = team_df['plus_minus_l10'].fillna(0)
+            team_df['net_rating_l10'] = team_df['net_rating_l10'].fillna(0)
             
             # Select relevant columns
             team_l10 = team_df[[
@@ -69,15 +78,41 @@ class NBATrainingDataPreparer:
         return df
     
     
-    def getTopPlayersForGame(self, season, game_id, team_abbr, top_n=6):
+    def precomputePlayerRollingAverages(self, season):
         player_file = self.player_data_dir / f'{season}_player_stats.csv'
         if not player_file.exists():
             return pd.DataFrame()
         
         df = pd.read_csv(player_file)
+        df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'])
+        df = df.sort_values(['PLAYER_ID', 'GAME_DATE'])
         
+        # Calculate rolling averages for each player (shifted to exclude current game)
+        rolling_stats = []
+        for player_id, player_df in df.groupby('PLAYER_ID'):
+            player_df = player_df.reset_index(drop=True)
+            
+            # Calculate rolling averages (shift by 1 to prevent data leakage)
+            player_df['ppg_rolling'] = player_df['PTS'].expanding().mean().shift(1)
+            player_df['fg_pct_rolling'] = player_df['FG_PCT'].expanding().mean().shift(1)
+            player_df['mpg_rolling'] = player_df['MIN'].expanding().mean().shift(1)
+            player_df['plus_minus_rolling'] = player_df['PLUS_MINUS'].expanding().mean().shift(1)
+            
+            # Fill NaN for first game with 0
+            player_df['ppg_rolling'] = player_df['ppg_rolling'].fillna(0)
+            player_df['fg_pct_rolling'] = player_df['fg_pct_rolling'].fillna(0)
+            player_df['mpg_rolling'] = player_df['mpg_rolling'].fillna(0)
+            player_df['plus_minus_rolling'] = player_df['plus_minus_rolling'].fillna(0)
+            
+            rolling_stats.append(player_df)
+        
+        return pd.concat(rolling_stats, ignore_index=True)
+    
+    def getTopPlayersWithStats(self, player_df, game_id, team_abbr, top_n=6):
+        """Get top N players for a game with their precomputed rolling averages."""
         # Filter for specific game and team
-        game_players = df[(df['GAME_ID'] == game_id) & (df['TEAM_ABBREVIATION'] == team_abbr)].copy()
+        game_players = player_df[(player_df['GAME_ID'] == game_id) & 
+                                  (player_df['TEAM_ABBREVIATION'] == team_abbr)].copy()
         
         if game_players.empty:
             return pd.DataFrame()
@@ -85,110 +120,80 @@ class NBATrainingDataPreparer:
         # Sort by minutes played and get top N
         game_players = game_players.sort_values('MIN', ascending=False).head(top_n)
         
-        return game_players
-    
-    def calculatePlayerSeasonAverages(self, season, player_id, up_to_date=None):
-        player_file = self.player_data_dir / f'{season}_player_stats.csv'
-        if not player_file.exists():
-            return {}
-        
-        df = pd.read_csv(player_file)
-        df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'])
-        
-        # Filter for player
-        player_games = df[df['PLAYER_ID'] == player_id].copy()
-        
-        if up_to_date:
-            player_games = player_games[player_games['GAME_DATE'] < up_to_date]
-        
-        if player_games.empty or len(player_games) == 0:
-            return {}
-        
-        # Calculate averages
-        return {
-            'ppg': player_games['PTS'].mean(),
-            # 'rpg': player_games['REB'].mean(),
-            # 'apg': player_games['AST'].mean(),
-            'fg_pct': player_games['FG_PCT'].mean(),
-            'fg3_pct': player_games['FG3_PCT'].mean(),
-            'ft_pct': player_games['FT_PCT'].mean(),
-            'mpg': player_games['MIN'].mean(),
-            # 'stl': player_games['STL'].mean(),
-            # 'blk': player_games['BLK'].mean(),
-            # 'tov': player_games['TOV'].mean(),
-            'plus_minus': player_games['PLUS_MINUS'].mean(),
-            'games_played': len(player_games)
-        }
+        return game_players[['PLAYER_ID', 'ppg_rolling', 'fg_pct_rolling', 
+                            'mpg_rolling', 'plus_minus_rolling']]
     
     def addPlayerFeatures(self, matchup_data, season):
         print(f"Adding player features for {season}...")
+        print(f"Precomputing player rolling averages...")
+        
+        # Load and precompute all player rolling averages once
+        player_df = self.precomputePlayerRollingAverages(season)
+        
+        if player_df.empty:
+            print(f"No player data found for {season}")
+            # Return empty features with zeros
+            return self.createEmptyPlayerFeatures(matchup_data)
         
         player_features = []
         
-        for idx, row in tqdm(matchup_data.iterrows()):
+        for idx, row in tqdm(matchup_data.iterrows(), total=len(matchup_data)):
             game_id = row['GAME_ID']
-            game_date = pd.to_datetime(row['GAME_DATE_home'])
             home_team = row['TEAM_ABBREVIATION_home']
             away_team = row['TEAM_ABBREVIATION_away']
             
             game_features = {'game_id': game_id}
             
-            # Get top 6 players for home team
-            home_players = self.getTopPlayersForGame(season, game_id, home_team, top_n=6)
+            # Get top 6 players for home team with precomputed stats
+            home_players = self.getTopPlayersWithStats(player_df, game_id, home_team, top_n=6)
             for i in range(6):
                 prefix = f'home_p{i+1}_'
                 if i < len(home_players):
                     player = home_players.iloc[i]
-                    player_id = player['PLAYER_ID']
-                    
-                    # Current season averages (up to this game)
-                    season_avg = self.calculatePlayerSeasonAverages(season, player_id, up_to_date=game_date)
-                    
-                    game_features[f'{prefix}ppg'] = season_avg.get('ppg', 0)
-                    # game_features[f'{prefix}rpg'] = season_avg.get('rpg', 0)
-                    # game_features[f'{prefix}apg'] = season_avg.get('apg', 0)
-                    game_features[f'{prefix}fg_pct'] = season_avg.get('fg_pct', 0)
-                    game_features[f'{prefix}mpg'] = season_avg.get('mpg', 0)
-                    game_features[f'{prefix}plus_minus'] = season_avg.get('plus_minus', 0)
+                    game_features[f'{prefix}ppg'] = player['ppg_rolling']
+                    game_features[f'{prefix}fg_pct'] = player['fg_pct_rolling']
+                    game_features[f'{prefix}mpg'] = player['mpg_rolling']
+                    game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling']
                 else:
                     # No player data available
                     game_features[f'{prefix}ppg'] = 0
-                    # game_features[f'{prefix}rpg'] = 0
-                    # game_features[f'{prefix}apg'] = 0
                     game_features[f'{prefix}fg_pct'] = 0
                     game_features[f'{prefix}mpg'] = 0
                     game_features[f'{prefix}plus_minus'] = 0
             
-            # Get top 6 players for away team
-            away_players = self.getTopPlayersForGame(season, game_id, away_team, top_n=6)
+            # Get top 6 players for away team with precomputed stats
+            away_players = self.getTopPlayersWithStats(player_df, game_id, away_team, top_n=6)
             for i in range(6):
                 prefix = f'away_p{i+1}_'
                 if i < len(away_players):
                     player = away_players.iloc[i]
-                    player_id = player['PLAYER_ID']
-                    
-                    # Current season averages (up to this game)
-                    season_avg = self.calculatePlayerSeasonAverages(season, player_id, up_to_date=game_date)
-                    
-                    game_features[f'{prefix}ppg'] = season_avg.get('ppg', 0)
-                    # game_features[f'{prefix}rpg'] = season_avg.get('rpg', 0)
-                    # game_features[f'{prefix}apg'] = season_avg.get('apg', 0)
-                    game_features[f'{prefix}fg_pct'] = season_avg.get('fg_pct', 0)
-                    game_features[f'{prefix}mpg'] = season_avg.get('mpg', 0)
-                    game_features[f'{prefix}plus_minus'] = season_avg.get('plus_minus', 0)
+                    game_features[f'{prefix}ppg'] = player['ppg_rolling']
+                    game_features[f'{prefix}fg_pct'] = player['fg_pct_rolling']
+                    game_features[f'{prefix}mpg'] = player['mpg_rolling']
+                    game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling']
                 else:
                     # No player data available
                     game_features[f'{prefix}ppg'] = 0
-                    # game_features[f'{prefix}rpg'] = 0
-                    # game_features[f'{prefix}apg'] = 0
                     game_features[f'{prefix}fg_pct'] = 0
                     game_features[f'{prefix}mpg'] = 0
                     game_features[f'{prefix}plus_minus'] = 0
             
             player_features.append(game_features)
         
-        player_df = pd.DataFrame(player_features)
-        return player_df
+        return pd.DataFrame(player_features)
+    
+    def createEmptyPlayerFeatures(self, matchup_data):
+        features = {'game_id': matchup_data['GAME_ID'].values}
+        
+        for team in ['home', 'away']:
+            for i in range(1, 7):
+                prefix = f'{team}_p{i}_'
+                features[f'{prefix}ppg'] = 0
+                features[f'{prefix}fg_pct'] = 0
+                features[f'{prefix}mpg'] = 0
+                features[f'{prefix}plus_minus'] = 0
+        
+        return pd.DataFrame(features)
     
     def createGameMatchupData(self, season):
         # Load game data
@@ -330,10 +335,9 @@ class NBATrainingDataPreparer:
     def prepareAllSeasons(self, seasons=None, output_dir='./data/training_data/basketball/phase1'):
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
-        files = [f.stem.replace('_training_data', '') for f in output_path.glob('*_training_data.csv')]
 
-        for f in self.game_data_dir.glob('*_game_stats.csv'):
-            seasons = [f.stem.replace('_game_stats', '')]
+        files = [f.stem.replace('_training_data', '') for f in output_path.glob('separated_seasons/*_training_data.csv')]
+        seasons = [f.stem.replace('_game_stats', '') for f in self.game_data_dir.glob('*_game_stats.csv')]
         seasons.sort()
         
         all_training_data = []
@@ -341,6 +345,7 @@ class NBATrainingDataPreparer:
         for season in seasons:
             if season in files:
                 print(f"Skipping {season} as it already exists")
+                all_training_data.append(pd.read_csv(output_path / f'separated_seasons/{season}_training_data.csv'))
                 continue
             
             print(f"\n{'='*60}")
@@ -350,14 +355,14 @@ class NBATrainingDataPreparer:
             try:
                 training_data = self.createGameMatchupData(season)
                 
-                season_file = output_path / f'{season}_training_data.csv'
+                season_file = output_path / f'separated_seasons/{season}_training_data.csv'
                 training_data.to_csv(season_file, index=False)
-                print(f"✓ Saved {len(training_data)} games to {season_file}")
+                print(f"Saved {len(training_data)} games to {season_file}")
                 
                 all_training_data.append(training_data)
                 
             except Exception as e:
-                print(f"✗ Error processing {season}: {e}")
+                print(f"Error processing {season}: {e}")
                 continue
         
         if all_training_data:
@@ -365,7 +370,7 @@ class NBATrainingDataPreparer:
             master_file = output_path / 'all_seasons_training_data.csv'
             master_df.to_csv(master_file, index=False)
             print(f"\n{'='*60}")
-            print(f"✓ Master file created: {master_file}")
+            print(f"  Master file created: {master_file}")
             print(f"  Total games: {len(master_df)}")
             print(f"  Seasons: {', '.join(seasons)}")
             print(f"  Date range: {master_df['date'].min()} to {master_df['date'].max()}")
@@ -375,27 +380,3 @@ class NBATrainingDataPreparer:
         else:
             print("No training data generated.")
             return None
-
-
-def main():
-    basketball_data = BasketballData()
-    basketball_data.getAllSeasonData()
-
-    preparer = NBATrainingDataPreparer(data_dir='./data/basketball')
-    
-    print("NBA Training Data Preparation - Phase 1")
-    print("="*60)
-    print("Preparing STREAMLINED 28-feature dataset:")
-    print("  - Team Performance (8): L10 wins, net rating, PPG, opp PPG")
-    print("  - Game Context (4): Rest days, back-to-back flags")
-    print("  - Player Aggregates (12): Top 3/5/6 stats, star quality, depth")
-    print("  - Shooting Efficiency (4): FG% and 3P% L10")
-    print("="*60)
-    
-    # Prepare training data
-    training_data = preparer.prepareAllSeasons()
-    
-
-
-if __name__ == '__main__':
-    main()

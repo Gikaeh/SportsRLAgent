@@ -1,21 +1,26 @@
 import xgboost as xgb
-from sklearn.metrics import accuracy_score, brier_score_loss, log_loss, roc_auc_score, confusion_matrix, roc_curve
+from sklearn.metrics import accuracy_score, brier_score_loss, log_loss, roc_auc_score, roc_curve
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
+import optuna
+from optuna.samplers import TPESampler
 
 class BasketballModel:
-    def __init__(self, n_estimators=1000, early_stopping_rounds=50):
-        self.model = xgb.XGBClassifier(
-            use_label_encoder=False, 
-            eval_metric='logloss',
-            tree_method='hist',
-            enable_categorical=True,
-            n_estimators=n_estimators,
-            early_stopping_rounds=early_stopping_rounds
-        )
+    def __init__(self, n_estimators=1000, early_stopping_rounds=50, **kwargs):
+        params = {
+            'use_label_encoder': False,
+            'eval_metric': 'logloss',
+            'tree_method': 'hist',
+            'enable_categorical': True,
+            'n_estimators': n_estimators,
+            'early_stopping_rounds': early_stopping_rounds
+        }
+        params.update(kwargs)
+        self.model = xgb.XGBClassifier(**params)
+        self.best_params = None
         
     def train(self, X_train, y_train, X_val=None, y_val=None, verbose=True):
         if X_val is not None and y_val is not None:
@@ -54,6 +59,106 @@ class BasketballModel:
     def load(self, path):
         self.model.load_model(path)
     
+    def tune_hyperparameters(self, X_train, y_train, X_val, y_val, n_trials=100, metric='logloss'):
+        print(f"\nStarting hyperparameter tuning with {n_trials} trials...")
+        print(f"Optimizing for: {metric}")
+        
+        def objective(trial):
+            params = {
+                'max_depth': trial.suggest_int('max_depth', 3, 10),
+                'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
+                'subsample': trial.suggest_float('subsample', 0.6, 1.0),
+                'colsample_bytree': trial.suggest_float('colsample_bytree', 0.6, 1.0),
+                'min_child_weight': trial.suggest_int('min_child_weight', 1, 10),
+                'gamma': trial.suggest_float('gamma', 0, 5),
+                'reg_alpha': trial.suggest_float('reg_alpha', 0, 10),
+                'reg_lambda': trial.suggest_float('reg_lambda', 0, 10),
+                'n_estimators': 1000,
+                'early_stopping_rounds': 50,
+                'use_label_encoder': False,
+                'eval_metric': 'logloss',
+                'tree_method': 'hist',
+                'enable_categorical': True,
+                'random_state': 42
+            }
+            
+            model = xgb.XGBClassifier(**params)
+            model.fit(
+                X_train, y_train,
+                eval_set=[(X_val, y_val)],
+                verbose=False
+            )
+            
+            y_pred_proba = model.predict_proba(X_val)[:, 1]
+            y_pred = model.predict(X_val)
+            
+            if metric == 'logloss':
+                score = log_loss(y_val, y_pred_proba)
+            elif metric == 'auc':
+                score = -roc_auc_score(y_val, y_pred_proba)
+            elif metric == 'accuracy':
+                score = -accuracy_score(y_val, y_pred)
+            elif metric == 'brier':
+                score = brier_score_loss(y_val, y_pred_proba)
+            else:
+                raise ValueError(f"Unknown metric: {metric}")
+            
+            return score
+        
+        sampler = TPESampler(seed=42)
+        study = optuna.create_study(
+            direction='minimize',
+            sampler=sampler,
+            study_name='basketball_model_tuning'
+        )
+        
+        optuna.logging.set_verbosity(optuna.logging.WARNING)
+        study.optimize(objective, n_trials=n_trials, show_progress_bar=True)
+        
+        self.best_params = study.best_params
+        
+        print(f"\nBest trial:")
+        print(f"  Value ({metric}): {study.best_value:.4f}")
+        print(f"\nBest hyperparameters:")
+        for key, value in self.best_params.items():
+            print(f"  {key}: {value}")
+        
+        return self.best_params
+    
+    def train_with_best_params(self, X_train, y_train, X_val=None, y_val=None, verbose=True):
+        if self.best_params is None:
+            raise ValueError("No best parameters found. Run tune_hyperparameters() first.")
+        
+        print("\nTraining model with best hyperparameters...")
+        
+        params = self.best_params.copy()
+        params.update({
+            'use_label_encoder': False,
+            'eval_metric': 'logloss',
+            'tree_method': 'hist',
+            'enable_categorical': True,
+            'n_estimators': params.get('n_estimators', 1000),
+            'early_stopping_rounds': params.get('early_stopping_rounds', 50),
+            'random_state': 42
+        })
+        
+        self.model = xgb.XGBClassifier(**params)
+        
+        if X_val is not None and y_val is not None:
+            self.model.fit(
+                X_train, y_train,
+                eval_set=[(X_train, y_train), (X_val, y_val)],
+                verbose=verbose
+            )
+            print(f"\nBest iteration: {self.model.best_iteration}")
+            print(f"Best score: {self.model.best_score:.4f}")
+        else:
+            self.model.fit(X_train, y_train)
+    
+    def get_best_params(self):
+        """Return the best parameters found during tuning."""
+        return self.best_params
+    
     def plot_diagnostics(self, X_val, y_val, X_test, y_test, save_dir='./plots'):
         Path(save_dir).mkdir(parents=True, exist_ok=True)
         
@@ -64,24 +169,24 @@ class BasketballModel:
         test_pred = self.model.predict(X_test)
         
         # 1. Feature Importance Plot
-        self._plot_feature_importance(save_dir)
+        self.plotFeatureImportance(save_dir)
         
         # 2. ROC Curve Comparison
-        self._plot_roc_curves(y_val, val_proba, y_test, test_proba, save_dir)
+        self.plotRocCurves(y_val, val_proba, y_test, test_proba, save_dir)
         
         # 3. Calibration Plot (Reliability Diagram)
         self._plot_calibration(y_val, val_proba, y_test, test_proba, save_dir)
         
         # 4. Confidence vs Accuracy Plot
-        self._plot_confidence_accuracy(y_val, val_proba, y_test, test_proba, save_dir)
+        self.plotConfidenceAccuracy(y_val, val_proba, y_test, test_proba, save_dir)
         
         print(f"\nAll diagnostic plots saved to: {save_dir}/")
     
-    def _plot_feature_importance(self, save_dir):
+    def plotFeatureImportance(self, save_dir):
         importance_df = pd.DataFrame({
             'feature': self.model.get_booster().feature_names,
             'importance': self.model.feature_importances_
-        }).sort_values('importance', ascending=False).head(20)
+        }).sort_values('importance', ascending=False)
         
         plt.figure(figsize=(10, 8))
         sns.barplot(data=importance_df, y='feature', x='importance', palette='viridis')
@@ -92,7 +197,7 @@ class BasketballModel:
         plt.savefig(f'{save_dir}/feature_importance.png', dpi=300, bbox_inches='tight')
         plt.close()
     
-    def _plot_roc_curves(self, y_val, val_proba, y_test, test_proba, save_dir):
+    def plotRocCurves(self, y_val, val_proba, y_test, test_proba, save_dir):
         fpr_val, tpr_val, _ = roc_curve(y_val, val_proba)
         fpr_test, tpr_test, _ = roc_curve(y_test, test_proba)
         
@@ -144,7 +249,7 @@ class BasketballModel:
         plt.savefig(f'{save_dir}/calibration_plot.png', dpi=300, bbox_inches='tight')
         plt.close()
 
-    def _plot_confidence_accuracy(self, y_val, val_proba, y_test, test_proba, save_dir):
+    def plotConfidenceAccuracy(self, y_val, val_proba, y_test, test_proba, save_dir):
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
         
         for ax, y_true, y_prob, title in [(ax1, y_val, val_proba, 'Validation'),
@@ -210,72 +315,3 @@ class BasketballModel:
             print(f"\nAccuracy on High Confidence Predictions: {correct[high_conf_mask].mean():.3f}")
         
         print("="*60)
-
-basketball_model = BasketballModel()
-
-# Load all seasons data
-load_data = pd.read_csv('././data/training_data/basketball/phase1/all_seasons_training_data.csv')
-
-# Split by season FIRST: train (2015-16 to 2022-23), val (2023-24), test (2024-25)
-train_seasons = ['2015-16', '2016-17', '2017-18', '2018-19', '2019-20', '2020-21', '2021-22', '2022-23']
-val_season = '2023-24'
-test_season = '2024-25'
-
-train_data = load_data[load_data['season'].isin(train_seasons)]
-val_data = load_data[load_data['season'] == val_season]
-test_data = load_data[load_data['season'] == test_season]
-
-# Drop leakage columns (post-game data, identifiers, and season)
-# Season is dropped to prevent data leakage - model should learn patterns, not season-specific trends
-leakage_cols = ['game_id', 'date', 'home_score', 'away_score', 'season']
-train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
-val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
-test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
-
-# Separate features and target
-X_train, y_train = train_data.drop('home_won', axis=1), train_data['home_won']
-X_val, y_val = val_data.drop('home_won', axis=1), val_data['home_won']
-X_test, y_test = test_data.drop('home_won', axis=1), test_data['home_won']
-
-# Convert categorical columns (team names) to category dtype
-categorical_cols = X_train.select_dtypes(exclude=np.number).columns.tolist()
-for col in categorical_cols:
-    X_train[col] = X_train[col].astype('category')
-    X_val[col] = X_val[col].astype('category')
-    X_test[col] = X_test[col].astype('category')
-
-print("Training shape:", X_train.shape)
-print("Validation shape:", X_val.shape)
-print("Test shape:", X_test.shape)
-print("\nFeature dtypes:")
-print(X_train.dtypes)
-
-# Train the model with early stopping
-print("\n" + "="*60)
-print("TRAINING MODEL")
-print("="*60)
-basketball_model.train(X_train, y_train, X_val, y_val, verbose=100)  # Show eval every 100 rounds
-
-# Evaluate on validation set
-val_accuracy, val_brier, val_logloss, val_auc = basketball_model.evaluate(X_val, y_val)
-print(f"\nValidation Metrics (2023-24):")
-print(f"Accuracy: {val_accuracy:.4f}")
-print(f"Brier Score: {val_brier:.4f}")
-print(f"Log Loss: {val_logloss:.4f}")
-print(f"AUC-ROC: {val_auc:.4f}")
-
-# Evaluate on test set
-test_accuracy, test_brier, test_logloss, test_auc = basketball_model.evaluate(X_test, y_test)
-print(f"\nTest Metrics (2024-25):")
-print(f"Accuracy: {test_accuracy:.4f}")
-print(f"Brier Score: {test_brier:.4f}")
-print(f"Log Loss: {test_logloss:.4f}")
-print(f"AUC-ROC: {test_auc:.4f}")
-
-# Generate diagnostic plots
-basketball_model.plot_diagnostics(X_val, y_val, X_test, y_test, save_dir='./plots/basketball')
-
-# Print prediction summary
-basketball_model.print_prediction_summary(X_test, y_test)
-
-# basketball_model.save('././models/basketball_model.')

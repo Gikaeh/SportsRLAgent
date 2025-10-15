@@ -1,3 +1,4 @@
 idea_for_project.txt
 .venv
 plots
+__pycache__

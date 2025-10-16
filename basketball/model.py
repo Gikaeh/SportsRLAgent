@@ -315,3 +315,20 @@ class BasketballModel:
             print(f"\nAccuracy on High Confidence Predictions: {correct[high_conf_mask].mean():.3f}")
         
         print("="*60)
+
+    def analyze_calibration(self, y_true, y_pred_proba):    
+        bins = [0, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 1.0]
+        
+        for i in range(len(bins)-1):
+            mask = (y_pred_proba >= bins[i]) & (y_pred_proba < bins[i+1])
+            if mask.sum() > 0:
+                actual_win_rate = y_true[mask].mean()
+                predicted_avg = y_pred_proba[mask].mean()
+                print(f"Predicted {bins[i]:.0%}-{bins[i+1]:.0%}: "
+                    f"Avg pred={predicted_avg:.1%}, "
+                    f"Actual={actual_win_rate:.1%}, "
+                    f"n={mask.sum()}")
+
+    def save_model(self, path):
+        self.model.save_model(path)
+        

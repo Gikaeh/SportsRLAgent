@@ -31,37 +31,35 @@ class NBATrainingDataPreparer:
         for team, team_df in df.groupby('TEAM_ABBREVIATION'):
             team_df = team_df.reset_index(drop=True)
             
+            # Convert WL to numeric for rolling calculation
+            team_df['win_flag'] = (team_df['WL'] == 'W').astype(int)
+            
             # Calculate rolling 10-game statistics (shifted by 1 to exclude current game)
             # This prevents data leakage by only using previous games
-            team_df['wins_l10'] = team_df['WL'].apply(lambda x: 1 if x == 'W' else 0).rolling(window=10, min_periods=1).sum().shift(1)
+            # Using min_periods=1 allows calculation to start, but we'll drop first 10 games later
+            team_df['wins_l10'] = team_df['win_flag'].rolling(window=10, min_periods=1).sum().shift(1)
             team_df['ppg_l10'] = team_df['PTS'].rolling(window=10, min_periods=1).mean().shift(1)
             team_df['opp_ppg_l10'] = team_df['OPP_PTS'].rolling(window=10, min_periods=1).mean().shift(1)
             team_df['fg_pct_l10'] = team_df['FG_PCT'].rolling(window=10, min_periods=1).mean().shift(1)
             team_df['fg3_pct_l10'] = team_df['FG3_PCT'].rolling(window=10, min_periods=1).mean().shift(1)
-            # team_df['reb_l10'] = team_df['REB'].rolling(window=10, min_periods=1).mean().shift(1)
-            # team_df['ast_l10'] = team_df['AST'].rolling(window=10, min_periods=1).mean().shift(1)
-            # team_df['tov_l10'] = team_df['TOV'].rolling(window=10, min_periods=1).mean().shift(1)
+            team_df['reb_l10'] = team_df['REB'].rolling(window=10, min_periods=1).mean().shift(1)
+            team_df['ast_l10'] = team_df['AST'].rolling(window=10, min_periods=1).mean().shift(1)
+            team_df['tov_l10'] = team_df['TOV'].rolling(window=10, min_periods=1).mean().shift(1)
             team_df['plus_minus_l10'] = team_df['PLUS_MINUS'].rolling(window=10, min_periods=1).mean().shift(1)
             
             # Calculate net rating (simplified: point differential per game)
             team_df['net_rating_l10'] = team_df['plus_minus_l10']
             
-            # Fill NaN values for first game (no previous games available)
-            # Use 0 as default for first game statistics
-            team_df['wins_l10'] = team_df['wins_l10'].fillna(0)
-            team_df['ppg_l10'] = team_df['ppg_l10'].fillna(0)
-            team_df['opp_ppg_l10'] = team_df['opp_ppg_l10'].fillna(0)
-            team_df['fg_pct_l10'] = team_df['fg_pct_l10'].fillna(0)
-            team_df['fg3_pct_l10'] = team_df['fg3_pct_l10'].fillna(0)
-            team_df['plus_minus_l10'] = team_df['plus_minus_l10'].fillna(0)
-            team_df['net_rating_l10'] = team_df['net_rating_l10'].fillna(0)
+            # Drop first 10 games of the season (not enough history for full L10 stats)
+            # After shift(1), game 11 will have stats from games 1-10
+            team_df = team_df.iloc[10:].copy()
             
             # Select relevant columns
             team_l10 = team_df[[
                 'TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID',
                 'wins_l10', 'ppg_l10', 'opp_ppg_l10', 
                 'fg_pct_l10', 'fg3_pct_l10', 
-                # 'reb_l10', 'ast_l10', 'tov_l10', 
+                'reb_l10', 'ast_l10', 'tov_l10', 
                 'net_rating_l10'
             ]]
             
@@ -73,7 +71,6 @@ class NBATrainingDataPreparer:
         df = df.sort_values(['TEAM_ABBREVIATION', 'GAME_DATE'])
         df['prev_game_date'] = df.groupby('TEAM_ABBREVIATION')['GAME_DATE'].shift(1)
         df['rest_days'] = (df['GAME_DATE'] - df['prev_game_date']).dt.days - 1
-        df['rest_days'] = df['rest_days'].fillna(3)  # First game of season, assume 3 days rest
         df['is_back_to_back'] = (df['rest_days'] == 0).astype(int)
         return df
     
@@ -109,19 +106,16 @@ class NBATrainingDataPreparer:
         return pd.concat(rolling_stats, ignore_index=True)
     
     def getTopPlayersWithStats(self, player_df, game_id, team_abbr, top_n=6):
-        """Get top N players for a game with their precomputed rolling averages."""
         # Filter for specific game and team
-        game_players = player_df[(player_df['GAME_ID'] == game_id) & 
-                                  (player_df['TEAM_ABBREVIATION'] == team_abbr)].copy()
+        game_players = player_df[(player_df['GAME_ID'] == game_id) & (player_df['TEAM_ABBREVIATION'] == team_abbr)].copy()
         
-        if game_players.empty:
+        if game_players.empty or len(game_players) < top_n:
             return pd.DataFrame()
         
         # Sort by minutes played and get top N
         game_players = game_players.sort_values('MIN', ascending=False).head(top_n)
         
-        return game_players[['PLAYER_ID', 'ppg_rolling', 'fg_pct_rolling', 
-                            'mpg_rolling', 'plus_minus_rolling']]
+        return game_players[['PLAYER_ID', 'ppg_rolling', 'fg_pct_rolling', 'mpg_rolling', 'plus_minus_rolling']]
     
     def addPlayerFeatures(self, matchup_data, season):
         print(f"Adding player features for {season}...")
@@ -156,10 +150,7 @@ class NBATrainingDataPreparer:
                     game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling']
                 else:
                     # No player data available
-                    game_features[f'{prefix}ppg'] = 0
-                    game_features[f'{prefix}fg_pct'] = 0
-                    game_features[f'{prefix}mpg'] = 0
-                    game_features[f'{prefix}plus_minus'] = 0
+                    print(f"No player data available for {home_team} in game {game_id}")
             
             # Get top 6 players for away team with precomputed stats
             away_players = self.getTopPlayersWithStats(player_df, game_id, away_team, top_n=6)
@@ -173,10 +164,7 @@ class NBATrainingDataPreparer:
                     game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling']
                 else:
                     # No player data available
-                    game_features[f'{prefix}ppg'] = 0
-                    game_features[f'{prefix}fg_pct'] = 0
-                    game_features[f'{prefix}mpg'] = 0
-                    game_features[f'{prefix}plus_minus'] = 0
+                    print(f"No player data available for {away_team} in game {game_id}")
             
             player_features.append(game_features)
         
@@ -226,18 +214,19 @@ class NBATrainingDataPreparer:
         home_games = games_df[games_df['is_home']].copy()
         away_games = games_df[~games_df['is_home']].copy()
         
-        # Merge with team features
+        # Merge with team features (use 'inner' to exclude games without L10 stats)
+        # This automatically drops the first 10 games for each team
         home_features = home_games.merge(
             team_features,
             on=['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID'],
-            how='left',
+            how='inner',
             suffixes=('', '_home')
         )
         
         away_features = away_games.merge(
             team_features,
             on=['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID'],
-            how='left',
+            how='inner',
             suffixes=('', '_away')
         )
         

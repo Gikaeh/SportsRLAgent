@@ -81,6 +81,8 @@ class ModelRetrainer:
     def countAvailableGames(self):
         master_file = self.training_data_dir / 'all_seasons_training_data.csv'
         season_count = self.retrain_config['keep_recent_seasons']
+        self.basketball_data.getAllSeasonData()
+        self.preparer.prepareAllSeasons()
 
         if season_count is None:
             df = pd.read_csv(master_file)

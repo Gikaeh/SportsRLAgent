@@ -39,18 +39,21 @@ class BasketballData:
                     
     def getSeasonGames(self, season):
         print(f"\nFetching game results for {season}...")
+        
         gamefinder = leaguegamefinder.LeagueGameFinder(season_nullable=season)
         games = gamefinder.get_data_frames()[0]
         games = games[games['TEAM_NAME'].isin(self.teams_to_keep)]
         games.drop(games[games['GAME_DATE'] < f'{season.split("-")[0]}-10-01'].index, inplace=True)
         games.sort_values(by=['GAME_DATE', 'TEAM_NAME'], inplace=True)
         games.to_csv(f'{self.data_dir}/game_data/{season}_game_stats.csv', index=False)
+        
         time.sleep(1)
         
     def getTeamGames(self, season):
         all_team_logs = []
         team_list = teams.get_teams()
         print(f"Fetching team stats for {season}...")
+        
         for team in tqdm(team_list, desc=f"Teams ({season})"):
             team_logs = teamgamelogs.TeamGameLogs(season_nullable=season, team_id_nullable=team['id'])
             all_team_logs.append(team_logs.get_data_frames()[0])
@@ -64,6 +67,7 @@ class BasketballData:
         
     def getPlayerGames(self, season):
         print(f"\nFetching player stats for {season}...")
+        
         player_logs = playergamelogs.PlayerGameLogs(season_nullable=season)
         player_data = player_logs.get_data_frames()[0]
         player_data = player_data[player_data['TEAM_NAME'].isin(self.teams_to_keep)]
@@ -74,7 +78,9 @@ class BasketballData:
     def getTeamYearlyStats(self):
         for team in tqdm(teams.get_teams(), desc="Teams"):
             team_abbreviation = team['abbreviation'].lower()
+            
             print(f"\nFetching team yearly stats for {team_abbreviation}...")
+            
             team_yearly_stats = teamyearbyyearstats.TeamYearByYearStats(team_id=team['id'])
             team_yearly_data = team_yearly_stats.get_data_frames()[0]
             team_yearly_data.to_csv(f'{self.data_dir}/season_data/{team_abbreviation}_season_stats.csv', index=False)
@@ -83,14 +89,19 @@ class BasketballData:
         today = pd.Timestamp.now().normalize()
         tomorrow = today + pd.Timedelta(days=2)
         columns = ['gameId', 'gameDateEst', 'homeTeam_teamName', 'homeTeam_teamTricode', 'awayTeam_teamName', 'awayTeam_teamTricode']
+        
         gamefinder = scheduleleaguev2.ScheduleLeagueV2()
+        
         games = gamefinder.get_data_frames()[0]
         games = games[columns]
         games.rename(columns={'gameId': 'GAME_ID', 'gameDateEst': 'GAME_DATE', 'homeTeam_teamName': 'HOME_TEAM', 'awayTeam_teamName': 'AWAY_TEAM', 'homeTeam_teamTricode': 'TEAM_ABB_HOME', 'awayTeam_teamTricode': 'TEAM_ABB_AWAY'}, inplace=True)
         games = games[(games['GAME_DATE'] <= tomorrow.strftime('%Y-%m-%dT%H:%M:%SZ')) & (games['GAME_DATE'] >= today.strftime('%Y-%m-%dT%H:%M:%SZ'))]
         games['HOME_TEAM'] = games['HOME_TEAM'].apply(self.matchTeamName)
         games['AWAY_TEAM'] = games['AWAY_TEAM'].apply(self.matchTeamName)
+        
         games.to_csv(f'{self.data_dir}/upcoming_games.csv', index=False)
+
+        return games
 
     def matchTeamName(self, substring):
         for team in self.teams_to_keep:

@@ -1,7 +1,6 @@
 from data_pipeline.basketball_data import BasketballData
 from data_pipeline.prepare_data import NBATrainingDataPreparer
 import pandas as pd
-from datetime import datetime, timedelta
 from pathlib import Path
 
 class LiveDataUpdater:
@@ -17,10 +16,7 @@ class LiveDataUpdater:
         print(f"Fetching upcoming games")
         print(f"{'='*60}")
         
-        self.basketball_data.getUpcomingGames()
-        
-        upcoming_games_file = self.data_dir / 'upcoming_games.csv'
-        games_df = pd.read_csv(upcoming_games_file)
+        games_df = self.basketball_data.getUpcomingGames()
         games_df['GAME_DATE'] = pd.to_datetime(games_df['GAME_DATE'])
         
         if games_df.empty:

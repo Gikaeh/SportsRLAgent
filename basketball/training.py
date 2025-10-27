@@ -1,13 +1,12 @@
-from basketball_data import BasketballData
-from prepare_data import NBATrainingDataPreparer
+from data_pipeline.basketball_data import BasketballData
+from data_pipeline.prepare_data import NBATrainingDataPreparer
 from model import BasketballModel
 from sklearn.model_selection import train_test_split
-import numpy as np
 
 basketball_data = BasketballData()
 basketball_data.getAllSeasonData()
 
-preparer = NBATrainingDataPreparer(data_dir='./data/basketball')
+preparer = NBATrainingDataPreparer(data_dir='././data/basketball')
 
 print("NBA Training Data Preparation - Phase 1")
 print("="*60)
@@ -48,15 +47,15 @@ print("\n" + "="*60)
 print("HYPERPARAMETER TUNING")
 print("="*60)
 
-best_params = basketball_model.tune_hyperparameters(X_train, y_train, X_val, y_val, n_trials=100, metric='logloss')
+best_params = basketball_model.tuneHyperparameters(X_train, y_train, X_val, y_val, n_trials=100, metric='logloss')
 
 # Train the model with early stopping
 print("\n" + "="*60)
 print("TRAINING MODEL")
 print("="*60)
-basketball_model.train_with_best_params(X_train, y_train, X_val, y_val, verbose=50)  # Show eval every 100 rounds
+basketball_model.trainWithBestParams(X_train, y_train, X_val, y_val, verbose=50)  # Show eval every 100 rounds
 
-basketball_model.analyze_calibration(y_val, basketball_model.predict_proba(X_val)[:, 1])
+basketball_model.analyzeCalibration(y_val, basketball_model.predict_proba(X_val)[:, 1])
 
 # Evaluate on validation set
 val_accuracy, val_brier, val_logloss, val_auc = basketball_model.evaluate(X_val, y_val)
@@ -74,10 +73,10 @@ print(f"Brier Score: {test_brier:.4f}")
 print(f"Log Loss: {test_logloss:.4f}")
 print(f"AUC-ROC: {test_auc:.4f}")
 
-basketball_model.save_model('./models/basketball_model.json')
+basketball_model.saveModel('././models/basketball_model.json')
 
 # Generate diagnostic plots
-basketball_model.plot_diagnostics(X_val, y_val, X_test, y_test, save_dir='./plots/basketball')
+basketball_model.plotDiagnostics(X_val, y_val, X_test, y_test, save_dir='././plots/basketball')
 
 # Print prediction summary
-basketball_model.print_prediction_summary(X_test, y_test)
+basketball_model.printPredictionSummary(X_test, y_test)

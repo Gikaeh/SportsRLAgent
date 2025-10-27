@@ -54,12 +54,12 @@ class BasketballModel:
         return self.model.predict_proba(X_test)
     
     def save(self, path):
-        self.model.save_model(path)
+        self.model.saveModel(path)
     
     def load(self, path):
         self.model.load_model(path)
     
-    def tune_hyperparameters(self, X_train, y_train, X_val, y_val, n_trials=100, metric='logloss'):
+    def tuneHyperparameters(self, X_train, y_train, X_val, y_val, n_trials=100, metric='logloss'):
         print(f"\nStarting hyperparameter tuning with {n_trials} trials...")
         print(f"Optimizing for: {metric}")
         
@@ -125,9 +125,9 @@ class BasketballModel:
         
         return self.best_params
     
-    def train_with_best_params(self, X_train, y_train, X_val=None, y_val=None, verbose=True):
+    def trainWithBestParams(self, X_train, y_train, X_val=None, y_val=None, verbose=True):
         if self.best_params is None:
-            raise ValueError("No best parameters found. Run tune_hyperparameters() first.")
+            raise ValueError("No best parameters found. Run tuneHyperparameters() first.")
         
         print("\nTraining model with best hyperparameters...")
         
@@ -155,18 +155,15 @@ class BasketballModel:
         else:
             self.model.fit(X_train, y_train)
     
-    def get_best_params(self):
-        """Return the best parameters found during tuning."""
+    def getBestParams(self):
         return self.best_params
     
-    def plot_diagnostics(self, X_val, y_val, X_test, y_test, save_dir='./plots'):
+    def plotDiagnostics(self, X_val, y_val, X_test, y_test, save_dir='./plots'):
         Path(save_dir).mkdir(parents=True, exist_ok=True)
         
         # Get predictions
         val_proba = self.model.predict_proba(X_val)[:, 1]
         test_proba = self.model.predict_proba(X_test)[:, 1]
-        val_pred = self.model.predict(X_val)
-        test_pred = self.model.predict(X_test)
         
         # 1. Feature Importance Plot
         self.plotFeatureImportance(save_dir)
@@ -175,7 +172,7 @@ class BasketballModel:
         self.plotRocCurves(y_val, val_proba, y_test, test_proba, save_dir)
         
         # 3. Calibration Plot (Reliability Diagram)
-        self._plot_calibration(y_val, val_proba, y_test, test_proba, save_dir)
+        self.plotCalibration(y_val, val_proba, y_test, test_proba, save_dir)
         
         # 4. Confidence vs Accuracy Plot
         self.plotConfidenceAccuracy(y_val, val_proba, y_test, test_proba, save_dir)
@@ -217,7 +214,7 @@ class BasketballModel:
         plt.savefig(f'{save_dir}/roc_curves.png', dpi=300, bbox_inches='tight')
         plt.close()
     
-    def _plot_calibration(self, y_val, val_proba, y_test, test_proba, save_dir):
+    def plotCalibration(self, y_val, val_proba, y_test, test_proba, save_dir):
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
         
         for ax, y_true, y_prob, title in [(ax1, y_val, val_proba, 'Validation'),
@@ -252,8 +249,7 @@ class BasketballModel:
     def plotConfidenceAccuracy(self, y_val, val_proba, y_test, test_proba, save_dir):
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
         
-        for ax, y_true, y_prob, title in [(ax1, y_val, val_proba, 'Validation'),
-                                           (ax2, y_test, test_proba, 'Test')]:
+        for ax, y_true, y_prob, title in [(ax1, y_val, val_proba, 'Validation'), (ax2, y_test, test_proba, 'Test')]:
             # Convert probabilities to confidence (distance from 0.5)
             confidence = np.abs(y_prob - 0.5) * 2  # Scale to 0-1
             predictions = (y_prob > 0.5).astype(int)
@@ -287,7 +283,7 @@ class BasketballModel:
         plt.savefig(f'{save_dir}/confidence_accuracy.png', dpi=300, bbox_inches='tight')
         plt.close()
     
-    def print_prediction_summary(self, X_test, y_test, team_col='home_team'):
+    def printPredictionSummary(self, X_test, y_test, team_col='home_team'):
         proba = self.model.predict_proba(X_test)[:, 1]
         pred = self.model.predict(X_test)
         
@@ -316,7 +312,7 @@ class BasketballModel:
         
         print("="*60)
 
-    def analyze_calibration(self, y_true, y_pred_proba):    
+    def analyzeCalibration(self, y_true, y_pred_proba):    
         bins = [0, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 1.0]
         
         for i in range(len(bins)-1):
@@ -329,6 +325,6 @@ class BasketballModel:
                     f"Actual={actual_win_rate:.1%}, "
                     f"n={mask.sum()}")
 
-    def save_model(self, path):
+    def saveModel(self, path):
         self.model.save_model(path)
         

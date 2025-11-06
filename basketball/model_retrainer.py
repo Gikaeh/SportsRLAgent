@@ -1,6 +1,3 @@
-"""
-Model Retrainer - Incrementally updates the model with new game results
-"""
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -20,7 +17,6 @@ class ModelRetrainer:
         self.preparer = NBATrainingDataPreparer(data_dir=str(data_dir))
         self.basketball_data = BasketballData()
         
-        # Load existing model
         self.model = BasketballModel()
         if self.model_path.exists():
             self.model.load(str(self.model_path))
@@ -28,16 +24,14 @@ class ModelRetrainer:
         else:
             print(f"No existing model found at {self.model_path}")
         
-        # Retraining config
         self.retrain_config = {
-            'min_new_games': 50,  # Minimum new games before retraining
-            'retrain_frequency_days': 7,  # Retrain weekly
+            'min_new_games': 50,
+            'retrain_frequency_days': 7,
             'test_split': 0.2,
             'validation_split': 0.5,
             'keep_recent_seasons': None,
         }
         
-        # Load retraining metadata
         self.metadata_path = self.model_path.parent / 'retraining_metadata.json'
         self.metadata = self.loadMetadata()
     
@@ -58,18 +52,15 @@ class ModelRetrainer:
             json.dump(self.metadata, f, indent=2)
     
     def checkIfRetrainNeeded(self):
-        # Check if never trained
         if self.metadata['last_retrain_date'] is None:
             return True, "Initial training required"
         
-        # Check time since last retrain
         last_retrain = datetime.fromisoformat(self.metadata['last_retrain_date'])
         days_since_retrain = (datetime.now() - last_retrain).days
         
         if days_since_retrain >= self.retrain_config['retrain_frequency_days']:
             return True, f"Scheduled retrain ({days_since_retrain} days since last retrain)"
         
-        # Check for new games
         current_game_count = self.countAvailableGames()
         new_games = current_game_count - self.metadata['total_games_trained']
         
@@ -101,26 +92,23 @@ class ModelRetrainer:
         print("PREPARING TRAINING DATA")
         print("="*60)
         
-        # Prepare all seasons (this will update with new games)
         training_data = self.preparer.prepareAllSeasons()
+        print('hello')
         
         if training_data is None or training_data.empty:
             print("No training data available")
             return None
         
-        # Optionally filter to recent seasons only
         if seasons is not None:
             training_data = training_data[training_data['season'].isin(seasons)]
 
         elif self.retrain_config['keep_recent_seasons'] is not None:
-            # Keep only most recent N seasons
             unique_seasons = sorted(training_data['season'].unique())
             recent_seasons = unique_seasons[-self.retrain_config['keep_recent_seasons']:]
             training_data = training_data[training_data['season'].isin(recent_seasons)]
             print(f"Using recent seasons: {', '.join(recent_seasons)}")
         
         print(f"Total games in training data: {len(training_data)}")
-        print(f"Date range: {training_data['date'].min()} to {training_data['date'].max()}")
         
         return training_data
     
@@ -129,24 +117,20 @@ class ModelRetrainer:
         print("MODEL RETRAINING")
         print("="*80)
         
-        # Fetch latest results if needed
         if training_data is None:
             training_data = self.prepareTrainingData()
         
         if training_data is None or training_data.empty:
             return {'success': False, 'error': 'No training data available'}
         
-        # Split data
         train_data, test_data = train_test_split(training_data, test_size=self.retrain_config['test_split'], random_state=42)
         val_data, test_data = train_test_split(test_data, test_size=self.retrain_config['validation_split'], random_state=42)
         
-        # Drop leakage columns
         leakage_cols = ['game_id', 'date', 'home_score', 'away_score', 'season', 'home_team', 'away_team']
         train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
         val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
         test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
         
-        # Separate features and target
         X_train, y_train = train_data.drop('home_won', axis=1), train_data['home_won']
         X_val, y_val = val_data.drop('home_won', axis=1), val_data['home_won']
         X_test, y_test = test_data.drop('home_won', axis=1), test_data['home_won']
@@ -154,10 +138,8 @@ class ModelRetrainer:
         print(f"\nTraining set: {len(X_train)} games")
         print(f"Test set: {len(X_test)} games")
         
-        # Create new model instance
         self.model = BasketballModel()
         
-        # Optionally tune hyperparameters
         if tune_hyperparameters:
             print(f"\n{'='*60}")
             print("HYPERPARAMETER TUNING")
@@ -166,12 +148,10 @@ class ModelRetrainer:
             self.model.trainWithBestParams(X_train, y_train, X_val, y_val, verbose=50)
             self.model.analyzeCalibration(y_val, self.model.predict_proba(X_val)[:, 1])
         else:
-            # Use existing hyperparameters or defaults
             print("\nTraining with existing hyperparameters...")
             self.model.train(X_train, y_train, X_val, y_val, verbose=50)
             self.model.analyzeCalibration(y_val, self.model.predict_proba(X_val)[:, 1])
         
-        # Evaluate
         val_accuracy, val_brier, val_logloss, val_auc = self.model.evaluate(X_val, y_val)
         test_accuracy, test_brier, test_logloss, test_auc = self.model.evaluate(X_test, y_test)
         
@@ -187,14 +167,11 @@ class ModelRetrainer:
         print(f"Test Log Loss: {test_logloss:.4f}")
         print(f"Test AUC-ROC: {test_auc:.4f}")
         
-        # Save model
         self.model.saveModel(str(self.model_path))
         print(f"\nModel saved to {self.model_path}")
 
-        # Generate diagnostic plots
         self.model.plotDiagnostics(X_val, y_val, X_test, y_test, save_dir=self.plot_dir)
         
-        # Update metadata
         self.metadata['last_retrain_date'] = datetime.now().isoformat()
         self.metadata['total_games_trained'] = len(training_data)
         self.metadata['model_version'] += 1
@@ -254,7 +231,7 @@ class ModelRetrainer:
         print(f"Total Games Trained: {self.metadata['total_games_trained']}")
         print(f"\nRetrain History ({len(self.metadata['retrain_history'])} retrains):")
         
-        for i, entry in enumerate(self.metadata['retrain_history'][-5:], 1):  # Show last 5
+        for i, entry in enumerate(self.metadata['retrain_history'][-5:], 1):
             print(f"\n  #{i} - {entry['date']}")
             print(f"     Games: {entry['games_trained']}")
             print(f"     Validation Accuracy: {entry['val_accuracy']:.4f}")

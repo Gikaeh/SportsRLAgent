@@ -646,11 +646,6 @@ class NBATrainingDataPreparer:
             'home_team': matchup_data['TEAM_ABBREVIATION_home'],
             'away_team': matchup_data['TEAM_ABBREVIATION_away'],
             
-            # Game outcome
-            'home_score': matchup_data['PTS_home'],
-            'away_score': matchup_data['PTS_away'],
-            'home_won': (matchup_data['WL_home'] == 'W').astype(int),
-            
             # Team Performance (16 features)
             'home_wins_l10': matchup_data['wins_l10_home'],
             'away_wins_l10': matchup_data['wins_l10_away'],
@@ -753,7 +748,7 @@ class NBATrainingDataPreparer:
                 raise ValueError(f"Current season {current_season} has insufficient games (need 11+ per team) to generate predictions")
             raise ValueError(f"createUpcomingMatchupData returned empty dataframe. Data may be corrupted or no upcoming games found.")
         
-        feature_cols = ['wins_l10_home', 'wins_l10_away', 'opp_ppg_l10_home', 'opp_ppg_l10_away']
+        feature_cols = ['home_wins_l10', 'away_wins_l10', 'home_opp_ppg_l10', 'away_opp_ppg_l10']
         if (prediction_data[feature_cols] == 0).all().all():
             raise ValueError(f"createUpcomingMatchupData returned all-zero features. Data may be corrupted.")
         
@@ -890,7 +885,7 @@ class NBATrainingDataPreparer:
             print(f"Master file created: {master_file}")
             print(f"Total games: {len(master_df)}")
             print(f"Seasons: {', '.join(seasons)}")
-            print(f"Date range: {master_df['date'].min()} to {master_df['date'].max()}")
+            # print(f"Date range: {master_df['date'].min()} to {master_df['date'].max()}")
             print(f"{'='*60}")
             
             return master_df

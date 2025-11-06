@@ -2,7 +2,7 @@
 Example Usage - Demonstrates how to use the betting system
 """
 from data_pipeline.live_data_updater import LiveDataUpdater
-# from betting_recommender import BettingRecommender
+from betting_recommender import BettingRecommender
 from model_retrainer import ModelRetrainer
 from betting_config import BettingConfig
 import pandas as pd
@@ -41,32 +41,32 @@ def example_1_get_todays_predictions():
         print(f"  Confidence: {game['confidence']:.1%}")
 
 
-# def example_2_betting_recommendations():
-#     """
-#     Example 2: Get betting recommendations with default odds
-#     """
-#     print("\n" + "="*80)
-#     print("EXAMPLE 2: Betting Recommendations")
-#     print("="*80)
+def example_2_betting_recommendations():
+    """
+    Example 2: Get betting recommendations with default odds
+    """
+    print("\n" + "="*80)
+    print("EXAMPLE 2: Betting Recommendations")
+    print("="*80)
     
-#     # Initialize
-#     updater = LiveDataUpdater()
-#     recommender = BettingRecommender()
+    # Initialize
+    updater = LiveDataUpdater()
+    recommender = BettingRecommender()
     
-#     # Get data and predictions
-#     prediction_data, game_info = updater.getPredictionReadyData()
+    # Get data and predictions
+    prediction_data, game_info = updater.getPredictionReadyData()
     
-#     if prediction_data.empty:
-#         print("No games today")
-#         return
+    if prediction_data.empty:
+        print("No games today")
+        return
     
-#     predictions = recommender.predict_games(prediction_data, game_info)
+    predictions = recommender.predict_games(prediction_data, game_info)
     
-#     # Make recommendations (using default -110 odds)
-#     recommendations = recommender.make_betting_recommendations(predictions)
+    # Make recommendations (using default -110 odds)
+    recommendations = recommender.make_betting_recommendations(predictions=predictions)
     
-#     # Display
-#     recommender.display_recommendations(recommendations)
+    # Display
+    recommender.display_recommendations(recommendations)
 
 def example_5_model_retraining():
     """
@@ -106,7 +106,7 @@ def main():
     
     examples = [
         ("Get Today's Predictions", example_1_get_todays_predictions),
-        # ("Betting Recommendations (Default Odds)", example_2_betting_recommendations),
+        ("Betting Recommendations (Default Odds)", example_2_betting_recommendations),
         ("Model Retraining", example_5_model_retraining),
     ]
     

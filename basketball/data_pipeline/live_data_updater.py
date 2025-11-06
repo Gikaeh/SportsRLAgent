@@ -58,10 +58,8 @@ class LiveDataUpdater:
             print("No features available for upcoming games.")
             return pd.DataFrame(), pd.DataFrame()
         
-        # Extract game info before dropping team identifiers
         game_info = game_features[['game_id', 'date', 'home_team', 'away_team']].copy()
         
-        # Drop all non-feature columns (identifiers, metadata, team names)
         leakage_cols = ['game_id', 'date', 'season', 'home_team', 'away_team']
         prediction_data = game_features.drop(columns=[col for col in leakage_cols if col in game_features.columns])
         

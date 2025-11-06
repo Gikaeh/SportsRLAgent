@@ -10,10 +10,10 @@ class BasketballData:
     def __init__(self, data_dir='././data/basketball'):
         self.data_dir = Path(data_dir)
         self.teams_to_keep = [
-            'Atlanta Hawks', 'Boston Celtics', 'Cleveland Cavaliers', 'New Orleans Pelicans', 'Chicago Bulls', 'Dallas Mavericks', 'Denver Nuggets', 'Golden State Warriors', 'Houston Rockets', 'Los Angeles Clippers',
+            'Atlanta Hawks', 'Boston Celtics', 'Cleveland Cavaliers', 'New Orleans Pelicans', 'Chicago Bulls', 'Dallas Mavericks', 'Denver Nuggets', 'Golden State Warriors', 'Houston Rockets', 'LA Clippers',
             'Los Angeles Lakers', 'Miami Heat', 'Milwaukee Bucks', 'Minnesota Timberwolves', 'Brooklyn Nets', 'New York Knicks', 'Orlando Magic', 'Indiana Pacers', 'Philadelphia 76ers', 'Phoenix Suns',
             'Portland Trail Blazers', 'Sacramento Kings', 'San Antonio Spurs', 'Oklahoma City Thunder', 'Toronto Raptors', 'Utah Jazz', 'Memphis Grizzlies', 'Washington Wizards', 'Detroit Pistons', 'Charlotte Hornets',
-            'New Jersey Nets', 'Charlotte Bobcats', 'Vancouver Grizzlies', 'New Orleans Hornets', ' Seattle SuperSonics', 'New Orleans/Oklahoma City Hornets'
+            'New Jersey Nets', 'Charlotte Bobcats', 'Vancouver Grizzlies', 'New Orleans Hornets', ' Seattle SuperSonics', 'New Orleans/Oklahoma City Hornets', 'Los Angeles Clippers'
         ]
         self.end_year = datetime.date.today().year if datetime.date.today().month >= 7 else datetime.date.today().year - 1
         self.game_files = [f.stem.replace('_game_stats', '') for f in self.data_dir.glob('game_data/*_game_stats.csv')]
@@ -87,7 +87,7 @@ class BasketballData:
 
     def getUpcomingGames(self):
         today = pd.Timestamp.now().normalize()
-        tomorrow = today + pd.Timedelta(days=2)
+        tomorrow = today + pd.Timedelta(days=1)
         columns = ['gameId', 'gameDateEst', 'homeTeam_teamName', 'homeTeam_teamTricode', 'awayTeam_teamName', 'awayTeam_teamTricode']
         
         gamefinder = scheduleleaguev2.ScheduleLeagueV2()
@@ -110,4 +110,4 @@ class BasketballData:
         return None
 
 dfsdf = BasketballData()
-dfsdf.getUpcomingGames()
+dfsdf.getSeasonGames('2025-26')

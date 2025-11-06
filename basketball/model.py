@@ -187,12 +187,39 @@ class BasketballModel:
         
         plt.figure(figsize=(10, 8))
         sns.barplot(data=importance_df, y='feature', x='importance', palette='viridis')
-        plt.title('Top 20 Feature Importances', fontsize=14, fontweight='bold')
+        plt.title(f'Top {len(importance_df)} Feature Importances', fontsize=14, fontweight='bold')
         plt.xlabel('Importance Score')
         plt.ylabel('Feature')
         plt.tight_layout()
         plt.savefig(f'{save_dir}/feature_importance.png', dpi=300, bbox_inches='tight')
         plt.close()
+    
+    def printLowImportanceFeatures(self, threshold=0.01):
+        importance_df = pd.DataFrame({
+            'feature': self.model.get_booster().feature_names,
+            'importance': self.model.feature_importances_
+        }).sort_values('importance', ascending=True)
+        
+        low_importance = importance_df[importance_df['importance'] < threshold]
+        
+        print(f"\nFeatures with importance < {threshold}:")
+        print(f"Total: {len(low_importance)} features\n")
+        
+        if len(low_importance) > 0:
+            print(f"{'Feature':<40} {'Importance':>12}")
+            print("-" * 52)
+            for _, row in low_importance.iterrows():
+                print(f"{row['feature']:<40} {row['importance']:>12.6f}")
+            
+            print("\n" + "="*52)
+            print("Copy-paste ready list for removal:")
+            print("="*52)
+            feature_list = "[\n    '" + "',\n    '".join(low_importance['feature'].tolist()) + "'\n]"
+            print(feature_list)
+        else:
+            print(f"No features found below threshold {threshold}")
+        
+        return low_importance['feature'].tolist()
     
     def plotRocCurves(self, y_val, val_proba, y_test, test_proba, save_dir):
         fpr_val, tpr_val, _ = roc_curve(y_val, val_proba)

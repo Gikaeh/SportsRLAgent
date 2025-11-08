@@ -196,6 +196,8 @@ class BettingRecommender:
             print("="*80)
             print("No games meet the minimum edge and confidence requirements.")
             return
+
+        recommendations.sort(key=lambda x: (x['confidence'], x['model_prob']), reverse=True)
         
         print("\n" + "="*80)
         print(f"BETTING RECOMMENDATIONS - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")

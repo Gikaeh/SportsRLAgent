@@ -9,7 +9,6 @@ class LiveDataUpdater:
         self.preparer = NBATrainingDataPreparer(data_dir=data_dir)
         self.data_dir = Path(data_dir)
         self.current_season = self.preparer.getCurrentSeason()
-        self.basketball_data.getAllSeasonData(season=self.current_season)
     
     def fetchTodaysGames(self):
         print(f"\n{'='*60}")
@@ -47,6 +46,7 @@ class LiveDataUpdater:
             return pd.DataFrame()
     
     def getPredictionReadyData(self):
+        self.basketball_data.getAllSeasonData(season=self.current_season)
         todays_games = self.fetchTodaysGames()
         
         if todays_games.empty:

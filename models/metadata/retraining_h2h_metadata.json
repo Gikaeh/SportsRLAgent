@@ -1,0 +1,20 @@
+{
+  "last_retrain_date": "2025-11-08T14:26:55.790207",
+  "total_games_trained": 28414,
+  "model_version": 2,
+  "retrain_history": [
+    {
+      "date": "2025-11-08T14:26:55.790207",
+      "games_trained": 28414,
+      "val_accuracy": 0.6800422386483632,
+      "val_brier_score": 0.20558351565606084,
+      "val_log_loss": 0.5969442331237039,
+      "val_auc_roc": 0.7277666213717716,
+      "test_accuracy": 0.6632653061224489,
+      "test_brier_score": 0.21256484393862726,
+      "test_log_loss": 0.612649665329458,
+      "test_auc_roc": 0.7090139140955839,
+      "hyperparameter_tuning": true
+    }
+  ]
+}

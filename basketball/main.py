@@ -1,0 +1,137 @@
+from data_pipeline.live_data_updater import LiveDataUpdater
+from betting.betting_recommender import BettingRecommender
+from model.model_retrainer import ModelRetrainer
+from pathlib import Path
+
+def main():
+    print("\n" + "="*80)
+    print("NBA BETTING SYSTEM")
+    print("="*80)
+    print("Choose an option to run:\n")
+    
+    options = [
+        ("Betting Recommendations", bettingRecommendations),
+        ("Betting Update", bettingUpdate),
+        ("Model Retraining", modelRetraining),
+    ]
+    
+    for i, (name, _) in enumerate(options, 1):
+        print(f"{i}. {name}")
+    
+    print("0. Exit")
+    
+    choice = input("\nEnter your choice: ")
+    
+    try:
+        choice = int(choice)
+        if choice == 0:
+            print("Exiting...")
+            return
+        elif choice == len(options) + 1:
+            for name, func in options:
+                print("\n" + "="*80)
+                input(f"Press Enter to run: {name}")
+                func()
+        elif 1 <= choice <= len(options):
+            options[choice - 1][1]()
+        else:
+            print("Invalid choice")
+    except ValueError:
+        print("Invalid input")
+    except Exception as e:
+        print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
+
+def bettingRecommendations():
+    print("\n" + "="*80)
+    print("Betting Recommendations")
+    print("="*80)
+
+    updater = LiveDataUpdater()
+
+    prediction_data, game_info = updater.getPredictionReadyData()
+
+    if prediction_data.empty:
+        print("No games today")
+        return
+
+    print("\nChoose an option to run: ")
+    print("1. H2H")
+    print("2. Spread")
+    print("3. All")
+    
+    choice = input("\nEnter your choice: ")
+    
+    if choice == '1':
+        recommender = BettingRecommender(model_path = './models/basketball_h2h_model.json')
+    
+        predictions = recommender.predictGames(prediction_data, game_info)
+        
+        recommendations = recommender.makeBettingRecommendations(predictions=predictions, model_type='h2h')
+    elif choice == '2':
+        recommender = BettingRecommender(model_path = './models/basketball_spread_model.json')
+    
+        predictions = recommender.predictGames(prediction_data, game_info)
+        
+        recommendations = recommender.makeBettingRecommendations(predictions=predictions, model_type='spread')
+    elif choice == '3':
+        recommender = BettingRecommender(model_path = './models/basketball_h2h_model.json')
+        recommender2 = BettingRecommender(model_path = './models/basketball_spread_model.json')
+    
+        predictions1 = recommender.predictGames(prediction_data, game_info)
+        predictions2 = recommender2.predictGames(prediction_data, game_info)
+        
+        recommendations1 = recommender.makeBettingRecommendations(predictions=predictions1, model_type='h2h')
+        recommendations2 = recommender2.makeBettingRecommendations(predictions=predictions2, model_type='spread')
+        
+        recommendations = pd.concat([recommendations1, recommendations2])
+    else:
+        print("Invalid choice")
+        return
+    
+    recommender.displayRecommendations(recommendations)
+
+    save = input("Would you like to save any of these recommendations? (y/n)\n")
+    if save.lower() == 'y':
+        games_to_save = input("Which ones would you like to save? (comma separated list of numbers or 0 for all)\n")
+        games_to_save = [int(game) for game in games_to_save.split(",")] if games_to_save != '0' else None
+        
+        recommender.logRecommendations(recommendations, games_to_save)
+
+def modelRetraining():
+    print("\n" + "="*80)
+    print("Model Retraining")
+    print("="*80)
+    
+    for model_path in Path('./models').glob('*.json'):
+        retrainer = ModelRetrainer(model_path=model_path, metadata_path=model_path.parent / f'metadata/retraining_{model_path.stem.split('_')[1]}_metadata.json')
+        
+        retrainer.getRetrainingStatus()
+        
+        should_retrain, reason = retrainer.checkIfRetrainNeeded()
+        print(f"\nShould retrain: {should_retrain}")
+        print(f"Reason: {reason}")
+        
+        if should_retrain:
+            result = retrainer.retrainModel()
+            
+            if result['success']:
+                print(f"\nRetraining successful!")
+                print(f"   Model Version: {result['model_version']}")
+                print(f"   Validation Accuracy: {result['val_accuracy']:.4f}")
+                print(f"   Test Accuracy: {result['test_accuracy']:.4f}")
+                print(f"   Games Trained: {result['games_trained']}")
+
+
+def bettingUpdate():
+    print("\n" + "="*80)
+    print("Betting Update")
+    print("="*80)
+    
+    recommender = BettingRecommender()
+
+    print(f"Current Bankroll: ${recommender.getCurrentBankroll():,.2f}")    
+
+if __name__ == "__main__":
+    main()

@@ -108,6 +108,3 @@ class BasketballData:
             if substring in team:
                 return team
         return None
-
-dfsdf = BasketballData()
-dfsdf.getSeasonGames('2025-26')

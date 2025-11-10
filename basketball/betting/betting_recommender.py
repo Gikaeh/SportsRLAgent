@@ -164,7 +164,7 @@ class BettingRecommender:
                         'reason': f"Edge: {away_edge:.1%}, Confidence: {game['confidence']:.1%}"
                     })
         
-        return pd.DataFrame(recommendations)
+        return recommendations
 
     def makeSpreadRecommendations(self, predictions):
         recommendations = []
@@ -272,7 +272,7 @@ class BettingRecommender:
                         'reason': f"Predicted Margin: {predicted_margin:.1f}, Away Spread: {away_spread:.1f}, Away Odds: {away_odds}, Edge: {away_margin_advantage:.1f}, Cover Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
                     })
         
-        return pd.DataFrame(recommendations)
+        return recommendations
 
     def marginToProbability(self, margin):
         k = 0.15
@@ -295,8 +295,8 @@ class BettingRecommender:
             print("No games meet the minimum edge and probability requirements.")
             return
         
-        # recommendations.sort(key=lambda x: (x['confidence']), reverse=True)
-        recommendations.sort_values(by='confidence', ascending=False, inplace=True)
+        recommendations.sort(key=lambda x: (x['confidence']), reverse=True)
+        # recommendations.sort_values(by='confidence', ascending=False, inplace=True)
         
         print("\n" + "="*80)
         print(f"BETTING RECOMMENDATIONS - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")

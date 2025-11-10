@@ -3,7 +3,8 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
 from sklearn.model_selection import train_test_split
-from model.model import BasketballModel
+from model.model_h2h import BasketballH2HModel
+from model.model_spread import BasketballSpreadModel
 from data_pipeline.prepare_data import NBATrainingDataPreparer
 from data_pipeline.basketball_data import BasketballData
 import json
@@ -16,8 +17,12 @@ class ModelRetrainer:
         self.training_data_dir = Path('./data/training_data/basketball/phase1')
         self.preparer = NBATrainingDataPreparer(data_dir=str(data_dir))
         self.basketball_data = BasketballData()
-        
-        self.model = BasketballModel()
+
+        if model_path.split('_')[1] == 'h2h':
+            self.model = BasketballH2HModel()
+        elif model_path.split('_')[1] == 'spread':
+            self.model = BasketballSpreadModel()
+
         if self.model_path.exists():
             self.model.load(str(self.model_path))
             print(f"Loaded existing model from {self.model_path}")
@@ -126,25 +131,53 @@ class ModelRetrainer:
         train_data, test_data = train_test_split(training_data, test_size=self.retrain_config['test_split'], random_state=42)
         val_data, test_data = train_test_split(test_data, test_size=self.retrain_config['validation_split'], random_state=42)
         
-        leakage_cols = ['game_id', 'date', 'home_score', 'away_score', 'season', 'home_team', 'away_team']
-        train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
-        val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
-        test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
+        if self.model.getModelType() == 'h2h':
+            leakage_cols = [
+                'game_id', 'date', 'home_score', 'away_score', 
+                'season', 'home_team', 'away_team', 'point_diff', 
+                'home_ppg_l10', 'away_ppg_l10', 'home_blk_l10', 'away_blk_l10', 
+                'home_stl_l10', 'away_stl_l10', 'home_fg_pct_l10', 'away_fg_pct_l10', 
+                'home_fg3_pct_l10', 'away_fg3_pct_l10'
+                ]
+
+            train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
+            val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
+            test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
+            
+            X_train, y_train = train_data.drop('home_won', axis=1), train_data['home_won']
+            X_val, y_val = val_data.drop('home_won', axis=1), val_data['home_won']
+            X_test, y_test = test_data.drop('home_won', axis=1), test_data['home_won']
+        elif self.model.getModelType() == 'spread':
+            leakage_cols = [
+                'game_id', 'date', 'home_score', 'away_score', 
+                'season', 'home_team', 'away_team', 'home_won',
+                'home_blk_l10', 'away_blk_l10', 'home_stl_l10', 'away_stl_l10', 
+                'home_fg_pct_l10', 'away_fg_pct_l10', 'home_fg3_pct_l10', 'away_fg3_pct_l10'
+                ]
+
+            train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
+            val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
+            test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
+            
+            X_train, y_train = train_data.drop('home_won', axis=1), train_data['home_won']
+            X_val, y_val = val_data.drop('home_won', axis=1), val_data['home_won']
+            X_test, y_test = test_data.drop('home_won', axis=1), test_data['home_won']
         
-        X_train, y_train = train_data.drop('home_won', axis=1), train_data['home_won']
-        X_val, y_val = val_data.drop('home_won', axis=1), val_data['home_won']
-        X_test, y_test = test_data.drop('home_won', axis=1), test_data['home_won']
+        
         
         print(f"\nTraining set: {len(X_train)} games")
         print(f"Test set: {len(X_test)} games")
         
-        self.model = BasketballModel()
+        if self.model.getModelType() == 'h2h':
+            self.model = BasketballH2HModel()
+        elif self.model.getModelType() == 'spread':
+            self.model = BasketballSpreadModel()
         
         if tune_hyperparameters:
             print(f"\n{'='*60}")
             print("HYPERPARAMETER TUNING")
             print(f"{'='*60}")
-            best_params = self.model.tuneHyperparameters(X_train, y_train, X_val, y_val, n_trials=n_trials, metric='logloss')
+            best_params = self.model.tuneHyperparameters(X_train, y_train, X_val, y_val, n_trials=n_trials)
             self.model.trainWithBestParams(X_train, y_train, X_val, y_val, verbose=50)
             self.model.analyzeCalibration(y_val, self.model.predictProb(X_val)[:, 1])
         else:

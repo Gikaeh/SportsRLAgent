@@ -12,6 +12,7 @@ def main():
     options = [
         ("Betting Recommendations", bettingRecommendations),
         ("Betting Update", bettingUpdate),
+        ("Active Bets", activeBets),
         ("Model Retraining", modelRetraining),
     ]
     
@@ -50,12 +51,6 @@ def bettingRecommendations():
 
     updater = LiveDataUpdater()
 
-    prediction_data, game_info = updater.getPredictionReadyData()
-
-    if prediction_data.empty:
-        print("No games today")
-        return
-
     print("\nChoose an option to run: ")
     print("1. H2H")
     print("2. Spread")
@@ -64,28 +59,45 @@ def bettingRecommendations():
     choice = input("\nEnter your choice: ")
     
     if choice == '1':
+        prediction_data, game_info = updater.getPredictionReadyData(model_type='h2h')
+
+        if prediction_data.empty:
+            print("No games today")
+            return
+        
         recommender = BettingRecommender(model_path = './models/basketball_h2h_model.json')
     
         predictions = recommender.predictGames(prediction_data, game_info)
         
-        recommendations = recommender.makeBettingRecommendations(predictions=predictions, model_type='h2h')
+        recommendations = recommender.makeBettingRecommendations(predictions=predictions)
     elif choice == '2':
+        prediction_data, game_info = updater.getPredictionReadyData(model_type='spread')
+
+        if prediction_data.empty:
+            print("No games today")
+            return
+        
         recommender = BettingRecommender(model_path = './models/basketball_spread_model.json')
     
         predictions = recommender.predictGames(prediction_data, game_info)
         
-        recommendations = recommender.makeBettingRecommendations(predictions=predictions, model_type='spread')
+        recommendations = recommender.makeBettingRecommendations(predictions=predictions)
     elif choice == '3':
+        prediction_data_h2h, prediction_data_spread, game_info = updater.getPredictionReadyData(model_type='all')
+
+        if prediction_data_h2h.empty:
+            print("No games today")
+            return
+
         recommender = BettingRecommender(model_path = './models/basketball_h2h_model.json')
-        recommender2 = BettingRecommender(model_path = './models/basketball_spread_model.json')
-    
-        predictions1 = recommender.predictGames(prediction_data, game_info)
-        predictions2 = recommender2.predictGames(prediction_data, game_info)
+        predictions = recommender.predictGames(prediction_data_h2h, game_info)
+        recommendations_h2h = recommender.makeBettingRecommendations(predictions=predictions)
         
-        recommendations1 = recommender.makeBettingRecommendations(predictions=predictions1, model_type='h2h')
-        recommendations2 = recommender2.makeBettingRecommendations(predictions=predictions2, model_type='spread')
+        recommender = BettingRecommender(model_path = './models/basketball_spread_model.json')
+        predictions = recommender.predictGames(prediction_data_spread, game_info)
+        recommendations_spread = recommender.makeBettingRecommendations(predictions=predictions)
         
-        recommendations = pd.concat([recommendations1, recommendations2])
+        recommendations = recommendations_h2h + recommendations_spread
     else:
         print("Invalid choice")
         return
@@ -129,8 +141,20 @@ def bettingUpdate():
     print("Betting Update")
     print("="*80)
     
-    recommender = BettingRecommender()
+    recommender = BettingRecommender(model_path = './models/basketball_h2h_model.json')
 
+    print(f"Current Bankroll: ${recommender.getCurrentBankroll():,.2f}")
+
+def activeBets():
+    print("\n" + "="*80)
+    print("Active Bets")
+    print("="*80)    
+    
+    recommender = BettingRecommender(model_path = './models/basketball_h2h_model.json')
+    activeBets = recommender.getActiveBets()
+    print(activeBets)
+    recommender.displayRecommendations(activeBets)
+    
     print(f"Current Bankroll: ${recommender.getCurrentBankroll():,.2f}")    
 
 if __name__ == "__main__":

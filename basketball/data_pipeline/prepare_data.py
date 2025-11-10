@@ -345,6 +345,7 @@ class NBATrainingDataPreparer:
             # Game outcome
             'home_score': matchup_data['PTS_home'],
             'away_score': matchup_data['PTS_away'],
+            'point_diff': matchup_data['PLUS_MINUS_home'],
             'home_won': (matchup_data['WL_home'] == 'W').astype(int),
             
             # Team Performance (16 features)
@@ -352,25 +353,29 @@ class NBATrainingDataPreparer:
             'away_wins_l10': matchup_data['wins_l10_away'],
             'home_plus_minus_l10': matchup_data['plus_minus_l10_home'],
             'away_plus_minus_l10': matchup_data['plus_minus_l10_away'],
-            # 'home_ppg_l10': matchup_data['ppg_l10_home'],
-            # 'away_ppg_l10': matchup_data['ppg_l10_away'],
+            'plus_minus_diff': matchup_data['plus_minus_l10_home'] - matchup_data['plus_minus_l10_away'],
+            'home_ppg_l10': matchup_data['ppg_l10_home'],
+            'away_ppg_l10': matchup_data['ppg_l10_away'],
+            'ppg_diff': matchup_data['ppg_l10_home'] - matchup_data['ppg_l10_away'],
             'home_opp_ppg_l10': matchup_data['opp_ppg_l10_home'],
             'away_opp_ppg_l10': matchup_data['opp_ppg_l10_away'],
+            'opp_ppg_diff': matchup_data['opp_ppg_l10_home'] - matchup_data['opp_ppg_l10_away'],
             # 'home_apg_l10': matchup_data['ast_l10_home'],
             # 'away_apg_l10': matchup_data['ast_l10_away'],
             'home_tov_l10': matchup_data['tov_l10_home'],
             'away_tov_l10': matchup_data['tov_l10_away'],
-            # 'home_blk_l10': matchup_data['blk_l10_home'],
-            # 'away_blk_l10': matchup_data['blk_l10_away'],
-            # 'home_stl_l10': matchup_data['stl_l10_home'],
-            # 'away_stl_l10': matchup_data['stl_l10_away'],
+            'home_blk_l10': matchup_data['blk_l10_home'],
+            'away_blk_l10': matchup_data['blk_l10_away'],
+            'home_stl_l10': matchup_data['stl_l10_home'],
+            'away_stl_l10': matchup_data['stl_l10_away'],
             
             # Game Context (4 features)
             'home_rest_days': matchup_data['rest_days_home'],
             'away_rest_days': matchup_data['rest_days_away'],
+            'rest_days_diff': matchup_data['rest_days_home'] - matchup_data['rest_days_away'],
             'is_back_to_back_home': matchup_data['is_back_to_back_home'],
             'is_back_to_back_away': matchup_data['is_back_to_back_away'],
-            
+
             # Player Aggregates (56 features)
             # 'home_star_ppg': home_star_ppg,
             # 'away_star_ppg': away_star_ppg,
@@ -438,10 +443,10 @@ class NBATrainingDataPreparer:
             'away_depth_variance': away_depth_variance,
             
             # Shooting Efficiency (4 features) REMOVED FOR NOW LOW IMPORTANCE
-            # 'home_fg_pct_l10': matchup_data['fg_pct_l10_home'],
-            # 'away_fg_pct_l10': matchup_data['fg_pct_l10_away'],
-            # 'home_fg3_pct_l10': matchup_data['fg3_pct_l10_home'],
-            # 'away_fg3_pct_l10': matchup_data['fg3_pct_l10_away'],
+            'home_fg_pct_l10': matchup_data['fg_pct_l10_home'],
+            'away_fg_pct_l10': matchup_data['fg_pct_l10_away'],
+            'home_fg3_pct_l10': matchup_data['fg3_pct_l10_home'],
+            'away_fg3_pct_l10': matchup_data['fg3_pct_l10_away'],
         })
         
         training_data = training_data.sort_values('date').reset_index(drop=True)
@@ -528,18 +533,22 @@ class NBATrainingDataPreparer:
                 # Home team L10 stats
                 'wins_l10_home': home_stats['wins_l10'],
                 'wins_l10_away': away_stats['wins_l10'],
-                # 'home_ppg_l10': home_stats['ppg_l10'],
-                # 'away_ppg_l10': away_stats['ppg_l10'],
+                'ppg_l10_home': home_stats['ppg_l10'],
+                'ppg_l10_away': away_stats['ppg_l10'],
                 'opp_ppg_l10_home': home_stats['opp_ppg_l10'],
                 'opp_ppg_l10_away': away_stats['opp_ppg_l10'],
-                # 'home_fg_pct_l10': home_stats['fg_pct_l10'],
-                # 'away_fg_pct_l10': away_stats['fg_pct_l10'],
-                # 'home_fg3_pct_l10': home_stats['fg3_pct_l10'],
-                # 'away_fg3_pct_l10': away_stats['fg3_pct_l10'],
+                'fg_pct_l10_home': home_stats['fg_pct_l10'],
+                'fg_pct_l10_away': away_stats['fg_pct_l10'],
+                'fg3_pct_l10_home': home_stats['fg3_pct_l10'],
+                'fg3_pct_l10_away': away_stats['fg3_pct_l10'],
                 # 'home_rpg_l10': home_stats['reb_l10'],
                 # 'away_rpg_l10': away_stats['reb_l10'],
                 # 'home_apg_l10': home_stats['ast_l10'],
                 # 'away_apg_l10': away_stats['ast_l10'],
+                'blk_l10_home': home_stats['blk_l10'],
+                'blk_l10_away': away_stats['blk_l10'],
+                'stl_l10_home': home_stats['stl_l10'],
+                'stl_l10_away': away_stats['stl_l10'],
                 'tov_l10_home': home_stats['tov_l10'],
                 'tov_l10_away': away_stats['tov_l10'],
                 'plus_minus_l10_home': home_stats['plus_minus_l10'],
@@ -651,25 +660,29 @@ class NBATrainingDataPreparer:
             'away_wins_l10': matchup_data['wins_l10_away'],
             'home_plus_minus_l10': matchup_data['plus_minus_l10_home'],
             'away_plus_minus_l10': matchup_data['plus_minus_l10_away'],
-            # 'home_ppg_l10': matchup_data['ppg_l10_home'],
-            # 'away_ppg_l10': matchup_data['ppg_l10_away'],
+            'plus_minus_diff': matchup_data['plus_minus_l10_home'] - matchup_data['plus_minus_l10_away'],
+            'home_ppg_l10': matchup_data['ppg_l10_home'],
+            'away_ppg_l10': matchup_data['ppg_l10_away'],
+            'ppg_diff': matchup_data['ppg_l10_home'] - matchup_data['ppg_l10_away'],
             'home_opp_ppg_l10': matchup_data['opp_ppg_l10_home'],
             'away_opp_ppg_l10': matchup_data['opp_ppg_l10_away'],
+            'opp_ppg_diff': matchup_data['opp_ppg_l10_home'] - matchup_data['opp_ppg_l10_away'],
             # 'home_apg_l10': matchup_data['ast_l10_home'],
             # 'away_apg_l10': matchup_data['ast_l10_away'],
             'home_tov_l10': matchup_data['tov_l10_home'],
             'away_tov_l10': matchup_data['tov_l10_away'],
-            # 'home_blk_l10': matchup_data['blk_l10_home'],
-            # 'away_blk_l10': matchup_data['blk_l10_away'],
-            # 'home_stl_l10': matchup_data['stl_l10_home'],
-            # 'away_stl_l10': matchup_data['stl_l10_away'],
+            'home_blk_l10': matchup_data['blk_l10_home'],
+            'away_blk_l10': matchup_data['blk_l10_away'],
+            'home_stl_l10': matchup_data['stl_l10_home'],
+            'away_stl_l10': matchup_data['stl_l10_away'],
             
             # Game Context (4 features)
             'home_rest_days': matchup_data['rest_days_home'],
             'away_rest_days': matchup_data['rest_days_away'],
+            'rest_days_diff': matchup_data['rest_days_home'] - matchup_data['rest_days_away'],
             'is_back_to_back_home': matchup_data['is_back_to_back_home'],
             'is_back_to_back_away': matchup_data['is_back_to_back_away'],
-            
+
             # Player Aggregates (56 features)
             # 'home_star_ppg': home_star_ppg,
             # 'away_star_ppg': away_star_ppg,
@@ -737,10 +750,10 @@ class NBATrainingDataPreparer:
             'away_depth_variance': away_depth_variance,
             
             # Shooting Efficiency (4 features) REMOVED FOR NOW LOW IMPORTANCE
-            # 'home_fg_pct_l10': matchup_data['fg_pct_l10_home'],
-            # 'away_fg_pct_l10': matchup_data['fg_pct_l10_away'],
-            # 'home_fg3_pct_l10': matchup_data['fg3_pct_l10_home'],
-            # 'away_fg3_pct_l10': matchup_data['fg3_pct_l10_away'],
+            'home_fg_pct_l10': matchup_data['fg_pct_l10_home'],
+            'away_fg_pct_l10': matchup_data['fg_pct_l10_away'],
+            'home_fg3_pct_l10': matchup_data['fg3_pct_l10_home'],
+            'away_fg3_pct_l10': matchup_data['fg3_pct_l10_away'],
         })
         
         if prediction_data.empty:

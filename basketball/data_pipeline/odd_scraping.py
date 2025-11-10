@@ -118,7 +118,7 @@ class BasketballOddScraping:
                 sep='_'
             )
 
-            df = df[['commence_time','home_team','away_team','bookmakers_key','bookmakers_markets_key','bookmakers_markets_last_update','name','price']]
+            df = df[['commence_time','home_team','away_team','bookmakers_key','bookmakers_markets_key','bookmakers_markets_last_update','name','price','point']]
 
             for i in range(len(df)):
                 utc_date = df.iat[i,0]

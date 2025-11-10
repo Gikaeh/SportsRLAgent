@@ -45,7 +45,7 @@ class LiveDataUpdater:
             traceback.print_exc()
             return pd.DataFrame()
     
-    def getPredictionReadyData(self):
+    def getPredictionReadyData(self, model_type):
         self.basketball_data.getAllSeasonData(season=self.current_season)
         todays_games = self.fetchTodaysGames()
         
@@ -60,7 +60,35 @@ class LiveDataUpdater:
         
         game_info = game_features[['game_id', 'date', 'home_team', 'away_team']].copy()
         
-        leakage_cols = ['game_id', 'date', 'season', 'home_team', 'away_team']
-        prediction_data = game_features.drop(columns=[col for col in leakage_cols if col in game_features.columns])
+        if model_type == 'h2h':
+            leakage_cols = [
+                'game_id', 'date', 'season', 'home_team', 'away_team', 
+                'home_ppg_l10', 'away_ppg_l10', 'home_blk_l10', 'away_blk_l10', 
+                'home_stl_l10', 'away_stl_l10', 'home_fg_pct_l10', 'away_fg_pct_l10', 
+                'home_fg3_pct_l10', 'away_fg3_pct_l10', 'ppg_diff', 'opp_ppg_diff'
+            ]
+        elif model_type == 'spread':
+            leakage_cols =  [
+                'game_id', 'date', 'season', 'home_team', 'away_team',
+                'home_blk_l10', 'away_blk_l10', 'home_stl_l10', 'away_stl_l10', 
+                'home_fg_pct_l10', 'away_fg_pct_l10', 'home_fg3_pct_l10', 'away_fg3_pct_l10'
+            ]
+        elif model_type == 'all':
+            leakage_cols_h2h = [
+                'game_id', 'date', 'season', 'home_team', 'away_team', 
+                'home_ppg_l10', 'away_ppg_l10', 'home_blk_l10', 'away_blk_l10', 
+                'home_stl_l10', 'away_stl_l10', 'home_fg_pct_l10', 'away_fg_pct_l10', 
+                'home_fg3_pct_l10', 'away_fg3_pct_l10', 'ppg_diff', 'opp_ppg_diff'
+            ]
+            leakage_cols_spread = [
+                'game_id', 'date', 'season', 'home_team', 'away_team',
+                'home_blk_l10', 'away_blk_l10', 'home_stl_l10', 'away_stl_l10', 
+                'home_fg_pct_l10', 'away_fg_pct_l10', 'home_fg3_pct_l10', 'away_fg3_pct_l10'
+            ]
+            prediction_data_h2h = game_features.drop(columns=[col for col in leakage_cols_h2h if col in game_features.columns])
+            prediction_data_spread = game_features.drop(columns=[col for col in leakage_cols_spread if col in game_features.columns])
+
+            return prediction_data_h2h, prediction_data_spread, game_info
         
+        prediction_data = game_features.drop(columns=[col for col in leakage_cols if col in game_features.columns])
         return prediction_data, game_info

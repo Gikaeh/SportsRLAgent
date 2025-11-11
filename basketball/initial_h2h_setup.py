@@ -19,12 +19,10 @@ val_data, test_data = train_test_split(test_data, test_size=0.5, random_state=42
 # Drop leakage columns (post-game data, identifiers, and season)
 # Season is dropped to prevent data leakage - model should learn patterns, not season-specific trends
 leakage_cols = [
-                'game_id', 'date', 'home_score', 'away_score', 
-                'season', 'home_team', 'away_team', 'point_diff', 
-                'home_ppg_l10', 'away_ppg_l10', 'home_blk_l10', 'away_blk_l10', 
-                'home_stl_l10', 'away_stl_l10', 'home_fg_pct_l10', 'away_fg_pct_l10', 
-                'home_fg3_pct_l10', 'away_fg3_pct_l10', 'ppg_diff', 'opp_ppg_diff'
-                ]
+    'game_id', 'date', 'home_score', 'away_score', 'total_score',
+    'season', 'home_team', 'away_team', 'point_diff', 
+] + basketball_model.getLeakageColumns()
+
 train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
 val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
 test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
@@ -73,7 +71,7 @@ print(f"AUC-ROC: {test_auc:.4f}")
 basketball_model.saveModel('././models/basketball_h2h_model.json')
 
 # Generate diagnostic plots
-basketball_model.plotDiagnostics(X_val, y_val, X_test, y_test, save_dir='././plots/basketball')
+basketball_model.plotDiagnostics(X_val, y_val, X_test, y_test, save_dir='././plots/basketball/h2h')
 
 # Print low importance features for manual removal
 print("\n" + "="*60)

@@ -27,6 +27,7 @@ class NBATrainingDataPreparer:
         df = df.sort_values(['TEAM_ABBREVIATION', 'GAME_DATE'])
         
         df['OPP_PTS'] = df['PTS'] - df['PLUS_MINUS']
+        df['TOT_PTS'] = df['PTS'] + df['OPP_PTS']
         
         l10_stats = []
         
@@ -37,6 +38,7 @@ class NBATrainingDataPreparer:
             
             # Using min_periods=1 allows calculation to start, but we'll drop first 10 games later
             team_df['wins_l10'] = team_df['win_flag'].rolling(window=10, min_periods=1).sum().shift(1)
+            team_df['total_l10'] = team_df['TOT_PTS'].rolling(window=10, min_periods=1).mean().shift(1)
             team_df['ppg_l10'] = team_df['PTS'].rolling(window=10, min_periods=1).mean().shift(1)
             team_df['opp_ppg_l10'] = team_df['OPP_PTS'].rolling(window=10, min_periods=1).mean().shift(1)
             team_df['fg_pct_l10'] = team_df['FG_PCT'].rolling(window=10, min_periods=1).mean().shift(1)
@@ -51,7 +53,7 @@ class NBATrainingDataPreparer:
             # After shift(1), game 11 will have stats from games 1-10
             team_df = team_df.iloc[10:].copy()
             
-            team_l10 = team_df[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID', 'wins_l10', 'ppg_l10', 'opp_ppg_l10', 'fg_pct_l10', 'fg3_pct_l10', 'reb_l10', 'ast_l10', 'tov_l10', 'blk_l10', 'stl_l10', 'plus_minus_l10']]
+            team_l10 = team_df[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID', 'wins_l10', 'ppg_l10', 'opp_ppg_l10', 'fg_pct_l10', 'fg3_pct_l10', 'reb_l10', 'ast_l10', 'tov_l10', 'blk_l10', 'stl_l10', 'plus_minus_l10', 'total_l10']]
             
             l10_stats.append(team_l10)
         
@@ -65,7 +67,7 @@ class NBATrainingDataPreparer:
                     raise ValueError(f"Current season {season} has insufficient games (max {max_games_per_team} per team, need 11+) to calculate L10 stats")
             raise ValueError(f"calculateTeamL10Stats returned empty dataframe for season {season}. Data may be corrupted.")
         
-        stat_cols = ['ppg_l10', 'opp_ppg_l10', 'fg_pct_l10', 'reb_l10', 'ast_l10', 'tov_l10', 'blk_l10', 'stl_l10']
+        stat_cols = ['ppg_l10', 'opp_ppg_l10', 'fg_pct_l10', 'reb_l10', 'ast_l10', 'tov_l10', 'blk_l10', 'stl_l10', 'total_l10']
         if (result[stat_cols] == 0).all().all():
             raise ValueError(f"calculateTeamL10Stats returned all-zero stats for season {season}. Data may be corrupted.")
         
@@ -345,12 +347,15 @@ class NBATrainingDataPreparer:
             # Game outcome
             'home_score': matchup_data['PTS_home'],
             'away_score': matchup_data['PTS_away'],
+            'total_score': matchup_data['PTS_home'] + matchup_data['PTS_away'],
             'point_diff': matchup_data['PLUS_MINUS_home'],
             'home_won': (matchup_data['WL_home'] == 'W').astype(int),
             
-            # Team Performance (16 features)
+            # Team Performance
             'home_wins_l10': matchup_data['wins_l10_home'],
             'away_wins_l10': matchup_data['wins_l10_away'],
+            'home_total_l10': matchup_data['total_l10_home'],
+            'away_total_l10': matchup_data['total_l10_away'],
             'home_plus_minus_l10': matchup_data['plus_minus_l10_home'],
             'away_plus_minus_l10': matchup_data['plus_minus_l10_away'],
             'plus_minus_diff': matchup_data['plus_minus_l10_home'] - matchup_data['plus_minus_l10_away'],
@@ -369,14 +374,14 @@ class NBATrainingDataPreparer:
             'home_stl_l10': matchup_data['stl_l10_home'],
             'away_stl_l10': matchup_data['stl_l10_away'],
             
-            # Game Context (4 features)
+            # Game Context
             'home_rest_days': matchup_data['rest_days_home'],
             'away_rest_days': matchup_data['rest_days_away'],
             'rest_days_diff': matchup_data['rest_days_home'] - matchup_data['rest_days_away'],
             'is_back_to_back_home': matchup_data['is_back_to_back_home'],
             'is_back_to_back_away': matchup_data['is_back_to_back_away'],
 
-            # Player Aggregates (56 features)
+            # Player Aggregates
             # 'home_star_ppg': home_star_ppg,
             # 'away_star_ppg': away_star_ppg,
             'home_top3_avg_ppg': home_top3_avg_ppg,
@@ -442,7 +447,7 @@ class NBATrainingDataPreparer:
             'home_depth_variance': home_depth_variance,
             'away_depth_variance': away_depth_variance,
             
-            # Shooting Efficiency (4 features) REMOVED FOR NOW LOW IMPORTANCE
+            # Shooting Efficiency
             'home_fg_pct_l10': matchup_data['fg_pct_l10_home'],
             'away_fg_pct_l10': matchup_data['fg_pct_l10_away'],
             'home_fg3_pct_l10': matchup_data['fg3_pct_l10_home'],
@@ -533,6 +538,8 @@ class NBATrainingDataPreparer:
                 # Home team L10 stats
                 'wins_l10_home': home_stats['wins_l10'],
                 'wins_l10_away': away_stats['wins_l10'],
+                'total_l10_home': home_stats['total_l10'],
+                'total_l10_away': away_stats['total_l10'],
                 'ppg_l10_home': home_stats['ppg_l10'],
                 'ppg_l10_away': away_stats['ppg_l10'],
                 'opp_ppg_l10_home': home_stats['opp_ppg_l10'],
@@ -655,9 +662,11 @@ class NBATrainingDataPreparer:
             'home_team': matchup_data['TEAM_ABBREVIATION_home'],
             'away_team': matchup_data['TEAM_ABBREVIATION_away'],
             
-            # Team Performance (16 features)
+            # Team Performance
             'home_wins_l10': matchup_data['wins_l10_home'],
             'away_wins_l10': matchup_data['wins_l10_away'],
+            'home_total_l10': matchup_data['total_l10_home'],
+            'away_total_l10': matchup_data['total_l10_away'],
             'home_plus_minus_l10': matchup_data['plus_minus_l10_home'],
             'away_plus_minus_l10': matchup_data['plus_minus_l10_away'],
             'plus_minus_diff': matchup_data['plus_minus_l10_home'] - matchup_data['plus_minus_l10_away'],
@@ -676,14 +685,14 @@ class NBATrainingDataPreparer:
             'home_stl_l10': matchup_data['stl_l10_home'],
             'away_stl_l10': matchup_data['stl_l10_away'],
             
-            # Game Context (4 features)
+            # Game Context
             'home_rest_days': matchup_data['rest_days_home'],
             'away_rest_days': matchup_data['rest_days_away'],
             'rest_days_diff': matchup_data['rest_days_home'] - matchup_data['rest_days_away'],
             'is_back_to_back_home': matchup_data['is_back_to_back_home'],
             'is_back_to_back_away': matchup_data['is_back_to_back_away'],
 
-            # Player Aggregates (56 features)
+            # Player Aggregates
             # 'home_star_ppg': home_star_ppg,
             # 'away_star_ppg': away_star_ppg,
             'home_top3_avg_ppg': home_top3_avg_ppg,
@@ -749,7 +758,7 @@ class NBATrainingDataPreparer:
             'home_depth_variance': home_depth_variance,
             'away_depth_variance': away_depth_variance,
             
-            # Shooting Efficiency (4 features) REMOVED FOR NOW LOW IMPORTANCE
+            # Shooting Efficiency
             'home_fg_pct_l10': matchup_data['fg_pct_l10_home'],
             'away_fg_pct_l10': matchup_data['fg_pct_l10_away'],
             'home_fg3_pct_l10': matchup_data['fg3_pct_l10_home'],

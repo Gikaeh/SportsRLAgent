@@ -1,5 +1,8 @@
 from data_pipeline.basketball_data import BasketballData
 from data_pipeline.prepare_data import NBATrainingDataPreparer
+from model.model_h2h import BasketballH2HModel
+from model.model_spread import BasketballSpreadModel
+from model.model_total import BasketballTotalModel
 import pandas as pd
 from pathlib import Path
 
@@ -9,6 +12,9 @@ class LiveDataUpdater:
         self.preparer = NBATrainingDataPreparer(data_dir=data_dir)
         self.data_dir = Path(data_dir)
         self.current_season = self.preparer.getCurrentSeason()
+        self.total_model = BasketballTotalModel()
+        self.h2h_model = BasketballH2HModel()
+        self.spread_model = BasketballSpreadModel()
     
     def fetchTodaysGames(self):
         print(f"\n{'='*60}")
@@ -59,36 +65,24 @@ class LiveDataUpdater:
             return pd.DataFrame(), pd.DataFrame()
         
         game_info = game_features[['game_id', 'date', 'home_team', 'away_team']].copy()
+        leakage_cols = ['game_id', 'date', 'season', 'home_team', 'away_team',]
         
         if model_type == 'h2h':
-            leakage_cols = [
-                'game_id', 'date', 'season', 'home_team', 'away_team', 
-                'home_ppg_l10', 'away_ppg_l10', 'home_blk_l10', 'away_blk_l10', 
-                'home_stl_l10', 'away_stl_l10', 'home_fg_pct_l10', 'away_fg_pct_l10', 
-                'home_fg3_pct_l10', 'away_fg3_pct_l10', 'ppg_diff', 'opp_ppg_diff'
-            ]
+            leakage_cols = leakage_cols + self.h2h_model.getLeakageColumns()
         elif model_type == 'spread':
-            leakage_cols =  [
-                'game_id', 'date', 'season', 'home_team', 'away_team',
-                'home_blk_l10', 'away_blk_l10', 'home_stl_l10', 'away_stl_l10', 
-                'home_fg_pct_l10', 'away_fg_pct_l10', 'home_fg3_pct_l10', 'away_fg3_pct_l10'
-            ]
+            leakage_cols =  leakage_cols + self.spread_model.getLeakageColumns()
+        elif model_type == 'total':
+            leakage_cols = leakage_cols + self.total_model.getLeakageColumns()
         elif model_type == 'all':
-            leakage_cols_h2h = [
-                'game_id', 'date', 'season', 'home_team', 'away_team', 
-                'home_ppg_l10', 'away_ppg_l10', 'home_blk_l10', 'away_blk_l10', 
-                'home_stl_l10', 'away_stl_l10', 'home_fg_pct_l10', 'away_fg_pct_l10', 
-                'home_fg3_pct_l10', 'away_fg3_pct_l10', 'ppg_diff', 'opp_ppg_diff'
-            ]
-            leakage_cols_spread = [
-                'game_id', 'date', 'season', 'home_team', 'away_team',
-                'home_blk_l10', 'away_blk_l10', 'home_stl_l10', 'away_stl_l10', 
-                'home_fg_pct_l10', 'away_fg_pct_l10', 'home_fg3_pct_l10', 'away_fg3_pct_l10'
-            ]
+            leakage_cols_h2h = leakage_cols + self.h2h_model.getLeakageColumns()
+            leakage_cols_spread = leakage_cols + self.spread_model.getLeakageColumns()
+            leakage_cols_total = leakage_cols + self.total_model.getLeakageColumns()
+            
             prediction_data_h2h = game_features.drop(columns=[col for col in leakage_cols_h2h if col in game_features.columns])
             prediction_data_spread = game_features.drop(columns=[col for col in leakage_cols_spread if col in game_features.columns])
+            prediction_data_total = game_features.drop(columns=[col for col in leakage_cols_total if col in game_features.columns])
 
-            return prediction_data_h2h, prediction_data_spread, game_info
+            return prediction_data_h2h, prediction_data_spread, prediction_data_total, game_info
         
-        prediction_data = game_features.drop(columns=[col for col in leakage_cols if col in game_features.columns])
+        prediction_data = game_features.drop(columns=[col for col in leakage_cols if col in game_features.columns])        
         return prediction_data, game_info

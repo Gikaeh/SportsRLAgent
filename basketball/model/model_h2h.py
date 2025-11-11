@@ -21,7 +21,15 @@ class BasketballH2HModel:
         params.update(kwargs)
         self.model = xgb.XGBClassifier(**params)
         self.best_params = None
+        self.leakage_cols = [
+            'home_ppg_l10', 'away_ppg_l10', 'home_blk_l10', 'away_blk_l10', 
+            'home_stl_l10', 'away_stl_l10', 'home_fg_pct_l10', 'away_fg_pct_l10', 
+            'home_fg3_pct_l10', 'away_fg3_pct_l10', 'ppg_diff', 'opp_ppg_diff'
+        ]
         
+    def getLeakageColumns(self):
+        return self.leakage_cols
+    
     def train(self, X_train, y_train, X_val=None, y_val=None, verbose=True):
         if X_val is not None and y_val is not None:
             # Train with validation set for early stopping

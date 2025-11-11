@@ -13,7 +13,6 @@ class ModelRetrainer:
     def __init__(self, model_path='./models/basketball_h2h_model.json', data_dir='./data/basketball', metadata_path='./models/metadata/retraining_h2h_metadata.json'):
         self.model_path = Path(model_path)
         self.data_dir = Path(data_dir)
-        self.plot_dir = Path('./plots/basketball')
         self.training_data_dir = Path('./data/training_data/basketball/phase1')
         self.preparer = NBATrainingDataPreparer(data_dir=str(data_dir))
         self.basketball_data = BasketballData()
@@ -203,7 +202,7 @@ class ModelRetrainer:
         self.model.saveModel(str(self.model_path))
         print(f"\nModel saved to {self.model_path}")
 
-        self.model.plotDiagnostics(X_val, y_val, X_test, y_test, save_dir=self.plot_dir)
+        self.model.plotDiagnostics(X_val, y_val, X_test, y_test, save_dir='././plots/basketball/h2h')
         
         self.metadata['last_retrain_date'] = datetime.now().isoformat()
         self.metadata['total_games_trained'] = len(training_data)

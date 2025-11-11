@@ -6,7 +6,7 @@ class BettingConfig:
     
     # Edge
     MIN_EDGE = 0.03           # Minimum 3% edge to place bet (model_prob - market_prob)
-    MIN_PROBABILITY = 0.5     # Minimum 60% win probability to consider betting
+    MIN_PROBABILITY = 0.55     # Minimum 60% win probability to consider betting
     
     # Risk Limits
     MAX_BETS_PER_DAY = 5      # Maximum number of bets per day
@@ -26,7 +26,9 @@ class BettingConfig:
     
     # Logging
     LOG_DIR = '././logs/betting'
-    BETS_LOG = 'bets.csv'
+    H2H_BETS_LOG = 'h2h_bets.csv'
+    SPREAD_BETS_LOG = 'spread_bets.csv'
+    TOTAL_BETS_LOG = 'total_bets.csv'
     
     # Alerts
     ALERT_ON_HIGH_EDGE = 0.10  # Alert if edge exceeds 10% (potential data issue)

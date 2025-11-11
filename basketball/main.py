@@ -54,7 +54,8 @@ def bettingRecommendations():
     print("\nChoose an option to run: ")
     print("1. H2H")
     print("2. Spread")
-    print("3. All")
+    print("3. Total")
+    print("4. All")
     
     choice = input("\nEnter your choice: ")
     
@@ -83,7 +84,19 @@ def bettingRecommendations():
         
         recommendations = recommender.makeBettingRecommendations(predictions=predictions)
     elif choice == '3':
-        prediction_data_h2h, prediction_data_spread, game_info = updater.getPredictionReadyData(model_type='all')
+        prediction_data, game_info = updater.getPredictionReadyData(model_type='total')
+
+        if prediction_data.empty:
+            print("No games today")
+            return
+        
+        recommender = BettingRecommender(model_path = './models/basketball_total_model.json')
+    
+        predictions = recommender.predictGames(prediction_data, game_info)
+        
+        recommendations = recommender.makeBettingRecommendations(predictions=predictions)
+    elif choice == '4':
+        prediction_data_h2h, prediction_data_spread, prediction_data_total, game_info = updater.getPredictionReadyData(model_type='all')
 
         if prediction_data_h2h.empty:
             print("No games today")
@@ -97,7 +110,11 @@ def bettingRecommendations():
         predictions = recommender.predictGames(prediction_data_spread, game_info)
         recommendations_spread = recommender.makeBettingRecommendations(predictions=predictions)
         
-        recommendations = recommendations_h2h + recommendations_spread
+        recommender = BettingRecommender(model_path = './models/basketball_total_model.json')
+        predictions = recommender.predictGames(prediction_data_total, game_info)
+        recommendations_total = recommender.makeBettingRecommendations(predictions=predictions)
+        
+        recommendations = recommendations_h2h + recommendations_spread + recommendations_total
     else:
         print("Invalid choice")
         return
@@ -140,7 +157,6 @@ def bettingUpdate():
     print("\n" + "="*80)
     print("Betting Update")
     print("="*80)
-    
     recommender = BettingRecommender(model_path = './models/basketball_h2h_model.json')
 
     print(f"Current Bankroll: ${recommender.getCurrentBankroll():,.2f}")

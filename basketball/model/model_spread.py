@@ -21,7 +21,14 @@ class BasketballSpreadModel:
         params.update(kwargs)
         self.model = xgb.XGBRegressor(**params)
         self.best_params = None
+        self.leakage_cols = [
+            'home_blk_l10', 'away_blk_l10', 'home_stl_l10', 'away_stl_l10', 
+            'home_fg_pct_l10', 'away_fg_pct_l10', 'home_fg3_pct_l10', 'away_fg3_pct_l10'
+        ]
         
+    def getLeakageColumns(self):
+        return self.leakage_cols
+
     def train(self, X_train, y_train, X_val=None, y_val=None, verbose=True):
         if X_val is not None and y_val is not None:
             self.model.fit(
@@ -119,7 +126,7 @@ class BasketballSpreadModel:
             elif metric == 'rmse':
                 score = np.sqrt(mean_squared_error(y_val, y_pred))
             elif metric == 'r2':
-                score = -r2_score(y_val, y_pred)  # Negative because we minimize
+                score = -r2_score(y_val, y_pred) 
             else:
                 raise ValueError(f"Unknown metric: {metric}")
             
@@ -178,7 +185,7 @@ class BasketballSpreadModel:
     def getBestParams(self):
         return self.best_params
     
-    def plotDiagnostics(self, X_val, y_val, X_test, y_test, save_dir='./plots'):
+    def plotDiagnostics(self, X_val, y_val, X_test, y_test, save_dir='././plots/basketball/spread/'):
         Path(save_dir).mkdir(parents=True, exist_ok=True)
         
         val_pred = self.model.predict(X_val)

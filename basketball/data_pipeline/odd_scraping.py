@@ -154,3 +154,70 @@ class BasketballOddScraping:
             cleaned_data.to_csv(f'{self.data_dir}/spreads_{self.time_now_string}.csv', index=False)
 
             return cleaned_data
+
+    def getTotalOdds(self):
+        odds_response = requests.get(
+            f'https://api.the-odds-api.com/v4/sports/{self.sport}/odds/?apiKey={self.api_key}&regions={self.regions}&markets=totals',
+            params={
+                'api_key': self.api_key,
+                'regions': self.regions,
+                'markets': 'totals',
+                'oddsFormat': self.odds,
+                'dateFormat': self.date,
+            }
+        )
+
+        if odds_response.status_code != 200:
+            print(f'Failed to get odds: status_code {odds_response.status_code}, response body {odds_response.text}')
+
+        else:
+            odds_json = odds_response.json()
+            print('Number of events:', len(odds_json))
+            # print(odds_json)
+
+            print('Remaining requests', odds_response.headers['x-requests-remaining'])
+            print('Used requests', odds_response.headers['x-requests-used'])
+
+            df = pd.json_normalize(
+                odds_json,
+                record_path=['bookmakers','markets','outcomes'],
+                meta=['commence_time', 'home_team', 'away_team', ['bookmakers','key'],['bookmakers', 'markets', 'key'], ['bookmakers', 'markets', 'last_update']],
+                sep='_'
+            )
+
+            df = df[['commence_time','home_team','away_team','bookmakers_key','bookmakers_markets_key','bookmakers_markets_last_update','name','price','point']]
+
+            for i in range(len(df)):
+                utc_date = df.iat[i,0]
+                utc_datetime = datetime.fromisoformat(utc_date.replace('Z', '+00:00'))
+                pst_datetime = utc_datetime.astimezone(self.pst_timezone)
+                df.iat[i,0] = pst_datetime
+
+                utc_last_update = df.iat[i,5]
+                utc_last_update_datetime = datetime.fromisoformat(utc_last_update.replace('Z', '+00:00'))
+                pst_last_update_datetime = utc_last_update_datetime.astimezone(self.pst_timezone)
+                df.iat[i,5] = pst_last_update_datetime
+
+                home_team = df.at[i,'home_team']
+                away_team = df.at[i, 'away_team']
+                bet_team = df.at[i, 'name']
+
+                if home_team in self.team_mapping:
+                    df.at[i, 'home_team'] = self.team_mapping.get(home_team)
+
+                if away_team in self.team_mapping:
+                    df.at[i, 'away_team'] = self.team_mapping.get(away_team)
+
+                if bet_team in self.team_mapping:
+                    df.at[i, 'name'] = self.team_mapping.get(bet_team)
+
+            df_sorted = df.sort_values(['commence_time', 'home_team', 'bookmakers_key'])
+            
+            data_not_to_drop = df_sorted['commence_time'] > self.time_now
+            cleaned_data = df_sorted[data_not_to_drop]
+            data_not_to_drop = df_sorted['commence_time'] < self.time_now + timedelta(days=1)
+            cleaned_data = df_sorted[data_not_to_drop]
+            
+            cleaned_data.to_csv(f'{self.data_dir}/total_{self.time_now_string}.csv', index=False)
+
+            return cleaned_data

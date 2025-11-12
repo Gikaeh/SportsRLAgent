@@ -1,0 +1,24 @@
+{
+  "last_retrain_date": "2025-11-12T02:12:36.740149",
+  "total_games_trained": 28427,
+  "model_version": 2,
+  "retrain_history": [
+    {
+      "date": "2025-11-12T02:12:33.988324",
+      "games_trained": 28427,
+      "val_mae": 14.311539649963379,
+      "val_rmse": 18.143498103659613,
+      "val_r2": 0.4149817228317261,
+      "val_within_3": 0.13753077734787197,
+      "val_within_5": 0.2328526204713331,
+      "val_within_10": 0.4329933169187478,
+      "test_mae": 14.774605751037598,
+      "test_rmse": 18.624425687191923,
+      "test_r2": 0.3991228938102722,
+      "test_within_3": 0.127330284910306,
+      "test_within_5": 0.21280337671473795,
+      "test_within_10": 0.4045022863172705,
+      "hyperparameter_tuning": true
+    }
+  ]
+}

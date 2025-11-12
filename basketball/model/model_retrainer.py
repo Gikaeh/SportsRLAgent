@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from sklearn.model_selection import train_test_split
 from model.model_h2h import BasketballH2HModel
 from model.model_spread import BasketballSpreadModel
+from model.model_total import BasketballTotalModel
 from data_pipeline.prepare_data import NBATrainingDataPreparer
 from data_pipeline.basketball_data import BasketballData
 import json
@@ -17,10 +18,12 @@ class ModelRetrainer:
         self.preparer = NBATrainingDataPreparer(data_dir=str(data_dir))
         self.basketball_data = BasketballData()
 
-        if model_path.split('_')[1] == 'h2h':
+        if str(model_path).split('_')[1] == 'h2h':
             self.model = BasketballH2HModel()
-        elif model_path.split('_')[1] == 'spread':
+        elif str(model_path).split('_')[1] == 'spread':
             self.model = BasketballSpreadModel()
+        elif str(model_path).split('_')[1] == 'total':
+            self.model = BasketballTotalModel()
 
         if self.model_path.exists():
             self.model.load(str(self.model_path))
@@ -97,7 +100,6 @@ class ModelRetrainer:
         print("="*60)
         
         training_data = self.preparer.prepareAllSeasons()
-        print('hello')
         
         if training_data is None or training_data.empty:
             print("No training data available")
@@ -132,12 +134,9 @@ class ModelRetrainer:
         
         if self.model.getModelType() == 'h2h':
             leakage_cols = [
-                'game_id', 'date', 'home_score', 'away_score', 
+                'game_id', 'date', 'home_score', 'away_score', 'total_score',
                 'season', 'home_team', 'away_team', 'point_diff', 
-                'home_ppg_l10', 'away_ppg_l10', 'home_blk_l10', 'away_blk_l10', 
-                'home_stl_l10', 'away_stl_l10', 'home_fg_pct_l10', 'away_fg_pct_l10', 
-                'home_fg3_pct_l10', 'away_fg3_pct_l10'
-                ]
+            ] + self.model.getLeakageColumns()
 
             train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
             val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
@@ -148,29 +147,42 @@ class ModelRetrainer:
             X_test, y_test = test_data.drop('home_won', axis=1), test_data['home_won']
         elif self.model.getModelType() == 'spread':
             leakage_cols = [
-                'game_id', 'date', 'home_score', 'away_score', 
+                'game_id', 'date', 'home_score', 'away_score', 'total_score',
                 'season', 'home_team', 'away_team', 'home_won',
-                'home_blk_l10', 'away_blk_l10', 'home_stl_l10', 'away_stl_l10', 
-                'home_fg_pct_l10', 'away_fg_pct_l10', 'home_fg3_pct_l10', 'away_fg3_pct_l10'
-                ]
+            ] + self.model.getLeakageColumns()
 
             train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
             val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
             test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
             
-            X_train, y_train = train_data.drop('home_won', axis=1), train_data['home_won']
-            X_val, y_val = val_data.drop('home_won', axis=1), val_data['home_won']
-            X_test, y_test = test_data.drop('home_won', axis=1), test_data['home_won']
-        
+            X_train, y_train = train_data.drop('point_diff', axis=1), train_data['point_diff']
+            X_val, y_val = val_data.drop('point_diff', axis=1), val_data['point_diff']
+            X_test, y_test = test_data.drop('point_diff', axis=1), test_data['point_diff']
+        elif self.model.getModelType() == 'total':
+            leakage_cols = [
+                'game_id', 'date', 'home_score', 'away_score', 'point_diff',
+                'season', 'home_team', 'away_team', 'home_won',
+            ] + self.model.getLeakageColumns()
+
+            train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
+            val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
+            test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
+
+            # Separate features and target
+            X_train, y_train = train_data.drop('total_score', axis=1), train_data['total_score']
+            X_val, y_val = val_data.drop('total_score', axis=1), val_data['total_score']
+            X_test, y_test = test_data.drop('total_score', axis=1), test_data['total_score']
         
         
         print(f"\nTraining set: {len(X_train)} games")
         print(f"Test set: {len(X_test)} games")
         
-        if self.model.getModelType() == 'h2h':
-            self.model = BasketballH2HModel()
-        elif self.model.getModelType() == 'spread':
-            self.model = BasketballSpreadModel()
+        # if self.model.getModelType() == 'h2h':
+        #     self.model = BasketballH2HModel()
+        # elif self.model.getModelType() == 'spread':
+        #     self.model = BasketballSpreadModel()
+        # elif self.model.getModelType() == 'total':
+        #     self.model = BasketballTotalModel()
         
         if tune_hyperparameters:
             print(f"\n{'='*60}")
@@ -178,63 +190,80 @@ class ModelRetrainer:
             print(f"{'='*60}")
             best_params = self.model.tuneHyperparameters(X_train, y_train, X_val, y_val, n_trials=n_trials)
             self.model.trainWithBestParams(X_train, y_train, X_val, y_val, verbose=50)
-            self.model.analyzeCalibration(y_val, self.model.predictProb(X_val)[:, 1])
         else:
             print("\nTraining with existing hyperparameters...")
             self.model.train(X_train, y_train, X_val, y_val, verbose=50)
-            self.model.analyzeCalibration(y_val, self.model.predictProb(X_val)[:, 1])
         
-        val_accuracy, val_brier, val_logloss, val_auc = self.model.evaluate(X_val, y_val)
-        test_accuracy, test_brier, test_logloss, test_auc = self.model.evaluate(X_test, y_test)
-        
-        print(f"\n{'='*60}")
-        print("RETRAINING RESULTS")
-        print(f"{'='*60}")
-        print(f"Validation Accuracy: {val_accuracy:.4f}")
-        print(f"Validation Brier Score: {val_brier:.4f}")
-        print(f"Validation Log Loss: {val_logloss:.4f}")
-        print(f"Validation AUC-ROC: {val_auc:.4f}")
-        print(f"Test Accuracy: {test_accuracy:.4f}")
-        print(f"Test Brier Score: {test_brier:.4f}")
-        print(f"Test Log Loss: {test_logloss:.4f}")
-        print(f"Test AUC-ROC: {test_auc:.4f}")
+        if self.model.getModelType() == 'h2h':
+            val_accuracy, val_brier, val_logloss, val_auc = self.model.evaluate(X_val, y_val)
+            test_accuracy, test_brier, test_logloss, test_auc = self.model.evaluate(X_test, y_test)
+            self.metadata['retrain_history'].append({
+                'date': datetime.now().isoformat(),
+                'games_trained': len(training_data),
+                'val_accuracy': val_accuracy,
+                'val_brier_score': val_brier,
+                'val_log_loss': val_logloss,
+                'val_auc_roc': val_auc,
+                'test_accuracy': test_accuracy,
+                'test_brier_score': test_brier,
+                'test_log_loss': test_logloss,
+                'test_auc_roc': test_auc,
+                'hyperparameter_tuning': tune_hyperparameters
+            })
+        elif self.model.getModelType() == 'spread':
+           val_mae, val_rmse, val_r2, val_within_3, val_within_5, val_within_7 = self.model.evaluate(X_val, y_val)
+           test_mae, test_rmse, test_r2, test_within_3, test_within_5, test_within_7 = self.model.evaluate(X_test, y_test)
+           self.metadata['retrain_history'].append({
+                'date': datetime.now().isoformat(),
+                'games_trained': len(training_data),
+                'val_mae': val_mae,
+                'val_rmse': val_rmse,
+                'val_r2': val_r2,
+                'val_within_3': val_within_3,
+                'val_within_5': val_within_5,
+                'val_within_7': val_within_7,
+                'test_mae': test_mae,
+                'test_rmse': test_rmse,
+                'test_r2': test_r2,
+                'test_within_3': test_within_3,
+                'test_within_5': test_within_5,
+                'test_within_7': test_within_7,
+                'hyperparameter_tuning': tune_hyperparameters
+            })
+        elif self.model.getModelType() == 'total':
+            val_mae, val_rmse, val_r2, val_within_3, val_within_5, val_within_10 = self.model.evaluate(X_val, y_val)
+            test_mae, test_rmse, test_r2, test_within_3, test_within_5, test_within_10 = self.model.evaluate(X_test, y_test)
+            self.metadata['retrain_history'].append({
+                'date': datetime.now().isoformat(),
+                'games_trained': len(training_data),
+                'val_mae': val_mae,
+                'val_rmse': val_rmse,
+                'val_r2': val_r2,
+                'val_within_3': val_within_3,
+                'val_within_5': val_within_5,
+                'val_within_10': val_within_10,
+                'test_mae': test_mae,
+                'test_rmse': test_rmse,
+                'test_r2': test_r2,
+                'test_within_3': test_within_3,
+                'test_within_5': test_within_5,
+                'test_within_10': test_within_10,
+                'hyperparameter_tuning': tune_hyperparameters
+            })
+
+        self.model.printPredictionSummary(X_test, y_test)
         
         self.model.saveModel(str(self.model_path))
         print(f"\nModel saved to {self.model_path}")
 
-        self.model.plotDiagnostics(X_val, y_val, X_test, y_test, save_dir='././plots/basketball/h2h')
+        self.model.plotDiagnostics(X_val, y_val, X_test, y_test)
         
         self.metadata['last_retrain_date'] = datetime.now().isoformat()
         self.metadata['total_games_trained'] = len(training_data)
         self.metadata['model_version'] += 1
-        self.metadata['retrain_history'].append({
-            'date': datetime.now().isoformat(),
-            'games_trained': len(training_data),
-            'val_accuracy': val_accuracy,
-            'val_brier_score': val_brier,
-            'val_log_loss': val_logloss,
-            'val_auc_roc': val_auc,
-            'test_accuracy': test_accuracy,
-            'test_brier_score': test_brier,
-            'test_log_loss': test_logloss,
-            'test_auc_roc': test_auc,
-            'hyperparameter_tuning': tune_hyperparameters
-        })
         self.saveMetadata()
         
-        return {
-            'success': True,
-            'val_accuracy': val_accuracy,
-            'val_brier_score': val_brier,
-            'val_log_loss': val_logloss,
-            'val_auc_roc': val_auc,
-            'test_accuracy': test_accuracy,
-            'test_brier_score': test_brier,
-            'test_log_loss': test_logloss,
-            'test_auc_roc': test_auc,
-            'games_trained': len(training_data),
-            'model_version': self.metadata['model_version']
-        }
+        return True, self.metadata
     
     def autoRetrainIfNeeded(self, force=False):
         if force:
@@ -252,7 +281,7 @@ class ModelRetrainer:
         if should_retrain:
             return self.retrainModel()
         else:
-            return {'success': False, 'reason': reason, 'skipped': True}
+            return False, {'reason': reason, 'skipped': True}
     
     def getRetrainingStatus(self):
         print("\n" + "="*60)

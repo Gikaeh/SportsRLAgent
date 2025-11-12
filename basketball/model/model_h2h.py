@@ -166,7 +166,7 @@ class BasketballH2HModel:
     def getBestParams(self):
         return self.best_params
     
-    def plotDiagnostics(self, X_val, y_val, X_test, y_test, save_dir='./plots'):
+    def plotDiagnostics(self, X_val, y_val, X_test, y_test, save_dir='./plots/basketball/h2h/'):
         Path(save_dir).mkdir(parents=True, exist_ok=True)
         
         # Get predictions

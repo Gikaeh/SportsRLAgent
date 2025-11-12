@@ -390,6 +390,22 @@ class BettingRecommender:
         prob = 0.5 + 0.4 / (1 + np.exp(-k * (margin - x0)))
 
         return min(max(prob, 0.5), 0.95)
+
+    def calculateBetPriority(self, bet):
+        if bet['type'] == 'h2h':
+            if bet['bet_side'] == 'home':
+                win_prob = bet.get('home_model_prob', 0.5)
+            else:
+                win_prob = bet.get('away_model_prob', 0.5)
+        elif bet['type'] in ['spread', 'total']:
+            win_prob = bet.get('cover_prob', 0.5)
+
+        loss_prob = 1 - win_prob
+        expected_value = (win_prob * bet['potential_profit']) - (loss_prob * bet['bet_amount'])
+        ev_per_dollar = expected_value / bet['bet_amount']
+        roi = bet['potential_profit'] / bet['bet_amount']
+        
+        return bet['confidence'] * ev_per_dollar * (1+roi*.2)
     
     def calculateProfit(self, bet_amount, american_odds):
         if american_odds > 0:
@@ -405,9 +421,24 @@ class BettingRecommender:
             print("No games meet the minimum edge and probability requirements.")
             return
         
-        recommendations.sort(key=lambda x: (x['type'], x['confidence']), reverse=True)
-        # recommendations.sort_values(by='confidence', ascending=False, inplace=True)
+        rr_valid = (len(recommendations) >= 5)
+        recommendations.sort(key=self.calculateBetPriority, reverse=True)
         
+        # recommendations.sort_values(by='confidence', ascending=False, inplace=True)
+
+        total_risk = sum(r['bet_amount'] for r in recommendations)
+        while total_risk > self.current_bankroll * self.config.MAX_RISK_PCT:
+            lowest_bet_priority = recommendations.pop()
+            total_risk -= lowest_bet_priority['bet_amount']
+
+        total_potential = sum(r['potential_profit'] for r in recommendations)
+        if rr_valid:
+            rr = recommendations[:5]
+            recommendations.sort(key=lambda x: x['type'], reverse=False)
+            recommendations = recommendations+rr
+        else:
+            recommendations.sort(key=lambda x: x['type'], reverse=False)
+
         print("\n" + "="*80)
         print(f"BETTING RECOMMENDATIONS - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("="*80)
@@ -415,7 +446,10 @@ class BettingRecommender:
         print("="*80)
         
         for i, rec in enumerate(recommendations, 1):
-            print(f"\nRECOMMENDATION #{i} - {rec['type']}")
+            if i > len(recommendations)-5 and rr_valid:
+                print(f"\nRECOMMENDATION #{i} - {rec['type']} (RR)")
+            else:
+                print(f"\nRECOMMENDATION #{i} - {rec['type']}")
             print(f"   Matchup: {rec['matchup']}")
 
             if rec['type'] == 'h2h':
@@ -444,8 +478,6 @@ class BettingRecommender:
             print(f"   Reason: {rec['reason']}")
         
         print("\n" + "="*80)
-        total_risk = sum(r['bet_amount'] for r in recommendations)
-        total_potential = sum(r['potential_profit'] for r in recommendations)
         print(f"TOTAL RISK: ${total_risk:.2f} ({total_risk/self.current_bankroll:.1%} of bankroll)")
         print(f"TOTAL POTENTIAL PROFIT: ${total_potential:.2f}")
         print("="*80)

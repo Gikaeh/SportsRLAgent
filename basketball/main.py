@@ -1,3 +1,4 @@
+from operator import is_
 from data_pipeline.live_data_updater import LiveDataUpdater
 from betting.betting_recommender import BettingRecommender
 from model.model_retrainer import ModelRetrainer
@@ -143,14 +144,15 @@ def modelRetraining():
         print(f"Reason: {reason}")
         
         if should_retrain:
-            result = retrainer.retrainModel()
+            is_success, result = retrainer.retrainModel()
             
-            if result['success']:
+            if is_success:
                 print(f"\nRetraining successful!")
                 print(f"   Model Version: {result['model_version']}")
-                print(f"   Validation Accuracy: {result['val_accuracy']:.4f}")
-                print(f"   Test Accuracy: {result['test_accuracy']:.4f}")
-                print(f"   Games Trained: {result['games_trained']}")
+                print(f"   Games Trained: {result['total_games_trained']}")
+            else:
+                print(f"\nRetraining failed!")
+                print(f"   Reason: {result['reason']}")
 
 
 def bettingUpdate():

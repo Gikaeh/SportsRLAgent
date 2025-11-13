@@ -1,1 +1,2 @@
 game_id,date,matchup,bet_team,bet_side,home_model_prob,home_odds,away_model_prob,away_odds,market_prob,edge,confidence,bet_size_fraction,bet_amount,potential_profit,book,type,result,reason,timestamp
+22500226,2025-11-13 00:00:00+00:00,IND @ PHX,PHX,home,0.6990463733673096,-180.0,0.3009536266326904,155.0,0.6551724137931034,0.0438739595742061,0.3980927467346191,0.0318086206912994,3,1.6789473684210527,betmgm,h2h,,"Probability: 69.9%, Edge: 4.4%, Confidence: 39.8%",2025-11-13 12:08:17.602584

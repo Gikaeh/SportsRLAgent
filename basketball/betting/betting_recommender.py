@@ -100,8 +100,9 @@ class BettingRecommender:
     
     def makeH2HRecommendations(self, predictions):
         recommendations = []
-        odds_data = self.getOdds('h2h')
-        odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
+        # odds_data = self.getOdds('h2h')
+        # odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
+        odds_data = pd.read_csv(f'./data/basketball/odds_data/h2h_2025-11-13_12-51.csv')
         
         for idx, game in predictions.iterrows():
             game_id = game['game_id']
@@ -178,8 +179,9 @@ class BettingRecommender:
 
     def makeSpreadRecommendations(self, predictions):
         recommendations = []
-        odds_data = self.getOdds('spread')
-        odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
+        # odds_data = self.getOdds('spread')
+        # odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
+        odds_data = pd.read_csv(f'./data/basketball/odds_data/spreads_2025-11-13_12-51.csv')
         
         for idx, game in predictions.iterrows():
             game_id = game['game_id']
@@ -288,8 +290,9 @@ class BettingRecommender:
 
     def makeTotalRecommendations(self, predictions):
         recommendations = []
-        odds_data = self.getOdds('total')
-        odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
+        # odds_data = self.getOdds('total')
+        # odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
+        odds_data = pd.read_csv(f'./data/basketball/odds_data/total_2025-11-13_12-51.csv')
         
         for idx, game in predictions.iterrows():
             game_id = game['game_id']
@@ -313,7 +316,7 @@ class BettingRecommender:
             
             total_advantage = abs(predicted_total - total_line)
             
-            MIN_TOTAL_EDGE = getattr(self.config, 'MIN_TOTAL_EDGE', 5.0)  
+            MIN_TOTAL_EDGE = getattr(self.config, 'MIN_TOTAL_EDGE', 1.0)  
             
             if predicted_total > total_line and total_advantage >= MIN_TOTAL_EDGE:
                 cover_prob = self.totalToProbability(total_advantage)

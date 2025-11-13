@@ -433,7 +433,8 @@ class BettingRecommender:
 
         total_potential = sum(r['potential_profit'] for r in recommendations)
         if rr_valid:
-            rr = recommendations[:5]
+            seen = set()
+            rr = [r for r in recommendations if r['matchup'] not in seen and not seen.add(r['matchup'])][:5]
             recommendations.sort(key=lambda x: x['type'], reverse=False)
             recommendations = recommendations+rr
         else:

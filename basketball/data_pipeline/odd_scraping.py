@@ -13,7 +13,7 @@ class BasketballOddScraping:
         }
         self.api_key = '13a6a49f229ace0bb115d8f83f3bf63e'
         self.sport = 'basketball_nba'
-        self.regions = 'us,us2'
+        self.regions = 'us'
         self.odds = 'american'
         self.date = 'iso'
         self.pst_timezone = pytz.timezone('America/Los_Angeles')

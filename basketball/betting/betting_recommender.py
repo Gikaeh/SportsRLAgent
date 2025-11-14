@@ -69,8 +69,8 @@ class BettingRecommender:
         results = game_info.copy()
 
         if self.model.getModelType() == 'h2h':
-            # odds_data = self.getOdds('h2h')
-            odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/h2h_*.csv'))[-1])
+            odds_data = self.getOdds('h2h')
+            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/h2h_*.csv'))[-1])
             odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
 
             predictions = self.model.predictProb(game_features)
@@ -82,8 +82,8 @@ class BettingRecommender:
             results['confidence'] = np.abs(home_win_probs - 0.5) * 2 
 
         if self.model.getModelType() == 'spread':
-            # odds_data = self.getOdds('spread')
-            odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/spread_*.csv'))[-1])
+            odds_data = self.getOdds('spread')
+            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/spread_*.csv'))[-1])
             odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
             
 
@@ -94,8 +94,8 @@ class BettingRecommender:
 
         if self.model.getModelType() == 'total':
             predictions = self.model.predict(game_features)
-            # odds_data = self.getOdds('total')
-            odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/total_*.csv'))[-1])
+            odds_data = self.getOdds('total')
+            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/total_*.csv'))[-1])
             odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
             odds_data.sort_values('price', inplace=True)
 

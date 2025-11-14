@@ -4,3 +4,4 @@ plots
 __pycache__
 data/basketball/upcoming_games.csv
 *.md
+models

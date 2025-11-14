@@ -8,6 +8,7 @@ from model.model_total import BasketballTotalModel
 from betting.betting_config import BettingConfig
 from data_pipeline.odd_scraping import BasketballOddScraping
 from data_pipeline.prepare_data import NBATrainingDataPreparer
+import glob
 
 class BettingRecommender:
     def __init__(self, model_path=None, config=None):
@@ -68,6 +69,10 @@ class BettingRecommender:
         results = game_info.copy()
 
         if self.model.getModelType() == 'h2h':
+            odds_data = self.getOdds('h2h')
+            # odds_data = pd.read_csv(f'./data/basketball/odds_data/h2h_2025-11-13_12-51.csv')
+            odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
+
             predictions = self.model.predictProb(game_features)
             home_win_probs = predictions[:, 1]
         
@@ -77,6 +82,11 @@ class BettingRecommender:
             results['confidence'] = np.abs(home_win_probs - 0.5) * 2 
 
         if self.model.getModelType() == 'spread':
+            odds_data = self.getOdds('spread')
+            # odds_data = pd.read_csv(f'./data/basketball/odds_data/spreads_2025-11-13_12-51.csv')
+            odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
+            
+
             predictions = self.model.predict(game_features)
             results['predicted_margin'] = predictions
             results['predicted_cover'] = results.apply(lambda row: row['home_team'] if row['predicted_margin'] > 0 else row['away_team'], axis=1)
@@ -84,8 +94,19 @@ class BettingRecommender:
 
         if self.model.getModelType() == 'total':
             predictions = self.model.predict(game_features)
+            odds_data = self.getOdds('total')
+            # odds_data = pd.read_csv(f'./data/basketball/odds_data/total_2025-11-13_12-51.csv')
+            odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
+            odds_data.sort_values('price', inplace=True)
+
             results['predicted_total'] = predictions
-            results['confidence'] = np.minimum(np.abs(predictions) / 20, 1)
+            for idx, row in results.iterrows():
+                print(odds_data)
+                print(row)
+                game_odds = odds_data[odds_data['home_team'] == row['home_team']]
+                print(game_odds)
+                total_distance = abs(row['predicted_total'] - game_odds['point'].values[0])
+                results.at[idx, 'confidence'] = np.minimum(total_distance / 20, 1)
         
         return results
     
@@ -100,9 +121,9 @@ class BettingRecommender:
     
     def makeH2HRecommendations(self, predictions):
         recommendations = []
-        # odds_data = self.getOdds('h2h')
-        # odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
-        odds_data = pd.read_csv(f'./data/basketball/odds_data/h2h_2025-11-13_12-51.csv')
+        data_file_path = sorted(glob.glob(f'./data/basketball/odds_data/h2h_*.csv'))[-1]
+        odds_data = pd.read_csv(data_file_path)
+        odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
         
         for idx, game in predictions.iterrows():
             game_id = game['game_id']
@@ -179,9 +200,9 @@ class BettingRecommender:
 
     def makeSpreadRecommendations(self, predictions):
         recommendations = []
-        # odds_data = self.getOdds('spread')
-        # odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
-        odds_data = pd.read_csv(f'./data/basketball/odds_data/spreads_2025-11-13_12-51.csv')
+        data_file_path = sorted(glob.glob(f'./data/basketball/odds_data/spread_*.csv'))[-1]
+        odds_data = pd.read_csv(data_file_path)
+        odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
         
         for idx, game in predictions.iterrows():
             game_id = game['game_id']
@@ -290,9 +311,9 @@ class BettingRecommender:
 
     def makeTotalRecommendations(self, predictions):
         recommendations = []
-        # odds_data = self.getOdds('total')
-        # odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
-        odds_data = pd.read_csv(f'./data/basketball/odds_data/total_2025-11-13_12-51.csv')
+        data_file_path = sorted(glob.glob(f'./data/basketball/odds_data/total_*.csv'))[-1]
+        odds_data = pd.read_csv(data_file_path)
+        odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
         
         for idx, game in predictions.iterrows():
             game_id = game['game_id']

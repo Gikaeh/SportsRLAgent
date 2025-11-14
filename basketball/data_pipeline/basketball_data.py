@@ -95,7 +95,7 @@ class BasketballData:
         games = gamefinder.get_data_frames()[0]
         games = games[columns]
         games.rename(columns={'gameId': 'GAME_ID', 'gameDateEst': 'GAME_DATE', 'homeTeam_teamName': 'HOME_TEAM', 'awayTeam_teamName': 'AWAY_TEAM', 'homeTeam_teamTricode': 'TEAM_ABB_HOME', 'awayTeam_teamTricode': 'TEAM_ABB_AWAY'}, inplace=True)
-        games = games[(games['GAME_DATE'] <= tomorrow.strftime('%Y-%m-%dT%H:%M:%SZ')) & (games['GAME_DATE'] >= today.strftime('%Y-%m-%dT%H:%M:%SZ'))]
+        games = games[(games['GAME_DATE'] < tomorrow.strftime('%Y-%m-%dT%00:00:00Z')) & (games['GAME_DATE'] >= today.strftime('%Y-%m-%dT%00:00:00Z'))]
         games['HOME_TEAM'] = games['HOME_TEAM'].apply(self.matchTeamName)
         games['AWAY_TEAM'] = games['AWAY_TEAM'].apply(self.matchTeamName)
         

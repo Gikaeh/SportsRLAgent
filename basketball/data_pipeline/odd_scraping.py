@@ -151,7 +151,7 @@ class BasketballOddScraping:
             data_not_to_drop = df_sorted['commence_time'] < self.time_now + timedelta(days=1)
             cleaned_data = df_sorted[data_not_to_drop]
             
-            cleaned_data.to_csv(f'{self.data_dir}/spreads_{self.time_now_string}.csv', index=False)
+            cleaned_data.to_csv(f'{self.data_dir}/spread_{self.time_now_string}.csv', index=False)
 
             return cleaned_data
 

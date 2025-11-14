@@ -122,13 +122,6 @@ def bettingRecommendations():
     
     recommender.displayRecommendations(recommendations)
 
-    save = input("Would you like to save any of these recommendations? (y/n)\n")
-    if save.lower() == 'y':
-        games_to_save = input("Which ones would you like to save? (comma separated list of numbers or 0 for all)\n")
-        games_to_save = [int(game) for game in games_to_save.split(",")] if games_to_save != '0' else None
-        
-        recommender.logRecommendations(recommendations, games_to_save)
-
 def modelRetraining():
     print("\n" + "="*80)
     print("Model Retraining")

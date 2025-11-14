@@ -56,6 +56,7 @@ class LiveDataUpdater:
         todays_games = self.fetchTodaysGames()
         
         if todays_games.empty:
+            print("No games scheduled for today.")
             return pd.DataFrame(), pd.DataFrame()
         
         game_features = self.prepareGameFeatures()

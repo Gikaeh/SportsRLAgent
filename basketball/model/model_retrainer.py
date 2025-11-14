@@ -292,12 +292,4 @@ class ModelRetrainer:
         print(f"Total Games Trained: {self.metadata['total_games_trained']}")
         print(f"\nRetrain History ({len(self.metadata['retrain_history'])} retrains):")
         
-        for i, entry in enumerate(self.metadata['retrain_history'][-5:], 1):
-            print(f"\n  #{i} - {entry['date']}")
-            print(f"     Games: {entry['games_trained']}")
-            print(f"     Validation Accuracy: {entry['val_accuracy']:.4f}")
-            print(f"     Validation Log Loss: {entry['val_log_loss']:.4f}")
-            print(f"     Test Accuracy: {entry['test_accuracy']:.4f}")
-            print(f"     Test Log Loss: {entry['test_log_loss']:.4f}")
-        
         return self.metadata

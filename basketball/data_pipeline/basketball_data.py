@@ -91,14 +91,12 @@ class BasketballData:
         columns = ['gameId', 'gameDateEst', 'homeTeam_teamName', 'homeTeam_teamTricode', 'awayTeam_teamName', 'awayTeam_teamTricode']
         
         gamefinder = scheduleleaguev2.ScheduleLeagueV2()
-        
         games = gamefinder.get_data_frames()[0]
         games = games[columns]
         games.rename(columns={'gameId': 'GAME_ID', 'gameDateEst': 'GAME_DATE', 'homeTeam_teamName': 'HOME_TEAM', 'awayTeam_teamName': 'AWAY_TEAM', 'homeTeam_teamTricode': 'TEAM_ABB_HOME', 'awayTeam_teamTricode': 'TEAM_ABB_AWAY'}, inplace=True)
-        games = games[(games['GAME_DATE'] < tomorrow.strftime('%Y-%m-%dT%00:00:00Z')) & (games['GAME_DATE'] >= today.strftime('%Y-%m-%dT%00:00:00Z'))]
+        games = games[(games['GAME_DATE'] < tomorrow.strftime('%Y-%m-%dT00:00:00Z')) & (games['GAME_DATE'] >= today.strftime('%Y-%m-%dT00:00:00Z'))]
         games['HOME_TEAM'] = games['HOME_TEAM'].apply(self.matchTeamName)
         games['AWAY_TEAM'] = games['AWAY_TEAM'].apply(self.matchTeamName)
-        
         games.to_csv(f'{self.data_dir}/upcoming_games.csv', index=False)
 
         return games

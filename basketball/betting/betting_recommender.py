@@ -47,17 +47,26 @@ class BettingRecommender:
         else:
             return 100 * (1 - probability) / probability
     
-    def kellyCriterion(self, win_prob, american_odds):
+    def kellyCriterion(self, win_prob, american_odds, confidence):
         if american_odds > 0:
             decimal_odds = (american_odds / 100) + 1
         else:
             decimal_odds = (100 / abs(american_odds)) + 1
         
+        # breakeven__prob = 1 / decimal_odds
+        # edge = win_prob - breakeven__prob
+        # conf_adjusted_edge = edge * confidence
+        # adjusted_prob = np.clip(breakeven__prob + conf_adjusted_edge, 0.0, 0.99)
+        # print(f"Adjusted Probability: {adjusted_prob}")
+
         # Kelly formula: (p * odds - 1) / (odds - 1)
         kelly_fraction = (win_prob * decimal_odds - 1) / (decimal_odds - 1)
+
+        # kelly_fraction = kelly_fraction * confidence
         
         # Apply fractional Kelly for risk management
         kelly_fraction = max(0, kelly_fraction * self.config.KELLY_FRACTION)
+        print(f"Kelly Fraction: {kelly_fraction}")
         
         return min(kelly_fraction, self.config.MAX_BET_SIZE_PCT)
     
@@ -69,8 +78,8 @@ class BettingRecommender:
         results = game_info.copy()
 
         if self.model.getModelType() == 'h2h':
-            odds_data = self.getOdds('h2h')
-            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/h2h_*.csv'))[-1])
+            # odds_data = self.getOdds('h2h')
+            odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/h2h_*.csv'))[-1])
             odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
 
             predictions = self.model.predictProb(game_features)
@@ -82,8 +91,8 @@ class BettingRecommender:
             results['confidence'] = np.abs(home_win_probs - 0.5) * 2 
 
         if self.model.getModelType() == 'spread':
-            odds_data = self.getOdds('spread')
-            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/spread_*.csv'))[-1])
+            # odds_data = self.getOdds('spread')
+            odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/spread_*.csv'))[-1])
             odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
             
 
@@ -94,8 +103,8 @@ class BettingRecommender:
 
         if self.model.getModelType() == 'total':
             predictions = self.model.predict(game_features)
-            odds_data = self.getOdds('total')
-            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/total_*.csv'))[-1])
+            # odds_data = self.getOdds('total')
+            odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/total_*.csv'))[-1])
             odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
             odds_data.sort_values('price', inplace=True)
 
@@ -142,7 +151,7 @@ class BettingRecommender:
                 away_edge = self.calculateEdge(away_prob, away_odds)
                 
                 if home_prob >= self.config.MIN_PROBABILITY and home_edge >= self.config.MIN_EDGE:
-                    bet_size_fraction = self.kellyCriterion(home_prob, home_odds)
+                    bet_size_fraction = self.kellyCriterion(home_prob, home_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
 
                     recommendations.append({
@@ -168,7 +177,7 @@ class BettingRecommender:
                     })
                 
                 if away_prob >= self.config.MIN_PROBABILITY and away_edge >= self.config.MIN_EDGE:
-                    bet_size_fraction = self.kellyCriterion(away_prob, away_odds)
+                    bet_size_fraction = self.kellyCriterion(away_prob, away_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
                     
                     recommendations.append({
@@ -234,13 +243,13 @@ class BettingRecommender:
             else:
                 away_margin_advantage = away_spread + (-predicted_margin)
 
-            MIN_MARGIN_EDGE = getattr(self.config, 'MIN_MARGIN_EDGE', 3)
+            MIN_MARGIN_EDGE = getattr(self.config, 'MIN_MARGIN_EDGE', 5)
 
             if home_margin_advantage >= MIN_MARGIN_EDGE:
                 cover_prob = self.marginToProbability(home_margin_advantage)
 
                 if cover_prob >= self.config.MIN_PROBABILITY:
-                    bet_size_fraction = self.kellyCriterion(cover_prob, home_odds)
+                    bet_size_fraction = self.kellyCriterion(cover_prob, home_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
 
                     book = home_spread_odds[home_spread_odds['price'] == home_odds]['bookmakers_key'].values[0]
@@ -274,7 +283,7 @@ class BettingRecommender:
                 cover_prob = self.marginToProbability(away_margin_advantage)
 
                 if cover_prob >= self.config.MIN_PROBABILITY:
-                    bet_size_fraction = self.kellyCriterion(cover_prob, away_odds)
+                    bet_size_fraction = self.kellyCriterion(cover_prob, away_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
                 
                     book = away_spread_odds[away_spread_odds['price'] == away_odds]['bookmakers_key'].values[0]
@@ -334,13 +343,13 @@ class BettingRecommender:
             
             total_advantage = abs(predicted_total - total_line)
             
-            MIN_TOTAL_EDGE = getattr(self.config, 'MIN_TOTAL_EDGE', 5.0)  
+            MIN_TOTAL_EDGE = getattr(self.config, 'MIN_TOTAL_EDGE', 10.0)  
             
             if predicted_total > total_line and total_advantage >= MIN_TOTAL_EDGE:
                 cover_prob = self.totalToProbability(total_advantage)
                 
                 if cover_prob >= self.config.MIN_PROBABILITY:
-                    bet_size_fraction = self.kellyCriterion(cover_prob, over_odds)
+                    bet_size_fraction = self.kellyCriterion(cover_prob, over_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
                     
                     book = over_odds_data[over_odds_data['price'] == over_odds]['bookmakers_key'].values[0]
@@ -370,7 +379,7 @@ class BettingRecommender:
                 cover_prob = self.totalToProbability(total_advantage)
                 
                 if cover_prob >= self.config.MIN_PROBABILITY:
-                    bet_size_fraction = self.kellyCriterion(cover_prob, under_odds)
+                    bet_size_fraction = self.kellyCriterion(cover_prob, under_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
                     
                     book = under_odds_data[under_odds_data['price'] == under_odds]['bookmakers_key'].values[0]
@@ -442,7 +451,6 @@ class BettingRecommender:
             print("No games meet the minimum edge and probability requirements.")
             return
         
-        rr_valid = (len(recommendations) >= 5) and (len(set(r['matchup'] for r in recommendations)) >= 5)
         recommendations.sort(key=self.calculateBetPriority, reverse=True)
         
         total_risk = sum(r['bet_amount'] for r in recommendations)
@@ -498,13 +506,6 @@ class BettingRecommender:
             games_to_save = [int(game) for game in games_to_save.split(",")] if games_to_save != '0' else None
             
             self.logRecommendations(recommendations, games_to_save)
-
-        if rr_valid:
-            answer = input('Do you want to view the round robin recommendations? (y/n)\n')
-            if answer.lower() == 'y':
-                seen = set()
-                rr = [r for r in recommendations if r['matchup'] not in seen and not seen.add(r['matchup'])][:5]
-                self.roundRobinDisplay(rr)
     
     def logRecommendations(self, recommendations, numbers = None):
         if not recommendations:
@@ -548,41 +549,6 @@ class BettingRecommender:
                             write_header = True
                 
                 data.to_csv(file, mode='a', header=write_header, index=False)
-
-    def roundRobinDisplay(self, recommendations):
-        print("\n" + "="*80)
-        print("ROUND ROBIN RECOMMENDATIONS")
-        print("="*80)
-        
-        for i, rec in enumerate(recommendations, 1):
-            print(f"   Matchup: {rec['matchup']}")
-
-            if rec['type'] == 'h2h':
-                print(f"   Bet: {rec['bet_team']} ({rec['bet_side'].upper()})")
-                print(f"   Odds: Home {rec['home_odds']:+d}, Away {rec['away_odds']:+d} (Book: {rec['book']})")
-
-            elif rec['type'] == 'spread':
-                print(f"   Bet: {rec['bet_team']} ({rec['bet_side'].upper()})")
-                print(f"   Home Spread: {rec['home_spread']:+.1f} @ {rec['home_odds']:+d} (Book: {rec['book']})")
-                print(f"   Away Spread: {rec['away_spread']:+.1f} @ {rec['away_odds']:+d} (Book: {rec['book']})")
-
-            elif rec['type'] == 'total':
-                print(f"   Bet: {rec['total_line']} points ({rec['bet_side'].upper()})")
-                print(f"   Over Odds: {rec['over_odds']:+d}, Under Odds: {rec['under_odds']:+d} (Book: {rec['book']})")
-        
-            print("="*80)
-        
-        log = input('\nWould you like to save the round robin recommendations? (y/n): \n')
-        if log.lower() == 'y':
-            self.logRoundRobin(recommendations)
-
-    def logRoundRobin(self, recommendations):
-        round_robin_log_file = Path(self.config.LOG_DIR) / self.config.ROUND_ROBIN_LOG
-        df = pd.DataFrame(recommendations)
-        df['timestamp'] = datetime.now()
-        string = f'{df['date'][0]},{df['matchup'][0]},{df['type'][0]},{df['bet_side'][0]},{df['matchup'][1]},{df['type'][1]},{df['bet_side'][1]},{df['matchup'][2]},{df['type'][2]},{df['bet_side'][2]},{df['matchup'][3]},{df['type'][3]},{df['bet_side'][3]},{df['matchup'][4]},{df['type'][4]},{df['bet_side'][4]},,,,,' + '\n'
-        with open(round_robin_log_file, 'a') as f:
-            f.write(string)
 
     def getOdds(self, model_type):
         if model_type == 'h2h':
@@ -678,8 +644,7 @@ class BettingRecommender:
         h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
         spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
         total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
-        rr_log_file = Path(self.config.LOG_DIR) / self.config.ROUND_ROBIN_LOG
-        files = [h2h_log_file, spread_log_file, total_log_file, rr_log_file]
+        files = [h2h_log_file, spread_log_file, total_log_file]
         bankroll = self.config.STARTING_BANKROLL
          
         for file in files:

@@ -1,10 +1,6 @@
 GAME_ID,GAME_DATE,HOME_TEAM,TEAM_ABB_HOME,AWAY_TEAM,TEAM_ABB_AWAY
-0022500039,2025-11-14T00:00:00Z,New York Knicks,NYK,Miami Heat,MIA
-0022500040,2025-11-14T00:00:00Z,Orlando Magic,ORL,Brooklyn Nets,BKN
-0022500041,2025-11-14T00:00:00Z,Detroit Pistons,DET,Philadelphia 76ers,PHI
-0022500042,2025-11-14T00:00:00Z,Houston Rockets,HOU,Portland Trail Blazers,POR
-0022500043,2025-11-14T00:00:00Z,Milwaukee Bucks,MIL,Charlotte Hornets,CHA
-0022500044,2025-11-14T00:00:00Z,Minnesota Timberwolves,MIN,Sacramento Kings,SAC
-0022500045,2025-11-14T00:00:00Z,New Orleans Pelicans,NOP,Los Angeles Lakers,LAL
-0022500046,2025-11-14T00:00:00Z,Dallas Mavericks,DAL,LA Clippers,LAC
-0022500047,2025-11-14T00:00:00Z,San Antonio Spurs,SAS,Golden State Warriors,GSW
+0022500228,2025-11-15T00:00:00Z,Cleveland Cavaliers,CLE,Memphis Grizzlies,MEM
+0022500229,2025-11-15T00:00:00Z,Charlotte Hornets,CHA,Oklahoma City Thunder,OKC
+0022500230,2025-11-15T00:00:00Z,Indiana Pacers,IND,Toronto Raptors,TOR
+0022500231,2025-11-15T00:00:00Z,Milwaukee Bucks,MIL,Los Angeles Lakers,LAL
+0022500232,2025-11-15T00:00:00Z,Minnesota Timberwolves,MIN,Denver Nuggets,DEN

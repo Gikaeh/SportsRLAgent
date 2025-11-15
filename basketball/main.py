@@ -154,7 +154,12 @@ def bettingUpdate():
     print("="*80)
     recommender = BettingRecommender(model_path = './models/basketball_h2h_model.json')
 
-    print(f"Current Bankroll: ${recommender.getCurrentBankroll():,.2f}")
+    archive = input("Archive? (y/n): ")
+    if archive == 'y':
+        current = recommender.setBankroll(archive=True)
+        print(f"Current Bankroll: ${current:,.2f}")
+    else:
+        print(f"Current Bankroll: ${recommender.getCurrentBankroll():,.2f}")
 
 def activeBets():
     print("\n" + "="*80)

@@ -1,3 +1,4 @@
+from os import path
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -78,8 +79,8 @@ class BettingRecommender:
         results = game_info.copy()
 
         if self.model.getModelType() == 'h2h':
-            # odds_data = self.getOdds('h2h')
-            odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/h2h_*.csv'))[-1])
+            odds_data = self.getOdds('h2h')
+            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/h2h_*.csv'))[-1])
             odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
 
             predictions = self.model.predictProb(game_features)
@@ -91,8 +92,8 @@ class BettingRecommender:
             results['confidence'] = np.abs(home_win_probs - 0.5) * 2 
 
         if self.model.getModelType() == 'spread':
-            # odds_data = self.getOdds('spread')
-            odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/spread_*.csv'))[-1])
+            odds_data = self.getOdds('spread')
+            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/spread_*.csv'))[-1])
             odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
             
 
@@ -103,8 +104,8 @@ class BettingRecommender:
 
         if self.model.getModelType() == 'total':
             predictions = self.model.predict(game_features)
-            # odds_data = self.getOdds('total')
-            odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/total_*.csv'))[-1])
+            odds_data = self.getOdds('total')
+            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/total_*.csv'))[-1])
             odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
             odds_data.sort_values('price', inplace=True)
 
@@ -343,7 +344,7 @@ class BettingRecommender:
             
             total_advantage = abs(predicted_total - total_line)
             
-            MIN_TOTAL_EDGE = getattr(self.config, 'MIN_TOTAL_EDGE', 10.0)  
+            MIN_TOTAL_EDGE = getattr(self.config, 'MIN_TOTAL_EDGE', 5.0)  
             
             if predicted_total > total_line and total_advantage >= MIN_TOTAL_EDGE:
                 cover_prob = self.totalToProbability(total_advantage)
@@ -467,6 +468,9 @@ class BettingRecommender:
         print("="*80)
         
         for i, rec in enumerate(recommendations, 1):
+            if rec['type'] == 'total':
+                continue
+            
             print(f"\nRECOMMENDATION #{i} - {rec['type']}")
             print(f"   Matchup: {rec['matchup']}")
 
@@ -506,17 +510,26 @@ class BettingRecommender:
             games_to_save = [int(game) for game in games_to_save.split(",")] if games_to_save != '0' else None
             
             self.logRecommendations(recommendations, games_to_save)
+
+        files = [Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG, Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG, Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG]
+        self.logRecommendations(recommendations, files=files)
+        
     
-    def logRecommendations(self, recommendations, numbers = None):
+    def logRecommendations(self, recommendations, numbers = None, files = None):
         if not recommendations:
             return
         
         if numbers is not None:
             recommendations = [recommendations[i-1] for i in numbers]
         
-        h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
-        spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
-        total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+        if files:
+            h2h_log_file = files[0]
+            spread_log_file = files[1]
+            total_log_file = files[2]
+        else:
+            h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
+            total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
         
         df = pd.DataFrame(recommendations)
         df['timestamp'] = datetime.now()
@@ -535,6 +548,7 @@ class BettingRecommender:
                 write_header = True
                 
                 if file.exists() and file.stat().st_size > 0:
+                    existing_data = pd.read_csv(file)
                     with open(file, 'r') as f:
                         first_line = f.readline().strip()
                         
@@ -547,8 +561,10 @@ class BettingRecommender:
                             
                         else:
                             write_header = True
-                
-                data.to_csv(file, mode='a', header=write_header, index=False)
+
+                data = pd.concat([existing_data, data], ignore_index=True)
+                data.drop_duplicates(subset=['game_id', 'matchup', 'bet_side'], keep='last', inplace=True)
+                data.to_csv(file, mode='w', header=write_header, index=False)
 
     def getOdds(self, model_type):
         if model_type == 'h2h':
@@ -558,10 +574,15 @@ class BettingRecommender:
         elif model_type == 'total':
             return self.odd_scraping.getTotalOdds()
 
-    def updateBetResults(self):
-        h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
-        spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
-        total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+    def updateBetResults(self, archive = False):
+        if archive:
+            h2h_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG
+            total_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG
+        else:
+            h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
+            total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
         files = [h2h_log_file, spread_log_file, total_log_file]
         game_data = pd.read_csv(f'././data/basketball/game_data/{self.preparer.getCurrentSeason()}_game_stats.csv')
 
@@ -634,16 +655,22 @@ class BettingRecommender:
                                 
                 df.to_csv(file, index=False)
 
-    def setBankroll(self):
+    def setBankroll(self, archive = False):
         try:
-            self.updateBetResults()
+            self.updateBetResults(archive)
         except Exception as e:
             print(f"Error updating bet results: {e}")
             return self.config.STARTING_BANKROLL
         
-        h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
-        spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
-        total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+        if archive:
+            h2h_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG
+            total_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG
+        else:
+            h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
+            total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+        
         files = [h2h_log_file, spread_log_file, total_log_file]
         bankroll = self.config.STARTING_BANKROLL
          

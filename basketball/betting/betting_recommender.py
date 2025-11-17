@@ -543,7 +543,7 @@ class BettingRecommender:
             (total, total_log_file)
         ]
         
-        for data, file in data_files:
+        for i, (data, file) in enumerate(data_files):
             if not data.empty:
                 write_header = True
                 
@@ -551,20 +551,17 @@ class BettingRecommender:
                     existing_data = pd.read_csv(file)
                     with open(file, 'r') as f:
                         first_line = f.readline().strip()
+                        existing_columns = first_line.split(',')
                         
-                        if first_line and not first_line[0].isdigit():
-                            write_header = False
-                            existing_columns = first_line.split(',')
-                            
-                            cols_to_keep = [col for col in existing_columns if col in data.columns]
-                            data = data[cols_to_keep]
-                            
-                        else:
-                            write_header = True
+                        cols_to_keep = [col for col in existing_columns if col in data.columns]
+                        data = data[cols_to_keep]
 
                 data = pd.concat([existing_data, data], ignore_index=True)
-                data.drop_duplicates(subset=['game_id', 'matchup', 'bet_side'], keep='last', inplace=True)
-                data.to_csv(file, mode='w', header=write_header, index=False)
+                if i in [0, 1]:
+                    data.drop_duplicates(subset=['game_id', 'matchup', 'bet_side', 'home_odds', 'away_odds'], keep='last', inplace=True)
+                else:
+                    data.drop_duplicates(subset=['game_id', 'matchup', 'bet_side', 'total_line', 'over_odds', 'under_odds'], keep='last', inplace=True)
+                data.to_csv(file, mode='w', header=True, index=False)
 
     def getOdds(self, model_type):
         if model_type == 'h2h':
@@ -701,3 +698,36 @@ class BettingRecommender:
                 df = pd.read_csv(file)
                 
                 return df[df['result'].isnull()]
+
+    def displayModelWinRate(self, archive = False):
+        if archive:
+            h2h_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG
+            total_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG
+        else:
+            h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
+            total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+        
+        files = [('h2h', h2h_log_file), ('spread', spread_log_file), ('total', total_log_file)]
+        
+        for model_type, file in files:
+            wins = 0
+            losses = 0
+            money_wins = 0
+            money_losses = 0
+            
+            if file.exists():
+                df = pd.read_csv(file)
+                
+                for _, row in df.iterrows():
+                    if row['result'] == 'W':
+                        wins += 1
+                        money_wins += row['potential_profit']
+                    elif row['result'] == 'L':
+                        losses += 1
+                        money_losses += row['bet_amount']
+        
+            print("\nModel Win Rates:")
+            print(f"{model_type} Win Rate: {wins/(wins + losses)}%")
+            print(f"{model_type} Money Win: {money_wins} | {model_type} Money Loss: {money_losses}")

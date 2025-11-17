@@ -158,8 +158,10 @@ def bettingUpdate():
     if archive == 'y':
         current = recommender.setBankroll(archive=True)
         print(f"Current Bankroll: ${current:,.2f}")
+        recommender.displayModelWinRate(archive=True)
     else:
         print(f"Current Bankroll: ${recommender.getCurrentBankroll():,.2f}")
+        recommender.displayModelWinRate()
 
 def activeBets():
     print("\n" + "="*80)

@@ -2,6 +2,7 @@ from operator import is_
 from data_pipeline.live_data_updater import LiveDataUpdater
 from betting.betting_recommender import BettingRecommender
 from model.model_retrainer import ModelRetrainer
+from data_pipeline.basketball_data import BasketballData
 from pathlib import Path
 
 def main():
@@ -152,6 +153,7 @@ def bettingUpdate():
     print("\n" + "="*80)
     print("Betting Update")
     print("="*80)
+    BasketballData().getSeasonGames(season='2025-26')
     recommender = BettingRecommender(model_path = './models/basketball_h2h_model.json')
 
     archive = input("Archive? (y/n): ")

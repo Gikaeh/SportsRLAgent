@@ -459,7 +459,9 @@ class BettingRecommender:
             lowest_bet_priority = recommendations.pop()
             total_risk -= lowest_bet_priority['bet_amount']
 
-        total_potential = sum(r['potential_profit'] for r in recommendations)
+        bets_to_place = recommendations[recommendations['type'] != 'total']
+        total_risk = sum(r['bet_amount'] for r in bets_to_place)
+        total_potential = sum(r['potential_profit'] for r in bets_to_place)
 
         print("\n" + "="*80)
         print(f"BETTING RECOMMENDATIONS - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -467,10 +469,7 @@ class BettingRecommender:
         print(f"Current Bankroll: ${self.current_bankroll:,.2f}")
         print("="*80)
         
-        for i, rec in enumerate(recommendations, 1):
-            if rec['type'] == 'total':
-                continue
-            
+        for i, rec in enumerate(bets_to_place, 1):
             print(f"\nRECOMMENDATION #{i} - {rec['type']}")
             print(f"   Matchup: {rec['matchup']}")
 
@@ -509,7 +508,7 @@ class BettingRecommender:
             games_to_save = input("Which ones would you like to save? (comma separated list of numbers or 0 for all)\n")
             games_to_save = [int(game) for game in games_to_save.split(",")] if games_to_save != '0' else None
             
-            self.logRecommendations(recommendations, games_to_save)
+            self.logRecommendations(bets_to_place, games_to_save)
 
         files = [Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG, Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG, Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG]
         self.logRecommendations(recommendations, files=files)

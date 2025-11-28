@@ -3,5 +3,5 @@ idea_for_project.txt
 plots
 __pycache__
 data/basketball/upcoming_games.csv
-*.md
+basketball/*.md
 models

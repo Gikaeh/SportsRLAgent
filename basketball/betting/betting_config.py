@@ -7,7 +7,7 @@ class BettingConfig:
     
     # Edge
     MIN_EDGE = 0.03           # Minimum 3% edge to place bet (model_prob - market_prob)
-    MIN_PROBABILITY = 0.60     # Minimum 60% win probability to consider betting
+    MIN_PROBABILITY = 0.58     # Minimum 60% win probability to consider betting
     
     # Risk Limits
     MAX_BETS_PER_DAY = 5      # Maximum number of bets per day

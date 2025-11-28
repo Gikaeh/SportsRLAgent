@@ -1,7 +1,7 @@
 {
-  "last_retrain_date": "2025-11-12T02:12:16.092610",
-  "total_games_trained": 28427,
-  "model_version": 2,
+  "last_retrain_date": "2025-11-28T14:55:22.497743",
+  "total_games_trained": 28528,
+  "model_version": 4,
   "retrain_history": [
     {
       "date": "2025-11-12T02:12:12.984501",
@@ -18,6 +18,40 @@
       "test_within_3": 0.20225114315863524,
       "test_within_5": 0.32395357017235316,
       "test_within_7": 0.44811818501582834,
+      "hyperparameter_tuning": true
+    },
+    {
+      "date": "2025-11-20T20:08:25.243361",
+      "games_trained": 28487,
+      "val_mae": 9.649546183826105,
+      "val_rmse": 12.101992117647953,
+      "val_r2": 0.2159173960501244,
+      "val_within_3": 0.18813618813618813,
+      "val_within_5": 0.31344331344331344,
+      "val_within_7": 0.43664443664443664,
+      "test_mae": 9.40622199077668,
+      "test_rmse": 12.070275152283308,
+      "test_r2": 0.18566689997617092,
+      "test_within_3": 0.2127062127062127,
+      "test_within_5": 0.34854334854334856,
+      "test_within_7": 0.4626184626184626,
+      "hyperparameter_tuning": true
+    },
+    {
+      "date": "2025-11-28T14:55:19.371003",
+      "games_trained": 28528,
+      "val_mae": 9.51686518050272,
+      "val_rmse": 12.0859784511248,
+      "val_r2": 0.19488272523817274,
+      "val_within_3": 0.2036452856642131,
+      "val_within_5": 0.33403434980722047,
+      "val_within_7": 0.45741324921135645,
+      "test_mae": 9.725430506050715,
+      "test_rmse": 12.268539657641915,
+      "test_r2": 0.20014063622314016,
+      "test_within_3": 0.1927795303189625,
+      "test_within_5": 0.3207150368033649,
+      "test_within_7": 0.43252716438836314,
       "hyperparameter_tuning": true
     }
   ]

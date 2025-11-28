@@ -67,7 +67,7 @@ class BettingRecommender:
         
         # Apply fractional Kelly for risk management
         kelly_fraction = max(0, kelly_fraction * self.config.KELLY_FRACTION)
-        print(f"Kelly Fraction: {kelly_fraction}")
+        # print(f"Kelly Fraction: {kelly_fraction}")
         
         return min(kelly_fraction, self.config.MAX_BET_SIZE_PCT)
     
@@ -81,7 +81,6 @@ class BettingRecommender:
         if self.model.getModelType() == 'h2h':
             odds_data = self.getOdds('h2h')
             # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/h2h_*.csv'))[-1])
-            odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
 
             predictions = self.model.predictProb(game_features)
             home_win_probs = predictions[:, 1]
@@ -93,9 +92,7 @@ class BettingRecommender:
 
         if self.model.getModelType() == 'spread':
             odds_data = self.getOdds('spread')
-            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/spread_*.csv'))[-1])
-            odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
-            
+            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/spread_*.csv'))[-1])            
 
             predictions = self.model.predict(game_features)
             results['predicted_margin'] = predictions
@@ -112,9 +109,10 @@ class BettingRecommender:
             results['predicted_total'] = predictions
             for idx, row in results.iterrows():
                 game_odds = odds_data[odds_data['home_team'] == row['home_team']]
+                if len(game_odds) == 0:
+                    continue
                 total_distance = abs(row['predicted_total'] - game_odds['point'].values[0])
                 results.at[idx, 'confidence'] = np.minimum(total_distance / 20, 1)
-        
         return results
     
     def makeBettingRecommendations(self, predictions):
@@ -244,7 +242,7 @@ class BettingRecommender:
             else:
                 away_margin_advantage = away_spread + (-predicted_margin)
 
-            MIN_MARGIN_EDGE = getattr(self.config, 'MIN_MARGIN_EDGE', 5)
+            MIN_MARGIN_EDGE = getattr(self.config, 'MIN_MARGIN_EDGE', 3)
 
             if home_margin_advantage >= MIN_MARGIN_EDGE:
                 cover_prob = self.marginToProbability(home_margin_advantage)
@@ -344,7 +342,7 @@ class BettingRecommender:
             
             total_advantage = abs(predicted_total - total_line)
             
-            MIN_TOTAL_EDGE = getattr(self.config, 'MIN_TOTAL_EDGE', 5.0)  
+            MIN_TOTAL_EDGE = getattr(self.config, 'MIN_TOTAL_EDGE', 8.0)  
             
             if predicted_total > total_line and total_advantage >= MIN_TOTAL_EDGE:
                 cover_prob = self.totalToProbability(total_advantage)
@@ -459,9 +457,7 @@ class BettingRecommender:
             lowest_bet_priority = recommendations.pop()
             total_risk -= lowest_bet_priority['bet_amount']
 
-        bets_to_place = recommendations[recommendations['type'] != 'total']
-        total_risk = sum(r['bet_amount'] for r in bets_to_place)
-        total_potential = sum(r['potential_profit'] for r in bets_to_place)
+        total_potential = sum(r['potential_profit'] for r in recommendations)
 
         print("\n" + "="*80)
         print(f"BETTING RECOMMENDATIONS - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -469,7 +465,10 @@ class BettingRecommender:
         print(f"Current Bankroll: ${self.current_bankroll:,.2f}")
         print("="*80)
         
-        for i, rec in enumerate(bets_to_place, 1):
+        for i, rec in enumerate(recommendations, 1):
+            if rec['type'] == 'total':
+                continue
+            
             print(f"\nRECOMMENDATION #{i} - {rec['type']}")
             print(f"   Matchup: {rec['matchup']}")
 
@@ -508,7 +507,7 @@ class BettingRecommender:
             games_to_save = input("Which ones would you like to save? (comma separated list of numbers or 0 for all)\n")
             games_to_save = [int(game) for game in games_to_save.split(",")] if games_to_save != '0' else None
             
-            self.logRecommendations(bets_to_place, games_to_save)
+            self.logRecommendations(recommendations, games_to_save)
 
         files = [Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG, Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG, Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG]
         self.logRecommendations(recommendations, files=files)

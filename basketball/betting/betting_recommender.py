@@ -727,5 +727,5 @@ class BettingRecommender:
                         money_losses += row['bet_amount']
         
             print("\nModel Win Rates:")
-            print(f"{model_type} Win Rate: {wins/(wins + losses)}%")
+            print(f"{model_type} Win Rate: {wins/(wins + losses)}% ({wins} - {losses})")
             print(f"{model_type} Money Win: {money_wins} | {model_type} Money Loss: {money_losses}")

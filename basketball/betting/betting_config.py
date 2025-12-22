@@ -6,8 +6,9 @@ class BettingConfig:
     MAX_RISK_PCT = 0.60
     
     # Edge
-    MIN_EDGE = 0.03           # Minimum 3% edge to place bet (model_prob - market_prob)
-    MIN_PROBABILITY = 0.58     # Minimum 60% win probability to consider betting
+    MIN_EDGE_H2H = 0.01 # Minimum 3% edge to place bet (model_prob - market_prob)
+    MIN_EDGE_SPREAD = 3
+    MIN_PROBABILITY = 0.52
     
     # Risk Limits
     MAX_BETS_PER_DAY = 5      # Maximum number of bets per day
@@ -30,7 +31,6 @@ class BettingConfig:
     H2H_BETS_LOG = 'h2h_bets.csv'
     SPREAD_BETS_LOG = 'spread_bets.csv'
     TOTAL_BETS_LOG = 'total_bets.csv'
-    ROUND_ROBIN_LOG = 'rr_bets.csv'
     
     # Alerts
     ALERT_ON_HIGH_EDGE = 0.10  # Alert if edge exceeds 10% (potential data issue)

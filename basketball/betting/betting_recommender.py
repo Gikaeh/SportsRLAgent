@@ -453,9 +453,9 @@ class BettingRecommender:
         recommendations.sort(key=self.calculateBetPriority, reverse=True)
         
         total_risk = sum(r['bet_amount'] for r in recommendations)
-        while total_risk > self.current_bankroll * self.config.MAX_RISK_PCT:
-            lowest_bet_priority = recommendations.pop()
-            total_risk -= lowest_bet_priority['bet_amount']
+        # while total_risk > self.current_bankroll * self.config.MAX_RISK_PCT:
+        #     lowest_bet_priority = recommendations.pop()
+        #     total_risk -= lowest_bet_priority['bet_amount']
 
         total_potential = sum(r['potential_profit'] for r in recommendations)
 

@@ -1,8 +1,15 @@
 GAME_ID,GAME_DATE,HOME_TEAM,TEAM_ABB_HOME,AWAY_TEAM,TEAM_ABB_AWAY
-0022500402,2025-12-22T00:00:00Z,Cleveland Cavaliers,CLE,Charlotte Hornets,CHA
-0022500403,2025-12-22T00:00:00Z,Boston Celtics,BOS,Indiana Pacers,IND
-0022500404,2025-12-22T00:00:00Z,New Orleans Pelicans,NOP,Dallas Mavericks,DAL
-0022500405,2025-12-22T00:00:00Z,Denver Nuggets,DEN,Utah Jazz,UTA
-0022500406,2025-12-22T00:00:00Z,Oklahoma City Thunder,OKC,Memphis Grizzlies,MEM
-0022500407,2025-12-22T00:00:00Z,Golden State Warriors,GSW,Orlando Magic,ORL
-0022500408,2025-12-22T00:00:00Z,Portland Trail Blazers,POR,Detroit Pistons,DET
+0022500409,2025-12-23T00:00:00Z,Charlotte Hornets,CHA,Washington Wizards,WAS
+0022500410,2025-12-23T00:00:00Z,Philadelphia 76ers,PHI,Brooklyn Nets,BKN
+0022500411,2025-12-23T00:00:00Z,Atlanta Hawks,ATL,Chicago Bulls,CHI
+0022500412,2025-12-23T00:00:00Z,Cleveland Cavaliers,CLE,New Orleans Pelicans,NOP
+0022500413,2025-12-23T00:00:00Z,Indiana Pacers,IND,Milwaukee Bucks,MIL
+0022500414,2025-12-23T00:00:00Z,Miami Heat,MIA,Toronto Raptors,TOR
+0022500415,2025-12-23T00:00:00Z,Dallas Mavericks,DAL,Denver Nuggets,DEN
+0022500416,2025-12-23T00:00:00Z,Minnesota Timberwolves,MIN,New York Knicks,NYK
+0022500417,2025-12-23T00:00:00Z,San Antonio Spurs,SAS,Oklahoma City Thunder,OKC
+0022500418,2025-12-23T00:00:00Z,Phoenix Suns,PHX,Los Angeles Lakers,LAL
+0022500419,2025-12-23T00:00:00Z,Utah Jazz,UTA,Memphis Grizzlies,MEM
+0022500420,2025-12-23T00:00:00Z,Portland Trail Blazers,POR,Orlando Magic,ORL
+0022500421,2025-12-23T00:00:00Z,Sacramento Kings,SAC,Detroit Pistons,DET
+0022500422,2025-12-23T00:00:00Z,LA Clippers,LAC,Houston Rockets,HOU

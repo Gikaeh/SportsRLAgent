@@ -3,6 +3,7 @@ import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 from datetime import datetime
+from data_pipeline.injury_data import InjuryData
 
 class NBATrainingDataPreparer:
     def __init__(self, data_dir='././data/basketball'):
@@ -11,7 +12,8 @@ class NBATrainingDataPreparer:
         self.game_data_dir = self.data_dir / 'game_data'
         self.player_data_dir = self.data_dir / 'player_data'
         # self.season_data_dir = self.data_dir / 'season_data'
-        self.season_averages_cache = {}  
+        self.season_averages_cache = {}
+        self.injury_data = InjuryData(data_dir=data_dir)  
 
     def calculateTeamL10Stats(self, season):
         team_file = self.team_data_dir / f'{season}_team_stats.csv'
@@ -461,7 +463,7 @@ class NBATrainingDataPreparer:
  
         return training_data
     
-    def createUpcomingMatchupData(self, upcoming_games_file=None):
+    def createUpcomingMatchupData(self, upcoming_games_file=None, verify_injury_filtering=False):
         if upcoming_games_file is None:
             upcoming_games_file = self.data_dir / 'upcoming_games.csv'
         
@@ -575,7 +577,7 @@ class NBATrainingDataPreparer:
             print("No matchup data created.")
             return pd.DataFrame()
         
-        player_features = self.addUpcomingPlayerFeatures(matchup_data, current_season)
+        player_features = self.addUpcomingPlayerFeatures(matchup_data, current_season, verify_injury_filtering=verify_injury_filtering)
         matchup_data = matchup_data.merge(player_features, left_on='GAME_ID', right_on='game_id', how='left')
         
         print(f"Calculating aggregated player features...")
@@ -787,7 +789,7 @@ class NBATrainingDataPreparer:
         else:
             return f"{year}-{str(year+1)[-2:]}"
     
-    def addUpcomingPlayerFeatures(self, matchup_data, season):
+    def addUpcomingPlayerFeatures(self, matchup_data, season, verify_injury_filtering=False):
         print(f"Adding player features for upcoming games...")
         print(f"Precomputing player rolling averages...")
         
@@ -798,6 +800,16 @@ class NBATrainingDataPreparer:
         
         latest_player_stats = player_df.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
         
+        # Get injured players
+        injured_players = self.injury_data.getInjuredPlayers()
+        if injured_players:
+            print(f"Found {len(injured_players)} injured players to exclude from top player selection")
+        
+        if verify_injury_filtering:
+            print("\n" + "="*80)
+            print("INJURY FILTERING VERIFICATION MODE ENABLED")
+            print("="*80)
+        
         player_features = []
         
         for idx, row in tqdm(matchup_data.iterrows(), total=len(matchup_data)):
@@ -807,7 +819,24 @@ class NBATrainingDataPreparer:
             
             game_features = {'game_id': game_id}
             
+            # Home team: Get top 6 healthy players by minutes
             home_players = latest_player_stats[latest_player_stats['TEAM_ABBREVIATION'] == home_team].copy()
+            
+            # Filter out injured players
+            if injured_players:
+                original_count = len(home_players)
+                injured_in_team = home_players[home_players['PLAYER_ID'].isin(injured_players)]
+                
+                if not injured_in_team.empty and verify_injury_filtering:
+                    print(f"\n  {home_team} (Home) - Dropping {len(injured_in_team)} injured player(s):")
+                    for _, player in injured_in_team.iterrows():
+                        print(f"    - Player ID {player['PLAYER_ID']}: {player['mpg_rolling']:.1f} MPG")
+                
+                home_players = home_players[~home_players['PLAYER_ID'].isin(injured_players)]
+                
+                if verify_injury_filtering and len(injured_in_team) > 0:
+                    print(f"    Players remaining: {len(home_players)} (was {original_count})")
+            
             home_players = home_players.sort_values('mpg_rolling', ascending=False).head(6)
             
             for i in range(6):
@@ -834,7 +863,24 @@ class NBATrainingDataPreparer:
                     game_features[f'{prefix}tov'] = 0
                     game_features[f'{prefix}plus_minus'] = 0
             
+            # Away team: Get top 6 healthy players by minutes
             away_players = latest_player_stats[latest_player_stats['TEAM_ABBREVIATION'] == away_team].copy()
+            
+            # Filter out injured players
+            if injured_players:
+                original_count = len(away_players)
+                injured_in_team = away_players[away_players['PLAYER_ID'].isin(injured_players)]
+                
+                if not injured_in_team.empty and verify_injury_filtering:
+                    print(f"\n  {away_team} (Away) - Dropping {len(injured_in_team)} injured player(s):")
+                    for _, player in injured_in_team.iterrows():
+                        print(f"    - Player ID {player['PLAYER_ID']}: {player['mpg_rolling']:.1f} MPG")
+                
+                away_players = away_players[~away_players['PLAYER_ID'].isin(injured_players)]
+                
+                if verify_injury_filtering and len(injured_in_team) > 0:
+                    print(f"    Players remaining: {len(away_players)} (was {original_count})")
+            
             away_players = away_players.sort_values('mpg_rolling', ascending=False).head(6)
             
             for i in range(6):
@@ -862,6 +908,11 @@ class NBATrainingDataPreparer:
                     game_features[f'{prefix}plus_minus'] = 0
             
             player_features.append(game_features)
+        
+        if verify_injury_filtering:
+            print("\n" + "="*80)
+            print("INJURY FILTERING VERIFICATION COMPLETE")
+            print("="*80 + "\n")
         
         return pd.DataFrame(player_features)
     

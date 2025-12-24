@@ -5,9 +5,11 @@ import time
 from tqdm import tqdm
 from pathlib import Path
 import datetime
+from requests.exceptions import ReadTimeout, ConnectionError, Timeout
+import random
 
 class BasketballData:
-    def __init__(self, data_dir='././data/basketball'):
+    def __init__(self, data_dir='././data/basketball', max_retries=3, base_delay=2):
         self.data_dir = Path(data_dir)
         self.teams_to_keep = [
             'Atlanta Hawks', 'Boston Celtics', 'Cleveland Cavaliers', 'New Orleans Pelicans', 'Chicago Bulls', 'Dallas Mavericks', 'Denver Nuggets', 'Golden State Warriors', 'Houston Rockets', 'LA Clippers',
@@ -19,6 +21,8 @@ class BasketballData:
         self.game_files = [f.stem.replace('_game_stats', '') for f in self.data_dir.glob('game_data/*_game_stats.csv')]
         self.team_files = [f.stem.replace('_team_stats', '') for f in self.data_dir.glob('team_data/*_team_stats.csv')]
         self.player_files = [f.stem.replace('_player_stats', '') for f in self.data_dir.glob('player_data/*_player_stats.csv')]
+        self.max_retries = max_retries
+        self.base_delay = base_delay
     
     def getAllSeasonData(self, season=None):
         if season == None:
@@ -37,11 +41,31 @@ class BasketballData:
             self.getPlayerGames(season)
 
                     
+    def _retry_api_call(self, func, *args, **kwargs):
+        for attempt in range(self.max_retries):
+            try:
+                return func(*args, **kwargs)
+            except (ReadTimeout, ConnectionError, Timeout) as e:
+                if attempt < self.max_retries - 1:
+                    delay = self.base_delay * (2 ** attempt) + random.uniform(0, 1)
+                    print(f"\nAPI timeout/connection error (attempt {attempt + 1}/{self.max_retries})")
+                    print(f"Retrying in {delay:.1f} seconds...")
+                    time.sleep(delay)
+                else:
+                    print(f"\nFailed after {self.max_retries} attempts")
+                    raise
+            except Exception as e:
+                print(f"\nUnexpected error: {type(e).__name__}: {e}")
+                raise
+    
     def getSeasonGames(self, season):
         print(f"\nFetching game results for {season}...")
         
-        gamefinder = leaguegamefinder.LeagueGameFinder(season_nullable=season)
-        games = gamefinder.get_data_frames()[0]
+        def fetch_games():
+            gamefinder = leaguegamefinder.LeagueGameFinder(season_nullable=season)
+            return gamefinder.get_data_frames()[0]
+        
+        games = self._retry_api_call(fetch_games)
         games = games[games['TEAM_NAME'].isin(self.teams_to_keep)]
         games.drop(games[games['GAME_DATE'] < f'{season.split("-")[0]}-10-01'].index, inplace=True)
         games.sort_values(by=['GAME_DATE', 'TEAM_NAME'], inplace=True)
@@ -55,8 +79,12 @@ class BasketballData:
         print(f"Fetching team stats for {season}...")
         
         for team in tqdm(team_list, desc=f"Teams ({season})"):
-            team_logs = teamgamelogs.TeamGameLogs(season_nullable=season, team_id_nullable=team['id'])
-            all_team_logs.append(team_logs.get_data_frames()[0])
+            def fetch_team_logs():
+                team_logs = teamgamelogs.TeamGameLogs(season_nullable=season, team_id_nullable=team['id'])
+                return team_logs.get_data_frames()[0]
+            
+            team_data = self._retry_api_call(fetch_team_logs)
+            all_team_logs.append(team_data)
             time.sleep(0.6)
         
         team_data = pd.concat(all_team_logs)
@@ -68,8 +96,11 @@ class BasketballData:
     def getPlayerGames(self, season):
         print(f"\nFetching player stats for {season}...")
         
-        player_logs = playergamelogs.PlayerGameLogs(season_nullable=season)
-        player_data = player_logs.get_data_frames()[0]
+        def fetch_player_logs():
+            player_logs = playergamelogs.PlayerGameLogs(season_nullable=season)
+            return player_logs.get_data_frames()[0]
+        
+        player_data = self._retry_api_call(fetch_player_logs)
         player_data = player_data[player_data['TEAM_NAME'].isin(self.teams_to_keep)]
         player_data.drop(player_data[player_data['GAME_DATE'] < f'{season.split("-")[0]}-10-01'].index, inplace=True)
         player_data.sort_values(by=['GAME_DATE', 'TEAM_NAME', 'MIN'], inplace=True, ascending=[True, True, False])
@@ -90,8 +121,11 @@ class BasketballData:
         tomorrow = today + pd.Timedelta(days=1)
         columns = ['gameId', 'gameDateEst', 'homeTeam_teamName', 'homeTeam_teamTricode', 'awayTeam_teamName', 'awayTeam_teamTricode']
         
-        gamefinder = scheduleleaguev2.ScheduleLeagueV2()
-        games = gamefinder.get_data_frames()[0]
+        def fetch_schedule():
+            gamefinder = scheduleleaguev2.ScheduleLeagueV2()
+            return gamefinder.get_data_frames()[0]
+        
+        games = self._retry_api_call(fetch_schedule)
         games = games[columns]
         games.rename(columns={'gameId': 'GAME_ID', 'gameDateEst': 'GAME_DATE', 'homeTeam_teamName': 'HOME_TEAM', 'awayTeam_teamName': 'AWAY_TEAM', 'homeTeam_teamTricode': 'TEAM_ABB_HOME', 'awayTeam_teamTricode': 'TEAM_ABB_AWAY'}, inplace=True)
         games = games[(games['GAME_DATE'] < tomorrow.strftime('%Y-%m-%dT00:00:00Z')) & (games['GAME_DATE'] >= today.strftime('%Y-%m-%dT00:00:00Z'))]

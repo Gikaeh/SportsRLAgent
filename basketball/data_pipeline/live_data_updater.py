@@ -1,5 +1,6 @@
 from data_pipeline.basketball_data import BasketballData
 from data_pipeline.prepare_data import NBATrainingDataPreparer
+from data_pipeline.injury_data import InjuryData
 from model.model_h2h import BasketballH2HModel
 from model.model_spread import BasketballSpreadModel
 from model.model_total import BasketballTotalModel
@@ -10,6 +11,7 @@ class LiveDataUpdater:
     def __init__(self, data_dir='././data/basketball'):
         self.basketball_data = BasketballData()
         self.preparer = NBATrainingDataPreparer(data_dir=data_dir)
+        self.injury_data = InjuryData(data_dir=data_dir)
         self.data_dir = Path(data_dir)
         self.current_season = self.preparer.getCurrentSeason()
         self.total_model = BasketballTotalModel()
@@ -52,6 +54,12 @@ class LiveDataUpdater:
             return pd.DataFrame()
     
     def getPredictionReadyData(self, model_type):
+        print(f"\n{'='*60}")
+        print("Updating injury data from ESPN")
+        print(f"{'='*60}")
+        self.injury_data.fetchInjuriesFromESPN()
+        self.injury_data.matchPlayerIDs()
+        
         self.basketball_data.getAllSeasonData(season=self.current_season)
         todays_games = self.fetchTodaysGames()
         

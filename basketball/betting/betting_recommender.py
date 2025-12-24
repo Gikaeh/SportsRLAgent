@@ -421,6 +421,8 @@ class BettingRecommender:
         return min(max(prob, 0.5), 0.95)
 
     def calculateBetPriority(self, bet):
+        weights = {'h2h': .3, 'spread': 1, 'total': .001}
+
         if bet['type'] == 'h2h':
             if bet['bet_side'] == 'home':
                 win_prob = bet.get('home_model_prob', 0.5)
@@ -433,8 +435,9 @@ class BettingRecommender:
         expected_value = (win_prob * bet['potential_profit']) - (loss_prob * bet['bet_amount'])
         ev_per_dollar = expected_value / bet['bet_amount']
         roi = bet['potential_profit'] / bet['bet_amount']
-        
-        return bet['confidence'] * ev_per_dollar * (1+roi*.2)
+        base_priority = bet['confidence'] * ev_per_dollar * (1+roi*.2)
+
+        return base_priority * weights[bet['type']]
     
     def calculateProfit(self, bet_amount, american_odds):
         if american_odds > 0:

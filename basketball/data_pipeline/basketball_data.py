@@ -41,7 +41,7 @@ class BasketballData:
             self.getPlayerGames(season)
 
                     
-    def _retry_api_call(self, func, *args, **kwargs):
+    def retryApiCall(self, func, *args, **kwargs):
         for attempt in range(self.max_retries):
             try:
                 return func(*args, **kwargs)
@@ -65,7 +65,7 @@ class BasketballData:
             gamefinder = leaguegamefinder.LeagueGameFinder(season_nullable=season)
             return gamefinder.get_data_frames()[0]
         
-        games = self._retry_api_call(fetch_games)
+        games = self.retryApiCall(fetch_games)
         games = games[games['TEAM_NAME'].isin(self.teams_to_keep)]
         games.drop(games[games['GAME_DATE'] < f'{season.split("-")[0]}-10-01'].index, inplace=True)
         games.sort_values(by=['GAME_DATE', 'TEAM_NAME'], inplace=True)
@@ -83,7 +83,7 @@ class BasketballData:
                 team_logs = teamgamelogs.TeamGameLogs(season_nullable=season, team_id_nullable=team['id'])
                 return team_logs.get_data_frames()[0]
             
-            team_data = self._retry_api_call(fetch_team_logs)
+            team_data = self.retryApiCall(fetch_team_logs)
             all_team_logs.append(team_data)
             time.sleep(0.6)
         
@@ -100,7 +100,7 @@ class BasketballData:
             player_logs = playergamelogs.PlayerGameLogs(season_nullable=season)
             return player_logs.get_data_frames()[0]
         
-        player_data = self._retry_api_call(fetch_player_logs)
+        player_data = self.retryApiCall(fetch_player_logs)
         player_data = player_data[player_data['TEAM_NAME'].isin(self.teams_to_keep)]
         player_data.drop(player_data[player_data['GAME_DATE'] < f'{season.split("-")[0]}-10-01'].index, inplace=True)
         player_data.sort_values(by=['GAME_DATE', 'TEAM_NAME', 'MIN'], inplace=True, ascending=[True, True, False])
@@ -125,7 +125,7 @@ class BasketballData:
             gamefinder = scheduleleaguev2.ScheduleLeagueV2()
             return gamefinder.get_data_frames()[0]
         
-        games = self._retry_api_call(fetch_schedule)
+        games = self.retryApiCall(fetch_schedule)
         games = games[columns]
         games.rename(columns={'gameId': 'GAME_ID', 'gameDateEst': 'GAME_DATE', 'homeTeam_teamName': 'HOME_TEAM', 'awayTeam_teamName': 'AWAY_TEAM', 'homeTeam_teamTricode': 'TEAM_ABB_HOME', 'awayTeam_teamTricode': 'TEAM_ABB_AWAY'}, inplace=True)
         games = games[(games['GAME_DATE'] < tomorrow.strftime('%Y-%m-%dT00:00:00Z')) & (games['GAME_DATE'] >= today.strftime('%Y-%m-%dT00:00:00Z'))]

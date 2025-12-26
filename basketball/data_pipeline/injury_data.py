@@ -175,7 +175,7 @@ class InjuryData:
                     continue
                 
                 # Correct team abbreviation to match NBA API format
-                team_abbr = self._correctTeamAbbreviation(team_abbr)
+                team_abbr = self.correctTeamAbbreviation(team_abbr)
                 
                 print(f"Processing team: {team_name} ({team_abbr})")
                 

@@ -90,11 +90,20 @@ class HockeyData:
     
     def scrapeSeasonGames(self, season_year):
         season_str = self.convertSeasonToId(season_year)
+        output_file = self.data_dir / 'game_data' / f'{season_str}_game_stats.csv'
+        current_season = self.getCurrentSeason()
         
-        if season_str in self.game_files:
+        # For current season, check for incremental updates
+        if season_str == current_season and output_file.exists():
+            print(f"Checking for new games in current season {season_str}...")
+            existing_df = pd.read_csv(output_file)
+            existing_game_ids = set(existing_df['GAME_ID'].unique())
+            print(f"Found {len(existing_game_ids)} existing games in file")
+        elif season_str in self.game_files:
             print(f"Game data for {season_str} already exists. Skipping...")
-            output_file = self.data_dir / 'game_data' / f'{season_str}_game_stats.csv'
             return pd.read_csv(output_file)
+        else:
+            existing_game_ids = set()
         
         print(f"\nFetching game data for {season_str}...")
         games = self.getSeasonSchedule(season_year)
@@ -104,12 +113,19 @@ class HockeyData:
             return pd.DataFrame()
         
         all_game_records = []
+        new_games_count = 0
         
         for game in tqdm(games, desc=f"Processing games ({season_str})"):
             if game.get('gameType') != 2:  # Regular season only (gameType=2)
                 continue
             
             game_id = game.get('id')
+            
+            # Skip if we already have this game (for current season incremental updates)
+            if existing_game_ids and game_id in existing_game_ids:
+                continue
+            
+            new_games_count += 1
             game_date = game.get('startTimeUTC', '').split('T')[0] if 'startTimeUTC' in game else game.get('gameDate', '').split('T')[0]
             
             home_team = game.get('homeTeam', {})
@@ -148,29 +164,57 @@ class HockeyData:
             })
         
         if all_game_records:
-            df = pd.DataFrame(all_game_records)
-            df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION'], inplace=True)
+            new_df = pd.DataFrame(all_game_records)
             
-            # Save immediately (like basketball_data does)
-            output_file = self.data_dir / 'game_data' / f'{season_str}_game_stats.csv'
-            df.to_csv(output_file, index=False)
-            print(f"Saved {len(df)} game records to {output_file}")
+            # If updating current season, append to existing data
+            if existing_game_ids:
+                existing_df = pd.read_csv(output_file)
+                df = pd.concat([existing_df, new_df], ignore_index=True)
+                df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION'], inplace=True)
+                df.to_csv(output_file, index=False)
+                print(f"Added {new_games_count} new games. Total: {len(df)} game records in {output_file}")
+            else:
+                new_df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION'], inplace=True)
+                new_df.to_csv(output_file, index=False)
+                print(f"Saved {len(new_df)} game records to {output_file}")
+                df = new_df
             
             # Update tracking list
-            self.game_files.append(season_str)
+            if season_str not in self.game_files:
+                self.game_files.append(season_str)
             
             time.sleep(1)  # Rate limiting like basketball
             return df
+        elif existing_game_ids:
+            # No new games, return existing data
+            print(f"No new games found for {season_str}")
+            return pd.read_csv(output_file)
         else:
             print(f"No regular season games found for {season_str}")
             return pd.DataFrame()
     
     def scrapeSeasonData(self, season_year):
         season_str = self.convertSeasonToId(season_year)
+        current_season = self.getCurrentSeason()
         
-        if season_str in self.player_files and season_str in self.team_files:
+        player_file = self.data_dir / 'player_data' / f'{season_str}_player_stats.csv'
+        team_file = self.data_dir / 'team_data' / f'{season_str}_team_stats.csv'
+        
+        # For current season, check for incremental updates
+        if season_str == current_season and player_file.exists() and team_file.exists():
+            print(f"Checking for new game data in current season {season_str}...")
+            existing_player_df = pd.read_csv(player_file)
+            existing_team_df = pd.read_csv(team_file)
+            existing_game_ids = set(existing_player_df['GAME_ID'].unique())
+            print(f"Found {len(existing_game_ids)} existing games in player/team data")
+        elif season_str in self.player_files and season_str in self.team_files:
             print(f"Player data for {season_str} already exists. Skipping...")
             print(f"Team data for {season_str} already exists. Skipping...")
+            return
+        else:
+            existing_game_ids = set()
+            existing_player_df = None
+            existing_team_df = None
         
         print(f"\nFetching data for {season_str}...")
 
@@ -180,8 +224,24 @@ class HockeyData:
             self.scrapeSeasonGames(season_year)
         
         games = pd.read_csv(game_file)
-        unique_games = games['GAME_ID'].unique()
-        print(f"Found {len(unique_games)} regular season games to process")
+        games['GAME_DATE'] = pd.to_datetime(games['GAME_DATE'])
+        
+        # Filter to only games that have been played (before today)
+        today = datetime.now().date()
+        games_played = games[games['GAME_DATE'].dt.date < today]
+        unique_games = games_played['GAME_ID'].unique()
+        
+        # Filter to only new games if doing incremental update
+        if existing_game_ids:
+            new_games = [gid for gid in unique_games if gid not in existing_game_ids]
+            print(f"Found {len(new_games)} new games to process (out of {len(unique_games)} total played)")
+            unique_games = new_games
+        else:
+            print(f"Found {len(unique_games)} regular season games to process (played before today)")
+        
+        if len(unique_games) == 0:
+            print(f"No new games to process for {season_str}")
+            return
         
         all_player_stats = []
         all_team_stats = []
@@ -328,26 +388,42 @@ class HockeyData:
             time.sleep(0.3)
         
         if all_player_stats:
-            player_df = pd.DataFrame(all_player_stats)
-            player_df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION', 'TOI'], inplace=True)
+            new_player_df = pd.DataFrame(all_player_stats)
             
-            output_file = self.data_dir / 'player_data' / f'{season_str}_player_stats.csv'
-            player_df.to_csv(output_file, index=False)
-            print(f"Saved {len(player_df)} player records to {output_file}")
+            # If updating current season, append to existing data
+            if existing_player_df is not None:
+                player_df = pd.concat([existing_player_df, new_player_df], ignore_index=True)
+                player_df.sort_values(by=['GAME_DATE', 'PLAYER_ID'], inplace=True)
+                print(f"\nAdded {len(new_player_df)} new player records. Total: {len(player_df)} records")
+            else:
+                player_df = new_player_df
+                print(f"\nSaved {len(player_df)} player records")
             
-            self.player_files.append(season_str)
-        else:
-            print(f"No player stats found for {season_str} or set to false")
-
+            player_output = self.data_dir / 'player_data' / f'{season_str}_player_stats.csv'
+            player_df.to_csv(player_output, index=False)
+            print(f"Saved to {player_output}")
+            
+            if season_str not in self.player_files:
+                self.player_files.append(season_str)
+        
         if all_team_stats:
-            team_df = pd.DataFrame(all_team_stats)
-            team_df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION'], inplace=True)
+            new_team_df = pd.DataFrame(all_team_stats)
             
-            output_file = f'{self.data_dir}/team_data/{season_str}_team_stats.csv'
-            team_df.to_csv(output_file, index=False)
-            print(f"Saved {len(team_df)} team records to {output_file}")
+            # If updating current season, append to existing data
+            if existing_team_df is not None:
+                team_df = pd.concat([existing_team_df, new_team_df], ignore_index=True)
+                team_df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION'], inplace=True)
+                print(f"Added {len(new_team_df)} new team records. Total: {len(team_df)} records")
+            else:
+                team_df = new_team_df
+                print(f"Saved {len(team_df)} team records")
             
-            self.team_files.append(season_str)
+            team_output = self.data_dir / 'team_data' / f'{season_str}_team_stats.csv'
+            team_df.to_csv(team_output, index=False)
+            print(f"Saved to {team_output}")
+            
+            if season_str not in self.team_files:
+                self.team_files.append(season_str)
         else:
             print(f"No team stats found for {season_str} or set to false")
     
@@ -369,12 +445,15 @@ class HockeyData:
                 print(f"SEASON {year}-{year+1} ({season_str})")
                 print(f"{'='*60}")
                 
-                if season_str not in self.game_files:
+                if season_str not in self.game_files or season_str == self.getCurrentSeason():
                     self.scrapeSeasonGames(year)
                 else:
                     print(f"Game data for {season_str} already exists. Skipping...")
                 
-                self.scrapeSeasonData(year)
+                if (season_str not in self.player_files or season_str not in self.team_files) or season_str == self.getCurrentSeason():
+                    self.scrapeSeasonData(year)
+                else:
+                    print(f"Player and team data for {season_str} already exists. Skipping...")
                 
                 print(f"\nSeason {year}-{year+1} complete!")
                 time.sleep(2)
@@ -437,17 +516,3 @@ class HockeyData:
             return f"{now.year}-{now.year + 1}"
         else:
             return f"{now.year - 1}-{now.year}"
-
-if __name__ == "__main__":
-    scraper = HockeyData()
-    
-    # Test with recent season
-    # print("Testing with 2023-24 season...")
-    # scraper.scrapeSeasonData(2020)
-    
-    # Get today's games
-    # print("\nFetching today's games...")
-    # scraper.getUpcomingGames()
-    
-    # Scrape multiple seasons (uncomment to use)
-    scraper.scrapeAllSeasons()

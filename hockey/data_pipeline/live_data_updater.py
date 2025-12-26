@@ -128,17 +128,3 @@ class HockeyLiveDataUpdater:
         print(f"\nPrepared data for {len(game_info)} games")
         
         return todays_games, game_info
-
-
-# Usage example
-if __name__ == "__main__":
-    updater = HockeyLiveDataUpdater()
-    
-    # Get full update
-    updater.getFullUpdate()
-    
-    # Or just get today's games
-    # games = updater.fetchTodaysGames()
-    
-    # Or just update injuries
-    # updater.updateInjuryData()

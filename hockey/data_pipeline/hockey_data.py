@@ -466,6 +466,8 @@ class HockeyData:
     
     def getUpcomingGames(self):
         today = datetime.now().strftime('%Y-%m-%d')
+        today_start = pd.Timestamp.now().normalize().tz_localize('UTC')
+        tomorrow_start = today_start + pd.Timedelta(days=1)
         
         try:
             url = f"{self.base_api}/schedule/{today}"
@@ -490,13 +492,20 @@ class HockeyData:
                                         home_team.get('commonName', {}).get('default', ''),
                             'AWAY_TEAM': away_team.get('placeName', {}).get('default', '') + ' ' + 
                                         away_team.get('commonName', {}).get('default', ''),
-                            'TEAM_ABB_HOME': home_team.get('abbrev'),
-                            'TEAM_ABB_AWAY': away_team.get('abbrev'),
+                            'HOME_TEAM_ABBR': home_team.get('abbrev'),
+                            'AWAY_TEAM_ABBR': away_team.get('abbrev'),
                         })
             
             if games:
                 df = pd.DataFrame(games)
-                df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'])
+                df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'], utc=True)
+                
+                df = df[(df['GAME_DATE'] >= today_start) & (df['GAME_DATE'] < tomorrow_start)]
+                
+                if df.empty:
+                    print("No games scheduled for today")
+                    return pd.DataFrame()
+                
                 df.to_csv(f'{self.data_dir}/upcoming_games.csv', index=False)
                 print(f"Found {len(df)} games for today")
                 return df

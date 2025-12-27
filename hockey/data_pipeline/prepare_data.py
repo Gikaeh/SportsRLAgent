@@ -857,7 +857,86 @@ class NHLTrainingDataPreparer:
             matchup_data['goalie_save_pct_diff'] = goalie_save_pct_diff
             matchup_data['goalie_goals_against_diff'] = goalie_goals_against_diff
         
-        return matchup_data
+        prediction_data_dict = {
+            'game_id': matchup_data['GAME_ID'],
+            'date': matchup_data['GAME_DATE_home'],
+            'season': current_season,
+            'home_team': matchup_data['TEAM_ABBREVIATION_home'],
+            'away_team': matchup_data['TEAM_ABBREVIATION_away'],
+            'home_rest_days': matchup_data['rest_days_home'],
+            'away_rest_days': matchup_data['rest_days_away'],
+            'rest_days_diff': matchup_data['rest_days_home'] - matchup_data['rest_days_away'],
+            'is_back_to_back_home': matchup_data['is_back_to_back_home'],
+            'is_back_to_back_away': matchup_data['is_back_to_back_away'],
+        }
+        
+        for window in window_sizes:
+            prediction_data_dict.update({
+                f'home_wins_l{window}': matchup_data[f'wins_l{window}_home'],
+                f'away_wins_l{window}': matchup_data[f'wins_l{window}_away'],
+                f'home_goals_l{window}': matchup_data[f'goals_l{window}_home'],
+                f'away_goals_l{window}': matchup_data[f'goals_l{window}_away'],
+                f'goals_diff_l{window}': matchup_data[f'goals_l{window}_home'] - matchup_data[f'goals_l{window}_away'],
+                f'home_goals_against_l{window}': matchup_data[f'goals_against_l{window}_home'],
+                f'away_goals_against_l{window}': matchup_data[f'goals_against_l{window}_away'],
+                f'goals_against_diff_l{window}': matchup_data[f'goals_against_l{window}_home'] - matchup_data[f'goals_against_l{window}_away'],
+                f'home_total_goals_l{window}': matchup_data[f'total_goals_l{window}_home'],
+                f'away_total_goals_l{window}': matchup_data[f'total_goals_l{window}_away'],
+                f'home_shots_l{window}': matchup_data[f'shots_l{window}_home'],
+                f'away_shots_l{window}': matchup_data[f'shots_l{window}_away'],
+                f'home_shots_against_l{window}': matchup_data[f'shots_against_l{window}_home'],
+                f'away_shots_against_l{window}': matchup_data[f'shots_against_l{window}_away'],
+                f'home_shooting_pct_l{window}': matchup_data[f'shooting_pct_l{window}_home'],
+                f'away_shooting_pct_l{window}': matchup_data[f'shooting_pct_l{window}_away'],
+                f'home_save_pct_l{window}': matchup_data[f'save_pct_l{window}_home'],
+                f'away_save_pct_l{window}': matchup_data[f'save_pct_l{window}_away'],
+                f'home_pp_goals_l{window}': matchup_data[f'pp_goals_l{window}_home'],
+                f'away_pp_goals_l{window}': matchup_data[f'pp_goals_l{window}_away'],
+                f'home_pp_goals_against_l{window}': matchup_data[f'pp_goals_against_l{window}_home'],
+                f'away_pp_goals_against_l{window}': matchup_data[f'pp_goals_against_l{window}_away'],
+                f'home_hits_l{window}': matchup_data[f'hits_l{window}_home'],
+                f'away_hits_l{window}': matchup_data[f'hits_l{window}_away'],
+                f'home_pim_l{window}': matchup_data[f'pim_l{window}_home'],
+                f'away_pim_l{window}': matchup_data[f'pim_l{window}_away'],
+                f'home_blocked_shots_l{window}': matchup_data[f'blocked_shots_l{window}_home'],
+                f'away_blocked_shots_l{window}': matchup_data[f'blocked_shots_l{window}_away'],
+                f'home_takeaways_l{window}': matchup_data[f'takeaways_l{window}_home'],
+                f'away_takeaways_l{window}': matchup_data[f'takeaways_l{window}_away'],
+                f'home_giveaways_l{window}': matchup_data[f'giveaways_l{window}_home'],
+                f'away_giveaways_l{window}': matchup_data[f'giveaways_l{window}_away'],
+            })
+        
+        if not player_features.empty:
+            prediction_data_dict.update({
+                'home_top3_avg_goals': matchup_data['home_top3_avg_goals'],
+                'away_top3_avg_goals': matchup_data['away_top3_avg_goals'],
+                'home_top6_avg_goals': matchup_data['home_top6_avg_goals'],
+                'away_top6_avg_goals': matchup_data['away_top6_avg_goals'],
+                'home_top3_avg_assists': matchup_data['home_top3_avg_assists'],
+                'away_top3_avg_assists': matchup_data['away_top3_avg_assists'],
+                'home_top6_avg_assists': matchup_data['home_top6_avg_assists'],
+                'away_top6_avg_assists': matchup_data['away_top6_avg_assists'],
+                'home_top3_avg_points': matchup_data['home_top3_avg_points'],
+                'away_top3_avg_points': matchup_data['away_top3_avg_points'],
+                'home_top6_avg_points': matchup_data['home_top6_avg_points'],
+                'away_top6_avg_points': matchup_data['away_top6_avg_points'],
+                'home_top6_total_plusminus': matchup_data['home_top6_total_plusminus'],
+                'away_top6_total_plusminus': matchup_data['away_top6_total_plusminus'],
+                'home_goalie_save_pct': matchup_data['home_goalie_save_pct'],
+                'home_goalie_goals_against': matchup_data['home_goalie_goals_against'],
+                'home_goalie_saves': matchup_data['home_goalie_saves'],
+                'home_goalie_shots_against': matchup_data['home_goalie_shots_against'],
+                'away_goalie_save_pct': matchup_data['away_goalie_save_pct'],
+                'away_goalie_goals_against': matchup_data['away_goalie_goals_against'],
+                'away_goalie_saves': matchup_data['away_goalie_saves'],
+                'away_goalie_shots_against': matchup_data['away_goalie_shots_against'],
+                'goalie_save_pct_diff': matchup_data['goalie_save_pct_diff'],
+                'goalie_goals_against_diff': matchup_data['goalie_goals_against_diff'],
+            })
+        
+        prediction_data = pd.DataFrame(prediction_data_dict)
+        
+        return prediction_data
     
     def prepareMultipleSeasons(self, seasons=None, window_sizes=[10], save_individual=True, save_combined=True):
         all_data = []

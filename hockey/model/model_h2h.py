@@ -117,7 +117,7 @@ class HockeyH2HModel:
         study = optuna.create_study(
             direction='minimize',
             sampler=sampler,
-            study_name='basketball_model_tuning'
+            study_name='hockey_model_tuning'
         )
         
         optuna.logging.set_verbosity(optuna.logging.WARNING)

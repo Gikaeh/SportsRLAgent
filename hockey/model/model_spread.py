@@ -48,20 +48,20 @@ class HockeySpreadModel:
         rmse = np.sqrt(mean_squared_error(y_val, y_pred))
         r2 = r2_score(y_val, y_pred)
         
+        within_1 = np.mean(np.abs(y_val - y_pred) <= 1)
         within_3 = np.mean(np.abs(y_val - y_pred) <= 3)
         within_5 = np.mean(np.abs(y_val - y_pred) <= 5)
-        within_7 = np.mean(np.abs(y_val - y_pred) <= 7)
         
         print(f"\nRegression Metrics:")
         print(f"  MAE: {mae:.3f} points")
         print(f"  RMSE: {rmse:.3f} points")
         print(f"  R²: {r2:.3f}")
         print(f"\nPrediction Accuracy:")
+        print(f"  Within 1 pts: {within_1:.1%}")
         print(f"  Within 3 pts: {within_3:.1%}")
         print(f"  Within 5 pts: {within_5:.1%}")
-        print(f"  Within 7 pts: {within_7:.1%}")
         
-        return mae, rmse, r2, within_3, within_5, within_7
+        return mae, rmse, r2, within_1, within_3, within_5
 
     def predict(self, X_test):
         return self.model.predict(X_test)
@@ -136,7 +136,7 @@ class HockeySpreadModel:
         study = optuna.create_study(
             direction='minimize',
             sampler=sampler,
-            study_name='basketball_spread_tuning'
+            study_name='hockey_spread_tuning'
         )
         
         optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -298,9 +298,9 @@ class HockeySpreadModel:
         for ax, y_true, y_pred, title in [(ax1, y_val, val_pred, 'Validation'),
                                             (ax2, y_test, test_pred, 'Test')]:
             # Bin predictions
-            bins = [-30, -15, -10, -5, 0, 5, 10, 15, 30]
-            bin_labels = ['<-15', '-15 to -10', '-10 to -5', '-5 to 0', 
-                         '0 to 5', '5 to 10', '10 to 15', '>15']
+            bins = [-3, -1.5, -1, -.5, 0, .5, 1, 1.5, 3]
+            bin_labels = ['<-1.5', '-1.5 to -1.0', '-1.0 to -.5', '-.5 to 0', 
+                         '0 to .5', '.5 to 1.0', '1.0 to 1.5', '>1.5']
             
             errors = np.abs(y_true - y_pred)
             pred_bins = pd.cut(y_pred, bins=bins, labels=bin_labels)

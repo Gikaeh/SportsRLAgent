@@ -8,7 +8,7 @@ from pathlib import Path
 import optuna
 from optuna.samplers import TPESampler
 
-class BasketballTotalModel:
+class HockeyTotalModel:
     def __init__(self, n_estimators=1000, early_stopping_rounds=50, **kwargs):
         params = {
             'objective': 'reg:squarederror',
@@ -22,29 +22,29 @@ class BasketballTotalModel:
         self.model = xgb.XGBRegressor(**params)
         self.best_params = None
         self.leakage_cols = [
-            'is_back_to_back_away', 'is_back_to_back_home', 'away_rest_days', 'home_rest_days',
-            'home_wins_l10', 'away_wins_l10', 'away_blk_l10', 'home_blk_l10',
-            'away_top3_avg_stl', 'away_top5_avg_stl', 'home_stl_l10', 'away_top5_avg_blk',
-            'away_top6_avg_stl', 'home_plus_minus_l10', 'away_fg_pct_l10', 'home_top3_avg_stl',
-            'away_plus_minus_l10', 'home_tov_l10', 'away_fg3_pct_l10', 'home_top6_avg_stl',
-            'plus_minus_diff', 'away_top6_avg_blk', 'home_top5_avg_apg', 'home_top5_avg_stl',
-            'away_stl_l10', 'home_fg_pct_l10', 'away_top3_avg_apg', 'away_depth_variance',
-            'home_top3_avg_rpg', 'home_top6_total_plusminus', 'home_top6_avg_rpg',
-            'rest_days_diff', 'away_tov_l10', 'away_top3_avg_rpg', 'home_depth_variance',
-            'away_top3_avg_blk', 'home_top6_avg_tov', 'home_top6_avg_mpg', 'home_top5_avg_tov',
-            'away_top6_avg_rpg', 'away_top3_avg_ppg', 'away_top6_avg_mpg', 'home_top6_avg_blk',
-            'home_top3_avg_apg', 'away_top5_avg_mpg', 'away_top5_avg_rpg', 'home_top3_avg_tov',
-            'away_top6_avg_apg', 'home_fg3_pct_l10', 'away_top6_total_plusminus', 'home_top5_avg_mpg',
-            'home_top5_avg_rpg', 'away_top3_avg_tov', 'opp_ppg_diff', 'home_top5_avg_blk',
-            'away_top5_avg_apg', 'ppg_diff', 'home_top6_avg_apg', 'home_top3_avg_blk',
-            'away_top6_avg_tov', 'away_top5_avg_tov', 'home_top3_avg_ppg', 'away_top5_avg_ppg',
-            'home_top6_avg_ppg', 'home_top5_avg_ppg', 'away_top6_avg_ppg', 'away_top3_avg_ppg',
-            'away_top6_avg_mpg', 'home_top6_avg_blk', 'home_top3_avg_apg', 'away_top5_avg_mpg',
-            'away_top5_avg_rpg', 'home_top3_avg_tov', 'away_top6_avg_apg', 'home_fg3_pct_l10',
-            'away_top6_total_plusminus', 'home_top5_avg_mpg', 'home_top5_avg_rpg', 'away_top3_avg_tov',
-            'opp_ppg_diff', 'home_top5_avg_blk', 'away_top5_avg_apg', 'ppg_diff', 'home_top6_avg_apg',
-            'home_top3_avg_blk', 'away_top6_avg_tov', 'away_top5_avg_tov', 'home_top3_avg_ppg',
-            'away_top5_avg_ppg', 'home_top6_avg_ppg', 'home_top5_avg_ppg', 'away_top6_avg_ppg'
+            # 'is_back_to_back_away', 'is_back_to_back_home', 'away_rest_days', 'home_rest_days',
+            # 'home_wins_l10', 'away_wins_l10', 'away_blk_l10', 'home_blk_l10',
+            # 'away_top3_avg_stl', 'away_top5_avg_stl', 'home_stl_l10', 'away_top5_avg_blk',
+            # 'away_top6_avg_stl', 'home_plus_minus_l10', 'away_fg_pct_l10', 'home_top3_avg_stl',
+            # 'away_plus_minus_l10', 'home_tov_l10', 'away_fg3_pct_l10', 'home_top6_avg_stl',
+            # 'plus_minus_diff', 'away_top6_avg_blk', 'home_top5_avg_apg', 'home_top5_avg_stl',
+            # 'away_stl_l10', 'home_fg_pct_l10', 'away_top3_avg_apg', 'away_depth_variance',
+            # 'home_top3_avg_rpg', 'home_top6_total_plusminus', 'home_top6_avg_rpg',
+            # 'rest_days_diff', 'away_tov_l10', 'away_top3_avg_rpg', 'home_depth_variance',
+            # 'away_top3_avg_blk', 'home_top6_avg_tov', 'home_top6_avg_mpg', 'home_top5_avg_tov',
+            # 'away_top6_avg_rpg', 'away_top3_avg_ppg', 'away_top6_avg_mpg', 'home_top6_avg_blk',
+            # 'home_top3_avg_apg', 'away_top5_avg_mpg', 'away_top5_avg_rpg', 'home_top3_avg_tov',
+            # 'away_top6_avg_apg', 'home_fg3_pct_l10', 'away_top6_total_plusminus', 'home_top5_avg_mpg',
+            # 'home_top5_avg_rpg', 'away_top3_avg_tov', 'opp_ppg_diff', 'home_top5_avg_blk',
+            # 'away_top5_avg_apg', 'ppg_diff', 'home_top6_avg_apg', 'home_top3_avg_blk',
+            # 'away_top6_avg_tov', 'away_top5_avg_tov', 'home_top3_avg_ppg', 'away_top5_avg_ppg',
+            # 'home_top6_avg_ppg', 'home_top5_avg_ppg', 'away_top6_avg_ppg', 'away_top3_avg_ppg',
+            # 'away_top6_avg_mpg', 'home_top6_avg_blk', 'home_top3_avg_apg', 'away_top5_avg_mpg',
+            # 'away_top5_avg_rpg', 'home_top3_avg_tov', 'away_top6_avg_apg', 'home_fg3_pct_l10',
+            # 'away_top6_total_plusminus', 'home_top5_avg_mpg', 'home_top5_avg_rpg', 'away_top3_avg_tov',
+            # 'opp_ppg_diff', 'home_top5_avg_blk', 'away_top5_avg_apg', 'ppg_diff', 'home_top6_avg_apg',
+            # 'home_top3_avg_blk', 'away_top6_avg_tov', 'away_top5_avg_tov', 'home_top3_avg_ppg',
+            # 'away_top5_avg_ppg', 'home_top6_avg_ppg', 'home_top5_avg_ppg', 'away_top6_avg_ppg'
         ]
 
     def getLeakageColumns(self):
@@ -70,20 +70,20 @@ class BasketballTotalModel:
         r2 = r2_score(y_val, y_pred)
         
         # Calculate accuracy within different point thresholds
+        within_1 = np.mean(np.abs(y_val - y_pred) <= 1)
         within_3 = np.mean(np.abs(y_val - y_pred) <= 3)
         within_5 = np.mean(np.abs(y_val - y_pred) <= 5)
-        within_10 = np.mean(np.abs(y_val - y_pred) <= 10)
         
         print(f"\nRegression Metrics:")
         print(f"  MAE: {mae:.3f} points")
         print(f"  RMSE: {rmse:.3f} points")
         print(f"  R²: {r2:.3f}")
         print(f"\nPrediction Accuracy:")
+        print(f"  Within 1 pts: {within_1:.1%}")
         print(f"  Within 3 pts: {within_3:.1%}")
         print(f"  Within 5 pts: {within_5:.1%}")
-        print(f"  Within 10 pts: {within_10:.1%}")
         
-        return mae, rmse, r2, within_3, within_5, within_10
+        return mae, rmse, r2, within_1, within_3, within_5
 
     def predict(self, X_test):
         return self.model.predict(X_test)
@@ -158,7 +158,7 @@ class BasketballTotalModel:
         study = optuna.create_study(
             direction='minimize',
             sampler=sampler,
-            study_name='basketball_total_tuning'
+            study_name='hockey_total_tuning'
         )
         
         optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -207,7 +207,7 @@ class BasketballTotalModel:
     def getBestParams(self):
         return self.best_params
     
-    def plotDiagnostics(self, X_val, y_val, X_test, y_test, save_dir='././plots/basketball/total/'):
+    def plotDiagnostics(self, X_val, y_val, X_test, y_test, save_dir='././plots/hockey/total/'):
         Path(save_dir).mkdir(parents=True, exist_ok=True)
         
         val_pred = self.model.predict(X_val)
@@ -326,9 +326,9 @@ class BasketballTotalModel:
         for ax, y_true, y_pred, title in [(ax1, y_val, val_pred, 'Validation'),
                                             (ax2, y_test, test_pred, 'Test')]:
             # Bin predictions by total points ranges
-            bins = [0, 200, 210, 220, 230, 240, 250, 300]
-            bin_labels = ['<200', '200-210', '210-220', '220-230', 
-                         '230-240', '240-250', '>250']
+            bins = [0, 5, 5.5, 6, 6.5, 7]
+            bin_labels = ['<5', '5-5.5', '5.5-6', '6-6.5', 
+                         '>6.5']
             
             errors = np.abs(y_true - y_pred)
             pred_bins = pd.cut(y_pred, bins=bins, labels=bin_labels)
@@ -387,7 +387,7 @@ class BasketballTotalModel:
         
         # Common total lines
         print(f"\nOver/Under Accuracy at Common Lines:")
-        for total_line in [210.5, 215.5, 220.5, 225.5, 230.5, 235.5]:
+        for total_line in [5, 5.5, 6, 6.5, 7]:
             accuracy = self.evaluateOverUnderAccuracy(X_test, y_test, total_line)
         
         print("="*60)

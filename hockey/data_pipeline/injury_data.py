@@ -159,33 +159,34 @@ class HockeyInjuryData:
                     roster_response = requests.get(roster_url, headers=headers, timeout=10)
                     roster_response.raise_for_status()
                     roster_data = roster_response.json()
-                    
-                    for athlete_data in roster_data.get('athletes', []):
-                        player_name = athlete_data.get('displayName', '')
-                        player_injuries = athlete_data.get('injuries', [])
+                                        
+                    for position_data in roster_data.get('athletes', []):
+                        for athlete_data in position_data.get('items', []):
+                            player_name = athlete_data.get('shortName', '')
+                            player_injuries = athlete_data.get('injuries', [])
+                            
+                            if player_injuries:
+                                for injury in player_injuries:
+                                    status_text = injury.get('status', '')
+                                    injury_type = injury.get('type', '')
+                                    injury_date = injury.get('date', '')
+                                    
+                                    status_mapped = self._mapInjuryStatus(status_text)
+                                    
+                                    print(f"  Player: {player_name} | Status: {status_text} -> {status_mapped}")
+                                    
+                                    if status_mapped in ['OUT', 'DOUBTFUL', 'QUESTIONABLE']:
+                                        injuries.append({
+                                            'player_id': 0,  # Will be matched later
+                                            'player_name': player_name,
+                                            'team_abbreviation': team_abbr,
+                                            'status': status_mapped,
+                                            'injury_description': injury_type if injury_type else injury_date
+                                        })
+                                        print(f"    ADDED to injury list")
                         
-                        if player_injuries:
-                            for injury in player_injuries:
-                                status_text = injury.get('status', '')
-                                injury_type = injury.get('type', '')
-                                injury_date = injury.get('date', '')
-                                
-                                status_mapped = self._mapInjuryStatus(status_text)
-                                
-                                print(f"  Player: {player_name} | Status: {status_text} -> {status_mapped}")
-                                
-                                if status_mapped in ['OUT', 'DOUBTFUL', 'QUESTIONABLE']:
-                                    injuries.append({
-                                        'player_id': 0,  # Will be matched later
-                                        'player_name': player_name,
-                                        'team_abbreviation': team_abbr,
-                                        'status': status_mapped,
-                                        'injury_description': injury_type if injury_type else injury_date
-                                    })
-                                    print(f"    ADDED to injury list")
-                    
-                    time.sleep(0.2)
-                    
+                        time.sleep(0.2)
+                        
                 except Exception as e:
                     print(f"  Error fetching roster for {team_name}: {e}")
                     continue
@@ -265,6 +266,8 @@ class HockeyInjuryData:
                 if row['player_id'] == 0:
                     player_name_lower = row['player_name'].lower()
                     match = player_lookup[player_lookup['PLAYER_NAME_LOWER'] == player_name_lower]
+                    
+                    print(f"  Player: {row['player_name']} | Match: {match.empty}")
                     
                     if not match.empty:
                         injury_df.at[idx, 'player_id'] = match.iloc[0]['PLAYER_ID']

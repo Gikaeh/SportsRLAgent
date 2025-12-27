@@ -40,7 +40,7 @@ class HockeyOddScraping:
         else:
             odds_json = odds_response.json()
             print('Number of events:', len(odds_json))
-            print(odds_json)
+            # print(odds_json)
 
             print('Remaining requests', odds_response.headers['x-requests-remaining'])
             print('Used requests', odds_response.headers['x-requests-used'])
@@ -107,7 +107,7 @@ class HockeyOddScraping:
         else:
             odds_json = odds_response.json()
             print('Number of events:', len(odds_json))
-            print(odds_json)
+            # print(odds_json)
 
             print('Remaining requests', odds_response.headers['x-requests-remaining'])
             print('Used requests', odds_response.headers['x-requests-used'])
@@ -174,7 +174,7 @@ class HockeyOddScraping:
         else:
             odds_json = odds_response.json()
             print('Number of events:', len(odds_json))
-            print(odds_json)
+            # print(odds_json)
 
             print('Remaining requests', odds_response.headers['x-requests-remaining'])
             print('Used requests', odds_response.headers['x-requests-used'])
@@ -223,7 +223,7 @@ class HockeyOddScraping:
 
             return cleaned_data
 
-odds = HockeyOddScraping()
-odds.getH2hOdds()
+# odds = HockeyOddScraping()
+# odds.getH2hOdds()
 # odds.getSpreadOdds()
 # odds.getTotalOdds()

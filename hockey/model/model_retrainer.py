@@ -3,27 +3,27 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
 from sklearn.model_selection import train_test_split
-from model.model_h2h import BasketballH2HModel
-from model.model_spread import BasketballSpreadModel
-from model.model_total import BasketballTotalModel
-from data_pipeline.prepare_data import NBATrainingDataPreparer
-from data_pipeline.basketball_data import BasketballData
+from model.model_h2h import HockeyH2HModel
+from model.model_spread import HockeySpreadModel
+from model.model_total import HockeyTotalModel
+from data_pipeline.prepare_data import NHLTrainingDataPreparer
+from data_pipeline.hockey_data import HockeyData
 import json
 
 class ModelRetrainer:
-    def __init__(self, model_path='./models/basketball_h2h_model.json', data_dir='./data/basketball', metadata_path='./models/metadata/retraining_h2h_metadata.json'):
+    def __init__(self, model_path='./models/hockey_h2h_model.json', data_dir='./data/hockey', metadata_path='./models/metadata/retraining_h2h_metadata.json'):
         self.model_path = Path(model_path)
         self.data_dir = Path(data_dir)
-        self.training_data_dir = Path('./data/training_data/basketball/phase1')
-        self.preparer = NBATrainingDataPreparer(data_dir=str(data_dir))
-        self.basketball_data = BasketballData()
+        self.training_data_dir = Path('./data/training_data/hockey')
+        self.preparer = NHLTrainingDataPreparer(data_dir=str(data_dir))
+        self.hockey_data = HockeyData()
 
         if str(model_path).split('_')[1] == 'h2h':
-            self.model = BasketballH2HModel()
+            self.model = HockeyH2HModel()
         elif str(model_path).split('_')[1] == 'spread':
-            self.model = BasketballSpreadModel()
+            self.model = HockeySpreadModel()
         elif str(model_path).split('_')[1] == 'total':
-            self.model = BasketballTotalModel()
+            self.model = HockeyTotalModel()
 
         if self.model_path.exists():
             self.model.load(str(self.model_path))
@@ -79,8 +79,8 @@ class ModelRetrainer:
     def countAvailableGames(self):
         master_file = self.training_data_dir / 'all_seasons_training_data.csv'
         season_count = self.retrain_config['keep_recent_seasons']
-        self.basketball_data.getAllSeasonData()
-        self.preparer.prepareAllSeasons()
+        self.hockey_data.getAllSeasonData()
+        self.preparer.prepareMultipleSeasons()
 
         if season_count is None:
             df = pd.read_csv(master_file)

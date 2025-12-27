@@ -27,7 +27,7 @@ class BettingConfig:
     NEVADA_BOOKS = ['betmgm', 'caesars']
     
     # Logging
-    LOG_DIR = '././logs/betting'
+    LOG_DIR = '././logs/basketball/betting'
     H2H_BETS_LOG = 'h2h_bets.csv'
     SPREAD_BETS_LOG = 'spread_bets.csv'
     TOTAL_BETS_LOG = 'total_bets.csv'

@@ -11,7 +11,7 @@ from data_pipeline.basketball_data import BasketballData
 import json
 
 class ModelRetrainer:
-    def __init__(self, model_path='./models/basketball_h2h_model.json', data_dir='./data/basketball', metadata_path='./models/metadata/retraining_h2h_metadata.json'):
+    def __init__(self, model_path='./models/basketball_h2h_model.json', data_dir='./data/basketball', metadata_path='./models/metadata/basketball/retraining_h2h_metadata.json'):
         self.model_path = Path(model_path)
         self.data_dir = Path(data_dir)
         self.training_data_dir = Path('./data/training_data/basketball/phase1')

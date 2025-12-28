@@ -106,7 +106,9 @@ def bettingRecommendations():
 
         recommender = BettingRecommender(model_path = './models/hockey_h2h_model.json')
         predictions = recommender.predictGames(prediction_data_h2h, game_info)
+        print(predictions)
         recommendations_h2h = recommender.makeBettingRecommendations(predictions=predictions)
+        print(recommendations_h2h)
         
         recommender = BettingRecommender(model_path = './models/hockey_spread_model.json')
         predictions = recommender.predictGames(prediction_data_spread, game_info)

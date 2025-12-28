@@ -465,13 +465,13 @@ class HockeyData:
                 continue
     
     def getUpcomingGames(self):
-        today = datetime.now().strftime('%Y-%m-%d')
-        today_start = pd.Timestamp.now().normalize().tz_localize('UTC')
-        tomorrow_start = today_start + pd.Timedelta(days=1)
+        today = pd.Timestamp.now().normalize()
+        tomorrow = today + pd.Timedelta(days=1)
         
         try:
-            url = f"{self.base_api}/schedule/{today}"
+            url = f"{self.base_api}/schedule/{today.strftime('%Y-%m-%d')}"
             data = self.makeRequest(url)
+            games_day = data.get('gameWeek', [])[0]
             
             if not data:
                 print("No schedule data available")
@@ -479,29 +479,23 @@ class HockeyData:
             
             games = []
             
-            for game_week in data.get('gameWeek', []):
-                for game in game_week.get('games', []):
-                    if game.get('gameType') == 2:
-                        home_team = game.get('homeTeam', {})
-                        away_team = game.get('awayTeam', {})
-                        
-                        games.append({
-                            'GAME_ID': game.get('id'),
-                            'GAME_DATE': game.get('startTimeUTC'),
-                            'HOME_TEAM': home_team.get('placeName', {}).get('default', '') + ' ' + 
-                                        home_team.get('commonName', {}).get('default', ''),
-                            'AWAY_TEAM': away_team.get('placeName', {}).get('default', '') + ' ' + 
-                                        away_team.get('commonName', {}).get('default', ''),
-                            'HOME_TEAM_ABBR': home_team.get('abbrev'),
-                            'AWAY_TEAM_ABBR': away_team.get('abbrev'),
-                        })
+            for game in games_day.get('games', []):
+                if game.get('gameType') == 2:
+                    home_team = game.get('homeTeam', {})
+                    away_team = game.get('awayTeam', {})
+                    
+                    games.append({
+                        'GAME_ID': game.get('id'),
+                        'GAME_DATE': games_day.get('date'),
+                        'HOME_TEAM': home_team.get('placeName', {}).get('default', '') + ' ' + home_team.get('commonName', {}).get('default', ''),
+                        'HOME_TEAM_ABBR': home_team.get('abbrev'),
+                        'AWAY_TEAM': away_team.get('placeName', {}).get('default', '') + ' ' + away_team.get('commonName', {}).get('default', ''),
+                        'AWAY_TEAM_ABBR': away_team.get('abbrev'),
+                    })
             
             if games:
                 df = pd.DataFrame(games)
-                df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'], utc=True)
-                
-                df = df[(df['GAME_DATE'] >= today_start) & (df['GAME_DATE'] < tomorrow_start)]
-                
+                                
                 if df.empty:
                     print("No games scheduled for today")
                     return pd.DataFrame()
@@ -525,3 +519,6 @@ class HockeyData:
             return f"{now.year}-{now.year + 1}"
         else:
             return f"{now.year - 1}-{now.year}"
+
+data = HockeyData()
+data.getUpcomingGames()

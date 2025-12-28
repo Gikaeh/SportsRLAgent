@@ -236,12 +236,22 @@ class NHLTrainingDataPreparer:
         return skaters_result, goalies_result
     
     def getTopSkatersWithStats(self, skater_df, game_id, team_abbr, top_n=6):
+        # Try to get game-specific data first (for historical games)
         game_skaters = skater_df[(skater_df['GAME_ID'] == game_id) & (skater_df['TEAM_ABBREVIATION'] == team_abbr)].copy()
         
-        if game_skaters.empty or len(game_skaters) < top_n:
-            return pd.DataFrame()
-        
-        game_skaters = game_skaters.sort_values('TOI', ascending=False).head(top_n)
+        # If no game-specific data, get latest stats for team (for upcoming games)
+        if game_skaters.empty:
+            team_skaters = skater_df[skater_df['TEAM_ABBREVIATION'] == team_abbr].copy()
+            if team_skaters.empty:
+                return pd.DataFrame()
+            # Get most recent stats for each player
+            latest_skaters = team_skaters.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
+            # Sort by points rolling to get top performers
+            game_skaters = latest_skaters.sort_values('points_rolling', ascending=False).head(top_n)
+        else:
+            if len(game_skaters) < top_n:
+                return pd.DataFrame()
+            game_skaters = game_skaters.sort_values('TOI', ascending=False).head(top_n)
         
         return game_skaters[['PLAYER_ID', 'goals_rolling', 'assists_rolling', 'points_rolling', 
                              'plus_minus_rolling', 'shots_rolling', 'hits_rolling', 
@@ -250,13 +260,21 @@ class NHLTrainingDataPreparer:
                              'points_std', 'goals_std', 'shooting_pct']]
     
     def getTopGoaliesWithStats(self, goalie_df, game_id, team_abbr, top_n=2):
+        # Try to get game-specific data first (for historical games)
         game_goalies = goalie_df[(goalie_df['GAME_ID'] == game_id) & (goalie_df['TEAM_ABBREVIATION'] == team_abbr)].copy()
         
+        # If no game-specific data, get latest stats for team (for upcoming games)
         if game_goalies.empty:
-            return pd.DataFrame()
-        
-        # Sort by TOI to get starting goalie first
-        game_goalies = game_goalies.sort_values('TOI', ascending=False).head(top_n)
+            team_goalies = goalie_df[goalie_df['TEAM_ABBREVIATION'] == team_abbr].copy()
+            if team_goalies.empty:
+                return pd.DataFrame()
+            # Get most recent stats for each goalie
+            latest_goalies = team_goalies.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
+            # Sort by games in last 7 days and TOI to get likely starters
+            game_goalies = latest_goalies.sort_values(['games_last_7_days', 'toi_rolling'], ascending=[False, False]).head(top_n)
+        else:
+            # Sort by TOI to get starting goalie first
+            game_goalies = game_goalies.sort_values('TOI', ascending=False).head(top_n)
         
         return game_goalies[['PLAYER_ID', 'saves_rolling', 'shots_against_rolling', 'goals_against_rolling',
                              'save_pct_rolling', 'toi_rolling', 'es_goals_against_rolling',
@@ -622,6 +640,17 @@ class NHLTrainingDataPreparer:
                 'away_top6_avg_points': away_top6_avg_points,
                 'home_top6_total_plusminus': home_top6_total_plusminus,
                 'away_top6_total_plusminus': away_top6_total_plusminus,
+                
+                'home_goalie_save_pct': home_goalie_save_pct,
+                'home_goalie_goals_against': home_goalie_goals_against,
+                'home_goalie_saves': home_goalie_saves,
+                'home_goalie_shots_against': home_goalie_shots_against,
+                'away_goalie_save_pct': away_goalie_save_pct,
+                'away_goalie_goals_against': away_goalie_goals_against,
+                'away_goalie_saves': away_goalie_saves,
+                'away_goalie_shots_against': away_goalie_shots_against,
+                'goalie_save_pct_diff': goalie_save_pct_diff,
+                'goalie_goals_against_diff': goalie_goals_against_diff,
             })
         
         training_data = pd.DataFrame(training_data_dict)
@@ -639,7 +668,7 @@ class NHLTrainingDataPreparer:
         else:
             return f"{current_date.year - 1}-{current_date.year}"
     
-    def createUpcomingMatchupData(self, upcoming_games_file=None, window_sizes=[5, 7, 10]):
+    def createUpcomingMatchupData(self, upcoming_games_file=None, window_sizes=[10]):
         if upcoming_games_file is None:
             upcoming_games_file = self.data_dir / 'upcoming_games.csv'
         
@@ -666,7 +695,7 @@ class NHLTrainingDataPreparer:
         team_df['GAME_DATE'] = pd.to_datetime(team_df['GAME_DATE'])
         
         print(f"Calculating rolling stats for {current_season}...")
-        rolling_stats = self.calculateTeamRollingStats(current_season, window_sizes)
+        rolling_stats = self.calculateTeamRollingStats(current_season, [10])
         
         print(f"Calculating rest days for {current_season}...")
         team_rest = self.calculateRestDays(team_df[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID']].copy())
@@ -716,6 +745,8 @@ class NHLTrainingDataPreparer:
                 'rest_days_away': away_rest,
                 'is_back_to_back_home': 1 if home_rest == 0 else 0,
                 'is_back_to_back_away': 1 if away_rest == 0 else 0,
+                'current_streak_home': home_stats['current_streak'],
+                'current_streak_away': away_stats['current_streak'],
             }
             
             for window in window_sizes:
@@ -750,7 +781,28 @@ class NHLTrainingDataPreparer:
                     f'takeaways_l{window}_away': away_stats[f'takeaways_l{window}'],
                     f'giveaways_l{window}_home': home_stats[f'giveaways_l{window}'],
                     f'giveaways_l{window}_away': away_stats[f'giveaways_l{window}'],
+                    
+                    # Home/Away splits
+                    f'home_wins_l{window}_home': home_stats[f'home_wins_l{window}'],
+                    f'away_wins_l{window}_away': away_stats[f'away_wins_l{window}'],
+                    f'home_games_l{window}_home': home_stats[f'home_games_l{window}'],
+                    f'home_games_l{window}_away': away_stats[f'home_games_l{window}'],
+                    
+                    # Consistency metrics
+                    f'goals_std_l{window}_home': home_stats[f'goals_std_l{window}'],
+                    f'goals_std_l{window}_away': away_stats[f'goals_std_l{window}'],
+                    f'goals_against_std_l{window}_home': home_stats[f'goals_against_std_l{window}'],
+                    f'goals_against_std_l{window}_away': away_stats[f'goals_against_std_l{window}'],
                 })
+                
+                # Goals trends (only for windows >= 7)
+                if window >= 7:
+                    matchup_row.update({
+                        f'goals_trend_l{window}_home': home_stats[f'goals_trend_l{window}'],
+                        f'goals_trend_l{window}_away': away_stats[f'goals_trend_l{window}'],
+                        f'goals_against_trend_l{window}_home': home_stats[f'goals_against_trend_l{window}'],
+                        f'goals_against_trend_l{window}_away': away_stats[f'goals_against_trend_l{window}'],
+                    })
             
             matchup_rows.append(matchup_row)
         
@@ -868,6 +920,10 @@ class NHLTrainingDataPreparer:
             'rest_days_diff': matchup_data['rest_days_home'] - matchup_data['rest_days_away'],
             'is_back_to_back_home': matchup_data['is_back_to_back_home'],
             'is_back_to_back_away': matchup_data['is_back_to_back_away'],
+            
+            'home_streak': matchup_data['current_streak_home'],
+            'away_streak': matchup_data['current_streak_away'],
+            'streak_diff': matchup_data['current_streak_home'] - matchup_data['current_streak_away'],
         }
         
         for window in window_sizes:
@@ -904,7 +960,28 @@ class NHLTrainingDataPreparer:
                 f'away_takeaways_l{window}': matchup_data[f'takeaways_l{window}_away'],
                 f'home_giveaways_l{window}': matchup_data[f'giveaways_l{window}_home'],
                 f'away_giveaways_l{window}': matchup_data[f'giveaways_l{window}_away'],
+                
+                # Home/Away splits
+                f'home_home_wins_l{window}': matchup_data[f'home_wins_l{window}_home'],
+                f'away_away_wins_l{window}': matchup_data[f'away_wins_l{window}_away'],
+                f'home_home_games_l{window}': matchup_data[f'home_games_l{window}_home'],
+                f'away_home_games_l{window}': matchup_data[f'home_games_l{window}_away'],
+                
+                # Consistency metrics
+                f'home_goals_std_l{window}': matchup_data[f'goals_std_l{window}_home'],
+                f'away_goals_std_l{window}': matchup_data[f'goals_std_l{window}_away'],
+                f'home_goals_against_std_l{window}': matchup_data[f'goals_against_std_l{window}_home'],
+                f'away_goals_against_std_l{window}': matchup_data[f'goals_against_std_l{window}_away'],
             })
+            
+            # Goals trends (only for windows >= 7)
+            if window >= 7:
+                prediction_data_dict.update({
+                    f'home_goals_trend_l{window}': matchup_data[f'goals_trend_l{window}_home'],
+                    f'away_goals_trend_l{window}': matchup_data[f'goals_trend_l{window}_away'],
+                    f'home_goals_against_trend_l{window}': matchup_data[f'goals_against_trend_l{window}_home'],
+                    f'away_goals_against_trend_l{window}': matchup_data[f'goals_against_trend_l{window}_away'],
+                })
         
         if not player_features.empty:
             prediction_data_dict.update({
@@ -922,6 +999,7 @@ class NHLTrainingDataPreparer:
                 'away_top6_avg_points': matchup_data['away_top6_avg_points'],
                 'home_top6_total_plusminus': matchup_data['home_top6_total_plusminus'],
                 'away_top6_total_plusminus': matchup_data['away_top6_total_plusminus'],
+                
                 'home_goalie_save_pct': matchup_data['home_goalie_save_pct'],
                 'home_goalie_goals_against': matchup_data['home_goalie_goals_against'],
                 'home_goalie_saves': matchup_data['home_goalie_saves'],
@@ -940,11 +1018,25 @@ class NHLTrainingDataPreparer:
     
     def prepareMultipleSeasons(self, seasons=None, window_sizes=[10], save_individual=True, save_combined=True):
         all_data = []
+        current_season = self.getCurrentSeason()
         
         if seasons is None:
             seasons = ['2010-2011', '2011-2012', '2012-2013', '2013-2014', '2014-2015', '2015-2016', '2016-2017', '2017-2018', '2018-2019', '2019-2020', '2020-2021', '2021-2022', '2022-2023', '2023-2024', '2024-2025', '2025-2026']
         
+        # Create separated_seasons directory if it doesn't exist
+        separated_seasons_dir = self.data_dir / 'separated_seasons'
+        separated_seasons_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Get list of already processed seasons
+        existing_files = [f.stem.replace('_training_data', '') for f in separated_seasons_dir.glob('*_training_data.csv')]
+        
         for season in seasons:
+            # Skip if already processed and not current season
+            if season in existing_files and season != current_season:
+                print(f"Skipping {season} as it already exists")
+                all_data.append(pd.read_csv(separated_seasons_dir / f'{season}_training_data.csv'))
+                continue
+            
             print(f"\n{'='*60}")
             print(f"Processing season: {season}")
             print(f"{'='*60}")
@@ -955,7 +1047,7 @@ class NHLTrainingDataPreparer:
                 print(f"Successfully processed {len(season_data)} games for {season}")
                 
                 if save_individual:
-                    output_path = self.data_dir / 'separated_seasons'/ f'{season}_training_data.csv'
+                    output_path = separated_seasons_dir / f'{season}_training_data.csv'
                     season_data.to_csv(output_path, index=False)
                     print(f"Saved to {output_path}")
             except Exception as e:

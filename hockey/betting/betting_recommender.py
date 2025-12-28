@@ -98,6 +98,7 @@ class BettingRecommender:
                     continue
                 total_distance = abs(row['predicted_total'] - game_odds['point'].values[0])
                 results.at[idx, 'confidence'] = np.minimum(total_distance / 20, 1)
+        print(results)
         return results
     
     def makeBettingRecommendations(self, predictions):
@@ -137,6 +138,8 @@ class BettingRecommender:
                 if home_edge >= self.config.MIN_EDGE_H2H:
                     bet_size_fraction = self.kellyCriterion(home_prob, home_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
+                    if bet_amount < 1:
+                        continue
 
                     recommendations.append({
                         'game_id': game_id,
@@ -163,6 +166,8 @@ class BettingRecommender:
                 if away_edge >= self.config.MIN_EDGE_H2H:
                     bet_size_fraction = self.kellyCriterion(away_prob, away_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
+                    if bet_amount < 1:
+                        continue
                     
                     recommendations.append({
                         'game_id': game_id,
@@ -233,6 +238,8 @@ class BettingRecommender:
                 if cover_prob >= self.config.MIN_PROBABILITY:
                     bet_size_fraction = self.kellyCriterion(cover_prob, home_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
+                    if bet_amount < 1:
+                        continue
 
                     book = home_spread_odds[home_spread_odds['price'] == home_odds]['bookmakers_key'].values[0]
 
@@ -267,7 +274,8 @@ class BettingRecommender:
                 if cover_prob >= self.config.MIN_PROBABILITY:
                     bet_size_fraction = self.kellyCriterion(cover_prob, away_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
-                
+                    if bet_amount < 1:
+                        continue
                     book = away_spread_odds[away_spread_odds['price'] == away_odds]['bookmakers_key'].values[0]
                     
                     recommendations.append({
@@ -333,6 +341,8 @@ class BettingRecommender:
                 if cover_prob >= self.config.MIN_PROBABILITY:
                     bet_size_fraction = self.kellyCriterion(cover_prob, over_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
+                    if bet_amount < 1:
+                        continue
                     
                     book = over_odds_data[over_odds_data['price'] == over_odds]['bookmakers_key'].values[0]
                     
@@ -363,6 +373,8 @@ class BettingRecommender:
                 if cover_prob >= self.config.MIN_PROBABILITY:
                     bet_size_fraction = self.kellyCriterion(cover_prob, under_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
+                    if bet_amount < 1:
+                        continue
                     
                     book = under_odds_data[under_odds_data['price'] == under_odds]['bookmakers_key'].values[0]
                     
@@ -404,7 +416,7 @@ class BettingRecommender:
         return min(max(prob, 0.5), 0.95)
 
     def calculateBetPriority(self, bet):
-        weights = {'h2h': .3, 'spread': 1, 'total': .001}
+        weights = {'h2h': 1, 'spread': 1, 'total': 1}
 
         if bet['type'] == 'h2h':
             if bet['bet_side'] == 'home':
@@ -437,6 +449,7 @@ class BettingRecommender:
             return
         
         recommendations.sort(key=self.calculateBetPriority, reverse=True)
+        print(recommendations)
         
         total_risk = sum(r['bet_amount'] for r in recommendations)
         while total_risk > self.current_bankroll * self.config.MAX_RISK_PCT:
@@ -485,9 +498,15 @@ class BettingRecommender:
         print(f"TOTAL POTENTIAL PROFIT: ${total_potential:.2f}")
         print("="*80)
 
+        save = input("Would you like to save any of these recommendations? (y/n)\n")
+        if save.lower() == 'y':
+            games_to_save = input("Which ones would you like to save? (comma separated list of numbers or 0 for all)\n")
+            games_to_save = [int(game) for game in games_to_save.split(",")] if games_to_save != '0' else None
+            
+            self.logRecommendations(recommendations, games_to_save)
+
         files = [Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG, Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG, Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG]
         self.logRecommendations(recommendations, files=files)
-        
     
     def logRecommendations(self, recommendations, numbers = None, files = None):
         if not recommendations:

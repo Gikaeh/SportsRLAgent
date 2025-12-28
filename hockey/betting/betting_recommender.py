@@ -98,7 +98,7 @@ class BettingRecommender:
                     continue
                 total_distance = abs(row['predicted_total'] - game_odds['point'].values[0])
                 results.at[idx, 'confidence'] = np.minimum(total_distance / 20, 1)
-        print(results)
+
         return results
     
     def makeBettingRecommendations(self, predictions):
@@ -449,7 +449,6 @@ class BettingRecommender:
             return
         
         recommendations.sort(key=self.calculateBetPriority, reverse=True)
-        print(recommendations)
         
         total_risk = sum(r['bet_amount'] for r in recommendations)
         while total_risk > self.current_bankroll * self.config.MAX_RISK_PCT:

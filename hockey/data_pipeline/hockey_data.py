@@ -171,10 +171,12 @@ class HockeyData:
                 existing_df = pd.read_csv(output_file)
                 df = pd.concat([existing_df, new_df], ignore_index=True)
                 df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION'], inplace=True)
+                df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE']).dt.strftime('%Y-%m-%d')
                 df.to_csv(output_file, index=False)
                 print(f"Added {new_games_count} new games. Total: {len(df)} game records in {output_file}")
             else:
                 new_df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION'], inplace=True)
+                new_df['GAME_DATE'] = pd.to_datetime(new_df['GAME_DATE']).dt.strftime('%Y-%m-%d')
                 new_df.to_csv(output_file, index=False)
                 print(f"Saved {len(new_df)} game records to {output_file}")
                 df = new_df
@@ -400,6 +402,7 @@ class HockeyData:
                 print(f"\nSaved {len(player_df)} player records")
             
             player_output = self.data_dir / 'player_data' / f'{season_str}_player_stats.csv'
+            player_df['GAME_DATE'] = pd.to_datetime(player_df['GAME_DATE']).dt.strftime('%Y-%m-%d')
             player_df.to_csv(player_output, index=False)
             print(f"Saved to {player_output}")
             
@@ -419,6 +422,7 @@ class HockeyData:
                 print(f"Saved {len(team_df)} team records")
             
             team_output = self.data_dir / 'team_data' / f'{season_str}_team_stats.csv'
+            team_df['GAME_DATE'] = pd.to_datetime(team_df['GAME_DATE']).dt.strftime('%Y-%m-%d')
             team_df.to_csv(team_output, index=False)
             print(f"Saved to {team_output}")
             
@@ -466,7 +470,6 @@ class HockeyData:
     
     def getUpcomingGames(self):
         today = pd.Timestamp.now().normalize()
-        tomorrow = today + pd.Timedelta(days=1)
         
         try:
             url = f"{self.base_api}/schedule/{today.strftime('%Y-%m-%d')}"

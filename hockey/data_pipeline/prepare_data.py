@@ -3,6 +3,9 @@ import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 from datetime import datetime
+import warnings
+
+warnings.filterwarnings('ignore', category=pd.errors.PerformanceWarning)
 
 class NHLTrainingDataPreparer:
     def __init__(self, data_dir='././data/training_data/hockey'):

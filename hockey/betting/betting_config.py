@@ -1,13 +1,14 @@
 class BettingConfig:
     # Bankroll
-    STARTING_BANKROLL = 80  # Starting bankroll in dollars
+    STARTING_BANKROLL = 180  # Starting bankroll in dollars
     MAX_BET_SIZE_PCT = 0.1    # Maximum 10% of bankroll per bet
     KELLY_FRACTION = 0.25      # Use 25% Kelly for conservative sizing
     MAX_RISK_PCT = 1
     
     # Edge
     MIN_EDGE_H2H = 0.01 # Minimum 1% edge to place bet (model_prob - market_prob)
-    MIN_EDGE_SPREAD = 3
+    MIN_EDGE_SPREAD = .1
+    MIN_TOTAL_EDGE = .5
     MIN_PROBABILITY = 0.52
     
     # Risk Limits

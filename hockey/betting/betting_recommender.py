@@ -232,6 +232,8 @@ class BettingRecommender:
             else:
                 away_margin_advantage = away_spread + (-predicted_margin)
 
+            print(home_margin_advantage)
+            print(away_margin_advantage)
             if home_margin_advantage >= self.config.MIN_EDGE_SPREAD:
                 cover_prob = self.marginToProbability(home_margin_advantage)
 
@@ -333,9 +335,7 @@ class BettingRecommender:
             
             total_advantage = abs(predicted_total - total_line)
             
-            MIN_TOTAL_EDGE = getattr(self.config, 'MIN_TOTAL_EDGE', 8.0)  
-            
-            if predicted_total > total_line and total_advantage >= MIN_TOTAL_EDGE:
+            if predicted_total > total_line and total_advantage >= self.config.MIN_TOTAL_EDGE:
                 cover_prob = self.totalToProbability(total_advantage)
                 
                 if cover_prob >= self.config.MIN_PROBABILITY:
@@ -367,7 +367,7 @@ class BettingRecommender:
                         'reason': f"Predicted: {predicted_total:.1f}, Line: {total_line:.1f}, Edge: {total_advantage:.1f}pts, Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
                     })
             
-            elif predicted_total < total_line and total_advantage >= MIN_TOTAL_EDGE:
+            elif predicted_total < total_line and total_advantage >= self.config.MIN_TOTAL_EDGE:
                 cover_prob = self.totalToProbability(total_advantage)
                 
                 if cover_prob >= self.config.MIN_PROBABILITY:

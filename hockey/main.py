@@ -106,17 +106,21 @@ def bettingRecommendations():
 
         recommender = BettingRecommender(model_path = './models/hockey_h2h_model.json')
         predictions = recommender.predictGames(prediction_data_h2h, game_info)
-        print(predictions)
+        # print(predictions)
         recommendations_h2h = recommender.makeBettingRecommendations(predictions=predictions)
-        print(recommendations_h2h)
+        # print(recommendations_h2h)
         
         recommender = BettingRecommender(model_path = './models/hockey_spread_model.json')
         predictions = recommender.predictGames(prediction_data_spread, game_info)
+        # print(predictions)
         recommendations_spread = recommender.makeBettingRecommendations(predictions=predictions)
+        # print(recommendations_spread)
         
         recommender = BettingRecommender(model_path = './models/hockey_total_model.json')
         predictions = recommender.predictGames(prediction_data_total, game_info)
+        # print(predictions)
         recommendations_total = recommender.makeBettingRecommendations(predictions=predictions)
+        # print(recommendations_total)
         
         recommendations = recommendations_h2h + recommendations_spread + recommendations_total
     else:

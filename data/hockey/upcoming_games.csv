@@ -1,14 +1,6 @@
 GAME_ID,GAME_DATE,HOME_TEAM,HOME_TEAM_ABBR,AWAY_TEAM,AWAY_TEAM_ABBR
-2025020588,2025-12-27,New York Islanders,NYI,New York Rangers,NYR
-2025020589,2025-12-27,Buffalo Sabres,BUF,Boston Bruins,BOS
-2025020590,2025-12-27,Toronto Maple Leafs,TOR,Ottawa Senators,OTT
-2025020591,2025-12-27,Florida Panthers,FLA,Tampa Bay Lightning,TBL
-2025020592,2025-12-27,New Jersey Devils,NJD,Washington Capitals,WSH
-2025020593,2025-12-27,Carolina Hurricanes,CAR,Detroit Red Wings,DET
-2025020594,2025-12-27,Winnipeg Jets,WPG,Minnesota Wild,MIN
-2025020595,2025-12-27,St. Louis Blues,STL,Nashville Predators,NSH
-2025020596,2025-12-27,Dallas Stars,DAL,Chicago Blackhawks,CHI
-2025020597,2025-12-27,Los Angeles Kings,LAK,Anaheim Ducks,ANA
-2025020598,2025-12-27,Calgary Flames,CGY,Edmonton Oilers,EDM
-2025020599,2025-12-27,Vancouver Canucks,VAN,San Jose Sharks,SJS
-2025020600,2025-12-27,Vegas Golden Knights,VGK,Colorado Avalanche,COL
+2025020602,2025-12-28,Tampa Bay Lightning,TBL,Montréal Canadiens,MTL
+2025020603,2025-12-28,Columbus Blue Jackets,CBJ,New York Islanders,NYI
+2025020601,2025-12-28,Detroit Red Wings,DET,Toronto Maple Leafs,TOR
+2025020604,2025-12-28,Chicago Blackhawks,CHI,Pittsburgh Penguins,PIT
+2025020605,2025-12-28,Seattle Kraken,SEA,Philadelphia Flyers,PHI

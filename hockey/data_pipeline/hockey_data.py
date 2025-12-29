@@ -74,26 +74,27 @@ class HockeyData(BaseDataFetcher):
         current_season = self.getCurrentSeason()
         
         # For current season, check for incremental updates
-        if season_str == current_season and output_file.exists():
-            print(f"Checking for new games in current season {season_str}...")
-            existing_df = pd.read_csv(output_file)
-            existing_game_ids = set(existing_df['GAME_ID'].unique())
-            print(f"Found {len(existing_game_ids)} existing games in file")
-        elif season_str in self.game_files:
+        # if season_str == current_season and output_file.exists():
+        #     print(f"Checking for new games in current season {season_str}...")
+        #     existing_df = pd.read_csv(output_file)
+        #     existing_game_ids = set(existing_df['GAME_ID'].unique())
+        #     print(f"Found {len(existing_game_ids)} existing games in file")
+        if season_str in self.game_files and season_str != current_season:
             print(f"Game data for {season_str} already exists. Skipping...")
             return pd.read_csv(output_file)
-        else:
-            existing_game_ids = set()
+        # else:
+        #     existing_game_ids = set()
         
         print(f"\nFetching game data for {season_str}...")
         games = self.getSeasonSchedule(season_year)
+        print(games)
         
         if not games:
             print(f"No games found for season {season_str}")
             return pd.DataFrame()
         
         all_game_records = []
-        new_games_count = 0
+        # new_games_count = 0
         
         for game in tqdm(games, desc=f"Processing games ({season_str})"):
             if game.get('gameType') != 2:  # Regular season only (gameType=2)
@@ -102,10 +103,10 @@ class HockeyData(BaseDataFetcher):
             game_id = game.get('id')
             
             # Skip if we already have this game (for current season incremental updates)
-            if existing_game_ids and game_id in existing_game_ids:
-                continue
+            # if existing_game_ids and game_id in existing_game_ids:
+            #     continue
             
-            new_games_count += 1
+            # new_games_count += 1
             game_date = game.get('startTimeUTC', '').split('T')[0] if 'startTimeUTC' in game else game.get('gameDate', '').split('T')[0]
             
             home_team = game.get('homeTeam', {})
@@ -147,19 +148,19 @@ class HockeyData(BaseDataFetcher):
             new_df = pd.DataFrame(all_game_records)
             
             # If updating current season, append to existing data
-            if existing_game_ids:
-                existing_df = pd.read_csv(output_file)
-                df = pd.concat([existing_df, new_df], ignore_index=True)
-                df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION'], inplace=True)
-                df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE']).dt.strftime('%Y-%m-%d')
-                df.to_csv(output_file, index=False)
-                print(f"Added {new_games_count} new games. Total: {len(df)} game records in {output_file}")
-            else:
-                new_df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION'], inplace=True)
-                new_df['GAME_DATE'] = pd.to_datetime(new_df['GAME_DATE']).dt.strftime('%Y-%m-%d')
-                new_df.to_csv(output_file, index=False)
-                print(f"Saved {len(new_df)} game records to {output_file}")
-                df = new_df
+            # if existing_game_ids:
+            #     existing_df = pd.read_csv(output_file)
+            #     df = pd.concat([existing_df, new_df], ignore_index=True)
+            #     df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION'], ascending=[False, True], inplace=True)
+            #     df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE']).dt.strftime('%Y-%m-%d')
+            #     df.to_csv(output_file, index=False)
+            #     print(f"Added {new_games_count} new games. Total: {len(df)} game records in {output_file}")
+            # else:
+            new_df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION'], ascending=[False, True], inplace=True)
+            new_df['GAME_DATE'] = pd.to_datetime(new_df['GAME_DATE']).dt.strftime('%Y-%m-%d')
+            new_df.to_csv(output_file, index=False)
+            print(f"Saved {len(new_df)} game records to {output_file}")
+            df = new_df
             
             # Update tracking list
             if season_str not in self.game_files:
@@ -167,10 +168,10 @@ class HockeyData(BaseDataFetcher):
             
             time.sleep(1)  # Rate limiting like basketball
             return df
-        elif existing_game_ids:
-            # No new games, return existing data
-            print(f"No new games found for {season_str}")
-            return pd.read_csv(output_file)
+        # elif existing_game_ids:
+        #     # No new games, return existing data
+        #     print(f"No new games found for {season_str}")
+        #     return pd.read_csv(output_file)
         else:
             print(f"No regular season games found for {season_str}")
             return pd.DataFrame()
@@ -375,7 +376,7 @@ class HockeyData(BaseDataFetcher):
             # If updating current season, append to existing data
             if existing_player_df is not None:
                 player_df = pd.concat([existing_player_df, new_player_df], ignore_index=True)
-                player_df.sort_values(by=['GAME_DATE', 'PLAYER_ID'], inplace=True)
+                player_df.sort_values(by=['GAME_DATE', 'PLAYER_ID'], ascending=[False, True], inplace=True)
                 print(f"\nAdded {len(new_player_df)} new player records. Total: {len(player_df)} records")
             else:
                 player_df = new_player_df
@@ -395,7 +396,7 @@ class HockeyData(BaseDataFetcher):
             # If updating current season, append to existing data
             if existing_team_df is not None:
                 team_df = pd.concat([existing_team_df, new_team_df], ignore_index=True)
-                team_df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION'], inplace=True)
+                team_df.sort_values(by=['GAME_DATE', 'TEAM_ABBREVIATION'], ascending=[False, True], inplace=True)
                 print(f"Added {len(new_team_df)} new team records. Total: {len(team_df)} records")
             else:
                 team_df = new_team_df
@@ -512,3 +513,6 @@ class HockeyData(BaseDataFetcher):
             return f"{now.year}-{now.year + 1}"
         else:
             return f"{now.year - 1}-{now.year}"
+
+data = HockeyData()
+data.scrapeSeasonGames(2025)

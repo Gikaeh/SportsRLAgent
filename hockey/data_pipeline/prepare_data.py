@@ -72,6 +72,23 @@ class NHLTrainingDataPreparer(BaseTrainingDataPreparer):
                 team_df[f'save_pct_l{window}'] = team_df['SAVE_PCT'].rolling(window=window, min_periods=1).mean().shift(1)
                 team_df[f'pp_goals_l{window}'] = team_df['POWER_PLAY_GOALS'].rolling(window=window, min_periods=1).mean().shift(1)
                 team_df[f'pp_goals_against_l{window}'] = team_df['POWER_PLAY_GOALS_AGAINST'].rolling(window=window, min_periods=1).mean().shift(1)
+                
+                # Shot differential (possession proxy)
+                team_df[f'shot_diff_l{window}'] = team_df[f'shots_l{window}'] - team_df[f'shots_against_l{window}']
+                
+                # Scoring efficiency metrics
+                team_df[f'shots_per_goal_l{window}'] = (team_df['SHOTS'].rolling(window=window, min_periods=1).sum().shift(1) / 
+                                                        (team_df['GOALS'].rolling(window=window, min_periods=1).sum().shift(1) + 0.001))
+                team_df[f'shots_against_per_ga_l{window}'] = (team_df['SHOTS_AGAINST'].rolling(window=window, min_periods=1).sum().shift(1) / 
+                                                              (team_df['GOALS_AGAINST'].rolling(window=window, min_periods=1).sum().shift(1) + 0.001))
+                
+                # Goal differential
+                team_df[f'goal_diff_l{window}'] = team_df[f'goals_l{window}'] - team_df[f'goals_against_l{window}']
+                
+                # Even strength goals against ratio (proxy for PK effectiveness)
+                team_df[f'es_ga_ratio_l{window}'] = (team_df['EVEN_STRENGTH_GOALS_AGAINST'].rolling(window=window, min_periods=1).sum().shift(1) / 
+                                                     (team_df['GOALS_AGAINST'].rolling(window=window, min_periods=1).sum().shift(1) + 0.001))
+                
                 team_df[f'hits_l{window}'] = team_df['HITS'].rolling(window=window, min_periods=1).mean().shift(1)
                 team_df[f'pim_l{window}'] = team_df['PIM'].rolling(window=window, min_periods=1).mean().shift(1)
                 team_df[f'blocked_shots_l{window}'] = team_df['BLOCKED_SHOTS'].rolling(window=window, min_periods=1).mean().shift(1)
@@ -105,7 +122,9 @@ class NHLTrainingDataPreparer(BaseTrainingDataPreparer):
                     f'pp_goals_against_l{window}', f'hits_l{window}', f'pim_l{window}',
                     f'blocked_shots_l{window}', f'takeaways_l{window}', f'giveaways_l{window}',
                     f'home_wins_l{window}', f'away_wins_l{window}', f'home_games_l{window}',
-                    f'goals_std_l{window}', f'goals_against_std_l{window}'
+                    f'goals_std_l{window}', f'goals_against_std_l{window}',
+                    f'shot_diff_l{window}', f'shots_per_goal_l{window}', f'shots_against_per_ga_l{window}',
+                    f'goal_diff_l{window}', f'es_ga_ratio_l{window}'
                 ])
                 if window >= 7:
                     cols_to_keep.extend([f'goals_trend_l{window}', f'goals_against_trend_l{window}'])
@@ -308,9 +327,13 @@ class NHLTrainingDataPreparer(BaseTrainingDataPreparer):
                     game_features[f'{prefix}shifts'] = skater['shifts_rolling']
                     game_features[f'{prefix}takeaway'] = skater['takeaway_rolling']
                     game_features[f'{prefix}giveaway'] = skater['giveaway_rolling']
+                    game_features[f'{prefix}points_std'] = skater['points_std']
+                    game_features[f'{prefix}goals_std'] = skater['goals_std']
+                    game_features[f'{prefix}shooting_pct'] = skater['shooting_pct']
                 else:
                     for stat in ['goals', 'assists', 'points', 'plus_minus', 'shots', 'hits', 
-                                'blocked_shots', 'toi', 'faceoff_win_pct', 'shifts', 'takeaway', 'giveaway']:
+                                'blocked_shots', 'toi', 'faceoff_win_pct', 'shifts', 'takeaway', 'giveaway',
+                                'points_std', 'goals_std', 'shooting_pct']:
                         game_features[f'{prefix}{stat}'] = 0
             
             # Add goalies for home team
@@ -327,9 +350,12 @@ class NHLTrainingDataPreparer(BaseTrainingDataPreparer):
                     game_features[f'{prefix}es_goals_against'] = goalie['es_goals_against_rolling']
                     game_features[f'{prefix}pp_goals_against'] = goalie['pp_goals_against_rolling']
                     game_features[f'{prefix}sh_goals_against'] = goalie['sh_goals_against_rolling']
+                    game_features[f'{prefix}games_last_7_days'] = goalie['games_last_7_days']
+                    game_features[f'{prefix}save_pct_std'] = goalie['save_pct_std']
                 else:
                     for stat in ['saves', 'shots_against', 'goals_against', 'save_pct', 'toi',
-                                'es_goals_against', 'pp_goals_against', 'sh_goals_against']:
+                                'es_goals_against', 'pp_goals_against', 'sh_goals_against',
+                                'games_last_7_days', 'save_pct_std']:
                         game_features[f'{prefix}{stat}'] = 0
             
             # Add top 6 skaters for away team
@@ -603,6 +629,20 @@ class NHLTrainingDataPreparer(BaseTrainingDataPreparer):
                 f'away_goals_std_l{window}': matchup_data[f'goals_std_l{window}_away'],
                 f'home_goals_against_std_l{window}': matchup_data[f'goals_against_std_l{window}_home'],
                 f'away_goals_against_std_l{window}': matchup_data[f'goals_against_std_l{window}_away'],
+                
+                # Efficiency metrics
+                f'home_shot_diff_l{window}': matchup_data[f'shot_diff_l{window}_home'],
+                f'away_shot_diff_l{window}': matchup_data[f'shot_diff_l{window}_away'],
+                f'shot_diff_diff_l{window}': matchup_data[f'shot_diff_l{window}_home'] - matchup_data[f'shot_diff_l{window}_away'],
+                f'home_shots_per_goal_l{window}': matchup_data[f'shots_per_goal_l{window}_home'],
+                f'away_shots_per_goal_l{window}': matchup_data[f'shots_per_goal_l{window}_away'],
+                f'home_shots_against_per_ga_l{window}': matchup_data[f'shots_against_per_ga_l{window}_home'],
+                f'away_shots_against_per_ga_l{window}': matchup_data[f'shots_against_per_ga_l{window}_away'],
+                f'home_goal_diff_l{window}': matchup_data[f'goal_diff_l{window}_home'],
+                f'away_goal_diff_l{window}': matchup_data[f'goal_diff_l{window}_away'],
+                f'goal_diff_diff_l{window}': matchup_data[f'goal_diff_l{window}_home'] - matchup_data[f'goal_diff_l{window}_away'],
+                f'home_es_ga_ratio_l{window}': matchup_data[f'es_ga_ratio_l{window}_home'],
+                f'away_es_ga_ratio_l{window}': matchup_data[f'es_ga_ratio_l{window}_away'],
             })
             
             # Goals trends (only for windows >= 7)
@@ -783,6 +823,18 @@ class NHLTrainingDataPreparer(BaseTrainingDataPreparer):
                     f'goals_std_l{window}_away': away_stats[f'goals_std_l{window}'],
                     f'goals_against_std_l{window}_home': home_stats[f'goals_against_std_l{window}'],
                     f'goals_against_std_l{window}_away': away_stats[f'goals_against_std_l{window}'],
+                    
+                    # Efficiency metrics
+                    f'shot_diff_l{window}_home': home_stats[f'shot_diff_l{window}'],
+                    f'shot_diff_l{window}_away': away_stats[f'shot_diff_l{window}'],
+                    f'shots_per_goal_l{window}_home': home_stats[f'shots_per_goal_l{window}'],
+                    f'shots_per_goal_l{window}_away': away_stats[f'shots_per_goal_l{window}'],
+                    f'shots_against_per_ga_l{window}_home': home_stats[f'shots_against_per_ga_l{window}'],
+                    f'shots_against_per_ga_l{window}_away': away_stats[f'shots_against_per_ga_l{window}'],
+                    f'goal_diff_l{window}_home': home_stats[f'goal_diff_l{window}'],
+                    f'goal_diff_l{window}_away': away_stats[f'goal_diff_l{window}'],
+                    f'es_ga_ratio_l{window}_home': home_stats[f'es_ga_ratio_l{window}'],
+                    f'es_ga_ratio_l{window}_away': away_stats[f'es_ga_ratio_l{window}'],
                 })
                 
                 # Goals trends (only for windows >= 7)
@@ -962,6 +1014,20 @@ class NHLTrainingDataPreparer(BaseTrainingDataPreparer):
                 f'away_goals_std_l{window}': matchup_data[f'goals_std_l{window}_away'],
                 f'home_goals_against_std_l{window}': matchup_data[f'goals_against_std_l{window}_home'],
                 f'away_goals_against_std_l{window}': matchup_data[f'goals_against_std_l{window}_away'],
+                
+                # Efficiency metrics
+                f'home_shot_diff_l{window}': matchup_data[f'shot_diff_l{window}_home'],
+                f'away_shot_diff_l{window}': matchup_data[f'shot_diff_l{window}_away'],
+                f'shot_diff_diff_l{window}': matchup_data[f'shot_diff_l{window}_home'] - matchup_data[f'shot_diff_l{window}_away'],
+                f'home_shots_per_goal_l{window}': matchup_data[f'shots_per_goal_l{window}_home'],
+                f'away_shots_per_goal_l{window}': matchup_data[f'shots_per_goal_l{window}_away'],
+                f'home_shots_against_per_ga_l{window}': matchup_data[f'shots_against_per_ga_l{window}_home'],
+                f'away_shots_against_per_ga_l{window}': matchup_data[f'shots_against_per_ga_l{window}_away'],
+                f'home_goal_diff_l{window}': matchup_data[f'goal_diff_l{window}_home'],
+                f'away_goal_diff_l{window}': matchup_data[f'goal_diff_l{window}_away'],
+                f'goal_diff_diff_l{window}': matchup_data[f'goal_diff_l{window}_home'] - matchup_data[f'goal_diff_l{window}_away'],
+                f'home_es_ga_ratio_l{window}': matchup_data[f'es_ga_ratio_l{window}_home'],
+                f'away_es_ga_ratio_l{window}': matchup_data[f'es_ga_ratio_l{window}_away'],
             })
             
             # Goals trends (only for windows >= 7)
@@ -1014,7 +1080,7 @@ class NHLTrainingDataPreparer(BaseTrainingDataPreparer):
             seasons = ['2010-2011', '2011-2012', '2012-2013', '2013-2014', '2014-2015', '2015-2016', '2016-2017', '2017-2018', '2018-2019', '2019-2020', '2020-2021', '2021-2022', '2022-2023', '2023-2024', '2024-2025', '2025-2026']
         
         # Create separated_seasons directory if it doesn't exist
-        separated_seasons_dir = self.data_dir / 'separated_seasons'
+        separated_seasons_dir = self.training_data_dir / 'separated_seasons'
         separated_seasons_dir.mkdir(parents=True, exist_ok=True)
         
         # Get list of already processed seasons
@@ -1050,7 +1116,7 @@ class NHLTrainingDataPreparer(BaseTrainingDataPreparer):
         combined_data = pd.concat(all_data, ignore_index=True)
         
         if save_combined:
-            output_path = self.data_dir / 'all_seasons_training_data.csv'
+            output_path = self.training_data_dir / 'all_seasons_training_data.csv'
             combined_data.to_csv(output_path, index=False)
             print(f"\nSaved combined data to {output_path}")
             print(f"Total games: {len(combined_data)}")

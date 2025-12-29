@@ -5,3 +5,4 @@ __pycache__
 data/basketball/upcoming_games.csv
 basketball/*.md
 models/
+data/

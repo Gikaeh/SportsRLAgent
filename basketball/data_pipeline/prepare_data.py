@@ -3,15 +3,14 @@ import numpy as np
 from pathlib import Path
 from tqdm import tqdm
 from datetime import datetime
-from data_pipeline.injury_data import InjuryData
+from .injury_data import InjuryData
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from shared.base_data_preparer import BaseTrainingDataPreparer
 
-class NBATrainingDataPreparer:
+class NBATrainingDataPreparer(BaseTrainingDataPreparer):
     def __init__(self, data_dir='././data/basketball'):
-        self.data_dir = Path(data_dir)
-        self.team_data_dir = self.data_dir / 'team_data'
-        self.game_data_dir = self.data_dir / 'game_data'
-        self.player_data_dir = self.data_dir / 'player_data'
-        # self.season_data_dir = self.data_dir / 'season_data'
+        super().__init__(data_dir, 'basketball')
         self.season_averages_cache = {}
         self.injury_data = InjuryData(data_dir=data_dir)  
 
@@ -30,36 +29,37 @@ class NBATrainingDataPreparer:
         
         df['OPP_PTS'] = df['PTS'] - df['PLUS_MINUS']
         df['TOT_PTS'] = df['PTS'] + df['OPP_PTS']
+        df['win_flag'] = (df['WL'] == 'W').astype(int)
         
-        l10_stats = []
+        # Vectorized rolling stats using base class method
+        rolling_stats = {
+            'TOT_PTS': 'total_l10',
+            'PTS': 'ppg_l10',
+            'OPP_PTS': 'opp_ppg_l10',
+            'FG_PCT': 'fg_pct_l10',
+            'FG3_PCT': 'fg3_pct_l10',
+            'REB': 'reb_l10',
+            'AST': 'ast_l10',
+            'TOV': 'tov_l10',
+            'BLK': 'blk_l10',
+            'STL': 'stl_l10',
+            'PLUS_MINUS': 'plus_minus_l10',
+        }
         
-        for team, team_df in df.groupby('TEAM_ABBREVIATION'):
-            team_df = team_df.reset_index(drop=True)
-            
-            team_df['win_flag'] = (team_df['WL'] == 'W').astype(int)
-            
-            # Using min_periods=1 allows calculation to start, but we'll drop first 10 games later
-            team_df['wins_l10'] = team_df['win_flag'].rolling(window=10, min_periods=1).sum().shift(1)
-            team_df['total_l10'] = team_df['TOT_PTS'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['ppg_l10'] = team_df['PTS'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['opp_ppg_l10'] = team_df['OPP_PTS'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['fg_pct_l10'] = team_df['FG_PCT'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['fg3_pct_l10'] = team_df['FG3_PCT'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['reb_l10'] = team_df['REB'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['ast_l10'] = team_df['AST'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['tov_l10'] = team_df['TOV'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['blk_l10'] = team_df['BLK'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['stl_l10'] = team_df['STL'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['plus_minus_l10'] = team_df['PLUS_MINUS'].rolling(window=10, min_periods=1).mean().shift(1)
-            
-            # After shift(1), game 11 will have stats from games 1-10
-            team_df = team_df.iloc[10:].copy()
-            
-            team_l10 = team_df[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID', 'wins_l10', 'ppg_l10', 'opp_ppg_l10', 'fg_pct_l10', 'fg3_pct_l10', 'reb_l10', 'ast_l10', 'tov_l10', 'blk_l10', 'stl_l10', 'plus_minus_l10', 'total_l10']]
-            
-            l10_stats.append(team_l10)
+        df = self.computeRollingStatsVectorized(df, 'TEAM_ABBREVIATION', rolling_stats, window=10, min_periods=1)
         
-        result = pd.concat(l10_stats, ignore_index=True)
+        # Wins need sum, not mean
+        df['wins_l10'] = df.groupby('TEAM_ABBREVIATION')['win_flag'].transform(
+            lambda x: x.rolling(window=10, min_periods=1).sum().shift(1)
+        ).fillna(0)
+        
+        # Drop first 10 games per team
+        df['game_num'] = df.groupby('TEAM_ABBREVIATION').cumcount()
+        df = df[df['game_num'] >= 10].drop(columns=['game_num'])
+        
+        result = df[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID', 'wins_l10', 'ppg_l10', 'opp_ppg_l10', 
+                     'fg_pct_l10', 'fg3_pct_l10', 'reb_l10', 'ast_l10', 'tov_l10', 'blk_l10', 
+                     'stl_l10', 'plus_minus_l10', 'total_l10']].copy()
         
         current_season = self.getCurrentSeason()
         if result.empty:
@@ -75,18 +75,15 @@ class NBATrainingDataPreparer:
         
         return result
     
-    def calculateRestDays(self, df):
-        df = df.sort_values(['TEAM_ABBREVIATION', 'GAME_DATE'])
-        df['prev_game_date'] = df.groupby('TEAM_ABBREVIATION')['GAME_DATE'].shift(1)
-        df['rest_days'] = (df['GAME_DATE'] - df['prev_game_date']).dt.days - 1
-        df['is_back_to_back'] = (df['rest_days'] == 0).astype(int)
-        
-        return df
-    
     def precomputePlayerRollingAverages(self, season):
         player_file = self.player_data_dir / f'{season}_player_stats.csv'
         if not player_file.exists():
             return pd.DataFrame()
+        
+        # Check cache first
+        cached = self.getCachedData('player_rolling', season)
+        if cached is not None:
+            return cached
         
         df = pd.read_csv(player_file)
         
@@ -96,53 +93,40 @@ class NBATrainingDataPreparer:
         df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'])
         df = df.sort_values(['PLAYER_ID', 'GAME_DATE'])
         
-        # Calculate rolling averages for each player (shifted to exclude current game)
-        rolling_stats = []
-        for player_id, player_df in df.groupby('PLAYER_ID'):
-            player_df = player_df.reset_index(drop=True)
-            
-            player_df['ppg_rolling'] = player_df['PTS'].expanding().mean().shift(1)
-            player_df['fg_pct_rolling'] = player_df['FG_PCT'].expanding().mean().shift(1)
-            player_df['mpg_rolling'] = player_df['MIN'].expanding().mean().shift(1)
-            player_df['apg_rolling'] = player_df['AST'].expanding().mean().shift(1)
-            player_df['rpg_rolling'] = player_df['REB'].expanding().mean().shift(1)
-            player_df['blk_rolling'] = player_df['BLK'].expanding().mean().shift(1)
-            player_df['stl_rolling'] = player_df['STL'].expanding().mean().shift(1)
-            player_df['tov_rolling'] = player_df['TOV'].expanding().mean().shift(1)
-            player_df['plus_minus_rolling'] = player_df['PLUS_MINUS'].expanding().mean().shift(1)
-            
-            player_df['ppg_rolling'] = player_df['ppg_rolling'].fillna(0)
-            player_df['fg_pct_rolling'] = player_df['fg_pct_rolling'].fillna(0)
-            player_df['mpg_rolling'] = player_df['mpg_rolling'].fillna(0)
-            player_df['apg_rolling'] = player_df['apg_rolling'].fillna(0)
-            player_df['rpg_rolling'] = player_df['rpg_rolling'].fillna(0)
-            player_df['blk_rolling'] = player_df['blk_rolling'].fillna(0)
-            player_df['stl_rolling'] = player_df['stl_rolling'].fillna(0)
-            player_df['tov_rolling'] = player_df['tov_rolling'].fillna(0)
-            player_df['plus_minus_rolling'] = player_df['plus_minus_rolling'].fillna(0)
-            
-            rolling_stats.append(player_df)
+        # Vectorized rolling stats using base class method
+        rolling_stats = {
+            'PTS': 'ppg_rolling',
+            'FG_PCT': 'fg_pct_rolling',
+            'MIN': 'mpg_rolling',
+            'AST': 'apg_rolling',
+            'REB': 'rpg_rolling',
+            'BLK': 'blk_rolling',
+            'STL': 'stl_rolling',
+            'TOV': 'tov_rolling',
+            'PLUS_MINUS': 'plus_minus_rolling',
+        }
         
-        result = pd.concat(rolling_stats, ignore_index=True)
+        df = self.computeRollingStatsVectorized(df, 'PLAYER_ID', rolling_stats, window=None, min_periods=1)
         
-        if len(result) > 0:
-            # Group by player and check if any player has games beyond their first
-            player_game_counts = result.groupby('PLAYER_ID').size()
+        if len(df) > 0:
+            # Validation check
+            player_game_counts = df.groupby('PLAYER_ID').size()
             players_with_multiple_games = player_game_counts[player_game_counts > 1].index
             
             if len(players_with_multiple_games) > 0:
-                # For players with multiple games, check if all their non-first-game stats are zero
-                multi_game_data = result[result['PLAYER_ID'].isin(players_with_multiple_games)].copy()
+                multi_game_data = df[df['PLAYER_ID'].isin(players_with_multiple_games)].copy()
                 multi_game_data['game_num'] = multi_game_data.groupby('PLAYER_ID').cumcount() + 1
                 non_first_games = multi_game_data[multi_game_data['game_num'] > 1]
                 
                 if len(non_first_games) > 0:
                     stat_cols = ['ppg_rolling', 'mpg_rolling', 'apg_rolling', 'rpg_rolling', 'blk_rolling', 'stl_rolling', 'tov_rolling']
-                    # Check if all non-first-game rolling stats are zero
                     if (non_first_games[stat_cols] == 0).all().all():
                         raise ValueError(f"precomputePlayerRollingAverages returned all-zero rolling stats for non-first games in season {season}. Data may be corrupted.")
         
-        return result
+        # Save to cache
+        self.saveCachedData(df, 'player_rolling', season)
+        
+        return df
     
     def getTopPlayersWithStats(self, player_df, game_id, team_abbr, top_n=6):
         game_players = player_df[(player_df['GAME_ID'] == game_id) & (player_df['TEAM_ABBREVIATION'] == team_abbr)].copy()

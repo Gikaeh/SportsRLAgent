@@ -1,14 +1,20 @@
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from unified_bankroll import UnifiedBankroll
+
 class BettingConfig:
-    # Bankroll
-    STARTING_BANKROLL = 180  # Starting bankroll in dollars
+    # Bankroll - now uses unified bankroll across all sports
+    STARTING_BANKROLL = UnifiedBankroll.STARTING_BANKROLL
+    USE_UNIFIED_BANKROLL = True  # Set to False to use sport-specific bankroll
     MAX_BET_SIZE_PCT = 0.1    # Maximum 10% of bankroll per bet
     KELLY_FRACTION = 0.25      # Use 25% Kelly for conservative sizing
     MAX_RISK_PCT = 1
     
     # Edge
     MIN_EDGE_H2H = 0.01 # Minimum 1% edge to place bet (model_prob - market_prob)
-    MIN_EDGE_SPREAD = .1
-    MIN_TOTAL_EDGE = .5
+    MIN_EDGE_SPREAD = .5
+    MIN_TOTAL_EDGE = 1
     MIN_PROBABILITY = 0.52
     
     # Risk Limits

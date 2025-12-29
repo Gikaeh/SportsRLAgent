@@ -4,15 +4,18 @@ from pathlib import Path
 from tqdm import tqdm
 from datetime import datetime
 import warnings
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from shared.base_data_preparer import BaseTrainingDataPreparer
 
 warnings.filterwarnings('ignore', category=pd.errors.PerformanceWarning)
 
-class NHLTrainingDataPreparer:
-    def __init__(self, data_dir='././data/training_data/hockey'):
-        self.data_dir = Path(data_dir)
-        self.team_data_dir = Path('././data/hockey/team_data')
-        self.game_data_dir = Path('././data/hockey/game_data')
-        self.player_data_dir = Path('././data/hockey/player_data')
+class NHLTrainingDataPreparer(BaseTrainingDataPreparer):
+    def __init__(self, data_dir='././data/hockey'):
+        super().__init__(data_dir, 'hockey')
+        # Override data_dir for training data output
+        self.training_data_dir = Path('././data/training_data/hockey')
+        self.training_data_dir.mkdir(parents=True, exist_ok=True)
 
     def calculateTeamRollingStats(self, season, window_sizes=[5, 7, 10]):
         team_file = self.team_data_dir / f'{season}_team_stats.csv'
@@ -130,6 +133,12 @@ class NHLTrainingDataPreparer:
         if not player_file.exists():
             return pd.DataFrame(), pd.DataFrame()
         
+        # Check cache first
+        skaters_cached = self.getCachedData('skater_rolling', season)
+        goalies_cached = self.getCachedData('goalie_rolling', season)
+        if skaters_cached is not None and goalies_cached is not None:
+            return skaters_cached, goalies_cached
+        
         df = pd.read_csv(player_file)
         
         if df.empty:
@@ -141,7 +150,7 @@ class NHLTrainingDataPreparer:
         skaters_df = df[df['POSITION'] != 'G'].copy()
         goalies_df = df[df['POSITION'] == 'G'].copy()
         
-        # Process skaters
+        # Process skaters with vectorized operations
         skater_numeric_cols = ['GOALS', 'ASSISTS', 'POINTS', 'PLUS_MINUS', 'SHOTS', 'HITS', 
                                'BLOCK_SHOTS', 'TOI', 'FACEOFF_WIN_PCTG', 'SHIFTS', 'TAKEAWAY', 'GIVEAWAY']
         for col in skater_numeric_cols:
@@ -150,48 +159,33 @@ class NHLTrainingDataPreparer:
         
         skaters_df = skaters_df.sort_values(['PLAYER_ID', 'GAME_DATE'])
         
-        skater_rolling_stats = []
-        for player_id, player_df in skaters_df.groupby('PLAYER_ID'):
-            player_df = player_df.reset_index(drop=True)
-            
-            # Rolling averages
-            player_df['goals_rolling'] = player_df['GOALS'].expanding().mean().shift(1)
-            player_df['assists_rolling'] = player_df['ASSISTS'].expanding().mean().shift(1)
-            player_df['points_rolling'] = player_df['POINTS'].expanding().mean().shift(1)
-            player_df['plus_minus_rolling'] = player_df['PLUS_MINUS'].expanding().mean().shift(1)
-            player_df['shots_rolling'] = player_df['SHOTS'].expanding().mean().shift(1)
-            player_df['hits_rolling'] = player_df['HITS'].expanding().mean().shift(1)
-            player_df['blocked_shots_rolling'] = player_df['BLOCK_SHOTS'].expanding().mean().shift(1)
-            player_df['toi_rolling'] = player_df['TOI'].expanding().mean().shift(1)
-            player_df['faceoff_win_pct_rolling'] = player_df['FACEOFF_WIN_PCTG'].expanding().mean().shift(1)
-            player_df['shifts_rolling'] = player_df['SHIFTS'].expanding().mean().shift(1)
-            player_df['takeaway_rolling'] = player_df['TAKEAWAY'].expanding().mean().shift(1)
-            player_df['giveaway_rolling'] = player_df['GIVEAWAY'].expanding().mean().shift(1)
-            
-            # Consistency metrics (std dev over last 10 games)
-            player_df['points_std'] = player_df['POINTS'].rolling(window=10, min_periods=2).std().shift(1).fillna(0)
-            player_df['goals_std'] = player_df['GOALS'].rolling(window=10, min_periods=2).std().shift(1).fillna(0)
-            
-            # Shooting percentage (avoid division by zero)
-            player_df['shooting_pct'] = (player_df['GOALS'] / (player_df['SHOTS'] + 0.001)).rolling(window=10, min_periods=1).mean().shift(1).fillna(0)
-            
-            # Fill NaN values
-            player_df['goals_rolling'] = player_df['goals_rolling'].fillna(0)
-            player_df['assists_rolling'] = player_df['assists_rolling'].fillna(0)
-            player_df['points_rolling'] = player_df['points_rolling'].fillna(0)
-            player_df['plus_minus_rolling'] = player_df['plus_minus_rolling'].fillna(0)
-            player_df['shots_rolling'] = player_df['shots_rolling'].fillna(0)
-            player_df['hits_rolling'] = player_df['hits_rolling'].fillna(0)
-            player_df['blocked_shots_rolling'] = player_df['blocked_shots_rolling'].fillna(0)
-            player_df['toi_rolling'] = player_df['toi_rolling'].fillna(0)
-            player_df['faceoff_win_pct_rolling'] = player_df['faceoff_win_pct_rolling'].fillna(0)
-            player_df['shifts_rolling'] = player_df['shifts_rolling'].fillna(0)
-            player_df['takeaway_rolling'] = player_df['takeaway_rolling'].fillna(0)
-            player_df['giveaway_rolling'] = player_df['giveaway_rolling'].fillna(0)
-            
-            skater_rolling_stats.append(player_df)
+        # Vectorized rolling stats for skaters
+        skater_rolling_map = {
+            'GOALS': 'goals_rolling',
+            'ASSISTS': 'assists_rolling',
+            'POINTS': 'points_rolling',
+            'PLUS_MINUS': 'plus_minus_rolling',
+            'SHOTS': 'shots_rolling',
+            'HITS': 'hits_rolling',
+            'BLOCK_SHOTS': 'blocked_shots_rolling',
+            'TOI': 'toi_rolling',
+            'FACEOFF_WIN_PCTG': 'faceoff_win_pct_rolling',
+            'SHIFTS': 'shifts_rolling',
+            'TAKEAWAY': 'takeaway_rolling',
+            'GIVEAWAY': 'giveaway_rolling',
+        }
+        skaters_df = self.computeRollingStatsVectorized(skaters_df, 'PLAYER_ID', skater_rolling_map, window=None, min_periods=1)
         
-        # Process goalies
+        # Std dev metrics
+        skater_std_map = {'POINTS': 'points_std', 'GOALS': 'goals_std'}
+        skaters_df = self.computeRollingStdVectorized(skaters_df, 'PLAYER_ID', skater_std_map, window=10, min_periods=2)
+        
+        # Shooting percentage
+        skaters_df['shooting_pct'] = skaters_df.groupby('PLAYER_ID').apply(
+            lambda x: (x['GOALS'] / (x['SHOTS'] + 0.001)).rolling(window=10, min_periods=1).mean().shift(1)
+        ).reset_index(level=0, drop=True).fillna(0)
+        
+        # Process goalies with vectorized operations
         goalie_numeric_cols = ['SAVES', 'SHOTS_AGAINST', 'GOALS_AGAINST', 'SAVE_PCT', 'TOI',
                                'EVEN_STRENGTH_GOALS_AGAINST', 'POWER_PLAY_GOALS_AGAINST', 'SHORT_HANDED_GOALS_AGAINST']
         for col in goalie_numeric_cols:
@@ -200,43 +194,36 @@ class NHLTrainingDataPreparer:
         
         goalies_df = goalies_df.sort_values(['PLAYER_ID', 'GAME_DATE'])
         
-        goalie_rolling_stats = []
-        for player_id, player_df in goalies_df.groupby('PLAYER_ID'):
-            player_df = player_df.reset_index(drop=True)
-            
-            # Rolling averages
-            player_df['saves_rolling'] = player_df['SAVES'].expanding().mean().shift(1)
-            player_df['shots_against_rolling'] = player_df['SHOTS_AGAINST'].expanding().mean().shift(1)
-            player_df['goals_against_rolling'] = player_df['GOALS_AGAINST'].expanding().mean().shift(1)
-            player_df['save_pct_rolling'] = player_df['SAVE_PCT'].expanding().mean().shift(1)
-            player_df['toi_rolling'] = player_df['TOI'].expanding().mean().shift(1)
-            player_df['es_goals_against_rolling'] = player_df['EVEN_STRENGTH_GOALS_AGAINST'].expanding().mean().shift(1)
-            player_df['pp_goals_against_rolling'] = player_df['POWER_PLAY_GOALS_AGAINST'].expanding().mean().shift(1)
-            player_df['sh_goals_against_rolling'] = player_df['SHORT_HANDED_GOALS_AGAINST'].expanding().mean().shift(1)
-            
-            # Goalie workload - games in last 7 days
-            player_df = player_df.set_index('GAME_DATE')
-            player_df['games_last_7_days'] = player_df.index.to_series().rolling(window='7D').count().shift(1).fillna(0)
-            player_df = player_df.reset_index()
-            
-            # Consistency metric
-            player_df['save_pct_std'] = player_df['SAVE_PCT'].rolling(window=10, min_periods=2).std().shift(1).fillna(0)
-            
-            player_df['saves_rolling'] = player_df['saves_rolling'].fillna(0)
-            player_df['shots_against_rolling'] = player_df['shots_against_rolling'].fillna(0)
-            player_df['goals_against_rolling'] = player_df['goals_against_rolling'].fillna(0)
-            player_df['save_pct_rolling'] = player_df['save_pct_rolling'].fillna(0)
-            player_df['toi_rolling'] = player_df['toi_rolling'].fillna(0)
-            player_df['es_goals_against_rolling'] = player_df['es_goals_against_rolling'].fillna(0)
-            player_df['pp_goals_against_rolling'] = player_df['pp_goals_against_rolling'].fillna(0)
-            player_df['sh_goals_against_rolling'] = player_df['sh_goals_against_rolling'].fillna(0)
-            
-            goalie_rolling_stats.append(player_df)
+        # Vectorized rolling stats for goalies
+        goalie_rolling_map = {
+            'SAVES': 'saves_rolling',
+            'SHOTS_AGAINST': 'shots_against_rolling',
+            'GOALS_AGAINST': 'goals_against_rolling',
+            'SAVE_PCT': 'save_pct_rolling',
+            'TOI': 'toi_rolling',
+            'EVEN_STRENGTH_GOALS_AGAINST': 'es_goals_against_rolling',
+            'POWER_PLAY_GOALS_AGAINST': 'pp_goals_against_rolling',
+            'SHORT_HANDED_GOALS_AGAINST': 'sh_goals_against_rolling',
+        }
+        goalies_df = self.computeRollingStatsVectorized(goalies_df, 'PLAYER_ID', goalie_rolling_map, window=None, min_periods=1)
         
-        skaters_result = pd.concat(skater_rolling_stats, ignore_index=True) if skater_rolling_stats else pd.DataFrame()
-        goalies_result = pd.concat(goalie_rolling_stats, ignore_index=True) if goalie_rolling_stats else pd.DataFrame()
+        # Goalie workload - games in last 7 days (needs special handling)
+        if not goalies_df.empty:
+            goalies_df = goalies_df.set_index('GAME_DATE')
+            goalies_df['games_last_7_days'] = goalies_df.groupby('PLAYER_ID').apply(
+                lambda x: x.index.to_series().rolling(window='7D').count().shift(1)
+            ).reset_index(level=0, drop=True).fillna(0)
+            goalies_df = goalies_df.reset_index()
         
-        return skaters_result, goalies_result
+        # Std dev for goalies
+        goalie_std_map = {'SAVE_PCT': 'save_pct_std'}
+        goalies_df = self.computeRollingStdVectorized(goalies_df, 'PLAYER_ID', goalie_std_map, window=10, min_periods=2)
+        
+        # Save to cache
+        self.saveCachedData(skaters_df, 'skater_rolling', season)
+        self.saveCachedData(goalies_df, 'goalie_rolling', season)
+        
+        return skaters_df, goalies_df
     
     def getTopSkatersWithStats(self, skater_df, game_id, team_abbr, top_n=6):
         # Try to get game-specific data first (for historical games)
@@ -868,49 +855,49 @@ class NHLTrainingDataPreparer:
             goalie_save_pct_diff = home_goalie_save_pct - away_goalie_save_pct
             goalie_goals_against_diff = home_goalie_goals_against - away_goalie_goals_against
             
-            # Add all aggregated features
-            matchup_data['home_top3_avg_goals'] = home_top3_avg_goals
-            matchup_data['home_top6_avg_goals'] = home_top6_avg_goals
-            matchup_data['home_top3_avg_assists'] = home_top3_avg_assists
-            matchup_data['home_top6_avg_assists'] = home_top6_avg_assists
-            matchup_data['home_top3_avg_points'] = home_top3_avg_points
-            matchup_data['home_top6_avg_points'] = home_top6_avg_points
-            matchup_data['home_top6_total_plusminus'] = home_top6_total_plusminus
-            matchup_data['home_top6_avg_shots'] = home_top6_avg_shots
-            matchup_data['home_top6_avg_hits'] = home_top6_avg_hits
-            matchup_data['home_top6_avg_blocked_shots'] = home_top6_avg_blocked_shots
-            matchup_data['home_top6_avg_faceoff_win_pct'] = home_top6_avg_faceoff_win_pct
-            matchup_data['home_top6_total_takeaways'] = home_top6_total_takeaways
-            matchup_data['home_top6_total_giveaways'] = home_top6_total_giveaways
-            matchup_data['home_top6_takeaway_giveaway_ratio'] = home_top6_takeaway_giveaway_ratio
+            # Add all aggregated features at once to avoid fragmentation
+            aggregated_features = pd.DataFrame({
+                'home_top3_avg_goals': home_top3_avg_goals,
+                'home_top6_avg_goals': home_top6_avg_goals,
+                'home_top3_avg_assists': home_top3_avg_assists,
+                'home_top6_avg_assists': home_top6_avg_assists,
+                'home_top3_avg_points': home_top3_avg_points,
+                'home_top6_avg_points': home_top6_avg_points,
+                'home_top6_total_plusminus': home_top6_total_plusminus,
+                'home_top6_avg_shots': home_top6_avg_shots,
+                'home_top6_avg_hits': home_top6_avg_hits,
+                'home_top6_avg_blocked_shots': home_top6_avg_blocked_shots,
+                'home_top6_avg_faceoff_win_pct': home_top6_avg_faceoff_win_pct,
+                'home_top6_total_takeaways': home_top6_total_takeaways,
+                'home_top6_total_giveaways': home_top6_total_giveaways,
+                'home_top6_takeaway_giveaway_ratio': home_top6_takeaway_giveaway_ratio,
+                'away_top3_avg_goals': away_top3_avg_goals,
+                'away_top6_avg_goals': away_top6_avg_goals,
+                'away_top3_avg_assists': away_top3_avg_assists,
+                'away_top6_avg_assists': away_top6_avg_assists,
+                'away_top3_avg_points': away_top3_avg_points,
+                'away_top6_avg_points': away_top6_avg_points,
+                'away_top6_total_plusminus': away_top6_total_plusminus,
+                'away_top6_avg_shots': away_top6_avg_shots,
+                'away_top6_avg_hits': away_top6_avg_hits,
+                'away_top6_avg_blocked_shots': away_top6_avg_blocked_shots,
+                'away_top6_avg_faceoff_win_pct': away_top6_avg_faceoff_win_pct,
+                'away_top6_total_takeaways': away_top6_total_takeaways,
+                'away_top6_total_giveaways': away_top6_total_giveaways,
+                'away_top6_takeaway_giveaway_ratio': away_top6_takeaway_giveaway_ratio,
+                'home_goalie_save_pct': home_goalie_save_pct,
+                'home_goalie_goals_against': home_goalie_goals_against,
+                'home_goalie_saves': home_goalie_saves,
+                'home_goalie_shots_against': home_goalie_shots_against,
+                'away_goalie_save_pct': away_goalie_save_pct,
+                'away_goalie_goals_against': away_goalie_goals_against,
+                'away_goalie_saves': away_goalie_saves,
+                'away_goalie_shots_against': away_goalie_shots_against,
+                'goalie_save_pct_diff': goalie_save_pct_diff,
+                'goalie_goals_against_diff': goalie_goals_against_diff
+            }, index=matchup_data.index)
             
-            matchup_data['away_top3_avg_goals'] = away_top3_avg_goals
-            matchup_data['away_top6_avg_goals'] = away_top6_avg_goals
-            matchup_data['away_top3_avg_assists'] = away_top3_avg_assists
-            matchup_data['away_top6_avg_assists'] = away_top6_avg_assists
-            matchup_data['away_top3_avg_points'] = away_top3_avg_points
-            matchup_data['away_top6_avg_points'] = away_top6_avg_points
-            matchup_data['away_top6_total_plusminus'] = away_top6_total_plusminus
-            matchup_data['away_top6_avg_shots'] = away_top6_avg_shots
-            matchup_data['away_top6_avg_hits'] = away_top6_avg_hits
-            matchup_data['away_top6_avg_blocked_shots'] = away_top6_avg_blocked_shots
-            matchup_data['away_top6_avg_faceoff_win_pct'] = away_top6_avg_faceoff_win_pct
-            matchup_data['away_top6_total_takeaways'] = away_top6_total_takeaways
-            matchup_data['away_top6_total_giveaways'] = away_top6_total_giveaways
-            matchup_data['away_top6_takeaway_giveaway_ratio'] = away_top6_takeaway_giveaway_ratio
-            
-            matchup_data['home_goalie_save_pct'] = home_goalie_save_pct
-            matchup_data['home_goalie_goals_against'] = home_goalie_goals_against
-            matchup_data['home_goalie_saves'] = home_goalie_saves
-            matchup_data['home_goalie_shots_against'] = home_goalie_shots_against
-            
-            matchup_data['away_goalie_save_pct'] = away_goalie_save_pct
-            matchup_data['away_goalie_goals_against'] = away_goalie_goals_against
-            matchup_data['away_goalie_saves'] = away_goalie_saves
-            matchup_data['away_goalie_shots_against'] = away_goalie_shots_against
-            
-            matchup_data['goalie_save_pct_diff'] = goalie_save_pct_diff
-            matchup_data['goalie_goals_against_diff'] = goalie_goals_against_diff
+            matchup_data = pd.concat([matchup_data, aggregated_features], axis=1)
         
         prediction_data_dict = {
             'game_id': matchup_data['GAME_ID'],

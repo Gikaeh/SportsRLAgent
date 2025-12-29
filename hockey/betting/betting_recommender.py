@@ -1,4 +1,5 @@
 from os import path
+import sys
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -10,6 +11,8 @@ from betting.betting_config import BettingConfig
 from data_pipeline.odd_scraping import HockeyOddScraping
 from data_pipeline.prepare_data import NHLTrainingDataPreparer
 import glob
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from unified_bankroll import UnifiedBankroll
 
 class BettingRecommender:
     def __init__(self, model_path=None, config=None):
@@ -83,7 +86,7 @@ class BettingRecommender:
             predictions = self.model.predict(game_features)
             results['predicted_margin'] = predictions
             results['predicted_cover'] = results.apply(lambda row: row['home_team'] if row['predicted_margin'] > 0 else row['away_team'], axis=1)
-            results['confidence'] = np.minimum(np.abs(predictions) / 20, 1)
+            results['confidence'] = np.minimum(np.abs(predictions) / 2.5, 1)
 
         if self.model.getModelType() == 'total':
             predictions = self.model.predict(game_features)
@@ -97,7 +100,7 @@ class BettingRecommender:
                 if len(game_odds) == 0:
                     continue
                 total_distance = abs(row['predicted_total'] - game_odds['point'].values[0])
-                results.at[idx, 'confidence'] = np.minimum(total_distance / 20, 1)
+                results.at[idx, 'confidence'] = np.minimum(total_distance / 3, 1)
 
         return results
     
@@ -548,7 +551,12 @@ class BettingRecommender:
                         cols_to_keep = [col for col in existing_columns if col in data.columns]
                         data = data[cols_to_keep]
 
+                else:
+                    # File doesn't exist or is empty, just use the new data
+                    pass
+
                 data = pd.concat([existing_data, data], ignore_index=True)
+
                 if i in [0, 1]:
                     data.drop_duplicates(subset=['game_id', 'matchup', 'bet_side', 'home_odds', 'away_odds'], keep='last', inplace=True)
                 else:
@@ -659,6 +667,11 @@ class BettingRecommender:
             print(f"Error updating bet results: {e}")
             return self.config.STARTING_BANKROLL
         
+        # Use unified bankroll if enabled
+        if getattr(self.config, 'USE_UNIFIED_BANKROLL', False):
+            return UnifiedBankroll.getUnifiedBankroll()
+        
+        # Otherwise use sport-specific bankroll
         if archive:
             h2h_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG
             spread_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG

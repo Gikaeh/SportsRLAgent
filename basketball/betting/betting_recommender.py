@@ -1,4 +1,5 @@
 from os import path
+import sys
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -10,6 +11,8 @@ from betting.betting_config import BettingConfig
 from data_pipeline.odd_scraping import BasketballOddScraping
 from data_pipeline.prepare_data import NBATrainingDataPreparer
 import glob
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from unified_bankroll import UnifiedBankroll
 
 class BettingRecommender:
     def __init__(self, model_path=None, config=None):
@@ -668,6 +671,11 @@ class BettingRecommender:
             print(f"Error updating bet results: {e}")
             return self.config.STARTING_BANKROLL
         
+        # Use unified bankroll if enabled
+        if getattr(self.config, 'USE_UNIFIED_BANKROLL', False):
+            return UnifiedBankroll.getUnifiedBankroll()
+        
+        # Otherwise use sport-specific bankroll
         if archive:
             h2h_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG
             spread_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG

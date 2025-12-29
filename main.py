@@ -3,6 +3,7 @@ import json
 import sys
 from pathlib import Path
 from datetime import datetime
+from unified_bankroll import UnifiedBankroll
 
 class UnifiedBettingSystem:
     def __init__(self):
@@ -10,60 +11,8 @@ class UnifiedBettingSystem:
         self.unified_bankroll = self.calculateUnifiedBankroll()
         
     def calculateUnifiedBankroll(self):
-        """Calculate unified bankroll across all sports"""
-        # Get basketball bankroll
-        basketball_bankroll = 80.0  # Default
-        try:
-            result = subprocess.run(
-                [sys.executable, '-c', 
-                 "import sys; sys.path.insert(0, 'basketball'); "
-                 "from basketball.betting.betting_recommender import BettingRecommender; "
-                 "r = BettingRecommender(model_path='./models/basketball_h2h_model.json'); "
-                 "print(r.getCurrentBankroll())"],
-                cwd=str(self.base_path),
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
-            if result.returncode == 0:
-                # Get last line which should be the bankroll value
-                lines = result.stdout.strip().split('\n')
-                basketball_bankroll = float(lines[-1])
-        except Exception as e:
-            print(f"Error getting basketball bankroll: {e}")
-        
-        # Get hockey bankroll
-        hockey_bankroll = 80.0  # Default
-        try:
-            result = subprocess.run(
-                [sys.executable, '-c',
-                 "import sys; sys.path.insert(0, 'hockey'); "
-                 "from hockey.betting.betting_recommender import BettingRecommender; "
-                 "r = BettingRecommender(model_path='./models/hockey_h2h_model.json'); "
-                 "print(r.getCurrentBankroll())"],
-                cwd=str(self.base_path),
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
-            if result.returncode == 0:
-                # Get last line which should be the bankroll value
-                lines = result.stdout.strip().split('\n')
-                hockey_bankroll = float(lines[-1])
-        except Exception as e:
-            print(f"Error getting hockey bankroll: {e}")
-        
-        unified = max(basketball_bankroll, hockey_bankroll, 80.0)
-        
-        print(f"\n{'='*80}")
-        print("UNIFIED BANKROLL CALCULATION")
-        print(f"{'='*80}")
-        print(f"Basketball Bankroll: ${basketball_bankroll:,.2f}")
-        print(f"Hockey Bankroll: ${hockey_bankroll:,.2f}")
-        print(f"Unified Bankroll: ${unified:,.2f}")
-        print(f"{'='*80}\n")
-        
-        return unified
+        """Calculate unified bankroll across all sports using the UnifiedBankroll class"""
+        return UnifiedBankroll.displayBankrollBreakdown()
     
     def getAllRecommendations(self, sport_choices):
         """Get recommendations from all selected sports using subprocess"""
@@ -110,8 +59,8 @@ class UnifiedBettingSystem:
                     if result.stdout:
                         print("STDOUT:", result.stdout[:500])
                     
-            except subprocess.TimeoutExpired:
-                print(f"Timeout getting {sport} recommendations (>300s)")
+            # except subprocess.TimeoutExpired:
+            #     print(f"Timeout getting {sport} recommendations (>300s)")
             except Exception as e:
                 print(f"Error: {e}")
                 import traceback
@@ -173,33 +122,43 @@ class UnifiedBettingSystem:
         print("="*80)
         
         for i, rec in enumerate(recommendations, 1):
-            print(f"\nRECOMMENDATION #{i} - {rec['sport'].upper()} {rec['type'].upper()}")
-            print(f"   Matchup: {rec['matchup']}")
-            
-            if rec['type'] == 'h2h':
-                print(f"   Bet: {rec['bet_team']} ({rec['bet_side'].upper()})")
-                print(f"   Odds: Home {rec['home_odds']:+d}, Away {rec['away_odds']:+d} (Book: {rec['book']})")
-                print(f"   Model Probability: Home {rec['home_model_prob']:.1%}, Away {rec['away_model_prob']:.1%}")
-                print(f"   Market Probability: {rec['market_prob']:.1%}")
-                print(f"   Edge: {rec['edge']:.1%}")
-            elif rec['type'] == 'spread':
-                print(f"   Bet: {rec['bet_team']} ({rec['bet_side'].upper()})")
-                print(f"   Home Spread: {rec['home_spread']:+.1f} @ {rec['home_odds']:+d} (Book: {rec['book']})")
-                print(f"   Away Spread: {rec['away_spread']:+.1f} @ {rec['away_odds']:+d} (Book: {rec['book']})")
-                print(f"   Predicted Margin: {rec['predicted_margin']:+.1f} points")
-                print(f"   Margin Advantage: {rec['margin_advantage']:.1f} points")
-                print(f"   Cover Probability: {rec['cover_prob']:.1%}")
-            elif rec['type'] == 'total':
-                print(f"   Bet: {rec['total_line']} points ({rec['bet_side'].upper()})")
-                print(f"   Over Odds: {rec['over_odds']:+d}, Under Odds: {rec['under_odds']:+d} (Book: {rec['book']})")
-                print(f"   Predicted Total: {rec['predicted_total']:.1f} points")
-                print(f"   Total Advantage: {rec['total_advantage']:.1f} points")
-                print(f"   Cover Probability: {rec['cover_prob']:.1%}")
-            
-            print(f"   Confidence: {rec['confidence']:.1%}")
-            print(f"   Recommended Bet: ${rec['bet_amount']:.2f} ({rec['bet_size_fraction']:.1%} of bankroll)")
-            print(f"   Potential Profit: ${rec['potential_profit']:.2f}")
-            print(f"   Reason: {rec['reason']}")
+            try:
+                # Convert odds to int (they may be strings like '-475' or '333')
+                home_odds = int(float(rec.get('home_odds', 0)))
+                away_odds = int(float(rec.get('away_odds', 0)))
+                
+                print(f"\nRECOMMENDATION #{i} - {rec['sport'].upper()} {rec['type'].upper()}")
+                print(f"   Matchup: {rec['matchup']}")
+                
+                if rec['type'] == 'h2h':
+                    print(f"   Bet: {rec['bet_team']} ({rec['bet_side'].upper()})")
+                    print(f"   Odds: Home {home_odds:+d}, Away {away_odds:+d} (Book: {rec['book']})")
+                    print(f"   Model Probability: Home {rec['home_model_prob']:.1%}, Away {rec['away_model_prob']:.1%}")
+                    print(f"   Market Probability: {rec['market_prob']:.1%}")
+                    print(f"   Edge: {rec['edge']:.1%}")
+                elif rec['type'] == 'spread':
+                    print(f"   Bet: {rec['bet_team']} ({rec['bet_side'].upper()})")
+                    print(f"   Home Spread: {rec['home_spread']:+.1f} @ {home_odds:+d} (Book: {rec['book']})")
+                    print(f"   Away Spread: {rec['away_spread']:+.1f} @ {away_odds:+d} (Book: {rec['book']})")
+                    print(f"   Predicted Margin: {rec['predicted_margin']:+.1f} points")
+                    print(f"   Margin Advantage: {rec['margin_advantage']:.1f} points")
+                    print(f"   Cover Probability: {rec['cover_prob']:.1%}")
+                elif rec['type'] == 'total':
+                    over_odds = int(float(rec.get('over_odds', 0)))
+                    under_odds = int(float(rec.get('under_odds', 0)))
+                    print(f"   Bet: {rec['total_line']} points ({rec['bet_side'].upper()})")
+                    print(f"   Over Odds: {over_odds:+d}, Under Odds: {under_odds:+d} (Book: {rec['book']})")
+                    print(f"   Predicted Total: {rec['predicted_total']:.1f} points")
+                    print(f"   Total Advantage: {rec['total_advantage']:.1f} points")
+                    print(f"   Cover Probability: {rec['cover_prob']:.1%}")
+                
+                print(f"   Confidence: {rec['confidence']:.1%}")
+                print(f"   Recommended Bet: ${rec['bet_amount']:.2f} ({rec['bet_size_fraction']:.1%} of bankroll)")
+                print(f"   Potential Profit: ${rec['potential_profit']:.2f}")
+                print(f"   Reason: {rec['reason']}")
+            except Exception as e:
+                print(f"   Error displaying recommendation: {e}")
+                print(f"   Raw data: {rec}")
         
         print("\n" + "="*80)
         print(f"TOTAL RISK: ${total_risk:.2f} ({total_risk/self.unified_bankroll:.1%} of bankroll)")
@@ -207,34 +166,130 @@ class UnifiedBettingSystem:
         print(f"NUMBER OF BETS: {len(recommendations)}")
         print("="*80)
         
-        save = input("\nWould you like to save any of these recommendations? (y/n): ")
-        if save.lower() == 'y':
-            games_to_save = input("Which ones would you like to save? (comma separated list of numbers or 0 for all): ")
-            self.saveRecommendations(recommendations, games_to_save)
+        # Flush stdout to ensure all output is displayed before input prompt
+        sys.stdout.flush()
+        
+        try:
+            save = input("\nWould you like to save any of these recommendations? (y/n): ").strip().lower()
+            if save == 'y':
+                games_to_save = input("Which ones would you like to save? (comma separated list of numbers or 0 for all): ").strip()
+                if games_to_save:
+                    self.saveRecommendations(recommendations, games_to_save)
+                else:
+                    print("No games selected.")
+            elif save == 'n':
+                print("Recommendations not saved.")
+                self.saveRecommendations(recommendations)
+            else:
+                print(f"Unrecognized input '{save}', no action taken.")
+        except EOFError:
+            print("\nNo input received, skipping save.")
+        except KeyboardInterrupt:
+            print("\nCancelled.")
     
-    def saveRecommendations(self, recommendations, numbers_str):
-        """Save recommendations using subprocess calls"""
-        if numbers_str != '0':
+    def saveRecommendations(self, recommendations, numbers_str=None):
+        """Save selected recommendations to active log and all to archive"""
+        # Archive all recommendations first
+        basketball_recs_archive = [r for r in recommendations if r['sport'] == 'basketball']
+        hockey_recs_archive = [r for r in recommendations if r['sport'] == 'hockey']
+        
+        # Save all to archive
+        if basketball_recs_archive:
+            print(f"Archiving {len(basketball_recs_archive)} basketball recommendations...")
+            self._logRecommendationsToFile(basketball_recs_archive, 'basketball', archive=True)
+        if hockey_recs_archive:
+            print(f"Archiving {len(hockey_recs_archive)} hockey recommendations...")
+            self._logRecommendationsToFile(hockey_recs_archive, 'hockey', archive=True)
+        
+        # Parse selected bets to save to active log
+        if numbers_str is None:
+            print("Recommendations archived (no active bets selected).")
+            return
+        
+        if numbers_str == '0':
+            # Save all to active
+            selected_recs = recommendations
+        else:
             try:
                 numbers = [int(n.strip()) for n in numbers_str.split(',')]
-                recommendations = [recommendations[i-1] for i in numbers if 0 < i <= len(recommendations)]
+                selected_recs = [recommendations[i-1] for i in numbers if 0 < i <= len(recommendations)]
             except:
-                print("Invalid input")
+                print("Invalid input for bet selection")
                 return
         
-        # Separate by sport
-        basketball_recs = [r for r in recommendations if r['sport'] == 'basketball']
-        hockey_recs = [r for r in recommendations if r['sport'] == 'hockey']
+        if not selected_recs:
+            print("No bets selected to save.")
+            return
         
-        # Save basketball recommendations
+        # Separate selected by sport
+        basketball_recs = [r for r in selected_recs if r['sport'] == 'basketball']
+        hockey_recs = [r for r in selected_recs if r['sport'] == 'hockey']
+        
+        # Save selected to active logs
         if basketball_recs:
-            print(f"Saving {len(basketball_recs)} basketball recommendations...")
-            # Would need to implement save logic via subprocess
-        
-        # Save hockey recommendations
+            print(f"Saving {len(basketball_recs)} basketball bets to active log...")
+            self._logRecommendationsToFile(basketball_recs, 'basketball')
         if hockey_recs:
-            print(f"Saving {len(hockey_recs)} hockey recommendations...")
-            # Would need to implement save logic via subprocess
+            print(f"Saving {len(hockey_recs)} hockey bets to active log...")
+            self._logRecommendationsToFile(hockey_recs, 'hockey')
+        
+        print("Recommendations saved successfully!")
+    
+    def _logRecommendationsToFile(self, recommendations, sport, archive=False):
+        """Log recommendations to CSV files by bet type"""
+        import pandas as pd
+        
+        if not recommendations:
+            return
+        
+        if archive:
+            log_dir = Path(f'./logs/{sport}/betting/archive')
+        else:
+            log_dir = Path(f'./logs/{sport}/betting')
+        log_dir.mkdir(parents=True, exist_ok=True)
+        
+        log_files = {
+            'h2h': log_dir / 'h2h_bets.csv',
+            'spread': log_dir / 'spread_bets.csv',
+            'total': log_dir / 'total_bets.csv'
+        }
+        
+        df = pd.DataFrame(recommendations)
+        df['timestamp'] = datetime.now()
+        
+        # Group by bet type
+        for bet_type, log_file in log_files.items():
+            type_recs = df[df['type'] == bet_type].copy()
+            if type_recs.empty:
+                continue
+            
+            # If file exists, merge with existing data
+            if log_file.exists() and log_file.stat().st_size > 0:
+                existing_data = pd.read_csv(log_file)
+                
+                # Keep only columns that exist in the file
+                with open(log_file, 'r') as f:
+                    first_line = f.readline().strip()
+                    existing_columns = first_line.split(',')
+                    cols_to_keep = [col for col in existing_columns if col in type_recs.columns]
+                    type_recs = type_recs[cols_to_keep]
+                
+                # Merge and deduplicate
+                type_recs = pd.concat([existing_data, type_recs], ignore_index=True)
+                
+                if bet_type in ['h2h', 'spread']:
+                    type_recs.drop_duplicates(
+                        subset=['game_id', 'matchup', 'bet_side', 'home_odds', 'away_odds'], 
+                        keep='last', inplace=True
+                    )
+                else:  # total
+                    type_recs.drop_duplicates(
+                        subset=['game_id', 'matchup', 'bet_side', 'total_line', 'over_odds', 'under_odds'], 
+                        keep='last', inplace=True
+                    )
+            
+            type_recs.to_csv(log_file, mode='w', header=True, index=False)
+            print(f"  Saved {len(df[df['type'] == bet_type])} {bet_type} bets to {log_file}")
 
 def main():
     print("\n" + "="*80)
@@ -246,6 +301,7 @@ def main():
         ("Unified Betting Recommendations (All Sports)", unifiedBettingRecommendations),
         ("Basketball Only", basketballOnly),
         ("Hockey Only", hockeyOnly),
+        ("View Unified Bankroll Breakdown", viewBankrollBreakdown),
     ]
     
     for i, (name, _) in enumerate(options, 1):
@@ -307,6 +363,10 @@ def basketballOnly():
 def hockeyOnly():
     """Run hockey betting system only"""
     subprocess.run([sys.executable, 'hockey/main.py'], cwd=str(Path(__file__).parent))
+
+def viewBankrollBreakdown():
+    """Display unified bankroll breakdown across all sports"""
+    UnifiedBankroll.displayBankrollBreakdown()
 
 if __name__ == "__main__":
     main()

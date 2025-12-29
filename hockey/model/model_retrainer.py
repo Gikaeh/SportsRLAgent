@@ -11,18 +11,21 @@ from data_pipeline.hockey_data import HockeyData
 import json
 
 class ModelRetrainer:
-    def __init__(self, model_path='./models/hockey_h2h_model.json', data_dir='./data/hockey', metadata_path='./models/metadata/retraining_h2h_metadata.json'):
+    def __init__(self, model_path='./models/hockey_h2h_model.json', data_dir='./data/hockey', metadata_path=None):
         self.model_path = Path(model_path)
         self.data_dir = Path(data_dir)
         self.training_data_dir = Path('./data/training_data/hockey')
         self.preparer = NHLTrainingDataPreparer(data_dir=str(data_dir))
         self.hockey_data = HockeyData()
 
-        if str(model_path).split('_')[1] == 'h2h':
+        # Determine model type from path
+        model_type = str(model_path).split('_')[1]  # h2h, spread, or total
+        
+        if model_type == 'h2h':
             self.model = HockeyH2HModel()
-        elif str(model_path).split('_')[1] == 'spread':
+        elif model_type == 'spread':
             self.model = HockeySpreadModel()
-        elif str(model_path).split('_')[1] == 'total':
+        elif model_type == 'total':
             self.model = HockeyTotalModel()
 
         if self.model_path.exists():
@@ -39,7 +42,11 @@ class ModelRetrainer:
             'keep_recent_seasons': None,
         }
         
+        # Auto-derive metadata path from model type if not provided
+        if metadata_path is None:
+            metadata_path = f'./models/metadata/hockey/retraining_{model_type}_metadata.json'
         self.metadata_path = Path(metadata_path)
+        self.metadata_path.parent.mkdir(parents=True, exist_ok=True)
         self.metadata = self.loadMetadata()
     
     def loadMetadata(self):
@@ -99,7 +106,7 @@ class ModelRetrainer:
         print("PREPARING TRAINING DATA")
         print("="*60)
         
-        training_data = self.preparer.prepareAllSeasons()
+        training_data = self.preparer.prepareMultipleSeasons()
         
         if training_data is None or training_data.empty:
             print("No training data available")
@@ -135,7 +142,7 @@ class ModelRetrainer:
         if self.model.getModelType() == 'h2h':
             leakage_cols = [
                 'game_id', 'date', 'home_score', 'away_score', 'total_score',
-                'season', 'home_team', 'away_team', 'point_diff', 
+                'season', 'home_team', 'away_team', 'goal_diff', 
             ] + self.model.getLeakageColumns()
 
             train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
@@ -155,12 +162,12 @@ class ModelRetrainer:
             val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
             test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
             
-            X_train, y_train = train_data.drop('point_diff', axis=1), train_data['point_diff']
-            X_val, y_val = val_data.drop('point_diff', axis=1), val_data['point_diff']
-            X_test, y_test = test_data.drop('point_diff', axis=1), test_data['point_diff']
+            X_train, y_train = train_data.drop('goal_diff', axis=1), train_data['goal_diff']
+            X_val, y_val = val_data.drop('goal_diff', axis=1), val_data['goal_diff']
+            X_test, y_test = test_data.drop('goal_diff', axis=1), test_data['goal_diff']
         elif self.model.getModelType() == 'total':
             leakage_cols = [
-                'game_id', 'date', 'home_score', 'away_score', 'point_diff',
+                'game_id', 'date', 'home_score', 'away_score', 'goal_diff',
                 'season', 'home_team', 'away_team', 'home_won',
             ] + self.model.getLeakageColumns()
 

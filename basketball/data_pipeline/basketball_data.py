@@ -5,12 +5,14 @@ import time
 from tqdm import tqdm
 from pathlib import Path
 import datetime
-from requests.exceptions import ReadTimeout, ConnectionError, Timeout
-import random
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from shared.base_data_fetcher import BaseDataFetcher
 
-class BasketballData:
+class BasketballData(BaseDataFetcher):
     def __init__(self, data_dir='././data/basketball', max_retries=3, base_delay=2):
-        self.data_dir = Path(data_dir)
+        super().__init__(data_dir, max_retries, base_delay)
+        
         self.teams_to_keep = [
             'Atlanta Hawks', 'Boston Celtics', 'Cleveland Cavaliers', 'New Orleans Pelicans', 'Chicago Bulls', 'Dallas Mavericks', 'Denver Nuggets', 'Golden State Warriors', 'Houston Rockets', 'LA Clippers',
             'Los Angeles Lakers', 'Miami Heat', 'Milwaukee Bucks', 'Minnesota Timberwolves', 'Brooklyn Nets', 'New York Knicks', 'Orlando Magic', 'Indiana Pacers', 'Philadelphia 76ers', 'Phoenix Suns',
@@ -18,11 +20,6 @@ class BasketballData:
             'New Jersey Nets', 'Charlotte Bobcats', 'Vancouver Grizzlies', 'New Orleans Hornets', ' Seattle SuperSonics', 'New Orleans/Oklahoma City Hornets', 'Los Angeles Clippers'
         ]
         self.end_year = datetime.date.today().year if datetime.date.today().month >= 7 else datetime.date.today().year - 1
-        self.game_files = [f.stem.replace('_game_stats', '') for f in self.data_dir.glob('game_data/*_game_stats.csv')]
-        self.team_files = [f.stem.replace('_team_stats', '') for f in self.data_dir.glob('team_data/*_team_stats.csv')]
-        self.player_files = [f.stem.replace('_player_stats', '') for f in self.data_dir.glob('player_data/*_player_stats.csv')]
-        self.max_retries = max_retries
-        self.base_delay = base_delay
     
     def getAllSeasonData(self, season=None):
         if season == None:
@@ -41,22 +38,16 @@ class BasketballData:
             self.getPlayerGames(season)
 
                     
-    def retryApiCall(self, func, *args, **kwargs):
-        for attempt in range(self.max_retries):
-            try:
-                return func(*args, **kwargs)
-            except (ReadTimeout, ConnectionError, Timeout) as e:
-                if attempt < self.max_retries - 1:
-                    delay = self.base_delay * (2 ** attempt) + random.uniform(0, 1)
-                    print(f"\nAPI timeout/connection error (attempt {attempt + 1}/{self.max_retries})")
-                    print(f"Retrying in {delay:.1f} seconds...")
-                    time.sleep(delay)
-                else:
-                    print(f"\nFailed after {self.max_retries} attempts")
-                    raise
-            except Exception as e:
-                print(f"\nUnexpected error: {type(e).__name__}: {e}")
-                raise
+    def getCurrentSeason(self):
+        """Get the current NBA season string."""
+        today = datetime.date.today()
+        year = today.year
+        month = today.month
+        
+        if month < 7:
+            return f"{year-1}-{str(year)[-2:]}"
+        else:
+            return f"{year}-{str(year+1)[-2:]}"
     
     def getSeasonGames(self, season):
         print(f"\nFetching game results for {season}...")

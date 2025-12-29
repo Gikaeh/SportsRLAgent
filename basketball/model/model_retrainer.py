@@ -11,18 +11,21 @@ from data_pipeline.basketball_data import BasketballData
 import json
 
 class ModelRetrainer:
-    def __init__(self, model_path='./models/basketball_h2h_model.json', data_dir='./data/basketball', metadata_path='./models/metadata/basketball/retraining_h2h_metadata.json'):
+    def __init__(self, model_path='./models/basketball_h2h_model.json', data_dir='./data/basketball', metadata_path=None):
         self.model_path = Path(model_path)
         self.data_dir = Path(data_dir)
         self.training_data_dir = Path('./data/training_data/basketball/phase1')
         self.preparer = NBATrainingDataPreparer(data_dir=str(data_dir))
         self.basketball_data = BasketballData()
 
-        if str(model_path).split('_')[1] == 'h2h':
+        # Determine model type from path
+        model_type = str(model_path).split('_')[1]  # h2h, spread, or total
+        
+        if model_type == 'h2h':
             self.model = BasketballH2HModel()
-        elif str(model_path).split('_')[1] == 'spread':
+        elif model_type == 'spread':
             self.model = BasketballSpreadModel()
-        elif str(model_path).split('_')[1] == 'total':
+        elif model_type == 'total':
             self.model = BasketballTotalModel()
 
         if self.model_path.exists():
@@ -39,7 +42,11 @@ class ModelRetrainer:
             'keep_recent_seasons': None,
         }
         
+        # Auto-derive metadata path from model type if not provided
+        if metadata_path is None:
+            metadata_path = f'./models/metadata/basketball/retraining_{model_type}_metadata.json'
         self.metadata_path = Path(metadata_path)
+        self.metadata_path.parent.mkdir(parents=True, exist_ok=True)
         self.metadata = self.loadMetadata()
     
     def loadMetadata(self):

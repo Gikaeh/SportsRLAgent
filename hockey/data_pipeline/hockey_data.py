@@ -1,22 +1,18 @@
-import requests
 import pandas as pd
 from pathlib import Path
 from tqdm import tqdm
 import time
 from datetime import datetime, timedelta
-import json
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from shared.base_data_fetcher import BaseDataFetcher
 
-class HockeyData:
-    def __init__(self, data_dir='././data/hockey'):
-        self.data_dir = Path(data_dir)
+class HockeyData(BaseDataFetcher):
+    def __init__(self, data_dir='././data/hockey', max_retries=3, base_delay=2):
+        super().__init__(data_dir, max_retries, base_delay)
         
-        # Using NHL API (the old stats API is deprecated/down)
+        # Using NHL API
         self.base_api = "https://api-web.nhle.com/v1"
-        
-        # Track existing files (like basketball_data does)
-        self.game_files = [f.stem.replace('_game_stats', '') for f in (self.data_dir / 'game_data').glob('*_game_stats.csv')]
-        self.team_files = [f.stem.replace('_team_stats', '') for f in (self.data_dir / 'team_data').glob('*_team_stats.csv')]
-        self.player_files = [f.stem.replace('_player_stats', '') for f in (self.data_dir / 'player_data').glob('*_player_stats.csv')]
 
         # NHL team IDs (for stats API)
         self.team_ids = {
@@ -35,22 +31,6 @@ class HockeyData:
     
     def convertSeasonToId(self, season_year):
         return f"{season_year}-{season_year + 1}"
-    
-    def makeRequest(self, url, max_retries=3):
-        for attempt in range(max_retries):
-            try:
-                response = requests.get(url, timeout=10)
-                if response.status_code == 200:
-                    return response.json()
-                elif response.status_code == 404:
-                    return None
-                time.sleep(1)
-            except Exception as e:
-                if attempt == max_retries - 1:
-                    print(f"Error after {max_retries} attempts: {e}")
-                    return None
-                time.sleep(2 ** attempt)
-        return None
     
     def getSeasonSchedule(self, season_year):
         season_id = self.convertSeasonToId(season_year)
@@ -431,6 +411,16 @@ class HockeyData:
         else:
             print(f"No team stats found for {season_str} or set to false")
     
+    def getAllSeasonData(self, season=None):
+        """Fetch all data for a season or all seasons. Implements base class method."""
+        if season is None:
+            self.scrapeAllSeasons()
+        else:
+            # Extract year from season string like "2024-2025"
+            year = int(season.split('-')[0])
+            self.scrapeSeasonGames(year)
+            self.scrapeSeasonData(year)
+    
     def scrapeAllSeasons(self, start_year=2010, end_year=None):
         if end_year is None:
             end_year = self.end_year
@@ -522,6 +512,3 @@ class HockeyData:
             return f"{now.year}-{now.year + 1}"
         else:
             return f"{now.year - 1}-{now.year}"
-
-data = HockeyData()
-data.getUpcomingGames()

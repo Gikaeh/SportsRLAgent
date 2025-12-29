@@ -3,7 +3,7 @@ from pathlib import Path
 from datetime import datetime
 
 class UnifiedBankroll:
-    STARTING_BANKROLL = 80.0  # Unified starting bankroll in dollars
+    STARTING_BANKROLL = 100.0  # Unified starting bankroll in dollars
     
     # Log directories for all sports
     SPORT_LOG_DIRS = {

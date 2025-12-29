@@ -513,6 +513,3 @@ class HockeyData(BaseDataFetcher):
             return f"{now.year}-{now.year + 1}"
         else:
             return f"{now.year - 1}-{now.year}"
-
-data = HockeyData()
-data.scrapeSeasonGames(2025)

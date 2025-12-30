@@ -325,6 +325,7 @@ class HockeyInjuryData:
                 'toi_lost': 0.0,
                 'num_injured': 0,
                 'star_out': 0,
+                'star_name': '',
                 'rotation_players_out': 0,
                 'injury_severity': 0.0
             }
@@ -340,6 +341,7 @@ class HockeyInjuryData:
                 'toi_lost': 0.0,
                 'num_injured': 0,
                 'star_out': 0,
+                'star_name': '',
                 'rotation_players_out': 0,
                 'injury_severity': 0.0
             }
@@ -349,7 +351,17 @@ class HockeyInjuryData:
         assists_lost = injured_players['assists_rolling'].sum() if 'assists_rolling' in injured_players.columns else 0
         toi_lost = injured_players['toi_rolling'].sum() if 'toi_rolling' in injured_players.columns else 0
         
-        star_out = 1 if any(injured_players['toi_rolling'] >= 18) else 0  # 18+ min TOI = star player
+        # Star out = one of team's top 3 points players is injured
+        star_out = 0
+        star_name = ''
+        if 'points_rolling' in team_players.columns:
+            top_3_points = team_players.nlargest(3, 'points_rolling')['PLAYER_ID'].tolist()
+            injured_stars = injured_players[injured_players['PLAYER_ID'].isin(top_3_points)]
+            if not injured_stars.empty:
+                star_out = 1
+                if 'PLAYER_NAME' in injured_stars.columns:
+                    star_name = injured_stars.iloc[0]['PLAYER_NAME']
+        
         rotation_players_out = len(injured_players[injured_players['toi_rolling'] >= 12])  # 12+ min = rotation player
         
         injury_severity = (points_lost / 50) + (toi_lost / 100) + (star_out * 0.3)
@@ -362,6 +374,7 @@ class HockeyInjuryData:
             'toi_lost': round(toi_lost, 1),
             'num_injured': len(injured_players),
             'star_out': star_out,
+            'star_name': star_name,
             'rotation_players_out': rotation_players_out,
             'injury_severity': round(injury_severity, 3)
         }
@@ -422,11 +435,11 @@ class HockeyInjuryData:
             summary.append(f"INJURY IMPACT:")
             
             if home_impact['num_injured'] > 0:
-                star_indicator = " ⚠️ STAR OUT" if home_impact['star_out'] else ""
+                star_indicator = f" ⚠️ STAR OUT ({home_impact['star_name']})" if home_impact['star_out'] and home_impact['star_name'] else (" ⚠️ STAR OUT" if home_impact['star_out'] else "")
                 summary.append(f"  {home_team} (Home): {home_impact['num_injured']} out, -{home_impact['points_lost']:.1f} PTS{star_indicator}")
             
             if away_impact['num_injured'] > 0:
-                star_indicator = " ⚠️ STAR OUT" if away_impact['star_out'] else ""
+                star_indicator = f" ⚠️ STAR OUT ({away_impact['star_name']})" if away_impact['star_out'] and away_impact['star_name'] else (" ⚠️ STAR OUT" if away_impact['star_out'] else "")
                 summary.append(f"  {away_team} (Away): {away_impact['num_injured']} out, -{away_impact['points_lost']:.1f} PTS{star_indicator}")
             
             if home_impact['injury_severity'] > away_impact['injury_severity']:

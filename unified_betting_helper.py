@@ -14,8 +14,19 @@ def get_sport_recommendations(sport, model_types=['h2h', 'spread', 'total']):
         sys.path.insert(0, str(Path(__file__).parent / 'basketball'))
         from basketball.data_pipeline.live_data_updater import LiveDataUpdater
         from basketball.betting.betting_recommender import BettingRecommender
+        from basketball.data_pipeline.injury_data import InjuryData
+        from basketball.data_pipeline.prepare_data import NBATrainingDataPreparer
         
         updater = LiveDataUpdater()
+        injury_data = InjuryData()
+        preparer = NBATrainingDataPreparer()
+        
+        # Get latest player stats for injury summary
+        try:
+            latest_player_stats = preparer.precomputePlayerRollingAverages(preparer.getCurrentSeason())
+            latest_player_stats = latest_player_stats.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
+        except:
+            latest_player_stats = None
         
         try:
             prediction_data_h2h, prediction_data_spread, prediction_data_total, game_info = updater.getPredictionReadyData(model_type='all')
@@ -31,6 +42,12 @@ def get_sport_recommendations(sport, model_types=['h2h', 'spread', 'total']):
                     recs = recommender.makeBettingRecommendations(predictions=predictions)
                     for rec in recs:
                         rec['sport'] = 'basketball'
+                        # Add injury summary
+                        if latest_player_stats is not None:
+                            matchup_parts = rec['matchup'].split(' @ ')
+                            if len(matchup_parts) == 2:
+                                away_team, home_team = matchup_parts
+                                rec['injury_summary'] = injury_data.getInjurySummaryForGame(home_team, away_team, latest_player_stats)
                     recommendations.extend(recs)
                 except Exception as e:
                     print(f"Error getting basketball H2H: {e}")
@@ -43,6 +60,12 @@ def get_sport_recommendations(sport, model_types=['h2h', 'spread', 'total']):
                     recs = recommender.makeBettingRecommendations(predictions=predictions)
                     for rec in recs:
                         rec['sport'] = 'basketball'
+                        # Add injury summary
+                        if latest_player_stats is not None:
+                            matchup_parts = rec['matchup'].split(' @ ')
+                            if len(matchup_parts) == 2:
+                                away_team, home_team = matchup_parts
+                                rec['injury_summary'] = injury_data.getInjurySummaryForGame(home_team, away_team, latest_player_stats)
                     recommendations.extend(recs)
                 except Exception as e:
                     print(f"Error getting basketball spread: {e}")
@@ -56,8 +79,19 @@ def get_sport_recommendations(sport, model_types=['h2h', 'spread', 'total']):
         sys.path.insert(0, str(Path(__file__).parent / 'hockey'))
         from hockey.data_pipeline.live_data_updater import HockeyLiveDataUpdater
         from hockey.betting.betting_recommender import BettingRecommender
+        from hockey.data_pipeline.injury_data import HockeyInjuryData
+        from hockey.data_pipeline.prepare_data import NHLTrainingDataPreparer
         
         updater = HockeyLiveDataUpdater()
+        injury_data = HockeyInjuryData()
+        preparer = NHLTrainingDataPreparer()
+        
+        # Get latest skater stats for injury summary
+        try:
+            skater_df, _ = preparer.precomputePlayerRollingAverages(preparer.getCurrentSeason())
+            latest_skater_stats = skater_df.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
+        except:
+            latest_skater_stats = None
         
         try:
             prediction_data_h2h, prediction_data_spread, prediction_data_total, game_info = updater.getPredictionReadyData(model_type='all')
@@ -73,6 +107,12 @@ def get_sport_recommendations(sport, model_types=['h2h', 'spread', 'total']):
                     recs = recommender.makeBettingRecommendations(predictions=predictions)
                     for rec in recs:
                         rec['sport'] = 'hockey'
+                        # Add injury summary
+                        if latest_skater_stats is not None:
+                            matchup_parts = rec['matchup'].split(' @ ')
+                            if len(matchup_parts) == 2:
+                                away_team, home_team = matchup_parts
+                                rec['injury_summary'] = injury_data.getInjurySummaryForGame(home_team, away_team, latest_skater_stats)
                     recommendations.extend(recs)
                 except Exception as e:
                     print(f"Error getting hockey H2H: {e}")
@@ -85,6 +125,12 @@ def get_sport_recommendations(sport, model_types=['h2h', 'spread', 'total']):
                     recs = recommender.makeBettingRecommendations(predictions=predictions)
                     for rec in recs:
                         rec['sport'] = 'hockey'
+                        # Add injury summary
+                        if latest_skater_stats is not None:
+                            matchup_parts = rec['matchup'].split(' @ ')
+                            if len(matchup_parts) == 2:
+                                away_team, home_team = matchup_parts
+                                rec['injury_summary'] = injury_data.getInjurySummaryForGame(home_team, away_team, latest_skater_stats)
                     recommendations.extend(recs)
                 except Exception as e:
                     print(f"Error getting hockey spread: {e}")
@@ -97,6 +143,12 @@ def get_sport_recommendations(sport, model_types=['h2h', 'spread', 'total']):
                     recs = recommender.makeBettingRecommendations(predictions=predictions)
                     for rec in recs:
                         rec['sport'] = 'hockey'
+                        # Add injury summary
+                        if latest_skater_stats is not None:
+                            matchup_parts = rec['matchup'].split(' @ ')
+                            if len(matchup_parts) == 2:
+                                away_team, home_team = matchup_parts
+                                rec['injury_summary'] = injury_data.getInjurySummaryForGame(home_team, away_team, latest_skater_stats)
                     recommendations.extend(recs)
                 except Exception as e:
                     print(f"Error getting hockey total: {e}")

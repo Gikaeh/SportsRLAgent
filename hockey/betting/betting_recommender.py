@@ -52,7 +52,7 @@ class BettingRecommender:
         else:
             return 100 * (1 - probability) / probability
     
-    def kellyCriterion(self, win_prob, american_odds, confidence):
+    def kellyCriterion(self, win_prob, american_odds, confidence, is_underdog_h2h=False):
         if american_odds > 0:
             decimal_odds = (american_odds / 100) + 1
         else:
@@ -61,6 +61,11 @@ class BettingRecommender:
         kelly_fraction = (win_prob * decimal_odds - 1) / (decimal_odds - 1)
         
         kelly_fraction = max(0, kelly_fraction * self.config.KELLY_FRACTION)
+        
+        # Apply additional reduction for H2H underdog bets
+        if is_underdog_h2h:
+            underdog_multiplier = getattr(self.config, 'UNDERDOG_KELLY_MULTIPLIER', 0.3)
+            kelly_fraction = kelly_fraction * underdog_multiplier
         
         return min(kelly_fraction, self.config.MAX_BET_SIZE_PCT)
     
@@ -115,19 +120,6 @@ class BettingRecommender:
             return self.makeTotalRecommendations(predictions)
         
     
-    def adjustConfidenceForQuestionable(self, base_confidence, home_team, away_team):
-        """Reduce confidence when teams have questionable players (lineup uncertainty)."""
-        home_questionable = self.injury_data.getQuestionablePlayers(home_team)
-        away_questionable = self.injury_data.getQuestionablePlayers(away_team)
-        
-        adjustment = 1.0
-        if home_questionable:
-            adjustment *= (0.95 ** len(home_questionable))
-        if away_questionable:
-            adjustment *= (0.95 ** len(away_questionable))
-        
-        return base_confidence * adjustment
-    
     def makeH2HRecommendations(self, predictions):
         recommendations = []
         data_file_path = sorted(glob.glob(f'./data/hockey/odds_data/h2h_*.csv'))[-1]
@@ -153,12 +145,13 @@ class BettingRecommender:
                 home_edge = self.calculateEdge(home_prob, home_odds)
                 away_edge = self.calculateEdge(away_prob, away_odds)
                 
-                # Adjust confidence for questionable players (lineup uncertainty)
-                adjusted_confidence = self.adjustConfidenceForQuestionable(game['confidence'], home_team, away_team)
+                # Determine if this is an underdog bet (positive odds = underdog)
+                underdog_threshold = getattr(self.config, 'UNDERDOG_ODDS_THRESHOLD', 150)
+                home_is_underdog = home_odds > underdog_threshold
+                away_is_underdog = away_odds > underdog_threshold
                 
-                min_confidence = getattr(self.config, 'MIN_CONFIDENCE', 0.0)
-                if home_edge >= self.config.MIN_EDGE_H2H and adjusted_confidence >= min_confidence:
-                    bet_size_fraction = self.kellyCriterion(home_prob, home_odds, game['confidence'])
+                if home_edge >= self.config.MIN_EDGE_H2H:
+                    bet_size_fraction = self.kellyCriterion(home_prob, home_odds, game['confidence'], is_underdog_h2h=home_is_underdog)
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
                     if bet_amount < 1:
                         continue
@@ -185,8 +178,8 @@ class BettingRecommender:
                         'reason': f"Probability: {home_prob:.1%}, Edge: {home_edge:.1%}, Confidence: {game['confidence']:.1%}"
                     })
                 
-                if away_edge >= self.config.MIN_EDGE_H2H and adjusted_confidence >= min_confidence:
-                    bet_size_fraction = self.kellyCriterion(away_prob, away_odds, game['confidence'])
+                if away_edge >= self.config.MIN_EDGE_H2H:
+                    bet_size_fraction = self.kellyCriterion(away_prob, away_odds, game['confidence'], is_underdog_h2h=away_is_underdog)
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
                     if bet_amount < 1:
                         continue
@@ -258,7 +251,7 @@ class BettingRecommender:
             adjusted_confidence = self.adjustConfidenceForQuestionable(game['confidence'], home_team, away_team)
             
             min_confidence = getattr(self.config, 'MIN_CONFIDENCE', 0.0)
-            if home_margin_advantage >= self.config.MIN_EDGE_SPREAD and adjusted_confidence >= min_confidence:
+            if home_margin_advantage >= self.config.MIN_EDGE_SPREAD and adjusted_confidence >= 0:
                 cover_prob = self.marginToProbability(home_margin_advantage)
 
                 if cover_prob >= self.config.MIN_PROBABILITY:
@@ -294,7 +287,7 @@ class BettingRecommender:
                         'reason': f"Predicted Margin: {predicted_margin:.1f}, Home Spread: {home_spread:.1f}, Home Odds: {home_odds}, Edge: {home_margin_advantage:.1f}, Cover Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
                     })
             
-            if away_margin_advantage >= self.config.MIN_EDGE_SPREAD and adjusted_confidence >= min_confidence:
+            if away_margin_advantage >= self.config.MIN_EDGE_SPREAD and adjusted_confidence >= 0:
                 cover_prob = self.marginToProbability(away_margin_advantage)
 
                 if cover_prob >= self.config.MIN_PROBABILITY:
@@ -359,11 +352,7 @@ class BettingRecommender:
             
             total_advantage = abs(predicted_total - total_line)
             
-            # Adjust confidence for questionable players (lineup uncertainty)
-            adjusted_confidence = self.adjustConfidenceForQuestionable(game['confidence'], home_team, away_team)
-            
-            min_confidence = getattr(self.config, 'MIN_CONFIDENCE', 0.0)
-            if predicted_total > total_line and total_advantage >= self.config.MIN_TOTAL_EDGE and adjusted_confidence >= min_confidence:
+            if predicted_total > total_line and total_advantage >= self.config.MIN_TOTAL_EDGE:
                 cover_prob = self.totalToProbability(total_advantage)
                 
                 if cover_prob >= self.config.MIN_PROBABILITY:
@@ -395,7 +384,7 @@ class BettingRecommender:
                         'reason': f"Predicted: {predicted_total:.1f}, Line: {total_line:.1f}, Edge: {total_advantage:.1f}pts, Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
                     })
             
-            elif predicted_total < total_line and total_advantage >= self.config.MIN_TOTAL_EDGE and adjusted_confidence >= min_confidence:
+            elif predicted_total < total_line and total_advantage >= self.config.MIN_TOTAL_EDGE:
                 cover_prob = self.totalToProbability(total_advantage)
                 
                 if cover_prob >= self.config.MIN_PROBABILITY:

@@ -130,6 +130,11 @@ class UnifiedBettingSystem:
                 print(f"\nRECOMMENDATION #{i} - {rec['sport'].upper()} {rec['type'].upper()}")
                 print(f"   Matchup: {rec['matchup']}")
                 
+                # Display injury summary if available
+                if rec.get('injury_summary'):
+                    for line in rec['injury_summary'].split('\n'):
+                        print(f"   {line}")
+                
                 if rec['type'] == 'h2h':
                     print(f"   Bet: {rec['bet_team']} ({rec['bet_side'].upper()})")
                     print(f"   Odds: Home {home_odds:+d}, Away {away_odds:+d} (Book: {rec['book']})")

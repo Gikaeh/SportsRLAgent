@@ -329,6 +329,7 @@ class InjuryData:
                 'rpg_lost': 0.0,
                 'num_injured': 0,
                 'star_out': 0,
+                'star_name': '',
                 'rotation_players_out': 0,
                 'injury_severity': 0.0
             }
@@ -338,7 +339,17 @@ class InjuryData:
         apg_lost = injured_players['apg_rolling'].sum() if 'apg_rolling' in injured_players.columns else 0
         rpg_lost = injured_players['rpg_rolling'].sum() if 'rpg_rolling' in injured_players.columns else 0
         
-        star_out = 1 if any(injured_players['mpg_rolling'] >= 30) else 0
+        # Star out = one of team's top 3 PPG players is injured
+        star_out = 0
+        star_name = ''
+        if 'ppg_rolling' in team_players.columns:
+            top_3_ppg = team_players.nlargest(3, 'ppg_rolling')['PLAYER_ID'].tolist()
+            injured_stars = injured_players[injured_players['PLAYER_ID'].isin(top_3_ppg)]
+            if not injured_stars.empty:
+                star_out = 1
+                if 'PLAYER_NAME' in injured_stars.columns:
+                    star_name = injured_stars.iloc[0]['PLAYER_NAME']
+        
         rotation_players_out = len(injured_players[injured_players['mpg_rolling'] >= 15])
         
         injury_severity = (ppg_lost / 100) + (mpg_lost / 200) + (star_out * 0.3)
@@ -351,6 +362,7 @@ class InjuryData:
             'rpg_lost': round(rpg_lost, 1),
             'num_injured': len(injured_players),
             'star_out': star_out,
+            'star_name': star_name,
             'rotation_players_out': rotation_players_out,
             'injury_severity': round(injury_severity, 3)
         }
@@ -411,11 +423,11 @@ class InjuryData:
             summary.append(f"INJURY IMPACT:")
             
             if home_impact['num_injured'] > 0:
-                star_indicator = " ⚠️ STAR OUT" if home_impact['star_out'] else ""
+                star_indicator = f" ⚠️ STAR OUT ({home_impact['star_name']})" if home_impact['star_out'] and home_impact['star_name'] else (" ⚠️ STAR OUT" if home_impact['star_out'] else "")
                 summary.append(f"  {home_team} (Home): {home_impact['num_injured']} out, -{home_impact['ppg_lost']:.1f} PPG{star_indicator}")
             
             if away_impact['num_injured'] > 0:
-                star_indicator = " ⚠️ STAR OUT" if away_impact['star_out'] else ""
+                star_indicator = f" ⚠️ STAR OUT ({away_impact['star_name']})" if away_impact['star_out'] and away_impact['star_name'] else (" ⚠️ STAR OUT" if away_impact['star_out'] else "")
                 summary.append(f"  {away_team} (Away): {away_impact['num_injured']} out, -{away_impact['ppg_lost']:.1f} PPG{star_indicator}")
             
             if home_impact['injury_severity'] > away_impact['injury_severity']:

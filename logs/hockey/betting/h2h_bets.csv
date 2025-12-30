@@ -1,2 +1,1 @@
 game_id,date,matchup,bet_team,bet_side,home_model_prob,home_odds,away_model_prob,away_odds,market_prob,edge,confidence,bet_size_fraction,bet_amount,potential_profit,book,type,result,reason,timestamp
-2025020605,2025-12-28 00:00:00,PHI @ SEA,PHI,away,0.4570726156234741,-10000,0.5429273843765259,3300,0.0294117647058823,0.5135156196706435,0.0858547687530517,0.1,10,561.0,betmgm,h2h,L,"Probability: 54.3%, Edge: 51.4%, Confidence: 8.6%",2025-12-28 19:29:44.972720

@@ -87,7 +87,6 @@ class HockeyData(BaseDataFetcher):
         
         print(f"\nFetching game data for {season_str}...")
         games = self.getSeasonSchedule(season_year)
-        print(games)
         
         if not games:
             print(f"No games found for season {season_str}")

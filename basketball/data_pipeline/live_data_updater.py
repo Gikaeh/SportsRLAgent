@@ -74,7 +74,17 @@ class LiveDataUpdater:
             return pd.DataFrame(), pd.DataFrame()
         
         game_info = game_features[['game_id', 'date', 'home_team', 'away_team']].copy()
-        leakage_cols = ['game_id', 'date', 'season', 'home_team', 'away_team',]
+        
+        # Injury features are for display/confidence adjustment only, not model input
+        # (no historical injury data available for training)
+        injury_cols = [
+            'home_ppg_lost', 'home_mpg_lost', 'home_apg_lost', 'home_rpg_lost',
+            'home_num_injured', 'home_star_out', 'home_rotation_out', 'home_injury_severity',
+            'away_ppg_lost', 'away_mpg_lost', 'away_apg_lost', 'away_rpg_lost',
+            'away_num_injured', 'away_star_out', 'away_rotation_out', 'away_injury_severity',
+            'injury_advantage'
+        ]
+        leakage_cols = ['game_id', 'date', 'season', 'home_team', 'away_team'] + injury_cols
         
         if model_type == 'h2h':
             leakage_cols = leakage_cols + self.h2h_model.getLeakageColumns()

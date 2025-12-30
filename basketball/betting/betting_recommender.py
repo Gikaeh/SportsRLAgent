@@ -10,6 +10,7 @@ from model.model_total import BasketballTotalModel
 from betting.betting_config import BettingConfig
 from data_pipeline.odd_scraping import BasketballOddScraping
 from data_pipeline.prepare_data import NBATrainingDataPreparer
+from data_pipeline.injury_data import InjuryData
 import glob
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from unified_bankroll import UnifiedBankroll
@@ -19,6 +20,7 @@ class BettingRecommender:
         self.config = config or BettingConfig()
         self.odd_scraping = BasketballOddScraping()
         self.preparer = NBATrainingDataPreparer()
+        self.injury_data = InjuryData()
 
         if model_path.split('_')[1] == 'h2h':
             self.model = BasketballH2HModel()
@@ -127,6 +129,19 @@ class BettingRecommender:
         #     return self.makeTotalRecommendations(predictions)
         
     
+    def adjustConfidenceForQuestionable(self, base_confidence, home_team, away_team):
+        """Reduce confidence when teams have questionable players (lineup uncertainty)."""
+        home_questionable = self.injury_data.getQuestionablePlayers(home_team)
+        away_questionable = self.injury_data.getQuestionablePlayers(away_team)
+        
+        adjustment = 1.0
+        if home_questionable:
+            adjustment *= (0.95 ** len(home_questionable))
+        if away_questionable:
+            adjustment *= (0.95 ** len(away_questionable))
+        
+        return base_confidence * adjustment
+    
     def makeH2HRecommendations(self, predictions):
         recommendations = []
         data_file_path = sorted(glob.glob(f'./data/basketball/odds_data/h2h_*.csv'))[-1]
@@ -152,8 +167,11 @@ class BettingRecommender:
                 home_edge = self.calculateEdge(home_prob, home_odds)
                 away_edge = self.calculateEdge(away_prob, away_odds)
                 
+                # Adjust confidence for questionable players (lineup uncertainty)
+                adjusted_confidence = self.adjustConfidenceForQuestionable(game['confidence'], home_team, away_team)
+                
                 min_confidence = getattr(self.config, 'MIN_CONFIDENCE', 0.0)
-                if home_edge >= self.config.MIN_EDGE_H2H and game['confidence'] >= min_confidence:
+                if home_edge >= self.config.MIN_EDGE_H2H and adjusted_confidence >= min_confidence:
                     bet_size_fraction = self.kellyCriterion(home_prob, home_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
 
@@ -179,7 +197,7 @@ class BettingRecommender:
                         'reason': f"Probability: {home_prob:.1%}, Edge: {home_edge:.1%}, Confidence: {game['confidence']:.1%}"
                     })
                 
-                if away_edge >= self.config.MIN_EDGE_H2H and game['confidence'] >= min_confidence:
+                if away_edge >= self.config.MIN_EDGE_H2H and adjusted_confidence >= min_confidence:
                     bet_size_fraction = self.kellyCriterion(away_prob, away_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
                     
@@ -246,8 +264,11 @@ class BettingRecommender:
             else:
                 away_margin_advantage = away_spread + (-predicted_margin)
 
+            # Adjust confidence for questionable players (lineup uncertainty)
+            adjusted_confidence = self.adjustConfidenceForQuestionable(game['confidence'], home_team, away_team)
+            
             min_confidence = getattr(self.config, 'MIN_CONFIDENCE', 0.0)
-            if home_margin_advantage >= self.config.MIN_EDGE_SPREAD and game['confidence'] >= min_confidence:
+            if home_margin_advantage >= self.config.MIN_EDGE_SPREAD and adjusted_confidence >= min_confidence:
                 cover_prob = self.marginToProbability(home_margin_advantage)
 
                 if cover_prob >= self.config.MIN_PROBABILITY:
@@ -281,7 +302,7 @@ class BettingRecommender:
                         'reason': f"Predicted Margin: {predicted_margin:.1f}, Home Spread: {home_spread:.1f}, Home Odds: {home_odds}, Edge: {home_margin_advantage:.1f}, Cover Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
                     })
             
-            if away_margin_advantage >= self.config.MIN_EDGE_SPREAD and game['confidence'] >= min_confidence:
+            if away_margin_advantage >= self.config.MIN_EDGE_SPREAD and adjusted_confidence >= min_confidence:
                 cover_prob = self.marginToProbability(away_margin_advantage)
 
                 if cover_prob >= self.config.MIN_PROBABILITY:
@@ -471,12 +492,29 @@ class BettingRecommender:
         print(f"Current Bankroll: ${self.current_bankroll:,.2f}")
         print("="*80)
         
+        # Get latest player stats for injury summary
+        try:
+            player_df = self.preparer.precomputePlayerRollingAverages(self.preparer.getCurrentSeason())
+            latest_player_stats = player_df.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
+        except:
+            latest_player_stats = pd.DataFrame()
+        
         for i, rec in enumerate(recommendations, 1):
             if rec['type'] == 'total':
                 continue
             
             print(f"\nRECOMMENDATION #{i} - {rec['type']}")
             print(f"   Matchup: {rec['matchup']}")
+            
+            # Display injury summary for this game
+            if not latest_player_stats.empty:
+                matchup_parts = rec['matchup'].split(' @ ')
+                if len(matchup_parts) == 2:
+                    away_team, home_team = matchup_parts
+                    injury_summary = self.injury_data.getInjurySummaryForGame(home_team, away_team, latest_player_stats)
+                    if injury_summary:
+                        for line in injury_summary.split('\n'):
+                            print(f"   {line}")
 
             if rec['type'] == 'h2h':
                 print(f"   Bet: {rec['bet_team']} ({rec['bet_side'].upper()})")

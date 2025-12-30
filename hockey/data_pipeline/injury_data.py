@@ -310,6 +310,132 @@ class HockeyInjuryData:
         print("Status options: OUT, DOUBTFUL, QUESTIONABLE, PROBABLE, ACTIVE")
         return template_file
     
+    def calculateInjuryImpact(self, team_abbr, latest_skater_stats):
+        """
+        Calculate the impact of injuries on a team's production.
+        Returns dict with injury impact metrics.
+        """
+        injured_player_ids = self.getInjuredPlayersByTeam(team_abbr)
+        
+        if not injured_player_ids:
+            return {
+                'points_lost': 0.0,
+                'goals_lost': 0.0,
+                'assists_lost': 0.0,
+                'toi_lost': 0.0,
+                'num_injured': 0,
+                'star_out': 0,
+                'rotation_players_out': 0,
+                'injury_severity': 0.0
+            }
+        
+        team_players = latest_skater_stats[latest_skater_stats['TEAM_ABBREVIATION'] == team_abbr]
+        injured_players = team_players[team_players['PLAYER_ID'].isin(injured_player_ids)]
+        
+        if injured_players.empty:
+            return {
+                'points_lost': 0.0,
+                'goals_lost': 0.0,
+                'assists_lost': 0.0,
+                'toi_lost': 0.0,
+                'num_injured': 0,
+                'star_out': 0,
+                'rotation_players_out': 0,
+                'injury_severity': 0.0
+            }
+        
+        points_lost = injured_players['points_rolling'].sum() if 'points_rolling' in injured_players.columns else 0
+        goals_lost = injured_players['goals_rolling'].sum() if 'goals_rolling' in injured_players.columns else 0
+        assists_lost = injured_players['assists_rolling'].sum() if 'assists_rolling' in injured_players.columns else 0
+        toi_lost = injured_players['toi_rolling'].sum() if 'toi_rolling' in injured_players.columns else 0
+        
+        star_out = 1 if any(injured_players['toi_rolling'] >= 18) else 0  # 18+ min TOI = star player
+        rotation_players_out = len(injured_players[injured_players['toi_rolling'] >= 12])  # 12+ min = rotation player
+        
+        injury_severity = (points_lost / 50) + (toi_lost / 100) + (star_out * 0.3)
+        injury_severity = min(injury_severity, 1.0)
+        
+        return {
+            'points_lost': round(points_lost, 1),
+            'goals_lost': round(goals_lost, 1),
+            'assists_lost': round(assists_lost, 1),
+            'toi_lost': round(toi_lost, 1),
+            'num_injured': len(injured_players),
+            'star_out': star_out,
+            'rotation_players_out': rotation_players_out,
+            'injury_severity': round(injury_severity, 3)
+        }
+    
+    def getInjuryImpactForGame(self, home_team, away_team, latest_skater_stats):
+        """
+        Get injury impact for both teams in a game.
+        Returns dict with home and away injury metrics.
+        """
+        home_impact = self.calculateInjuryImpact(home_team, latest_skater_stats)
+        away_impact = self.calculateInjuryImpact(away_team, latest_skater_stats)
+        
+        return {
+            'home_points_lost': home_impact['points_lost'],
+            'home_goals_lost': home_impact['goals_lost'],
+            'home_assists_lost': home_impact['assists_lost'],
+            'home_toi_lost': home_impact['toi_lost'],
+            'home_num_injured': home_impact['num_injured'],
+            'home_star_out': home_impact['star_out'],
+            'home_rotation_out': home_impact['rotation_players_out'],
+            'home_injury_severity': home_impact['injury_severity'],
+            'away_points_lost': away_impact['points_lost'],
+            'away_goals_lost': away_impact['goals_lost'],
+            'away_assists_lost': away_impact['assists_lost'],
+            'away_toi_lost': away_impact['toi_lost'],
+            'away_num_injured': away_impact['num_injured'],
+            'away_star_out': away_impact['star_out'],
+            'away_rotation_out': away_impact['rotation_players_out'],
+            'away_injury_severity': away_impact['injury_severity'],
+            'injury_advantage': away_impact['injury_severity'] - home_impact['injury_severity']
+        }
+    
+    def getQuestionablePlayers(self, team_abbr):
+        """Get players with QUESTIONABLE status for a team."""
+        if self.injury_file.exists():
+            try:
+                injury_df = pd.read_csv(self.injury_file)
+                questionable = injury_df[
+                    (injury_df['team_abbreviation'] == team_abbr) & 
+                    (injury_df['status'] == 'QUESTIONABLE')
+                ]
+                return list(questionable['player_name'].values)
+            except Exception as e:
+                print(f"Error getting questionable players: {e}")
+                return []
+        return []
+    
+    def getInjurySummaryForGame(self, home_team, away_team, latest_skater_stats):
+        """
+        Get a formatted injury summary for display in betting recommendations.
+        """
+        home_impact = self.calculateInjuryImpact(home_team, latest_skater_stats)
+        away_impact = self.calculateInjuryImpact(away_team, latest_skater_stats)
+        
+        summary = []
+        
+        if home_impact['num_injured'] > 0 or away_impact['num_injured'] > 0:
+            summary.append(f"INJURY IMPACT:")
+            
+            if home_impact['num_injured'] > 0:
+                star_indicator = " ⚠️ STAR OUT" if home_impact['star_out'] else ""
+                summary.append(f"  {home_team} (Home): {home_impact['num_injured']} out, -{home_impact['points_lost']:.1f} PTS{star_indicator}")
+            
+            if away_impact['num_injured'] > 0:
+                star_indicator = " ⚠️ STAR OUT" if away_impact['star_out'] else ""
+                summary.append(f"  {away_team} (Away): {away_impact['num_injured']} out, -{away_impact['points_lost']:.1f} PTS{star_indicator}")
+            
+            if home_impact['injury_severity'] > away_impact['injury_severity']:
+                summary.append(f"  → Injury advantage: {away_team}")
+            elif away_impact['injury_severity'] > home_impact['injury_severity']:
+                summary.append(f"  → Injury advantage: {home_team}")
+        
+        return "\n".join(summary) if summary else ""
+    
     def importInjuriesFromCSV(self, csv_path):
         """Import injuries from a CSV file"""
         try:

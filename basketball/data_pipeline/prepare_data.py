@@ -803,6 +803,10 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
             
             game_features = {'game_id': game_id}
             
+            # Add injury impact features
+            injury_impact = self.injury_data.getInjuryImpactForGame(home_team, away_team, latest_player_stats)
+            game_features.update(injury_impact)
+            
             # Home team: Get top 6 healthy players by minutes
             home_players = latest_player_stats[latest_player_stats['TEAM_ABBREVIATION'] == home_team].copy()
             

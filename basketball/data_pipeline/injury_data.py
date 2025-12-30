@@ -299,6 +299,132 @@ class InjuryData:
             print(f"Error fixing team abbreviations: {e}")
             return False
     
+    def calculateInjuryImpact(self, team_abbr, latest_player_stats):
+        """
+        Calculate the impact of injuries on a team's production.
+        Returns dict with injury impact metrics.
+        """
+        injured_player_ids = self.getInjuredPlayersByTeam(team_abbr)
+        
+        if not injured_player_ids:
+            return {
+                'ppg_lost': 0.0,
+                'mpg_lost': 0.0,
+                'apg_lost': 0.0,
+                'rpg_lost': 0.0,
+                'num_injured': 0,
+                'star_out': 0,
+                'rotation_players_out': 0,
+                'injury_severity': 0.0
+            }
+        
+        team_players = latest_player_stats[latest_player_stats['TEAM_ABBREVIATION'] == team_abbr]
+        injured_players = team_players[team_players['PLAYER_ID'].isin(injured_player_ids)]
+        
+        if injured_players.empty:
+            return {
+                'ppg_lost': 0.0,
+                'mpg_lost': 0.0,
+                'apg_lost': 0.0,
+                'rpg_lost': 0.0,
+                'num_injured': 0,
+                'star_out': 0,
+                'rotation_players_out': 0,
+                'injury_severity': 0.0
+            }
+        
+        ppg_lost = injured_players['ppg_rolling'].sum() if 'ppg_rolling' in injured_players.columns else 0
+        mpg_lost = injured_players['mpg_rolling'].sum() if 'mpg_rolling' in injured_players.columns else 0
+        apg_lost = injured_players['apg_rolling'].sum() if 'apg_rolling' in injured_players.columns else 0
+        rpg_lost = injured_players['rpg_rolling'].sum() if 'rpg_rolling' in injured_players.columns else 0
+        
+        star_out = 1 if any(injured_players['mpg_rolling'] >= 30) else 0
+        rotation_players_out = len(injured_players[injured_players['mpg_rolling'] >= 15])
+        
+        injury_severity = (ppg_lost / 100) + (mpg_lost / 200) + (star_out * 0.3)
+        injury_severity = min(injury_severity, 1.0)
+        
+        return {
+            'ppg_lost': round(ppg_lost, 1),
+            'mpg_lost': round(mpg_lost, 1),
+            'apg_lost': round(apg_lost, 1),
+            'rpg_lost': round(rpg_lost, 1),
+            'num_injured': len(injured_players),
+            'star_out': star_out,
+            'rotation_players_out': rotation_players_out,
+            'injury_severity': round(injury_severity, 3)
+        }
+    
+    def getInjuryImpactForGame(self, home_team, away_team, latest_player_stats):
+        """
+        Get injury impact for both teams in a game.
+        Returns dict with home and away injury metrics.
+        """
+        home_impact = self.calculateInjuryImpact(home_team, latest_player_stats)
+        away_impact = self.calculateInjuryImpact(away_team, latest_player_stats)
+        
+        return {
+            'home_ppg_lost': home_impact['ppg_lost'],
+            'home_mpg_lost': home_impact['mpg_lost'],
+            'home_apg_lost': home_impact['apg_lost'],
+            'home_rpg_lost': home_impact['rpg_lost'],
+            'home_num_injured': home_impact['num_injured'],
+            'home_star_out': home_impact['star_out'],
+            'home_rotation_out': home_impact['rotation_players_out'],
+            'home_injury_severity': home_impact['injury_severity'],
+            'away_ppg_lost': away_impact['ppg_lost'],
+            'away_mpg_lost': away_impact['mpg_lost'],
+            'away_apg_lost': away_impact['apg_lost'],
+            'away_rpg_lost': away_impact['rpg_lost'],
+            'away_num_injured': away_impact['num_injured'],
+            'away_star_out': away_impact['star_out'],
+            'away_rotation_out': away_impact['rotation_players_out'],
+            'away_injury_severity': away_impact['injury_severity'],
+            'injury_advantage': away_impact['injury_severity'] - home_impact['injury_severity']
+        }
+    
+    def getQuestionablePlayers(self, team_abbr):
+        """Get players with QUESTIONABLE status for a team."""
+        if self.injury_file.exists():
+            try:
+                injury_df = pd.read_csv(self.injury_file)
+                questionable = injury_df[
+                    (injury_df['team_abbreviation'] == team_abbr) & 
+                    (injury_df['status'] == 'QUESTIONABLE')
+                ]
+                return list(questionable['player_name'].values)
+            except Exception as e:
+                print(f"Error getting questionable players: {e}")
+                return []
+        return []
+    
+    def getInjurySummaryForGame(self, home_team, away_team, latest_player_stats):
+        """
+        Get a formatted injury summary for display in betting recommendations.
+        """
+        home_impact = self.calculateInjuryImpact(home_team, latest_player_stats)
+        away_impact = self.calculateInjuryImpact(away_team, latest_player_stats)
+        
+        summary = []
+        
+        if home_impact['num_injured'] > 0 or away_impact['num_injured'] > 0:
+            summary.append(f"INJURY IMPACT:")
+            
+            if home_impact['num_injured'] > 0:
+                star_indicator = " ⚠️ STAR OUT" if home_impact['star_out'] else ""
+                summary.append(f"  {home_team} (Home): {home_impact['num_injured']} out, -{home_impact['ppg_lost']:.1f} PPG{star_indicator}")
+            
+            if away_impact['num_injured'] > 0:
+                star_indicator = " ⚠️ STAR OUT" if away_impact['star_out'] else ""
+                summary.append(f"  {away_team} (Away): {away_impact['num_injured']} out, -{away_impact['ppg_lost']:.1f} PPG{star_indicator}")
+            
+            if home_impact['injury_severity'] > away_impact['injury_severity']:
+                summary.append(f"  → Injury advantage: {away_team}")
+            elif away_impact['injury_severity'] > home_impact['injury_severity']:
+                summary.append(f"  → Injury advantage: {home_team}")
+        
+        return "\n".join(summary) if summary else ""
+    
     def matchPlayerIDs(self, player_data_dir='././data/basketball/player_data'):
         try:
             player_dir = Path(player_data_dir)

@@ -138,7 +138,8 @@ class BettingRecommender:
                 home_edge = self.calculateEdge(home_prob, home_odds)
                 away_edge = self.calculateEdge(away_prob, away_odds)
                 
-                if home_edge >= self.config.MIN_EDGE_H2H:
+                min_confidence = getattr(self.config, 'MIN_CONFIDENCE', 0.0)
+                if home_edge >= self.config.MIN_EDGE_H2H and game['confidence'] >= min_confidence:
                     bet_size_fraction = self.kellyCriterion(home_prob, home_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
                     if bet_amount < 1:
@@ -166,7 +167,7 @@ class BettingRecommender:
                         'reason': f"Probability: {home_prob:.1%}, Edge: {home_edge:.1%}, Confidence: {game['confidence']:.1%}"
                     })
                 
-                if away_edge >= self.config.MIN_EDGE_H2H:
+                if away_edge >= self.config.MIN_EDGE_H2H and game['confidence'] >= min_confidence:
                     bet_size_fraction = self.kellyCriterion(away_prob, away_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
                     if bet_amount < 1:
@@ -235,9 +236,8 @@ class BettingRecommender:
             else:
                 away_margin_advantage = away_spread + (-predicted_margin)
 
-            print(home_margin_advantage)
-            print(away_margin_advantage)
-            if home_margin_advantage >= self.config.MIN_EDGE_SPREAD:
+            min_confidence = getattr(self.config, 'MIN_CONFIDENCE', 0.0)
+            if home_margin_advantage >= self.config.MIN_EDGE_SPREAD and game['confidence'] >= min_confidence:
                 cover_prob = self.marginToProbability(home_margin_advantage)
 
                 if cover_prob >= self.config.MIN_PROBABILITY:
@@ -273,7 +273,7 @@ class BettingRecommender:
                         'reason': f"Predicted Margin: {predicted_margin:.1f}, Home Spread: {home_spread:.1f}, Home Odds: {home_odds}, Edge: {home_margin_advantage:.1f}, Cover Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
                     })
             
-            if away_margin_advantage >= self.config.MIN_EDGE_SPREAD:
+            if away_margin_advantage >= self.config.MIN_EDGE_SPREAD and game['confidence'] >= min_confidence:
                 cover_prob = self.marginToProbability(away_margin_advantage)
 
                 if cover_prob >= self.config.MIN_PROBABILITY:
@@ -338,7 +338,8 @@ class BettingRecommender:
             
             total_advantage = abs(predicted_total - total_line)
             
-            if predicted_total > total_line and total_advantage >= self.config.MIN_TOTAL_EDGE:
+            min_confidence = getattr(self.config, 'MIN_CONFIDENCE', 0.0)
+            if predicted_total > total_line and total_advantage >= self.config.MIN_TOTAL_EDGE and game['confidence'] >= min_confidence:
                 cover_prob = self.totalToProbability(total_advantage)
                 
                 if cover_prob >= self.config.MIN_PROBABILITY:
@@ -370,7 +371,7 @@ class BettingRecommender:
                         'reason': f"Predicted: {predicted_total:.1f}, Line: {total_line:.1f}, Edge: {total_advantage:.1f}pts, Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
                     })
             
-            elif predicted_total < total_line and total_advantage >= self.config.MIN_TOTAL_EDGE:
+            elif predicted_total < total_line and total_advantage >= self.config.MIN_TOTAL_EDGE and game['confidence'] >= min_confidence:
                 cover_prob = self.totalToProbability(total_advantage)
                 
                 if cover_prob >= self.config.MIN_PROBABILITY:

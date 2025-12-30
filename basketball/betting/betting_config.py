@@ -7,19 +7,20 @@ class BettingConfig:
     # Bankroll - now uses unified bankroll across all sports
     STARTING_BANKROLL = UnifiedBankroll.STARTING_BANKROLL
     USE_UNIFIED_BANKROLL = True  # Set to False to use sport-specific bankroll
-    MAX_BET_SIZE_PCT = 0.1    # Maximum 2% of bankroll per bet
-    KELLY_FRACTION = 0.25      # Use 25% Kelly for conservative sizing
-    MAX_RISK_PCT = 1
+    MAX_BET_SIZE_PCT = 0.05   # Maximum 2% of bankroll per bet
+    KELLY_FRACTION = 0.15      # Use 10% Kelly for conservative sizing
+    MAX_RISK_PCT = 0.2        # Maximum 15% total daily exposure
     
     # Edge
-    MIN_EDGE_H2H = 0.01 # Minimum 3% edge to place bet (model_prob - market_prob)
+    MIN_EDGE_H2H = 0.02 # Minimum 3% edge to place bet (model_prob - market_prob)
     MIN_EDGE_SPREAD = 3
-    MIN_PROBABILITY = 0.52
+    MIN_PROBABILITY = 0.55
+    MIN_CONFIDENCE = 0.3      # Only bet on high-confidence plays
     
     # Risk Limits
-    MAX_BETS_PER_DAY = 5      # Maximum number of bets per day
-    DAILY_LOSS_LIMIT_PCT = 0.25  # Stop betting if down 5% in a day
-    MAX_DRAWDOWN_PCT = 0.20   # Alert if drawdown exceeds 20%
+    MAX_BETS_PER_DAY = 3      # Maximum number of bets per day
+    DAILY_LOSS_LIMIT_PCT = 0.10  # Stop betting if down 10% in a day
+    MAX_DRAWDOWN_PCT = 0.10   # Alert if drawdown exceeds 10%
     
     # Model Settings
     MODEL_PATH = './models/basketball_h2h_model.json'

@@ -246,12 +246,9 @@ class BettingRecommender:
                 away_margin_advantage = (-predicted_margin) - abs(away_spread)
             else:
                 away_margin_advantage = away_spread + (-predicted_margin)
-
-            # Adjust confidence for questionable players (lineup uncertainty)
-            adjusted_confidence = self.adjustConfidenceForQuestionable(game['confidence'], home_team, away_team)
             
             min_confidence = getattr(self.config, 'MIN_CONFIDENCE', 0.0)
-            if home_margin_advantage >= self.config.MIN_EDGE_SPREAD and adjusted_confidence >= 0:
+            if home_margin_advantage >= self.config.MIN_EDGE_SPREAD:
                 cover_prob = self.marginToProbability(home_margin_advantage)
 
                 if cover_prob >= self.config.MIN_PROBABILITY:
@@ -287,7 +284,7 @@ class BettingRecommender:
                         'reason': f"Predicted Margin: {predicted_margin:.1f}, Home Spread: {home_spread:.1f}, Home Odds: {home_odds}, Edge: {home_margin_advantage:.1f}, Cover Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
                     })
             
-            if away_margin_advantage >= self.config.MIN_EDGE_SPREAD and adjusted_confidence >= 0:
+            if away_margin_advantage >= self.config.MIN_EDGE_SPREAD:
                 cover_prob = self.marginToProbability(away_margin_advantage)
 
                 if cover_prob >= self.config.MIN_PROBABILITY:

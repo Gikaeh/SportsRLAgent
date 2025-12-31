@@ -113,11 +113,20 @@ class BaseTrainingDataPreparer(ABC):
             return df[existing_cols].std(axis=1)
         return pd.Series(0, index=df.index)
     
-    def getCachedData(self, cache_name, season):
-        """Load cached data if it exists and is fresh."""
+    def getCachedData(self, cache_name, season, source_file=None):
+        """Load cached data if it exists and is fresher than source file."""
         cache_file = self.cache_dir / f'{season}_{cache_name}.parquet'
         
         if cache_file.exists():
+            # If source file provided, check if cache is stale
+            if source_file is not None and Path(source_file).exists():
+                source_mtime = Path(source_file).stat().st_mtime
+                cache_mtime = cache_file.stat().st_mtime
+                
+                if source_mtime > cache_mtime:
+                    print(f"Cache stale for {cache_name} ({season}), source data is newer. Regenerating...")
+                    return None
+            
             try:
                 return pd.read_parquet(cache_file)
             except Exception:

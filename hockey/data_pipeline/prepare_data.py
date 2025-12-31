@@ -152,9 +152,9 @@ class NHLTrainingDataPreparer(BaseTrainingDataPreparer):
         if not player_file.exists():
             return pd.DataFrame(), pd.DataFrame()
         
-        # Check cache first
-        skaters_cached = self.getCachedData('skater_rolling', season)
-        goalies_cached = self.getCachedData('goalie_rolling', season)
+        # Check cache first (with source file freshness check)
+        skaters_cached = self.getCachedData('skater_rolling', season, source_file=player_file)
+        goalies_cached = self.getCachedData('goalie_rolling', season, source_file=player_file)
         if skaters_cached is not None and goalies_cached is not None:
             return skaters_cached, goalies_cached
         

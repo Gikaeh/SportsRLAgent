@@ -80,8 +80,8 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
         if not player_file.exists():
             return pd.DataFrame()
         
-        # Check cache first
-        cached = self.getCachedData('player_rolling', season)
+        # Check cache first (with source file freshness check)
+        cached = self.getCachedData('player_rolling', season, source_file=player_file)
         if cached is not None:
             return cached
         

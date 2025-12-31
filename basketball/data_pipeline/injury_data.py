@@ -423,11 +423,11 @@ class InjuryData:
             summary.append(f"INJURY IMPACT:")
             
             if home_impact['num_injured'] > 0:
-                star_indicator = f" ⚠️ STAR OUT ({home_impact['star_name']})" if home_impact['star_out'] and home_impact['star_name'] else (" ⚠️ STAR OUT" if home_impact['star_out'] else "")
+                star_indicator = f" STAR OUT ({home_impact['star_name']})" if home_impact['star_out'] and home_impact['star_name'] else (" ⚠️ STAR OUT" if home_impact['star_out'] else "")
                 summary.append(f"  {home_team} (Home): {home_impact['num_injured']} out, -{home_impact['ppg_lost']:.1f} PPG{star_indicator}")
             
             if away_impact['num_injured'] > 0:
-                star_indicator = f" ⚠️ STAR OUT ({away_impact['star_name']})" if away_impact['star_out'] and away_impact['star_name'] else (" ⚠️ STAR OUT" if away_impact['star_out'] else "")
+                star_indicator = f" STAR OUT ({away_impact['star_name']})" if away_impact['star_out'] and away_impact['star_name'] else (" ⚠️ STAR OUT" if away_impact['star_out'] else "")
                 summary.append(f"  {away_team} (Away): {away_impact['num_injured']} out, -{away_impact['ppg_lost']:.1f} PPG{star_indicator}")
             
             if home_impact['injury_severity'] > away_impact['injury_severity']:

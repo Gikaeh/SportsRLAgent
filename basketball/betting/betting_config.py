@@ -9,7 +9,7 @@ class BettingConfig:
     USE_UNIFIED_BANKROLL = True  # Set to False to use sport-specific bankroll
     MAX_BET_SIZE_PCT = 0.05   # Maximum 2% of bankroll per bet
     KELLY_FRACTION = 0.20      # Use 10% Kelly for conservative sizing
-    MAX_RISK_PCT = 0.3        # Maximum 15% total daily exposure
+    MAX_RISK_PCT = 0.5        # Maximum 15% total daily exposure
     
     # Edge
     MIN_EDGE_H2H = 0.02 # Minimum 3% edge to place bet (model_prob - market_prob)

@@ -1,1 +1,2 @@
 game_id,date,matchup,bet_side,total_line,over_odds,under_odds,predicted_total,total_advantage,cover_prob,confidence,bet_size_fraction,bet_amount,potential_profit,book,type,result,reason,timestamp
+2025020623,2025-12-31,NSH @ VGK,Under,9.5,130,-175,6.503785610198975,2.9962143898010254,0.6492777355962243,0.9987381299336752,0.0071027545779232,1,0.5714285714285714,betmgm,total,W,"Predicted: 6.5, Line: 9.5, Edge: 3.0pts, Probability: 64.9%, Confidence: 99.9%",2025-12-31 13:16:15.526751

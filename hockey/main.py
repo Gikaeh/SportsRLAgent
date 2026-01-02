@@ -159,7 +159,8 @@ def bettingUpdate():
     print("\n" + "="*80)
     print("Betting Update")
     print("="*80)
-    HockeyData().getSeasonGames(season='2024-25')
+    current_season = HockeyData().getCurrentSeason()
+    HockeyData().getAllSeasonData(season=current_season)
     recommender = BettingRecommender(model_path = './models/hockey_h2h_model.json')
 
     archive = input("Archive? (y/n): ")

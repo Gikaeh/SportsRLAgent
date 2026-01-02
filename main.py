@@ -103,7 +103,7 @@ class UnifiedBettingSystem:
         recommendations.sort(key=self.calculateBetPriority, reverse=True)
         
         # Apply unified bankroll constraint (max 100% of bankroll)
-        max_risk_pct = 1.0
+        max_risk_pct = 0.4
         total_risk = sum(r['bet_amount'] for r in recommendations)
         
         while total_risk > self.unified_bankroll * max_risk_pct:

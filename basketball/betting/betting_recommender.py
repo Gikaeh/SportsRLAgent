@@ -158,6 +158,8 @@ class BettingRecommender:
                 if home_edge >= self.config.MIN_EDGE_H2H:
                     bet_size_fraction = self.kellyCriterion(home_prob, home_odds, game['confidence'], is_underdog_h2h=home_is_underdog)
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
+                    if bet_amount < 1:
+                        continue
 
                     recommendations.append({
                         'game_id': game_id,
@@ -184,6 +186,8 @@ class BettingRecommender:
                 if away_edge >= self.config.MIN_EDGE_H2H:
                     bet_size_fraction = self.kellyCriterion(away_prob, away_odds, game['confidence'], is_underdog_h2h=away_is_underdog)
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
+                    if bet_amount < 1:
+                        continue
                     
                     recommendations.append({
                         'game_id': game_id,
@@ -255,6 +259,8 @@ class BettingRecommender:
                 if cover_prob >= self.config.MIN_PROBABILITY:
                     bet_size_fraction = self.kellyCriterion(cover_prob, home_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
+                    if bet_amount < 1:
+                        continue
 
                     book = home_spread_odds[home_spread_odds['price'] == home_odds]['bookmakers_key'].values[0]
 
@@ -289,6 +295,8 @@ class BettingRecommender:
                 if cover_prob >= self.config.MIN_PROBABILITY:
                     bet_size_fraction = self.kellyCriterion(cover_prob, away_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
+                    if bet_amount < 1:
+                        continue
                 
                     book = away_spread_odds[away_spread_odds['price'] == away_odds]['bookmakers_key'].values[0]
                     

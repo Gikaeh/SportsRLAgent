@@ -1,1 +1,3 @@
 game_id,date,matchup,bet_team,bet_side,home_model_prob,home_odds,away_model_prob,away_odds,market_prob,edge,confidence,bet_size_fraction,bet_amount,potential_profit,book,type,result,reason,timestamp
+2025020641,2026-01-02 00:00:00,NYR @ FLA,NYR,away,0.5207602381706238,-145,0.4792397618293762,120,0.45454545454545453,0.02469430728392169,0.04152047634124756,0.009054579337437954,1,1.2,betmgm,h2h,,"Probability: 47.9%, Edge: 2.5%, Confidence: 4.2%",2026-01-02 11:08:17.957470
+2025020642,2026-01-02 00:00:00,SEA @ VAN,SEA,away,0.5001769661903381,-145,0.49982303380966187,120,0.45454545454545453,0.045277579264207335,0.00035393238067626953,0.01660177906354269,1,1.2,betmgm,h2h,,"Probability: 50.0%, Edge: 4.5%, Confidence: 0.0%",2026-01-02 11:08:17.957470

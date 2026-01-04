@@ -149,6 +149,7 @@ class InjuryData:
             'NY': 'NYK',    # New York Knicks
             'UTAH': 'UTA',  # Utah Jazz
             'WSH': 'WAS',   # Washington Wizards
+            'SA': 'SAS',    # San Antonio Spurs
         }
         return corrections.get(espn_abbr, espn_abbr)
     
@@ -276,6 +277,7 @@ class InjuryData:
                 'NY': 'NYK',
                 'UTAH': 'UTA',
                 'WSH': 'WAS',
+                'SA': 'SAS',
             }
             
             fixed_count = 0

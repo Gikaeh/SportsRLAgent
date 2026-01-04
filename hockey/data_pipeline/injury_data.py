@@ -215,6 +215,7 @@ class HockeyInjuryData:
             'TB': 'TBL',    # Tampa Bay Lightning
             'SJ': 'SJS',    # San Jose Sharks
             'VGK': 'VGK',   # Vegas Golden Knights (already correct)
+            'UTAH': 'UTA',  # Utah Hockey Club
         }
         return corrections.get(espn_abbr, espn_abbr)
     

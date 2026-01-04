@@ -73,6 +73,72 @@ class BettingRecommender:
         market_prob = self.oddsToProbability(market_odds)
         return model_prob - market_prob
     
+    def adjustProbabilityForInjuries(self, prob, home_team, away_team, latest_skater_stats):
+        """
+        Adjust win probability based on injury impact.
+        Reduces probability for teams with significant injuries (especially stars).
+        """
+        injury_impact = self.injury_data.getInjuryImpactForGame(home_team, away_team, latest_skater_stats)
+        
+        home_gpg_lost = injury_impact.get('home_gpg_lost', 0)
+        away_gpg_lost = injury_impact.get('away_gpg_lost', 0)
+        home_star_out = injury_impact.get('home_star_out', 0)
+        away_star_out = injury_impact.get('away_star_out', 0)
+        
+        # Base adjustment: ~3% per 0.5 GPG lost (6% per GPG) - hockey goals are more impactful
+        home_base_adj = home_gpg_lost * 0.06
+        away_base_adj = away_gpg_lost * 0.06
+        
+        # Star multiplier: additional 5% penalty if star is out
+        home_star_penalty = 0.05 if home_star_out else 0
+        away_star_penalty = 0.05 if away_star_out else 0
+        
+        # Total adjustments (capped at 20%)
+        home_total_adj = min(home_base_adj + home_star_penalty, 0.20)
+        away_total_adj = min(away_base_adj + away_star_penalty, 0.20)
+        
+        # Net adjustment: positive means home team is more hurt by injuries
+        net_injury_effect = home_total_adj - away_total_adj
+        
+        # Adjust probability: if home is more hurt, reduce home prob
+        adjusted_prob = prob * (1 - net_injury_effect)
+        
+        # Clamp to valid probability range
+        adjusted_prob = max(0.05, min(0.95, adjusted_prob))
+        
+        return adjusted_prob, injury_impact
+    
+    def adjustMarginForInjuries(self, predicted_margin, home_team, away_team, latest_skater_stats):
+        """
+        Adjust predicted margin based on injury impact.
+        Positive margin = home team favored, so injuries to home team reduce margin.
+        """
+        injury_impact = self.injury_data.getInjuryImpactForGame(home_team, away_team, latest_skater_stats)
+        
+        home_gpg_lost = injury_impact.get('home_gpg_lost', 0)
+        away_gpg_lost = injury_impact.get('away_gpg_lost', 0)
+        home_star_out = injury_impact.get('home_star_out', 0)
+        away_star_out = injury_impact.get('away_star_out', 0)
+        
+        # Base adjustment: ~0.2 goals per 0.5 GPG lost (0.4 per GPG)
+        home_margin_adj = home_gpg_lost * 0.4
+        away_margin_adj = away_gpg_lost * 0.4
+        
+        # Star multiplier: additional 0.3 goals if star is out
+        home_star_penalty = 0.3 if home_star_out else 0
+        away_star_penalty = 0.3 if away_star_out else 0
+        
+        # Total adjustments (capped at 1.5 goals)
+        home_total_adj = min(home_margin_adj + home_star_penalty, 1.5)
+        away_total_adj = min(away_margin_adj + away_star_penalty, 1.5)
+        
+        # Net adjustment: home injuries reduce margin, away injuries increase it
+        margin_adjustment = away_total_adj - home_total_adj
+        
+        adjusted_margin = predicted_margin + margin_adjustment
+        
+        return adjusted_margin, injury_impact
+    
     def predictGames(self, game_features, game_info):
         results = game_info.copy()
 
@@ -126,12 +192,32 @@ class BettingRecommender:
         odds_data = pd.read_csv(data_file_path)
         odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
         
+        # Get latest skater stats for injury adjustment
+        try:
+            skater_df = self.preparer.precomputeSkaterRollingAverages(self.preparer.getCurrentSeason())
+            latest_skater_stats = skater_df.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
+        except Exception as e:
+            print(f"Warning: Could not load skater stats for injury adjustment: {e}")
+            latest_skater_stats = pd.DataFrame()
+        
         for idx, game in predictions.iterrows():
             game_id = game['game_id']
             home_team = game['home_team']
             away_team = game['away_team']
-            home_prob = game['home_win_prob']
-            away_prob = game['away_win_prob']
+            home_prob_raw = game['home_win_prob']
+            away_prob_raw = game['away_win_prob']
+            
+            # Apply injury adjustment to probabilities
+            if not latest_skater_stats.empty:
+                home_prob, injury_impact = self.adjustProbabilityForInjuries(
+                    home_prob_raw, home_team, away_team, latest_skater_stats
+                )
+                away_prob = 1 - home_prob
+            else:
+                home_prob = home_prob_raw
+                away_prob = away_prob_raw
+                injury_impact = {}
+            
             game_odds = odds_data[(odds_data['home_team'] == home_team) & (odds_data['away_team'] == away_team)]
             
             if len(game_odds) > 0:
@@ -156,6 +242,14 @@ class BettingRecommender:
                     if bet_amount < 1:
                         continue
 
+                    # Build reason string with injury info
+                    injury_note = ""
+                    if injury_impact:
+                        if injury_impact.get('home_star_out'):
+                            injury_note += f" [HOME STAR OUT: -{injury_impact.get('home_gpg_lost', 0):.1f}GPG]"
+                        if injury_impact.get('away_star_out'):
+                            injury_note += f" [AWAY STAR OUT: -{injury_impact.get('away_gpg_lost', 0):.1f}GPG]"
+                    
                     recommendations.append({
                         'game_id': game_id,
                         'date': game['date'],
@@ -175,7 +269,7 @@ class BettingRecommender:
                         'book': book,
                         'type': 'h2h',
                         'result': '',
-                        'reason': f"Probability: {home_prob:.1%}, Edge: {home_edge:.1%}, Confidence: {game['confidence']:.1%}"
+                        'reason': f"Probability: {home_prob:.1%} (raw: {home_prob_raw:.1%}), Edge: {home_edge:.1%}, Confidence: {game['confidence']:.1%}{injury_note}"
                     })
                 
                 if away_edge >= self.config.MIN_EDGE_H2H:
@@ -183,6 +277,14 @@ class BettingRecommender:
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
                     if bet_amount < 1:
                         continue
+                    
+                    # Build reason string with injury info
+                    injury_note = ""
+                    if injury_impact:
+                        if injury_impact.get('home_star_out'):
+                            injury_note += f" [HOME STAR OUT: -{injury_impact.get('home_gpg_lost', 0):.1f}GPG]"
+                        if injury_impact.get('away_star_out'):
+                            injury_note += f" [AWAY STAR OUT: -{injury_impact.get('away_gpg_lost', 0):.1f}GPG]"
                     
                     recommendations.append({
                         'game_id': game_id,
@@ -203,7 +305,7 @@ class BettingRecommender:
                         'book': book,
                         'type': 'h2h',
                         'result': '',
-                        'reason': f"Probability: {away_prob:.1%}, Edge: {away_edge:.1%}, Confidence: {game['confidence']:.1%}"
+                        'reason': f"Probability: {away_prob:.1%} (raw: {away_prob_raw:.1%}), Edge: {away_edge:.1%}, Confidence: {game['confidence']:.1%}{injury_note}"
                     })
         
         return recommendations
@@ -214,11 +316,29 @@ class BettingRecommender:
         odds_data = pd.read_csv(data_file_path)
         odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
         
+        # Get latest skater stats for injury adjustment
+        try:
+            skater_df = self.preparer.precomputeSkaterRollingAverages(self.preparer.getCurrentSeason())
+            latest_skater_stats = skater_df.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
+        except Exception as e:
+            print(f"Warning: Could not load skater stats for injury adjustment: {e}")
+            latest_skater_stats = pd.DataFrame()
+        
         for idx, game in predictions.iterrows():
             game_id = game['game_id']
             home_team = game['home_team']
             away_team = game['away_team']
-            predicted_margin = game['predicted_margin']
+            predicted_margin_raw = game['predicted_margin']
+            
+            # Apply injury adjustment to predicted margin
+            if not latest_skater_stats.empty:
+                predicted_margin, injury_impact = self.adjustMarginForInjuries(
+                    predicted_margin_raw, home_team, away_team, latest_skater_stats
+                )
+            else:
+                predicted_margin = predicted_margin_raw
+                injury_impact = {}
+            
             game_odds = odds_data[(odds_data['home_team'] == home_team) & (odds_data['away_team'] == away_team)]
             
             if len(game_odds) == 0:
@@ -259,6 +379,14 @@ class BettingRecommender:
 
                     book = home_spread_odds[home_spread_odds['price'] == home_odds]['bookmakers_key'].values[0]
 
+                    # Build reason string with injury info
+                    injury_note = ""
+                    if injury_impact:
+                        if injury_impact.get('home_star_out'):
+                            injury_note += f" [HOME STAR OUT: -{injury_impact.get('home_gpg_lost', 0):.1f}GPG]"
+                        if injury_impact.get('away_star_out'):
+                            injury_note += f" [AWAY STAR OUT: -{injury_impact.get('away_gpg_lost', 0):.1f}GPG]"
+                    
                     recommendations.append({
                         'game_id': game_id,
                         'date': game['date'],
@@ -281,7 +409,7 @@ class BettingRecommender:
                         'is_home_favored': is_home_favored,
                         'is_away_favored': is_away_favored,
                         'result': '',
-                        'reason': f"Predicted Margin: {predicted_margin:.1f}, Home Spread: {home_spread:.1f}, Home Odds: {home_odds}, Edge: {home_margin_advantage:.1f}, Cover Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
+                        'reason': f"Predicted Margin: {predicted_margin:.1f} (raw: {predicted_margin_raw:.1f}), Home Spread: {home_spread:.1f}, Home Odds: {home_odds}, Edge: {home_margin_advantage:.1f}, Cover Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}{injury_note}"
                     })
             
             if away_margin_advantage >= self.config.MIN_EDGE_SPREAD:
@@ -293,6 +421,14 @@ class BettingRecommender:
                     if bet_amount < 1:
                         continue
                     book = away_spread_odds[away_spread_odds['price'] == away_odds]['bookmakers_key'].values[0]
+                    
+                    # Build reason string with injury info
+                    injury_note = ""
+                    if injury_impact:
+                        if injury_impact.get('home_star_out'):
+                            injury_note += f" [HOME STAR OUT: -{injury_impact.get('home_gpg_lost', 0):.1f}GPG]"
+                        if injury_impact.get('away_star_out'):
+                            injury_note += f" [AWAY STAR OUT: -{injury_impact.get('away_gpg_lost', 0):.1f}GPG]"
                     
                     recommendations.append({
                         'game_id': game_id,
@@ -316,7 +452,7 @@ class BettingRecommender:
                         'is_home_favored': is_home_favored,
                         'is_away_favored': is_away_favored,
                         'result': '',
-                        'reason': f"Predicted Margin: {predicted_margin:.1f}, Away Spread: {away_spread:.1f}, Away Odds: {away_odds}, Edge: {away_margin_advantage:.1f}, Cover Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
+                        'reason': f"Predicted Margin: {predicted_margin:.1f} (raw: {predicted_margin_raw:.1f}), Away Spread: {away_spread:.1f}, Away Odds: {away_odds}, Edge: {away_margin_advantage:.1f}, Cover Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}{injury_note}"
                     })
         
         return recommendations

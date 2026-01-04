@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 from datetime import datetime
 import requests
+import unicodedata
 
 class HockeyInjuryData:
     
@@ -80,7 +81,7 @@ class HockeyInjuryData:
             injury_df = pd.concat([injury_df, new_entry], ignore_index=True)
         
         injury_df.to_csv(self.injury_file, index=False)
-        print(f"Updated injury status for {player_name} ({team_abbr}): {status}")
+        # print(f"Updated injury status for {player_name} ({team_abbr}): {status}")
     
     def bulkUpdateInjuries(self, injury_list):
         """Bulk update injuries from a list"""
@@ -173,7 +174,7 @@ class HockeyInjuryData:
                                     
                                     status_mapped = self._mapInjuryStatus(status_text)
                                     
-                                    print(f"  Player: {player_name} | Status: {status_text} -> {status_mapped}")
+                                    # print(f"  Player: {player_name} | Status: {status_text} -> {status_mapped}")
                                     
                                     if status_mapped in ['OUT', 'DOUBTFUL', 'QUESTIONABLE']:
                                         injuries.append({
@@ -183,7 +184,7 @@ class HockeyInjuryData:
                                             'status': status_mapped,
                                             'injury_description': injury_type if injury_type else injury_date
                                         })
-                                        print(f"    ADDED to injury list")
+                                        # print(f"    ADDED to injury list")
                         
                         time.sleep(0.2)
                         
@@ -235,6 +236,16 @@ class HockeyInjuryData:
         else:
             return 'OUT'
     
+    def _normalizePlayerName(self, name):
+        """Normalize player name by removing diacritics and converting to lowercase.
+        Handles cases like Jokić -> jokic, Valančiūnas -> valanciunas
+        """
+        # Normalize unicode to decomposed form (separates base char from diacritics)
+        normalized = unicodedata.normalize('NFD', name)
+        # Remove diacritical marks (combining characters)
+        ascii_name = ''.join(c for c in normalized if unicodedata.category(c) != 'Mn')
+        return ascii_name.lower()
+    
     def matchPlayerIDs(self, player_data_dir='././data/hockey/player_data'):
         """Match player names to IDs from player data files"""
         try:
@@ -250,9 +261,9 @@ class HockeyInjuryData:
             print(f"Matching player IDs using: {latest_file.name}")
             player_df = pd.read_csv(latest_file)
             
-            # Create lookup table
+            # Create lookup table with normalized names for matching
             player_lookup = player_df[['PLAYER_ID', 'PLAYER_NAME']].drop_duplicates()
-            player_lookup['PLAYER_NAME_LOWER'] = player_lookup['PLAYER_NAME'].str.lower()
+            player_lookup['PLAYER_NAME_NORMALIZED'] = player_lookup['PLAYER_NAME'].apply(self._normalizePlayerName)
             
             if not self.injury_file.exists():
                 return False
@@ -265,14 +276,14 @@ class HockeyInjuryData:
             
             for idx, row in injury_df.iterrows():
                 if row['player_id'] == 0:
-                    player_name_lower = row['player_name'].lower()
-                    match = player_lookup[player_lookup['PLAYER_NAME_LOWER'] == player_name_lower]
+                    player_name_normalized = self._normalizePlayerName(row['player_name'])
+                    match = player_lookup[player_lookup['PLAYER_NAME_NORMALIZED'] == player_name_normalized]
                     
-                    print(f"  Player: {row['player_name']} | Match: {match.empty}")
+                    # print(f"  Player: {row['player_name']} | Match: {match.empty}")
                     
                     if not match.empty:
                         injury_df.at[idx, 'player_id'] = match.iloc[0]['PLAYER_ID']
-                        print(f"  Matched: {row['player_name']} -> ID {match.iloc[0]['PLAYER_ID']}")
+                        # print(f"  Matched: {row['player_name']} -> ID {match.iloc[0]['PLAYER_ID']}")
                         updated = True
                         matched_count += 1
                     else:
@@ -307,8 +318,8 @@ class HockeyInjuryData:
         }])], ignore_index=True)
         
         template_df.to_csv(template_file, index=False)
-        print(f"Exported injury template to {template_file}")
-        print("Status options: OUT, DOUBTFUL, QUESTIONABLE, PROBABLE, ACTIVE")
+        # print(f"Exported injury template to {template_file}")
+        # print("Status options: OUT, DOUBTFUL, QUESTIONABLE, PROBABLE, ACTIVE")
         return template_file
     
     def calculateInjuryImpact(self, team_abbr, latest_skater_stats):

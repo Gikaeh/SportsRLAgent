@@ -88,17 +88,17 @@ class BettingRecommender:
         home_star_out = injury_impact.get('home_star_out', 0)
         away_star_out = injury_impact.get('away_star_out', 0)
         
-        # Base adjustment: ~2% per 5 PPG lost (0.4% per PPG)
-        home_base_adj = home_ppg_lost * 0.004
-        away_base_adj = away_ppg_lost * 0.004
+        # Base adjustment: ~1% per PPG lost (a 30 PPG player = 30% impact)
+        home_base_adj = home_ppg_lost * 0.01
+        away_base_adj = away_ppg_lost * 0.01
         
-        # Star multiplier: additional 5% penalty if star is out
-        home_star_penalty = 0.05 if home_star_out else 0
-        away_star_penalty = 0.05 if away_star_out else 0
+        # Star multiplier: additional 8% penalty if star is out
+        home_star_penalty = 0.08 if home_star_out else 0
+        away_star_penalty = 0.08 if away_star_out else 0
         
-        # Total adjustments (capped at 20%)
-        home_total_adj = min(home_base_adj + home_star_penalty, 0.20)
-        away_total_adj = min(away_base_adj + away_star_penalty, 0.20)
+        # Total adjustments (capped at 35%)
+        home_total_adj = min(home_base_adj + home_star_penalty, 0.35)
+        away_total_adj = min(away_base_adj + away_star_penalty, 0.35)
         
         # Net adjustment: positive means home team is more hurt by injuries
         net_injury_effect = home_total_adj - away_total_adj
@@ -123,17 +123,17 @@ class BettingRecommender:
         home_star_out = injury_impact.get('home_star_out', 0)
         away_star_out = injury_impact.get('away_star_out', 0)
         
-        # Base adjustment: ~0.5 points per 5 PPG lost (0.1 per PPG)
-        home_margin_adj = home_ppg_lost * 0.1
-        away_margin_adj = away_ppg_lost * 0.1
+        # Base adjustment: ~0.25 points per PPG lost (a 30 PPG player = 7.5 points)
+        home_margin_adj = home_ppg_lost * 0.25
+        away_margin_adj = away_ppg_lost * 0.25
         
-        # Star multiplier: additional 2 points if star is out
-        home_star_penalty = 2.0 if home_star_out else 0
-        away_star_penalty = 2.0 if away_star_out else 0
+        # Star multiplier: additional 3 points if star is out
+        home_star_penalty = 3.0 if home_star_out else 0
+        away_star_penalty = 3.0 if away_star_out else 0
         
-        # Total adjustments (capped at 8 points)
-        home_total_adj = min(home_margin_adj + home_star_penalty, 8.0)
-        away_total_adj = min(away_margin_adj + away_star_penalty, 8.0)
+        # Total adjustments (capped at 12 points)
+        home_total_adj = min(home_margin_adj + home_star_penalty, 12.0)
+        away_total_adj = min(away_margin_adj + away_star_penalty, 12.0)
         
         # Net adjustment: home injuries reduce margin, away injuries increase it
         margin_adjustment = away_total_adj - home_total_adj

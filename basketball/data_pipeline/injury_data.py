@@ -6,6 +6,7 @@ from pathlib import Path
 from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
+import unicodedata
 
 class InjuryData:
     
@@ -178,7 +179,7 @@ class InjuryData:
                 # Correct team abbreviation to match NBA API format
                 team_abbr = self.correctTeamAbbreviation(team_abbr)
                 
-                print(f"Processing team: {team_name} ({team_abbr})")
+                # print(f"Processing team: {team_name} ({team_abbr})")
                 
                 roster_url = f"https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/{team_id}/roster"
                 
@@ -199,7 +200,7 @@ class InjuryData:
                                 
                                 status_mapped = self._mapInjuryStatus(status_text)
                                 
-                                print(f"  Player: {player_name} | Status: {status_text} -> {status_mapped}")
+                                # print(f"  Player: {player_name} | Status: {status_text} -> {status_mapped}")
                                 
                                 if status_mapped in ['OUT', 'DOUBTFUL', 'QUESTIONABLE']:
                                     injuries.append({
@@ -209,7 +210,7 @@ class InjuryData:
                                         'status': status_mapped,
                                         'injury_description': injury_type if injury_type else injury_date
                                     })
-                                    print(f"    ADDED to injury list")
+                                    # print(f"    ADDED to injury list")
                     
                     time.sleep(0.2)
                     
@@ -439,6 +440,16 @@ class InjuryData:
         
         return "\n".join(summary) if summary else ""
     
+    def _normalizePlayerName(self, name):
+        """Normalize player name by removing diacritics and converting to lowercase.
+        Handles cases like Jokić -> jokic, Valančiūnas -> valanciunas
+        """
+        # Normalize unicode to decomposed form (separates base char from diacritics)
+        normalized = unicodedata.normalize('NFD', name)
+        # Remove diacritical marks (combining characters)
+        ascii_name = ''.join(c for c in normalized if unicodedata.category(c) != 'Mn')
+        return ascii_name.lower()
+    
     def matchPlayerIDs(self, player_data_dir='././data/basketball/player_data'):
         try:
             player_dir = Path(player_data_dir)
@@ -453,7 +464,7 @@ class InjuryData:
             player_df = pd.read_csv(latest_file)
             
             player_lookup = player_df[['PLAYER_ID', 'PLAYER_NAME']].drop_duplicates()
-            player_lookup['PLAYER_NAME_LOWER'] = player_lookup['PLAYER_NAME'].str.lower()
+            player_lookup['PLAYER_NAME_NORMALIZED'] = player_lookup['PLAYER_NAME'].apply(self._normalizePlayerName)
             
             if not self.injury_file.exists():
                 return False
@@ -466,12 +477,12 @@ class InjuryData:
             
             for idx, row in injury_df.iterrows():
                 if row['player_id'] == 0:
-                    player_name_lower = row['player_name'].lower()
-                    match = player_lookup[player_lookup['PLAYER_NAME_LOWER'] == player_name_lower]
+                    player_name_normalized = self._normalizePlayerName(row['player_name'])
+                    match = player_lookup[player_lookup['PLAYER_NAME_NORMALIZED'] == player_name_normalized]
                     
                     if not match.empty:
                         injury_df.at[idx, 'player_id'] = match.iloc[0]['PLAYER_ID']
-                        print(f"  Matched: {row['player_name']} -> ID {match.iloc[0]['PLAYER_ID']}")
+                        # print(f"  Matched: {row['player_name']} -> ID {match.iloc[0]['PLAYER_ID']}")
                         updated = True
                         matched_count += 1
                     else:

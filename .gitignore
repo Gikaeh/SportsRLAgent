@@ -2,6 +2,6 @@ idea_for_project.txt
 .venv
 plots
 __pycache__
-data/basketball/upcoming_games.csv
+data
 basketball/*.md
 models/

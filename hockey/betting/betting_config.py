@@ -13,8 +13,8 @@ class BettingConfig:
     
     # Edge
     MIN_EDGE_H2H = 0.02 # Minimum 3% edge to place bet (model_prob - market_prob)
-    MIN_EDGE_SPREAD = 1
-    MIN_TOTAL_EDGE = 2
+    MIN_EDGE_SPREAD = .5
+    MIN_TOTAL_EDGE = 1
     MIN_PROBABILITY = 0.55
     
     # Kelly adjustments for underdog bets (H2H)

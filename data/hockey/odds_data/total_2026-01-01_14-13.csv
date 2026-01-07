@@ -1,0 +1,129 @@
+commence_time,home_team,away_team,bookmakers_key,bookmakers_markets_key,bookmakers_markets_last_update,name,price,point
+2026-01-01 12:08:15-08:00,NYI,Utah Mammoth,betmgm,totals,2026-01-01 14:13:00-08:00,Over,-220,6.5
+2026-01-01 12:08:15-08:00,NYI,Utah Mammoth,betmgm,totals,2026-01-01 14:13:00-08:00,Under,160,6.5
+2026-01-01 12:08:15-08:00,NYI,Utah Mammoth,bovada,totals,2026-01-01 14:13:01-08:00,Over,110,6.5
+2026-01-01 12:08:15-08:00,NYI,Utah Mammoth,bovada,totals,2026-01-01 14:13:01-08:00,Under,-145,6.5
+2026-01-01 12:08:15-08:00,NYI,Utah Mammoth,draftkings,totals,2026-01-01 14:12:23-08:00,Over,-195,6.5
+2026-01-01 12:08:15-08:00,NYI,Utah Mammoth,draftkings,totals,2026-01-01 14:12:23-08:00,Under,150,6.5
+2026-01-01 12:08:15-08:00,NYI,Utah Mammoth,fanduel,totals,2026-01-01 14:12:24-08:00,Over,178,7.5
+2026-01-01 12:08:15-08:00,NYI,Utah Mammoth,fanduel,totals,2026-01-01 14:12:24-08:00,Under,-240,7.5
+2026-01-01 12:08:15-08:00,NYI,Utah Mammoth,mybookieag,totals,2026-01-01 14:12:47-08:00,Over,-154,7.0
+2026-01-01 12:08:15-08:00,NYI,Utah Mammoth,mybookieag,totals,2026-01-01 14:12:47-08:00,Under,110,7.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,betmgm,totals,2026-01-01 14:13:00-08:00,Over,-118,6.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,betmgm,totals,2026-01-01 14:13:00-08:00,Under,-102,6.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,betonlineag,totals,2026-01-01 14:12:48-08:00,Over,-112,6.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,betonlineag,totals,2026-01-01 14:12:48-08:00,Under,-104,6.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,betrivers,totals,2026-01-01 14:12:22-08:00,Over,-115,6.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,betrivers,totals,2026-01-01 14:12:22-08:00,Under,-108,6.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,betus,totals,2026-01-01 14:12:12-08:00,Over,-110,6.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,betus,totals,2026-01-01 14:12:12-08:00,Under,-110,6.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,bovada,totals,2026-01-01 14:13:01-08:00,Over,-112,6.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,bovada,totals,2026-01-01 14:13:01-08:00,Under,-108,6.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,draftkings,totals,2026-01-01 14:12:23-08:00,Over,114,6.5
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,draftkings,totals,2026-01-01 14:12:23-08:00,Under,-135,6.5
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,fanduel,totals,2026-01-01 14:12:24-08:00,Over,110,6.5
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,fanduel,totals,2026-01-01 14:12:24-08:00,Under,-134,6.5
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,lowvig,totals,2026-01-01 14:12:22-08:00,Over,-112,6.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,lowvig,totals,2026-01-01 14:12:22-08:00,Under,-104,6.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,mybookieag,totals,2026-01-01 14:12:47-08:00,Over,-114,6.0
+2026-01-01 16:10:00-08:00,CAR,Montréal Canadiens,mybookieag,totals,2026-01-01 14:12:47-08:00,Under,-107,6.0
+2026-01-01 16:10:00-08:00,LAK,TBL,betmgm,totals,2026-01-01 14:13:00-08:00,Over,-118,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,betmgm,totals,2026-01-01 14:13:00-08:00,Under,-102,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,betonlineag,totals,2026-01-01 14:12:48-08:00,Over,-109,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,betonlineag,totals,2026-01-01 14:12:48-08:00,Under,-107,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,betrivers,totals,2026-01-01 14:12:22-08:00,Over,-118,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,betrivers,totals,2026-01-01 14:12:22-08:00,Under,-106,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,betus,totals,2026-01-01 14:12:12-08:00,Over,-120,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,betus,totals,2026-01-01 14:12:12-08:00,Under,100,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,bovada,totals,2026-01-01 14:13:01-08:00,Over,-120,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,bovada,totals,2026-01-01 14:13:01-08:00,Under,100,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,draftkings,totals,2026-01-01 14:12:23-08:00,Over,-120,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,draftkings,totals,2026-01-01 14:12:23-08:00,Under,100,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,fanduel,totals,2026-01-01 14:12:24-08:00,Over,-118,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,fanduel,totals,2026-01-01 14:12:24-08:00,Under,-104,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,lowvig,totals,2026-01-01 14:12:22-08:00,Over,-109,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,lowvig,totals,2026-01-01 14:12:22-08:00,Under,-107,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,mybookieag,totals,2026-01-01 14:12:47-08:00,Over,-116,5.5
+2026-01-01 16:10:00-08:00,LAK,TBL,mybookieag,totals,2026-01-01 14:12:47-08:00,Under,-105,5.5
+2026-01-01 16:10:00-08:00,PIT,DET,betmgm,totals,2026-01-01 14:13:00-08:00,Over,-105,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,betmgm,totals,2026-01-01 14:13:00-08:00,Under,-115,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,betonlineag,totals,2026-01-01 14:12:48-08:00,Over,-106,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,betonlineag,totals,2026-01-01 14:12:48-08:00,Under,-110,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,betrivers,totals,2026-01-01 14:12:22-08:00,Over,-104,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,betrivers,totals,2026-01-01 14:12:22-08:00,Under,-121,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,betus,totals,2026-01-01 14:12:12-08:00,Over,-110,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,betus,totals,2026-01-01 14:12:12-08:00,Under,-110,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,bovada,totals,2026-01-01 14:13:01-08:00,Over,-105,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,bovada,totals,2026-01-01 14:13:01-08:00,Under,-115,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,draftkings,totals,2026-01-01 14:12:23-08:00,Over,-105,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,draftkings,totals,2026-01-01 14:12:23-08:00,Under,-115,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,fanduel,totals,2026-01-01 14:12:24-08:00,Over,-104,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,fanduel,totals,2026-01-01 14:12:24-08:00,Under,-118,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,lowvig,totals,2026-01-01 14:12:22-08:00,Over,-106,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,lowvig,totals,2026-01-01 14:12:22-08:00,Under,-110,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,mybookieag,totals,2026-01-01 14:12:47-08:00,Over,-109,6.5
+2026-01-01 16:10:00-08:00,PIT,DET,mybookieag,totals,2026-01-01 14:12:47-08:00,Under,-112,6.5
+2026-01-01 16:10:00-08:00,TOR,WPG,betmgm,totals,2026-01-01 14:13:00-08:00,Over,-115,6.0
+2026-01-01 16:10:00-08:00,TOR,WPG,betmgm,totals,2026-01-01 14:13:00-08:00,Under,-105,6.0
+2026-01-01 16:10:00-08:00,TOR,WPG,betonlineag,totals,2026-01-01 14:12:48-08:00,Over,-104,6.0
+2026-01-01 16:10:00-08:00,TOR,WPG,betonlineag,totals,2026-01-01 14:12:48-08:00,Under,-112,6.0
+2026-01-01 16:10:00-08:00,TOR,WPG,betrivers,totals,2026-01-01 14:12:22-08:00,Over,-120,6.0
+2026-01-01 16:10:00-08:00,TOR,WPG,betrivers,totals,2026-01-01 14:12:22-08:00,Under,-105,6.0
+2026-01-01 16:10:00-08:00,TOR,WPG,betus,totals,2026-01-01 14:12:12-08:00,Over,100,6.0
+2026-01-01 16:10:00-08:00,TOR,WPG,betus,totals,2026-01-01 14:12:12-08:00,Under,-120,6.0
+2026-01-01 16:10:00-08:00,TOR,WPG,bovada,totals,2026-01-01 14:13:01-08:00,Over,-110,6.0
+2026-01-01 16:10:00-08:00,TOR,WPG,bovada,totals,2026-01-01 14:13:01-08:00,Under,-110,6.0
+2026-01-01 16:10:00-08:00,TOR,WPG,draftkings,totals,2026-01-01 14:12:23-08:00,Over,114,6.5
+2026-01-01 16:10:00-08:00,TOR,WPG,draftkings,totals,2026-01-01 14:12:23-08:00,Under,-135,6.5
+2026-01-01 16:10:00-08:00,TOR,WPG,fanduel,totals,2026-01-01 14:12:24-08:00,Over,108,6.5
+2026-01-01 16:10:00-08:00,TOR,WPG,fanduel,totals,2026-01-01 14:12:24-08:00,Under,-132,6.5
+2026-01-01 16:10:00-08:00,TOR,WPG,lowvig,totals,2026-01-01 14:12:22-08:00,Over,-104,6.0
+2026-01-01 16:10:00-08:00,TOR,WPG,lowvig,totals,2026-01-01 14:12:22-08:00,Under,-112,6.0
+2026-01-01 16:10:00-08:00,TOR,WPG,mybookieag,totals,2026-01-01 14:12:47-08:00,Over,-111,6.0
+2026-01-01 16:10:00-08:00,TOR,WPG,mybookieag,totals,2026-01-01 14:12:47-08:00,Under,-110,6.0
+2026-01-01 17:40:00-08:00,CHI,DAL,betmgm,totals,2026-01-01 14:13:00-08:00,Over,-110,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,betmgm,totals,2026-01-01 14:13:00-08:00,Under,-110,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,betonlineag,totals,2026-01-01 14:12:48-08:00,Over,-107,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,betonlineag,totals,2026-01-01 14:12:48-08:00,Under,-109,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,betrivers,totals,2026-01-01 14:12:22-08:00,Over,-115,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,betrivers,totals,2026-01-01 14:12:22-08:00,Under,-108,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,betus,totals,2026-01-01 14:12:12-08:00,Over,-110,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,betus,totals,2026-01-01 14:12:12-08:00,Under,-110,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,bovada,totals,2026-01-01 14:13:01-08:00,Over,-117,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,bovada,totals,2026-01-01 14:13:01-08:00,Under,-103,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,draftkings,totals,2026-01-01 14:12:23-08:00,Over,-110,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,draftkings,totals,2026-01-01 14:12:23-08:00,Under,-110,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,fanduel,totals,2026-01-01 14:12:24-08:00,Over,-122,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,fanduel,totals,2026-01-01 14:12:24-08:00,Under,100,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,lowvig,totals,2026-01-01 14:12:22-08:00,Over,-107,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,lowvig,totals,2026-01-01 14:12:22-08:00,Under,-109,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,mybookieag,totals,2026-01-01 14:12:47-08:00,Over,-114,5.5
+2026-01-01 17:40:00-08:00,CHI,DAL,mybookieag,totals,2026-01-01 14:12:47-08:00,Under,-107,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,betmgm,totals,2026-01-01 14:13:00-08:00,Over,-115,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,betmgm,totals,2026-01-01 14:13:00-08:00,Under,-105,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,betonlineag,totals,2026-01-01 14:12:48-08:00,Over,-115,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,betonlineag,totals,2026-01-01 14:12:48-08:00,Under,-101,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,betrivers,totals,2026-01-01 14:12:22-08:00,Over,-125,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,betrivers,totals,2026-01-01 14:12:22-08:00,Under,102,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,betus,totals,2026-01-01 14:12:12-08:00,Over,-115,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,betus,totals,2026-01-01 14:12:12-08:00,Under,-105,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,bovada,totals,2026-01-01 14:13:01-08:00,Over,-117,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,bovada,totals,2026-01-01 14:13:01-08:00,Under,-103,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,draftkings,totals,2026-01-01 14:12:23-08:00,Over,-115,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,draftkings,totals,2026-01-01 14:12:23-08:00,Under,-105,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,fanduel,totals,2026-01-01 14:12:24-08:00,Over,-118,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,fanduel,totals,2026-01-01 14:12:24-08:00,Under,-104,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,lowvig,totals,2026-01-01 14:12:22-08:00,Over,-115,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,lowvig,totals,2026-01-01 14:12:22-08:00,Under,-101,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,mybookieag,totals,2026-01-01 14:12:47-08:00,Over,-118,5.5
+2026-01-01 19:10:00-08:00,SEA,NSH,mybookieag,totals,2026-01-01 14:12:47-08:00,Under,-103,5.5
+2026-01-02 12:00:00-08:00,St Louis Blues,VGK,betmgm,totals,2026-01-01 14:13:00-08:00,Over,-120,5.5
+2026-01-02 12:00:00-08:00,St Louis Blues,VGK,betmgm,totals,2026-01-01 14:13:00-08:00,Under,100,5.5
+2026-01-02 12:00:00-08:00,St Louis Blues,VGK,betrivers,totals,2026-01-01 14:12:22-08:00,Over,-127,5.5
+2026-01-02 12:00:00-08:00,St Louis Blues,VGK,betrivers,totals,2026-01-01 14:12:22-08:00,Under,102,5.5
+2026-01-02 12:00:00-08:00,St Louis Blues,VGK,bovada,totals,2026-01-01 14:13:01-08:00,Over,-122,5.5
+2026-01-02 12:00:00-08:00,St Louis Blues,VGK,bovada,totals,2026-01-01 14:13:01-08:00,Under,102,5.5
+2026-01-02 12:00:00-08:00,St Louis Blues,VGK,draftkings,totals,2026-01-01 14:12:23-08:00,Over,-120,5.5
+2026-01-02 12:00:00-08:00,St Louis Blues,VGK,draftkings,totals,2026-01-01 14:12:23-08:00,Under,100,5.5
+2026-01-02 12:00:00-08:00,St Louis Blues,VGK,fanduel,totals,2026-01-01 14:12:24-08:00,Over,-128,5.5
+2026-01-02 12:00:00-08:00,St Louis Blues,VGK,fanduel,totals,2026-01-01 14:12:24-08:00,Under,104,5.5

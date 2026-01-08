@@ -76,74 +76,118 @@ class BettingRecommender:
         market_prob = self.oddsToProbability(market_odds)
         return model_prob - market_prob
     
-    def adjustProbabilityForInjuries(self, prob, home_team, away_team, latest_player_stats):
-        """
-        Adjust win probability based on injury impact.
-        Reduces probability for teams with significant injuries (especially stars).
-        """
-        injury_impact = self.injury_data.getInjuryImpactForGame(home_team, away_team, latest_player_stats)
+    # def adjustProbabilityForInjuries(self, prob, home_team, away_team, latest_player_stats, debug=True):
+    #     """
+    #     Adjust win probability based on injury impact.
+    #     Reduces probability for teams with significant injuries (especially stars).
+    #     """
+    #     injury_impact = self.injury_data.getInjuryImpactForGame(home_team, away_team, latest_player_stats)
         
-        home_ppg_lost = injury_impact.get('home_ppg_lost', 0)
-        away_ppg_lost = injury_impact.get('away_ppg_lost', 0)
-        home_star_out = injury_impact.get('home_star_out', 0)
-        away_star_out = injury_impact.get('away_star_out', 0)
+    #     home_ppg_lost = injury_impact.get('home_ppg_lost', 0)
+    #     away_ppg_lost = injury_impact.get('away_ppg_lost', 0)
+    #     home_star_out = injury_impact.get('home_star_out', 0)
+    #     away_star_out = injury_impact.get('away_star_out', 0)
         
-        # Base adjustment: ~1% per PPG lost (a 30 PPG player = 30% impact)
-        home_base_adj = home_ppg_lost * 0.01
-        away_base_adj = away_ppg_lost * 0.01
+    #     # Base adjustment: ~1% per PPG lost (a 30 PPG player = 30% impact)
+    #     home_base_adj = home_ppg_lost * 0.01
+    #     away_base_adj = away_ppg_lost * 0.01
         
-        # Star multiplier: additional 8% penalty if star is out
-        home_star_penalty = 0.08 if home_star_out else 0
-        away_star_penalty = 0.08 if away_star_out else 0
+    #     # Star multiplier: additional 8% penalty if star is out
+    #     home_star_penalty = 0.08 if home_star_out else 0
+    #     away_star_penalty = 0.08 if away_star_out else 0
         
-        # Total adjustments (capped at 35%)
-        home_total_adj = min(home_base_adj + home_star_penalty, 0.35)
-        away_total_adj = min(away_base_adj + away_star_penalty, 0.35)
+    #     # Total adjustments (capped at 35%)
+    #     home_total_adj = min(home_base_adj + home_star_penalty, 0.35)
+    #     away_total_adj = min(away_base_adj + away_star_penalty, 0.35)
         
-        # Net adjustment: positive means home team is more hurt by injuries
-        net_injury_effect = home_total_adj - away_total_adj
+    #     # Net adjustment: positive means home team is more hurt by injuries
+    #     net_injury_effect = home_total_adj - away_total_adj
         
-        # Adjust probability: if home is more hurt, reduce home prob
-        adjusted_prob = prob * (1 - net_injury_effect)
+    #     # Adjust probability: if home is more hurt, reduce home prob
+    #     adjusted_prob = prob * (1 - net_injury_effect)
         
-        # Clamp to valid probability range
-        adjusted_prob = max(0.05, min(0.95, adjusted_prob))
+    #     # Clamp to valid probability range
+    #     adjusted_prob = max(0.05, min(0.95, adjusted_prob))
         
-        return adjusted_prob, injury_impact
+    #     if debug:
+    #         print(f"\n{'='*80}")
+    #         print(f"DEBUG: INJURY PROBABILITY ADJUSTMENT - {away_team} @ {home_team}")
+    #         print(f"{'='*80}")
+    #         print(f"  Raw model probability (home win): {prob:.1%}")
+    #         print(f"  HOME ({home_team}): PPG lost={home_ppg_lost:.1f}, Star out={bool(home_star_out)}")
+    #         print(f"    Base adj: {home_base_adj:.1%}, Star penalty: {home_star_penalty:.1%}, Total: {home_total_adj:.1%}")
+    #         print(f"  AWAY ({away_team}): PPG lost={away_ppg_lost:.1f}, Star out={bool(away_star_out)}")
+    #         print(f"    Base adj: {away_base_adj:.1%}, Star penalty: {away_star_penalty:.1%}, Total: {away_total_adj:.1%}")
+    #         print(f"  Net injury effect: {net_injury_effect:.1%} (positive = home more hurt)")
+    #         print(f"  Adjusted probability (home win): {adjusted_prob:.1%}")
+    #         print(f"  Change: {(adjusted_prob - prob):.1%}")
+        
+    #     return adjusted_prob, injury_impact
     
-    def adjustMarginForInjuries(self, predicted_margin, home_team, away_team, latest_player_stats):
-        """
-        Adjust predicted margin based on injury impact.
-        Positive margin = home team favored, so injuries to home team reduce margin.
-        """
-        injury_impact = self.injury_data.getInjuryImpactForGame(home_team, away_team, latest_player_stats)
+    # def adjustMarginForInjuries(self, predicted_margin, home_team, away_team, latest_player_stats, debug=True):
+    #     """
+    #     Adjust predicted margin based on injury impact.
+    #     Positive margin = home team favored, so injuries to home team reduce margin.
+    #     """
+    #     injury_impact = self.injury_data.getInjuryImpactForGame(home_team, away_team, latest_player_stats)
         
-        home_ppg_lost = injury_impact.get('home_ppg_lost', 0)
-        away_ppg_lost = injury_impact.get('away_ppg_lost', 0)
-        home_star_out = injury_impact.get('home_star_out', 0)
-        away_star_out = injury_impact.get('away_star_out', 0)
+    #     home_ppg_lost = injury_impact.get('home_ppg_lost', 0)
+    #     away_ppg_lost = injury_impact.get('away_ppg_lost', 0)
+    #     home_star_out = injury_impact.get('home_star_out', 0)
+    #     away_star_out = injury_impact.get('away_star_out', 0)
         
-        # Base adjustment: ~0.25 points per PPG lost (a 30 PPG player = 7.5 points)
-        home_margin_adj = home_ppg_lost * 0.25
-        away_margin_adj = away_ppg_lost * 0.25
+    #     # Base adjustment: ~0.25 points per PPG lost (a 30 PPG player = 7.5 points)
+    #     home_margin_adj = home_ppg_lost * 0.25
+    #     away_margin_adj = away_ppg_lost * 0.25
         
-        # Star multiplier: additional 3 points if star is out
-        home_star_penalty = 3.0 if home_star_out else 0
-        away_star_penalty = 3.0 if away_star_out else 0
+    #     # Star multiplier: additional 3 points if star is out
+    #     home_star_penalty = 3.0 if home_star_out else 0
+    #     away_star_penalty = 3.0 if away_star_out else 0
         
-        # Total adjustments (capped at 12 points)
-        home_total_adj = min(home_margin_adj + home_star_penalty, 12.0)
-        away_total_adj = min(away_margin_adj + away_star_penalty, 12.0)
+    #     # Total adjustments (capped at 12 points)
+    #     home_total_adj = min(home_margin_adj + home_star_penalty, 12.0)
+    #     away_total_adj = min(away_margin_adj + away_star_penalty, 12.0)
         
-        # Net adjustment: home injuries reduce margin, away injuries increase it
-        margin_adjustment = away_total_adj - home_total_adj
+    #     # Net adjustment: home injuries reduce margin, away injuries increase it
+    #     margin_adjustment = away_total_adj - home_total_adj
         
-        adjusted_margin = predicted_margin + margin_adjustment
+    #     adjusted_margin = predicted_margin + margin_adjustment
         
-        return adjusted_margin, injury_impact
+    #     if debug:
+    #         print(f"\n{'='*80}")
+    #         print(f"DEBUG: INJURY MARGIN ADJUSTMENT - {away_team} @ {home_team}")
+    #         print(f"{'='*80}")
+    #         print(f"  Raw predicted margin: {predicted_margin:.1f} pts (positive = home favored)")
+    #         print(f"  HOME ({home_team}): PPG lost={home_ppg_lost:.1f}, Star out={bool(home_star_out)}")
+    #         print(f"    Margin adj: {home_margin_adj:.1f} pts, Star penalty: {home_star_penalty:.1f} pts, Total: {home_total_adj:.1f} pts")
+    #         print(f"  AWAY ({away_team}): PPG lost={away_ppg_lost:.1f}, Star out={bool(away_star_out)}")
+    #         print(f"    Margin adj: {away_margin_adj:.1f} pts, Star penalty: {away_star_penalty:.1f} pts, Total: {away_total_adj:.1f} pts")
+    #         print(f"  Net margin adjustment: {margin_adjustment:.1f} pts (positive = helps home)")
+    #         print(f"  Adjusted margin: {adjusted_margin:.1f} pts")
+        
+    #     return adjusted_margin, injury_impact
     
-    def predictGames(self, game_features, game_info):
+    def predictGames(self, game_features, game_info, debug=True):
         results = game_info.copy()
+        
+        if debug:
+            print(f"\n{'='*80}")
+            print("DEBUG: MODEL INPUT FEATURES")
+            print(f"{'='*80}")
+            # Show key player features for each game
+            player_cols = [c for c in game_features.columns if 'top' in c and 'ppg' in c]
+            for idx, row in game_features.iterrows():
+                home_team = game_info.iloc[idx]['home_team']
+                away_team = game_info.iloc[idx]['away_team']
+                print(f"\n{away_team} @ {home_team}:")
+                print(f"  HOME player features:")
+                for col in ['home_top3_avg_ppg', 'home_top5_avg_ppg', 'home_top6_avg_ppg']:
+                    if col in game_features.columns:
+                        print(f"    {col}: {row[col]:.1f}")
+                print(f"  AWAY player features:")
+                for col in ['away_top3_avg_ppg', 'away_top5_avg_ppg', 'away_top6_avg_ppg']:
+                    if col in game_features.columns:
+                        print(f"    {col}: {row[col]:.1f}")
 
         if self.model.getModelType() == 'h2h':
             odds_data = self.getOdds('h2h')
@@ -155,7 +199,14 @@ class BettingRecommender:
             results['home_win_prob'] = home_win_probs
             results['away_win_prob'] = 1 - home_win_probs
             results['predicted_winner'] = results.apply(lambda row: row['home_team'] if row['home_win_prob'] > 0.5 else row['away_team'], axis=1)
-            results['confidence'] = np.abs(home_win_probs - 0.5) * 2 
+            results['confidence'] = np.abs(home_win_probs - 0.5) * 2
+            
+            if debug:
+                print(f"\n{'='*80}")
+                print("DEBUG: MODEL PREDICTIONS (before injury adjustment)")
+                print(f"{'='*80}")
+                for idx, row in results.iterrows():
+                    print(f"  {row['away_team']} @ {row['home_team']}: Home win prob = {row['home_win_prob']:.1%}")
 
         if self.model.getModelType() == 'spread':
             odds_data = self.getOdds('spread')
@@ -165,6 +216,13 @@ class BettingRecommender:
             results['predicted_margin'] = predictions
             results['predicted_cover'] = results.apply(lambda row: row['home_team'] if row['predicted_margin'] > 0 else row['away_team'], axis=1)
             results['confidence'] = np.minimum(np.abs(predictions) / 20, 1)
+            
+            if debug:
+                print(f"\n{'='*80}")
+                print("DEBUG: MODEL PREDICTIONS (before injury adjustment)")
+                print(f"{'='*80}")
+                for idx, row in results.iterrows():
+                    print(f"  {row['away_team']} @ {row['home_team']}: Predicted margin = {row['predicted_margin']:.1f} pts")
 
         # if self.model.getModelType() == 'total':
         #     predictions = self.model.predict(game_features)
@@ -213,15 +271,15 @@ class BettingRecommender:
             away_prob_raw = game['away_win_prob']
             
             # Apply injury adjustment to probabilities
-            if not latest_player_stats.empty:
-                home_prob, injury_impact = self.adjustProbabilityForInjuries(
-                    home_prob_raw, home_team, away_team, latest_player_stats
-                )
-                away_prob = 1 - home_prob
-            else:
-                home_prob = home_prob_raw
-                away_prob = away_prob_raw
-                injury_impact = {}
+            # if not latest_player_stats.empty:
+            #     home_prob, injury_impact = self.adjustProbabilityForInjuries(
+            #         home_prob_raw, home_team, away_team, latest_player_stats
+            #     )
+            #     away_prob = 1 - home_prob
+            # else:
+            home_prob = home_prob_raw
+            away_prob = away_prob_raw
+            injury_impact = {}
             
             game_odds = odds_data[(odds_data['home_team'] == home_team) & (odds_data['away_team'] == away_team)]
             
@@ -336,13 +394,13 @@ class BettingRecommender:
             predicted_margin_raw = game['predicted_margin']
             
             # Apply injury adjustment to predicted margin
-            if not latest_player_stats.empty:
-                predicted_margin, injury_impact = self.adjustMarginForInjuries(
-                    predicted_margin_raw, home_team, away_team, latest_player_stats
-                )
-            else:
-                predicted_margin = predicted_margin_raw
-                injury_impact = {}
+            # if not latest_player_stats.empty:
+            #     predicted_margin, injury_impact = self.adjustMarginForInjuries(
+            #         predicted_margin_raw, home_team, away_team, latest_player_stats
+            #     )
+            # else:
+            predicted_margin = predicted_margin_raw
+            injury_impact = {}
             
             game_odds = odds_data[(odds_data['home_team'] == home_team) & (odds_data['away_team'] == away_team)]
             

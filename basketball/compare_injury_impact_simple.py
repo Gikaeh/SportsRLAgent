@@ -16,7 +16,7 @@ def get_current_season():
 
 def compare_top_players():
     print("\n" + "="*80)
-    print("TOP 5 PLAYER STATS COMPARISON - WITH vs WITHOUT INJURED PLAYERS")
+    print("TOP 6 PLAYER STATS COMPARISON - WITH vs WITHOUT INJURED PLAYERS")
     print("="*80 + "\n")
     
     # Load injury data
@@ -114,23 +114,23 @@ def compare_team_players(latest_player_stats, team_abbr, injured_players, player
     
     # Sort by minutes and get top 5 WITHOUT filtering
     team_players_sorted = team_players.sort_values('mpg_rolling', ascending=False)
-    top5_before = team_players_sorted.head(5).copy()
+    top5_before = team_players_sorted.head(6).copy()
     
     # Get top 5 WITH filtering (remove injured)
     team_players_healthy = team_players[~team_players['PLAYER_ID'].isin(injured_players)].copy()
     team_players_healthy_sorted = team_players_healthy.sort_values('mpg_rolling', ascending=False)
-    top5_after = team_players_healthy_sorted.head(5).copy()
+    top5_after = team_players_healthy_sorted.head(6).copy()
     
     # Check if any top 5 players were injured
     injured_in_top5 = top5_before[top5_before['PLAYER_ID'].isin(injured_players)]
     
     if injured_in_top5.empty:
-        print(f"No injured players in top 5 - stats unchanged")
+        print(f"No injured players in top 6 - stats unchanged")
         print_top5_stats(top5_before, player_name_map, "  ")
         return
     
     # Show injured players that were removed
-    print(f"{len(injured_in_top5)} INJURED PLAYER(S) REMOVED FROM TOP 5:")
+    print(f"{len(injured_in_top5)} INJURED PLAYER(S) REMOVED FROM TOP 6:")
     for _, player in injured_in_top5.iterrows():
         player_name = player_name_map.get(player['PLAYER_ID'], f"ID {player['PLAYER_ID']}")
         print(f"     - {player_name}: {player['ppg_rolling']:.1f} PPG, {player['mpg_rolling']:.1f} MPG")

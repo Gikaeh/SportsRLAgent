@@ -10,6 +10,16 @@ import unicodedata
 
 class InjuryData:
     
+    # Injury status weights for impact calculation
+    # OUT/DOUBTFUL = 100% impact (fully removed from selection)
+    # QUESTIONABLE = 50% impact (kept in selection, weighted in impact calc)
+    INJURY_WEIGHTS = {
+        'OUT': 1.0,
+        'DOUBTFUL': 1.0,
+        'QUESTIONABLE': 0.5,
+        'PROBABLE': 0.1,
+    }
+    
     def __init__(self, data_dir='././data/basketball'):
         self.data_dir = Path(data_dir)
         self.injury_dir = self.data_dir / 'injury_data'
@@ -17,10 +27,12 @@ class InjuryData:
         self.injury_file = self.injury_dir / 'current_injuries.csv'
         
     def getInjuredPlayers(self):
+        """Get players who should be REMOVED from top player selection (OUT, DOUBTFUL only)."""
         if self.injury_file.exists():
             try:
                 injury_df = pd.read_csv(self.injury_file)
-                active_injuries = injury_df[injury_df['status'].isin(['OUT', 'DOUBTFUL', 'QUESTIONABLE'])]
+                # Only OUT and DOUBTFUL are removed - QUESTIONABLE players stay in selection
+                active_injuries = injury_df[injury_df['status'].isin(['OUT', 'DOUBTFUL'])]
                 return set(active_injuries['player_id'].astype(int).values)
             except Exception as e:
                 print(f"Error reading injury file: {e}")
@@ -28,6 +40,38 @@ class InjuryData:
         return set()
     
     def getInjuredPlayersByTeam(self, team_abbr):
+        """Get players who should be REMOVED from top player selection for a team (OUT, DOUBTFUL only)."""
+        if self.injury_file.exists():
+            try:
+                injury_df = pd.read_csv(self.injury_file)
+                # Only OUT and DOUBTFUL are removed - QUESTIONABLE players stay in selection
+                team_injuries = injury_df[
+                    (injury_df['team_abbreviation'] == team_abbr) & 
+                    (injury_df['status'].isin(['OUT', 'DOUBTFUL']))
+                ]
+                return set(team_injuries['player_id'].astype(int).values)
+            except Exception as e:
+                print(f"Error reading injury file for team {team_abbr}: {e}")
+                return set()
+        return set()
+    
+    def getQuestionablePlayersByTeam(self, team_abbr):
+        """Get QUESTIONABLE players for a team (for weighted impact calculation)."""
+        if self.injury_file.exists():
+            try:
+                injury_df = pd.read_csv(self.injury_file)
+                questionable = injury_df[
+                    (injury_df['team_abbreviation'] == team_abbr) & 
+                    (injury_df['status'] == 'QUESTIONABLE')
+                ]
+                return set(questionable['player_id'].astype(int).values)
+            except Exception as e:
+                print(f"Error getting questionable players for {team_abbr}: {e}")
+                return set()
+        return set()
+    
+    def getAllInjuredPlayersByTeam(self, team_abbr):
+        """Get ALL injured players for a team with their status (for impact calculation)."""
         if self.injury_file.exists():
             try:
                 injury_df = pd.read_csv(self.injury_file)
@@ -35,11 +79,12 @@ class InjuryData:
                     (injury_df['team_abbreviation'] == team_abbr) & 
                     (injury_df['status'].isin(['OUT', 'DOUBTFUL', 'QUESTIONABLE']))
                 ]
-                return set(team_injuries['player_id'].astype(int).values)
+                # Return dict of player_id -> status
+                return dict(zip(team_injuries['player_id'].astype(int), team_injuries['status']))
             except Exception as e:
-                print(f"Error reading injury file for team {team_abbr}: {e}")
-                return set()
-        return set()
+                print(f"Error getting all injured players for {team_abbr}: {e}")
+                return {}
+        return {}
     
     def updateInjuryData(self, player_id, player_name, team_abbr, status, injury_description=''):
         if self.injury_file.exists():
@@ -302,27 +347,38 @@ class InjuryData:
             print(f"Error fixing team abbreviations: {e}")
             return False
     
-    def calculateInjuryImpact(self, team_abbr, latest_player_stats):
+    def calculateInjuryImpact(self, team_abbr, latest_player_stats, debug=False):
         """
         Calculate the impact of injuries on a team's production.
+        Uses weighted impact: OUT/DOUBTFUL = 100%, QUESTIONABLE = 50%
         Returns dict with injury impact metrics.
         """
-        injured_player_ids = self.getInjuredPlayersByTeam(team_abbr)
+        # Get all injured players with their status (includes OUT, DOUBTFUL, QUESTIONABLE)
+        injured_player_status = self.getAllInjuredPlayersByTeam(team_abbr)
         
-        if not injured_player_ids:
+        if not injured_player_status:
             return {
                 'ppg_lost': 0.0,
                 'mpg_lost': 0.0,
                 'apg_lost': 0.0,
                 'rpg_lost': 0.0,
                 'num_injured': 0,
+                'num_out': 0,
+                'num_questionable': 0,
                 'star_out': 0,
                 'rotation_players_out': 0,
                 'injury_severity': 0.0
             }
         
         team_players = latest_player_stats[latest_player_stats['TEAM_ABBREVIATION'] == team_abbr]
-        injured_players = team_players[team_players['PLAYER_ID'].isin(injured_player_ids)]
+        injured_player_ids = set(injured_player_status.keys())
+        injured_players = team_players[team_players['PLAYER_ID'].isin(injured_player_ids)].copy()
+        
+        if debug:
+            print(f"\n  DEBUG: calculateInjuryImpact for {team_abbr}")
+            print(f"    Injured players from injury file: {injured_player_status}")
+            print(f"    Team players in stats: {len(team_players)}")
+            print(f"    Injured players matched in stats: {len(injured_players)}")
         
         if injured_players.empty:
             return {
@@ -331,32 +387,70 @@ class InjuryData:
                 'apg_lost': 0.0,
                 'rpg_lost': 0.0,
                 'num_injured': 0,
+                'num_out': 0,
+                'num_questionable': 0,
                 'star_out': 0,
                 'star_name': '',
                 'rotation_players_out': 0,
                 'injury_severity': 0.0
             }
         
-        ppg_lost = injured_players['ppg_rolling'].sum() if 'ppg_rolling' in injured_players.columns else 0
-        mpg_lost = injured_players['mpg_rolling'].sum() if 'mpg_rolling' in injured_players.columns else 0
-        apg_lost = injured_players['apg_rolling'].sum() if 'apg_rolling' in injured_players.columns else 0
-        rpg_lost = injured_players['rpg_rolling'].sum() if 'rpg_rolling' in injured_players.columns else 0
+        # Add weight column based on injury status
+        injured_players['injury_weight'] = injured_players['PLAYER_ID'].map(
+            lambda pid: self.INJURY_WEIGHTS.get(injured_player_status.get(pid, 'OUT'), 1.0)
+        )
+        injured_players['injury_status'] = injured_players['PLAYER_ID'].map(injured_player_status)
         
-        # Star out = one of team's top 3 PPG players is injured
+        if debug and 'PLAYER_NAME' in injured_players.columns:
+            print(f"    Matched injured players (with weights):")
+            for _, p in injured_players.iterrows():
+                print(f"      - {p['PLAYER_NAME']}: {p['ppg_rolling']:.1f} PPG, {p['mpg_rolling']:.1f} MPG, "
+                      f"Status: {p['injury_status']}, Weight: {p['injury_weight']:.0%}")
+        
+        # Calculate weighted stats lost
+        ppg_lost = (injured_players['ppg_rolling'] * injured_players['injury_weight']).sum() if 'ppg_rolling' in injured_players.columns else 0
+        mpg_lost = (injured_players['mpg_rolling'] * injured_players['injury_weight']).sum() if 'mpg_rolling' in injured_players.columns else 0
+        apg_lost = (injured_players['apg_rolling'] * injured_players['injury_weight']).sum() if 'apg_rolling' in injured_players.columns else 0
+        rpg_lost = (injured_players['rpg_rolling'] * injured_players['injury_weight']).sum() if 'rpg_rolling' in injured_players.columns else 0
+        
+        # Count by status
+        num_out = len(injured_players[injured_players['injury_status'].isin(['OUT', 'DOUBTFUL'])])
+        num_questionable = len(injured_players[injured_players['injury_status'] == 'QUESTIONABLE'])
+        
+        # Star out = one of team's top 3 PPG players is OUT or DOUBTFUL (not questionable)
         star_out = 0
         star_name = ''
         if 'ppg_rolling' in team_players.columns:
             top_3_ppg = team_players.nlargest(3, 'ppg_rolling')['PLAYER_ID'].tolist()
-            injured_stars = injured_players[injured_players['PLAYER_ID'].isin(top_3_ppg)]
+            # Only count as star out if they're OUT or DOUBTFUL
+            out_doubtful_ids = {pid for pid, status in injured_player_status.items() if status in ['OUT', 'DOUBTFUL']}
+            injured_stars = injured_players[
+                (injured_players['PLAYER_ID'].isin(top_3_ppg)) & 
+                (injured_players['PLAYER_ID'].isin(out_doubtful_ids))
+            ]
             if not injured_stars.empty:
                 star_out = 1
                 if 'PLAYER_NAME' in injured_stars.columns:
                     star_name = injured_stars.iloc[0]['PLAYER_NAME']
+            
+            if debug:
+                print(f"    Top 3 PPG players on team: {top_3_ppg}")
+                if 'PLAYER_NAME' in team_players.columns:
+                    top_3_names = team_players.nlargest(3, 'ppg_rolling')[['PLAYER_NAME', 'ppg_rolling']].values.tolist()
+                    print(f"    Top 3 by name: {top_3_names}")
+                print(f"    Star out (OUT/DOUBTFUL only): {bool(star_out)} ({star_name if star_name else 'N/A'})")
         
-        rotation_players_out = len(injured_players[injured_players['mpg_rolling'] >= 15])
+        # Rotation players out = OUT/DOUBTFUL players with 15+ MPG
+        out_doubtful_players = injured_players[injured_players['injury_status'].isin(['OUT', 'DOUBTFUL'])]
+        rotation_players_out = len(out_doubtful_players[out_doubtful_players['mpg_rolling'] >= 15])
         
         injury_severity = (ppg_lost / 100) + (mpg_lost / 200) + (star_out * 0.3)
         injury_severity = min(injury_severity, 1.0)
+        
+        if debug:
+            print(f"    Weighted PPG lost: {ppg_lost:.1f}")
+            print(f"    OUT/DOUBTFUL: {num_out}, QUESTIONABLE: {num_questionable}")
+            print(f"    Rotation players out (15+ MPG, OUT/DOUBTFUL): {rotation_players_out}")
         
         return {
             'ppg_lost': round(ppg_lost, 1),
@@ -364,6 +458,8 @@ class InjuryData:
             'apg_lost': round(apg_lost, 1),
             'rpg_lost': round(rpg_lost, 1),
             'num_injured': len(injured_players),
+            'num_out': num_out,
+            'num_questionable': num_questionable,
             'star_out': star_out,
             'star_name': star_name,
             'rotation_players_out': rotation_players_out,
@@ -416,6 +512,7 @@ class InjuryData:
     def getInjurySummaryForGame(self, home_team, away_team, latest_player_stats):
         """
         Get a formatted injury summary for display in betting recommendations.
+        Now shows OUT/DOUBTFUL count separately from QUESTIONABLE.
         """
         home_impact = self.calculateInjuryImpact(home_team, latest_player_stats)
         away_impact = self.calculateInjuryImpact(away_team, latest_player_stats)
@@ -426,12 +523,24 @@ class InjuryData:
             summary.append(f"INJURY IMPACT:")
             
             if home_impact['num_injured'] > 0:
-                star_indicator = f" STAR OUT ({home_impact['star_name']})" if home_impact['star_out'] and home_impact['star_name'] else (" ⚠️ STAR OUT" if home_impact['star_out'] else "")
-                summary.append(f"  {home_team} (Home): {home_impact['num_injured']} out, -{home_impact['ppg_lost']:.1f} PPG{star_indicator}")
+                star_indicator = f" STAR OUT ({home_impact['star_name']})" if home_impact['star_out'] and home_impact.get('star_name') else (" STAR OUT" if home_impact['star_out'] else "")
+                # Show breakdown: X out, Y questionable
+                out_count = home_impact.get('num_out', home_impact['num_injured'])
+                q_count = home_impact.get('num_questionable', 0)
+                status_str = f"{out_count} out" if out_count > 0 else ""
+                if q_count > 0:
+                    status_str += f", {q_count} questionable" if status_str else f"{q_count} questionable"
+                summary.append(f"  {home_team} (Home): {status_str}, -{home_impact['ppg_lost']:.1f} PPG{star_indicator}")
             
             if away_impact['num_injured'] > 0:
-                star_indicator = f" STAR OUT ({away_impact['star_name']})" if away_impact['star_out'] and away_impact['star_name'] else (" ⚠️ STAR OUT" if away_impact['star_out'] else "")
-                summary.append(f"  {away_team} (Away): {away_impact['num_injured']} out, -{away_impact['ppg_lost']:.1f} PPG{star_indicator}")
+                star_indicator = f" STAR OUT ({away_impact['star_name']})" if away_impact['star_out'] and away_impact.get('star_name') else (" STAR OUT" if away_impact['star_out'] else "")
+                # Show breakdown: X out, Y questionable
+                out_count = away_impact.get('num_out', away_impact['num_injured'])
+                q_count = away_impact.get('num_questionable', 0)
+                status_str = f"{out_count} out" if out_count > 0 else ""
+                if q_count > 0:
+                    status_str += f", {q_count} questionable" if status_str else f"{q_count} questionable"
+                summary.append(f"  {away_team} (Away): {status_str}, -{away_impact['ppg_lost']:.1f} PPG{star_indicator}")
             
             if home_impact['injury_severity'] > away_impact['injury_severity']:
                 summary.append(f"  → Injury advantage: {away_team}")

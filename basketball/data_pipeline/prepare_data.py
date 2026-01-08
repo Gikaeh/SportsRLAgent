@@ -773,7 +773,7 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
         else:
             return f"{year}-{str(year+1)[-2:]}"
     
-    def addUpcomingPlayerFeatures(self, matchup_data, season, verify_injury_filtering=False):
+    def addUpcomingPlayerFeatures(self, matchup_data, season, verify_injury_filtering=False, debug=False):
         print(f"Adding player features for upcoming games...")
         print(f"Precomputing player rolling averages...")
         
@@ -784,10 +784,20 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
         
         latest_player_stats = player_df.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
         
-        # Get injured players
+        # Get injured players (OUT/DOUBTFUL only - removed from selection)
         injured_players = self.injury_data.getInjuredPlayers()
         if injured_players:
-            print(f"Found {len(injured_players)} injured players to exclude from top player selection")
+            print(f"Found {len(injured_players)} OUT/DOUBTFUL players to exclude from top player selection")
+        
+        # Get all questionable players (kept in selection but stats weighted at 50%)
+        questionable_weight = self.injury_data.INJURY_WEIGHTS.get('QUESTIONABLE', 0.5)
+        
+        if debug:
+            print("\n" + "="*80)
+            print("DEBUG: INJURY DATA LOADED")
+            print("="*80)
+            # Show injured player IDs
+            print(f"Injured player IDs: {sorted(injured_players) if injured_players else 'None'}")
         
         if verify_injury_filtering:
             print("\n" + "="*80)
@@ -810,36 +820,64 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
             # Home team: Get top 6 healthy players by minutes
             home_players = latest_player_stats[latest_player_stats['TEAM_ABBREVIATION'] == home_team].copy()
             
+            if debug:
+                print(f"\n{'='*80}")
+                print(f"DEBUG: {home_team} @ {away_team} - PLAYER SELECTION")
+                print(f"{'='*80}")
+                print(f"\n{home_team} (HOME) - All players before filtering: {len(home_players)}")
+                if 'PLAYER_NAME' in home_players.columns:
+                    top_by_ppg = home_players.nlargest(8, 'ppg_rolling')[['PLAYER_ID', 'PLAYER_NAME', 'ppg_rolling', 'mpg_rolling']]
+                    print(f"  Top 8 by PPG (before injury filter):")
+                    for _, p in top_by_ppg.iterrows():
+                        is_injured = p['PLAYER_ID'] in injured_players if injured_players else False
+                        status = " [INJURED]" if is_injured else ""
+                        print(f"    {p['PLAYER_NAME']}: {p['ppg_rolling']:.1f} PPG, {p['mpg_rolling']:.1f} MPG{status}")
+            
             # Filter out injured players
             if injured_players:
                 original_count = len(home_players)
                 injured_in_team = home_players[home_players['PLAYER_ID'].isin(injured_players)]
                 
-                if not injured_in_team.empty and verify_injury_filtering:
-                    print(f"\n  {home_team} (Home) - Dropping {len(injured_in_team)} injured player(s):")
-                    for _, player in injured_in_team.iterrows():
-                        print(f"    - Player ID {player['PLAYER_ID']}: {player['mpg_rolling']:.1f} MPG")
+                if not injured_in_team.empty:
+                    if debug or verify_injury_filtering:
+                        print(f"\n  {home_team} (Home) - Dropping {len(injured_in_team)} injured player(s):")
+                        for _, player in injured_in_team.iterrows():
+                            name = player.get('PLAYER_NAME', f"ID:{player['PLAYER_ID']}")
+                            print(f"    - {name}: {player['ppg_rolling']:.1f} PPG, {player['mpg_rolling']:.1f} MPG")
                 
                 home_players = home_players[~home_players['PLAYER_ID'].isin(injured_players)]
                 
-                if verify_injury_filtering and len(injured_in_team) > 0:
+                if (debug or verify_injury_filtering) and len(injured_in_team) > 0:
                     print(f"    Players remaining: {len(home_players)} (was {original_count})")
             
             home_players = home_players.sort_values('mpg_rolling', ascending=False).head(6)
+            
+            # Get questionable players for this team
+            home_questionable = self.injury_data.getQuestionablePlayersByTeam(home_team)
+            
+            if debug:
+                print(f"\n  {home_team} - FINAL TOP 6 (sent to model):")
+                for i, (_, p) in enumerate(home_players.iterrows()):
+                    name = p.get('PLAYER_NAME', f"ID:{p['PLAYER_ID']}")
+                    is_questionable = p['PLAYER_ID'] in home_questionable
+                    q_tag = f" [Q - {questionable_weight:.0%} weight]" if is_questionable else ""
+                    print(f"    P{i+1}: {name}: {p['ppg_rolling']:.1f} PPG, {p['mpg_rolling']:.1f} MPG{q_tag}")
             
             for i in range(6):
                 prefix = f'home_p{i+1}_'
                 if i < len(home_players):
                     player = home_players.iloc[i]
-                    game_features[f'{prefix}ppg'] = player['ppg_rolling']
-                    game_features[f'{prefix}fg_pct'] = player['fg_pct_rolling']
-                    game_features[f'{prefix}mpg'] = player['mpg_rolling']
-                    game_features[f'{prefix}apg'] = player['apg_rolling']
-                    game_features[f'{prefix}rpg'] = player['rpg_rolling']
-                    game_features[f'{prefix}blk'] = player['blk_rolling']
-                    game_features[f'{prefix}stl'] = player['stl_rolling']
-                    game_features[f'{prefix}tov'] = player['tov_rolling']
-                    game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling']
+                    # Apply weight for questionable players (50% of their stats)
+                    weight = questionable_weight if player['PLAYER_ID'] in home_questionable else 1.0
+                    game_features[f'{prefix}ppg'] = player['ppg_rolling'] * weight
+                    game_features[f'{prefix}fg_pct'] = player['fg_pct_rolling']  # Don't weight percentages
+                    game_features[f'{prefix}mpg'] = player['mpg_rolling'] * weight
+                    game_features[f'{prefix}apg'] = player['apg_rolling'] * weight
+                    game_features[f'{prefix}rpg'] = player['rpg_rolling'] * weight
+                    game_features[f'{prefix}blk'] = player['blk_rolling'] * weight
+                    game_features[f'{prefix}stl'] = player['stl_rolling'] * weight
+                    game_features[f'{prefix}tov'] = player['tov_rolling'] * weight
+                    game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling'] * weight
                 else:
                     game_features[f'{prefix}ppg'] = 0
                     game_features[f'{prefix}fg_pct'] = 0
@@ -854,36 +892,61 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
             # Away team: Get top 6 healthy players by minutes
             away_players = latest_player_stats[latest_player_stats['TEAM_ABBREVIATION'] == away_team].copy()
             
+            if debug:
+                print(f"\n{away_team} (AWAY) - All players before filtering: {len(away_players)}")
+                if 'PLAYER_NAME' in away_players.columns:
+                    top_by_ppg = away_players.nlargest(8, 'ppg_rolling')[['PLAYER_ID', 'PLAYER_NAME', 'ppg_rolling', 'mpg_rolling']]
+                    print(f"  Top 8 by PPG (before injury filter):")
+                    for _, p in top_by_ppg.iterrows():
+                        is_injured = p['PLAYER_ID'] in injured_players if injured_players else False
+                        status = " [INJURED]" if is_injured else ""
+                        print(f"    {p['PLAYER_NAME']}: {p['ppg_rolling']:.1f} PPG, {p['mpg_rolling']:.1f} MPG{status}")
+            
             # Filter out injured players
             if injured_players:
                 original_count = len(away_players)
                 injured_in_team = away_players[away_players['PLAYER_ID'].isin(injured_players)]
                 
-                if not injured_in_team.empty and verify_injury_filtering:
-                    print(f"\n  {away_team} (Away) - Dropping {len(injured_in_team)} injured player(s):")
-                    for _, player in injured_in_team.iterrows():
-                        print(f"    - Player ID {player['PLAYER_ID']}: {player['mpg_rolling']:.1f} MPG")
+                if not injured_in_team.empty:
+                    if debug or verify_injury_filtering:
+                        print(f"\n  {away_team} (Away) - Dropping {len(injured_in_team)} injured player(s):")
+                        for _, player in injured_in_team.iterrows():
+                            name = player.get('PLAYER_NAME', f"ID:{player['PLAYER_ID']}")
+                            print(f"    - {name}: {player['ppg_rolling']:.1f} PPG, {player['mpg_rolling']:.1f} MPG")
                 
                 away_players = away_players[~away_players['PLAYER_ID'].isin(injured_players)]
                 
-                if verify_injury_filtering and len(injured_in_team) > 0:
+                if (debug or verify_injury_filtering) and len(injured_in_team) > 0:
                     print(f"    Players remaining: {len(away_players)} (was {original_count})")
             
             away_players = away_players.sort_values('mpg_rolling', ascending=False).head(6)
+            
+            # Get questionable players for this team
+            away_questionable = self.injury_data.getQuestionablePlayersByTeam(away_team)
+            
+            if debug:
+                print(f"\n  {away_team} - FINAL TOP 6 (sent to model):")
+                for i, (_, p) in enumerate(away_players.iterrows()):
+                    name = p.get('PLAYER_NAME', f"ID:{p['PLAYER_ID']}")
+                    is_questionable = p['PLAYER_ID'] in away_questionable
+                    q_tag = f" [Q - {questionable_weight:.0%} weight]" if is_questionable else ""
+                    print(f"    P{i+1}: {name}: {p['ppg_rolling']:.1f} PPG, {p['mpg_rolling']:.1f} MPG{q_tag}")
             
             for i in range(6):
                 prefix = f'away_p{i+1}_'
                 if i < len(away_players):
                     player = away_players.iloc[i]
-                    game_features[f'{prefix}ppg'] = player['ppg_rolling']
-                    game_features[f'{prefix}fg_pct'] = player['fg_pct_rolling']
-                    game_features[f'{prefix}mpg'] = player['mpg_rolling']
-                    game_features[f'{prefix}apg'] = player['apg_rolling']
-                    game_features[f'{prefix}rpg'] = player['rpg_rolling']
-                    game_features[f'{prefix}blk'] = player['blk_rolling']
-                    game_features[f'{prefix}stl'] = player['stl_rolling']
-                    game_features[f'{prefix}tov'] = player['tov_rolling']
-                    game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling']
+                    # Apply weight for questionable players (50% of their stats)
+                    weight = questionable_weight if player['PLAYER_ID'] in away_questionable else 1.0
+                    game_features[f'{prefix}ppg'] = player['ppg_rolling'] * weight
+                    game_features[f'{prefix}fg_pct'] = player['fg_pct_rolling']  # Don't weight percentages
+                    game_features[f'{prefix}mpg'] = player['mpg_rolling'] * weight
+                    game_features[f'{prefix}apg'] = player['apg_rolling'] * weight
+                    game_features[f'{prefix}rpg'] = player['rpg_rolling'] * weight
+                    game_features[f'{prefix}blk'] = player['blk_rolling'] * weight
+                    game_features[f'{prefix}stl'] = player['stl_rolling'] * weight
+                    game_features[f'{prefix}tov'] = player['tov_rolling'] * weight
+                    game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling'] * weight
                 else:
                     game_features[f'{prefix}ppg'] = 0
                     game_features[f'{prefix}fg_pct'] = 0

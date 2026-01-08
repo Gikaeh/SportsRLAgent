@@ -6,6 +6,7 @@ from model.model_spread import BasketballSpreadModel
 from model.model_total import BasketballTotalModel
 import pandas as pd
 from pathlib import Path
+import glob
 
 class LiveDataUpdater:
     def __init__(self, data_dir='././data/basketball'):
@@ -24,6 +25,7 @@ class LiveDataUpdater:
         print(f"{'='*60}")
         
         games_df = self.basketball_data.getUpcomingGames()
+        # games_df = pd.read_csv(sorted(glob.glob(f'./data/basketball/upcoming_games.csv'))[-1])
         games_df['GAME_DATE'] = pd.to_datetime(games_df['GAME_DATE'])
         
         if games_df.empty:

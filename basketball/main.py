@@ -117,7 +117,6 @@ def bettingRecommendations():
         # recommendations_total = recommender.makeBettingRecommendations(predictions=predictions)
         
         recommendations = recommendations_h2h + recommendations_spread #+ recommendations_total
-        print(recommendations)
     else:
         print("Invalid choice")
         return

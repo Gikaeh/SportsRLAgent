@@ -526,11 +526,11 @@ class BettingRecommender:
         if files:
             h2h_log_file = files[0]
             spread_log_file = files[1]
-            total_log_file = files[2]
+            # total_log_file = files[2]
         else:
             h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
             spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
-            total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+            # total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
         
         df = pd.DataFrame(recommendations)
         df['timestamp'] = datetime.now()
@@ -541,7 +541,7 @@ class BettingRecommender:
         data_files = [
             (h2h, h2h_log_file),
             (spread, spread_log_file),
-            (total, total_log_file)
+            # (total, total_log_file)
         ]
         
         for i, (data, file) in enumerate(data_files):
@@ -576,12 +576,12 @@ class BettingRecommender:
         if archive:
             h2h_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG
             spread_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG
-            total_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG
+            # total_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG
         else:
             h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
             spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
-            total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
-        files = [h2h_log_file, spread_log_file, total_log_file]
+            # total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+        files = [h2h_log_file, spread_log_file] #, total_log_file]
         game_data = pd.read_csv(f'././data/basketball/game_data/{self.preparer.getCurrentSeason()}_game_stats.csv')
 
         for file in files:

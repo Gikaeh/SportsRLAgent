@@ -56,8 +56,8 @@ def bettingRecommendations():
     print("\nChoose an option to run: ")
     print("1. H2H")
     print("2. Spread")
-    print("3. Total")
-    print("4. All")
+    # print("3. Total")
+    print("3. All")
     
     choice = input("\nEnter your choice: ")
     
@@ -85,18 +85,18 @@ def bettingRecommendations():
         predictions = recommender.predictGames(prediction_data, game_info)
         
         recommendations = recommender.makeBettingRecommendations(predictions=predictions)
-    elif choice == '3':
-        prediction_data, game_info = updater.getPredictionReadyData(model_type='total')
+    # elif choice == '3':
+    #     prediction_data, game_info = updater.getPredictionReadyData(model_type='total')
 
-        if prediction_data.empty:
-            print("No games today")
-            return
+    #     if prediction_data.empty:
+    #         print("No games today")
+    #         return
         
-        recommender = BettingRecommender(model_path = './models/basketball_total_model.json')
+    #     recommender = BettingRecommender(model_path = './models/basketball_total_model.json')
     
-        predictions = recommender.predictGames(prediction_data, game_info)
+    #     predictions = recommender.predictGames(prediction_data, game_info)
         
-        recommendations = recommender.makeBettingRecommendations(predictions=predictions)
+    #     recommendations = recommender.makeBettingRecommendations(predictions=predictions)
     elif choice == '4':
         prediction_data_h2h, prediction_data_spread, prediction_data_total, game_info = updater.getPredictionReadyData(model_type='all')
 
@@ -112,11 +112,11 @@ def bettingRecommendations():
         predictions = recommender.predictGames(prediction_data_spread, game_info)
         recommendations_spread = recommender.makeBettingRecommendations(predictions=predictions)
         
-        recommender = BettingRecommender(model_path = './models/basketball_total_model.json')
-        predictions = recommender.predictGames(prediction_data_total, game_info)
-        recommendations_total = recommender.makeBettingRecommendations(predictions=predictions)
+        # recommender = BettingRecommender(model_path = './models/basketball_total_model.json')
+        # predictions = recommender.predictGames(prediction_data_total, game_info)
+        # recommendations_total = recommender.makeBettingRecommendations(predictions=predictions)
         
-        recommendations = recommendations_h2h + recommendations_spread + recommendations_total
+        recommendations = recommendations_h2h + recommendations_spread #+ recommendations_total
     else:
         print("Invalid choice")
         return

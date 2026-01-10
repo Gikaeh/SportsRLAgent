@@ -1,24 +1,34 @@
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from unified_bankroll import UnifiedBankroll
+
 class BettingConfig:
-    # Bankroll
-    STARTING_BANKROLL = 80  # Starting bankroll in dollars
-    MAX_BET_SIZE_PCT = 0.1    # Maximum 2% of bankroll per bet
-    KELLY_FRACTION = 0.25      # Use 25% Kelly for conservative sizing
-    MAX_RISK_PCT = 1
+    # Bankroll - now uses unified bankroll across all sports
+    STARTING_BANKROLL = UnifiedBankroll.STARTING_BANKROLL
+    USE_UNIFIED_BANKROLL = True  # Set to False to use sport-specific bankroll
+    MAX_BET_SIZE_PCT = 0.05   # Maximum 2% of bankroll per bet
+    KELLY_FRACTION = 0.20      # Use 10% Kelly for conservative sizing
+    MAX_RISK_PCT = 0.5        # Maximum 15% total daily exposure
     
     # Edge
-    MIN_EDGE_H2H = 0.01 # Minimum 3% edge to place bet (model_prob - market_prob)
+    MIN_EDGE_H2H = 0.02 # Minimum 3% edge to place bet (model_prob - market_prob)
     MIN_EDGE_SPREAD = 3
-    MIN_PROBABILITY = 0.52
+    MIN_PROBABILITY = 0.55
+    
+    # Kelly adjustments for underdog bets (H2H)
+    UNDERDOG_KELLY_MULTIPLIER = 0.3  # Use 30% of normal Kelly for underdog bets
     
     # Risk Limits
-    MAX_BETS_PER_DAY = 5      # Maximum number of bets per day
-    DAILY_LOSS_LIMIT_PCT = 0.25  # Stop betting if down 5% in a day
-    MAX_DRAWDOWN_PCT = 0.20   # Alert if drawdown exceeds 20%
+    # MAX_BETS_PER_DAY = 3      # Maximum number of bets per day
+    # DAILY_LOSS_LIMIT_PCT = 0.10  # Stop betting if down 10% in a day
+    # MAX_DRAWDOWN_PCT = 0.10   # Alert if drawdown exceeds 10%
     
     # Model Settings
     MODEL_PATH = './models/basketball_h2h_model.json'
     CONFIDENCE_THRESHOLD_HIGH = 0.70  # High confidence threshold
     CONFIDENCE_THRESHOLD_LOW = 0.30   # Low confidence threshold
+    UNDERDOG_ODDS_THRESHOLD = 150     # Odds above this are considered underdog bets
     
     # Odds Settings
     # Books to track (for future Phase 3 implementation)
@@ -27,7 +37,7 @@ class BettingConfig:
     NEVADA_BOOKS = ['betmgm', 'caesars']
     
     # Logging
-    LOG_DIR = '././logs/betting'
+    LOG_DIR = '././logs/basketball/betting'
     H2H_BETS_LOG = 'h2h_bets.csv'
     SPREAD_BETS_LOG = 'spread_bets.csv'
     TOTAL_BETS_LOG = 'total_bets.csv'

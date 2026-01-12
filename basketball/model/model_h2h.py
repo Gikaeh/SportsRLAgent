@@ -1,5 +1,6 @@
 import xgboost as xgb
 from sklearn.metrics import accuracy_score, brier_score_loss, log_loss, roc_auc_score, roc_curve
+from sklearn.inspection import permutation_importance
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,9 +23,14 @@ class BasketballH2HModel:
         self.model = xgb.XGBClassifier(**params)
         self.best_params = None
         self.leakage_cols = [
-            'home_ppg_l10', 'away_ppg_l10', 'home_blk_l10', 'away_blk_l10', 
-            'home_stl_l10', 'away_stl_l10', 'home_fg_pct_l10', 'away_fg_pct_l10', 
-            'home_fg3_pct_l10', 'away_fg3_pct_l10', 'ppg_diff', 'opp_ppg_diff'
+            'away_apg_l10', 'away_blk_l10', 'away_fg_pct_l10', 'away_opp_ppg_l10', 'away_player1_stl', 'away_player2_blk', 'away_player2_ppg', 'away_player2_tov', 'away_player3_blk', 'away_player3_rpg',
+            'away_player3_stl', 'away_player4_stl', 'away_player5_blk', 'away_player5_rpg', 'away_player5_stl', 'away_player5_tov', 'away_plus_minus_l10', 'away_ppg_l10', 'away_stl_l10', 'away_top3_avg_rpg',
+            'away_top3_avg_stl', 'away_top5_avg_blk', 'away_top5_avg_mpg', 'away_top5_avg_ppg', 'away_top6_avg_apg', 'away_top6_avg_tov', 'away_total_l10', 'home_apg_l10', 'home_fg3_pct_l10', 'home_fg_pct_l10',
+            'home_opp_ppg_l10', 'home_player1_apg', 'home_player1_blk', 'home_player1_rpg', 'home_player1_stl', 'home_player2_apg', 'home_player2_rpg', 'home_player3_apg', 'home_player3_rpg', 'home_player3_tov',
+            'home_player4_apg', 'home_player4_rpg', 'home_player5_apg', 'home_player5_stl', 'home_player5_tov', 'home_ppg_l10', 'home_stl_l10', 'home_top3_avg_apg', 'home_top3_avg_ppg', 'home_top3_avg_rpg',
+            'home_top5_avg_mpg', 'home_top5_avg_ppg', 'home_top5_avg_stl', 'home_top5_avg_tov', 'home_top6_avg_apg', 'home_top6_avg_ppg', 'home_top6_avg_tov', 'home_total_l10', 'ppg_diff', 'away_fg3_pct_l10',
+            'away_player1_blk', 'away_player2_rpg', 'away_player5_apg', 'away_top3_avg_ppg', 'away_top5_avg_stl', 'away_top6_avg_blk', 'home_player3_stl', 'home_rest_days', 'home_tov_l10', 'home_wins_l10',
+            'away_player1_rpg', 'away_top6_avg_rpg', 'away_wins_l10', 'home_player1_tov', 'home_player4_blk', 'home_rpg_l10', 'rest_days_diff', 'home_top3_avg_stl', 'home_player4_tov', 'away_player4_apg',
         ]
         
     def getLeakageColumns(self):
@@ -166,7 +172,7 @@ class BasketballH2HModel:
     def getBestParams(self):
         return self.best_params
     
-    def plotDiagnostics(self, X_val, y_val, X_test, y_test, save_dir='./plots/basketball/h2h/'):
+    def plotDiagnostics(self, X_train, y_train, X_val, y_val, X_test, y_test, save_dir='./plots/basketball/h2h/'):
         Path(save_dir).mkdir(parents=True, exist_ok=True)
         
         # Get predictions
@@ -174,7 +180,7 @@ class BasketballH2HModel:
         test_proba = self.model.predict_proba(X_test)[:, 1]
         
         # 1. Feature Importance Plot
-        self.plotFeatureImportance(save_dir)
+        self.analyzeFeatureImportance(X_train, X_val, y_val, save_dir)
         
         # 2. ROC Curve Comparison
         self.plotRocCurves(y_val, val_proba, y_test, test_proba, save_dir)
@@ -187,47 +193,96 @@ class BasketballH2HModel:
         
         print(f"\nAll diagnostic plots saved to: {save_dir}/")
     
-    def plotFeatureImportance(self, save_dir):
+    def analyzeFeatureImportance(self, X_train, X_val, y_val, save_dir):
+        perm_importance = permutation_importance(self.model, X_val, y_val, n_repeats=10, scoring='roc_auc',random_state=42)
+
         importance_df = pd.DataFrame({
-            'feature': self.model.get_booster().feature_names,
-            'importance': self.model.feature_importances_
-        }).sort_values('importance', ascending=False)
+            'feature': X_val.columns,
+            'perm_importance': perm_importance.importances_mean,
+            'perm_std': perm_importance.importances_std,
+            'xgb_importance': self.model.feature_importances_
+        }).sort_values('perm_importance', ascending=False)
         
-        plt.figure(figsize=(10, 8))
-        sns.barplot(data=importance_df, y='feature', x='importance', palette='viridis')
-        plt.title(f'Top {len(importance_df)} Feature Importances', fontsize=14, fontweight='bold')
-        plt.xlabel('Importance Score')
-        plt.ylabel('Feature')
-        plt.tight_layout()
-        plt.savefig(f'{save_dir}/feature_importance.png', dpi=300, bbox_inches='tight')
-        plt.close()
-    
-    def printLowImportanceFeatures(self, threshold=0.01):
-        importance_df = pd.DataFrame({
-            'feature': self.model.get_booster().feature_names,
-            'importance': self.model.feature_importances_
-        }).sort_values('importance', ascending=True)
-        
-        low_importance = importance_df[importance_df['importance'] < threshold]
-        
-        print(f"\nFeatures with importance < {threshold}:")
-        print(f"Total: {len(low_importance)} features\n")
+        negative_features = importance_df[importance_df['perm_importance'] < 0].copy()
+
+        if len(negative_features) > 0:
+            print(f"Total harmful features: {len(negative_features)}\n")
+            print(f"{'Feature':<40} {'Perm Imp':>12} {'XGB Imp':>12}")
+            print("-" * 65)
+            for _, row in negative_features.iterrows():
+                print(f"{row['feature']:<40} {row['perm_importance']:>12.6f} {row['xgb_importance']:>12.6f}")
+            
+            print("\n" + "="*60)
+            print("Copy-paste ready list:")
+            print("="*60)
+            print("negative_features = [")
+            for feat in negative_features['feature']:
+                print(f"'{feat}', ")
+            print("]")
+        else:
+            print("No harmful features found!")
+
+        low_importance = importance_df[(importance_df['perm_importance'] >= 0) & (importance_df['perm_importance'] < 0.001)].copy()
         
         if len(low_importance) > 0:
-            print(f"{'Feature':<40} {'Importance':>12}")
-            print("-" * 52)
+            print(f"Total low importance features: {len(low_importance)}\n")
+            print(f"{'Feature':<40} {'Perm Imp':>12} {'XGB Imp':>12}")
+            print("-" * 65)
             for _, row in low_importance.iterrows():
-                print(f"{row['feature']:<40} {row['importance']:>12.6f}")
-            
-            print("\n" + "="*52)
-            print("Copy-paste ready list for removal:")
-            print("="*52)
-            feature_list = "[\n    '" + "',\n    '".join(low_importance['feature'].tolist()) + "'\n]"
-            print(feature_list)
+                print(f"{row['feature']:<40} {row['perm_importance']:>12.6f} {row['xgb_importance']:>12.6f}")
         else:
-            print(f"No features found below threshold {threshold}")
+            print("No low importance features found!")
         
-        return low_importance['feature'].tolist()
+        corr_matrix = X_train.corr().abs()
+    
+        features_to_remove = []
+        removal_reasons = []
+        
+        for feat in importance_df[importance_df['perm_importance'] < 0.001]['feature']:
+            correlated_features = corr_matrix[feat][corr_matrix[feat] > 0.8].index.tolist()
+            
+            for corr_feat in correlated_features:
+                if corr_feat != feat:
+                    corr_feat_imp = importance_df[importance_df['feature'] == corr_feat]['perm_importance'].values[0]
+                    if corr_feat_imp > 0.001:
+                        features_to_remove.append(feat)
+                        removal_reasons.append({
+                            'feature': feat,
+                            'perm_imp': importance_df[importance_df['feature'] == feat]['perm_importance'].values[0],
+                            'correlated_with': corr_feat,
+                            'corr_feat_imp': corr_feat_imp,
+                            'correlation': corr_matrix.loc[feat, corr_feat]
+                        })
+                        break
+        
+        features_to_remove = list(set(features_to_remove))
+        
+        if removal_reasons:
+            print(f"Found {len(features_to_remove)} features to remove:\n")
+            print(f"{'Feature':<30} {'Perm Imp':>10} {'Correlated With':<30} {'Corr':>6} {'Better Imp':>10}")
+            print("-" * 100)
+            for reason in removal_reasons:
+                print(f"{reason['feature']:<30} {reason['perm_imp']:>10.6f} "
+                    f"{reason['correlated_with']:<30} {reason['correlation']:>6.3f} "
+                    f"{reason['corr_feat_imp']:>10.6f}")
+        else:
+            print("No correlated low-importance features found!")
+
+        all_removals = list(set(list(negative_features['feature']) + features_to_remove))
+        
+        print(f"\nTotal features to remove: {len(all_removals)}")
+        print(f"  - Harmful (negative importance): {len(negative_features)}")
+        print(f"  - Low + correlated: {len(features_to_remove)}")
+        print(f"\nOriginal features: {len(X_val.columns)}")
+        print(f"After removal: {len(X_val.columns) - len(all_removals)}")
+        
+        print("\n" + "="*60)
+        print("Copy-paste ready removal list:")
+        print("="*60)
+        print("features_to_remove = [")
+        for feat in sorted(all_removals):
+            print(f"'{feat}', ")
+        print("]")
     
     def plotRocCurves(self, y_val, val_proba, y_test, test_proba, save_dir):
         fpr_val, tpr_val, _ = roc_curve(y_val, val_proba)

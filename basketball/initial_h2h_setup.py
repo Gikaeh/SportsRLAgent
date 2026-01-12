@@ -71,14 +71,7 @@ print(f"AUC-ROC: {test_auc:.4f}")
 basketball_model.saveModel('././models/basketball_h2h_model.json')
 
 # Generate diagnostic plots
-basketball_model.plotDiagnostics(X_val, y_val, X_test, y_test, save_dir='././plots/basketball/h2h')
-
-# Print low importance features for manual removal
-print("\n" + "="*60)
-print("LOW IMPORTANCE FEATURES ANALYSIS")
-print("="*60)
-threshold = 0.01  # Adjust this threshold as needed
-low_importance_features = basketball_model.printLowImportanceFeatures(threshold)
+basketball_model.plotDiagnostics(X_train, y_train, X_val, y_val, X_test, y_test, save_dir='././plots/basketball/h2h')
 
 # Print prediction summary
 basketball_model.printPredictionSummary(X_test, y_test)

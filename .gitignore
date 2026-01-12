@@ -1,6 +1,4 @@
 idea_for_project.txt
 .venv
-plots
 __pycache__
 basketball/*.md
-models/

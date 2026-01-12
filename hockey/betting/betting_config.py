@@ -1,11 +1,11 @@
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from unified_bankroll import UnifiedBankroll
+# sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# from unified_bankroll import UnifiedBankroll
 
 class BettingConfig:
     # Bankroll - now uses unified bankroll across all sports
-    STARTING_BANKROLL = UnifiedBankroll.STARTING_BANKROLL
+    STARTING_BANKROLL = 40
     USE_UNIFIED_BANKROLL = True  # Set to False to use sport-specific bankroll
     MAX_BET_SIZE_PCT = 0.05   # Maximum 2% of bankroll per bet
     KELLY_FRACTION = 0.20      # Use 10% Kelly for conservative sizing

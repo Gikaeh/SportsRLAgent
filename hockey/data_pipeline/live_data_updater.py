@@ -1,6 +1,6 @@
 from data_pipeline.hockey_data import HockeyData
 from data_pipeline.prepare_data import NHLTrainingDataPreparer
-from data_pipeline.injury_data import HockeyInjuryData
+# from data_pipeline.injury_data import HockeyInjuryData
 from model.model_h2h import HockeyH2HModel
 from model.model_spread import HockeySpreadModel
 from model.model_total import HockeyTotalModel
@@ -11,7 +11,7 @@ class HockeyLiveDataUpdater:
     def __init__(self, data_dir='././data/hockey'):
         self.hockey_data = HockeyData(data_dir=data_dir)
         self.preparer = NHLTrainingDataPreparer(data_dir=data_dir)
-        self.injury_data = HockeyInjuryData(data_dir=data_dir)
+        # self.injury_data = HockeyInjuryData(data_dir=data_dir)
         self.data_dir = Path(data_dir)
         self.current_season = self.preparer.getCurrentSeason()
         self.total_model = HockeyTotalModel()
@@ -59,24 +59,24 @@ class HockeyLiveDataUpdater:
             traceback.print_exc()
             return False
     
-    def updateInjuryData(self):
-        """Update injury data from ESPN"""
-        print(f"\n{'='*60}")
-        print("Updating injury data from ESPN")
-        print(f"{'='*60}")
+    # def updateInjuryData(self):
+    #     """Update injury data from ESPN"""
+    #     print(f"\n{'='*60}")
+    #     print("Updating injury data from ESPN")
+    #     print(f"{'='*60}")
         
-        success = self.injury_data.fetchInjuriesFromESPN()
+    #     success = self.injury_data.fetchInjuriesFromESPN()
         
-        if success:
-            # Try to match player IDs
-            print("\nMatching player IDs...")
-            self.injury_data.matchPlayerIDs()
+    #     if success:
+    #         # Try to match player IDs
+    #         print("\nMatching player IDs...")
+    #         self.injury_data.matchPlayerIDs()
         
-        return success
+    #     return success
     
-    def getInjuryReport(self):
-        """Get formatted injury report"""
-        return self.injury_data.getInjuryReport()
+    # def getInjuryReport(self):
+    #     """Get formatted injury report"""
+    #     return self.injury_data.getInjuryReport()
     
     def getFullUpdate(self):
         """Perform a full data update: injuries, season data, and today's games"""
@@ -85,7 +85,7 @@ class HockeyLiveDataUpdater:
         print(f"{'='*80}")
         
         # Update injuries
-        self.updateInjuryData()
+        # self.updateInjuryData()
         
         # Update current season data
         self.updateCurrentSeasonData()
@@ -103,7 +103,7 @@ class HockeyLiveDataUpdater:
                 print(f"  {game['AWAY_TEAM']} @ {game['HOME_TEAM']}")
         
         # Print injury report
-        print(self.getInjuryReport())
+        # print(self.getInjuryReport())
         
         return todays_games
     
@@ -129,11 +129,11 @@ class HockeyLiveDataUpdater:
             return pd.DataFrame()
     
     def getPredictionReadyData(self, model_type):
-        print(f"\n{'='*60}")
-        print("Updating injury data from ESPN")
-        print(f"{'='*60}")
-        self.injury_data.fetchInjuriesFromESPN()
-        self.injury_data.matchPlayerIDs()
+        # print(f"\n{'='*60}")
+        # print("Updating injury data from ESPN")
+        # print(f"{'='*60}")
+        # self.injury_data.fetchInjuriesFromESPN()
+        # self.injury_data.matchPlayerIDs()
         
         season_year = int(self.current_season[:4])
         self.hockey_data.scrapeSeasonGames(season_year)
@@ -155,14 +155,14 @@ class HockeyLiveDataUpdater:
         
         # Injury features are for display/confidence adjustment only, not model input
         # (no historical injury data available for training)
-        injury_cols = [
-            'home_points_lost', 'home_goals_lost', 'home_assists_lost', 'home_toi_lost',
-            'home_num_injured', 'home_star_out', 'home_rotation_out', 'home_injury_severity',
-            'away_points_lost', 'away_goals_lost', 'away_assists_lost', 'away_toi_lost',
-            'away_num_injured', 'away_star_out', 'away_rotation_out', 'away_injury_severity',
-            'injury_advantage'
-        ]
-        leakage_cols = ['game_id', 'date', 'season', 'home_team', 'away_team'] + injury_cols
+        # injury_cols = [
+        #     'home_points_lost', 'home_goals_lost', 'home_assists_lost', 'home_toi_lost',
+        #     'home_num_injured', 'home_star_out', 'home_rotation_out', 'home_injury_severity',
+        #     'away_points_lost', 'away_goals_lost', 'away_assists_lost', 'away_toi_lost',
+        #     'away_num_injured', 'away_star_out', 'away_rotation_out', 'away_injury_severity',
+        #     'injury_advantage'
+        # ]
+        leakage_cols = ['game_id', 'date', 'season', 'home_team', 'away_team']# + injury_cols
         
         if model_type == 'h2h':
             leakage_cols = leakage_cols + self.h2h_model.getLeakageColumns()

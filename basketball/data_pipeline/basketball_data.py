@@ -5,10 +5,14 @@ import time
 from tqdm import tqdm
 from pathlib import Path
 import datetime
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from shared.base_data_fetcher import BaseDataFetcher
 
-class BasketballData:
-    def __init__(self, data_dir='././data/basketball'):
-        self.data_dir = Path(data_dir)
+class BasketballData(BaseDataFetcher):
+    def __init__(self, data_dir='././data/basketball', max_retries=3, base_delay=2):
+        super().__init__(data_dir, max_retries, base_delay)
+        
         self.teams_to_keep = [
             'Atlanta Hawks', 'Boston Celtics', 'Cleveland Cavaliers', 'New Orleans Pelicans', 'Chicago Bulls', 'Dallas Mavericks', 'Denver Nuggets', 'Golden State Warriors', 'Houston Rockets', 'LA Clippers',
             'Los Angeles Lakers', 'Miami Heat', 'Milwaukee Bucks', 'Minnesota Timberwolves', 'Brooklyn Nets', 'New York Knicks', 'Orlando Magic', 'Indiana Pacers', 'Philadelphia 76ers', 'Phoenix Suns',
@@ -16,9 +20,6 @@ class BasketballData:
             'New Jersey Nets', 'Charlotte Bobcats', 'Vancouver Grizzlies', 'New Orleans Hornets', ' Seattle SuperSonics', 'New Orleans/Oklahoma City Hornets', 'Los Angeles Clippers'
         ]
         self.end_year = datetime.date.today().year if datetime.date.today().month >= 7 else datetime.date.today().year - 1
-        self.game_files = [f.stem.replace('_game_stats', '') for f in self.data_dir.glob('game_data/*_game_stats.csv')]
-        self.team_files = [f.stem.replace('_team_stats', '') for f in self.data_dir.glob('team_data/*_team_stats.csv')]
-        self.player_files = [f.stem.replace('_player_stats', '') for f in self.data_dir.glob('player_data/*_player_stats.csv')]
     
     def getAllSeasonData(self, season=None):
         if season == None:
@@ -37,11 +38,25 @@ class BasketballData:
             self.getPlayerGames(season)
 
                     
+    def getCurrentSeason(self):
+        """Get the current NBA season string."""
+        today = datetime.date.today()
+        year = today.year
+        month = today.month
+        
+        if month < 7:
+            return f"{year-1}-{str(year)[-2:]}"
+        else:
+            return f"{year}-{str(year+1)[-2:]}"
+    
     def getSeasonGames(self, season):
         print(f"\nFetching game results for {season}...")
         
-        gamefinder = leaguegamefinder.LeagueGameFinder(season_nullable=season)
-        games = gamefinder.get_data_frames()[0]
+        def fetch_games():
+            gamefinder = leaguegamefinder.LeagueGameFinder(season_nullable=season)
+            return gamefinder.get_data_frames()[0]
+        
+        games = self.retryApiCall(fetch_games)
         games = games[games['TEAM_NAME'].isin(self.teams_to_keep)]
         games.drop(games[games['GAME_DATE'] < f'{season.split("-")[0]}-10-01'].index, inplace=True)
         games.sort_values(by=['GAME_DATE', 'TEAM_NAME'], inplace=True)
@@ -55,8 +70,12 @@ class BasketballData:
         print(f"Fetching team stats for {season}...")
         
         for team in tqdm(team_list, desc=f"Teams ({season})"):
-            team_logs = teamgamelogs.TeamGameLogs(season_nullable=season, team_id_nullable=team['id'])
-            all_team_logs.append(team_logs.get_data_frames()[0])
+            def fetch_team_logs():
+                team_logs = teamgamelogs.TeamGameLogs(season_nullable=season, team_id_nullable=team['id'])
+                return team_logs.get_data_frames()[0]
+            
+            team_data = self.retryApiCall(fetch_team_logs)
+            all_team_logs.append(team_data)
             time.sleep(0.6)
         
         team_data = pd.concat(all_team_logs)
@@ -68,8 +87,11 @@ class BasketballData:
     def getPlayerGames(self, season):
         print(f"\nFetching player stats for {season}...")
         
-        player_logs = playergamelogs.PlayerGameLogs(season_nullable=season)
-        player_data = player_logs.get_data_frames()[0]
+        def fetch_player_logs():
+            player_logs = playergamelogs.PlayerGameLogs(season_nullable=season)
+            return player_logs.get_data_frames()[0]
+        
+        player_data = self.retryApiCall(fetch_player_logs)
         player_data = player_data[player_data['TEAM_NAME'].isin(self.teams_to_keep)]
         player_data.drop(player_data[player_data['GAME_DATE'] < f'{season.split("-")[0]}-10-01'].index, inplace=True)
         player_data.sort_values(by=['GAME_DATE', 'TEAM_NAME', 'MIN'], inplace=True, ascending=[True, True, False])
@@ -90,8 +112,11 @@ class BasketballData:
         tomorrow = today + pd.Timedelta(days=1)
         columns = ['gameId', 'gameDateEst', 'homeTeam_teamName', 'homeTeam_teamTricode', 'awayTeam_teamName', 'awayTeam_teamTricode']
         
-        gamefinder = scheduleleaguev2.ScheduleLeagueV2()
-        games = gamefinder.get_data_frames()[0]
+        def fetch_schedule():
+            gamefinder = scheduleleaguev2.ScheduleLeagueV2()
+            return gamefinder.get_data_frames()[0]
+        
+        games = self.retryApiCall(fetch_schedule)
         games = games[columns]
         games.rename(columns={'gameId': 'GAME_ID', 'gameDateEst': 'GAME_DATE', 'homeTeam_teamName': 'HOME_TEAM', 'awayTeam_teamName': 'AWAY_TEAM', 'homeTeam_teamTricode': 'TEAM_ABB_HOME', 'awayTeam_teamTricode': 'TEAM_ABB_AWAY'}, inplace=True)
         games = games[(games['GAME_DATE'] < tomorrow.strftime('%Y-%m-%dT00:00:00Z')) & (games['GAME_DATE'] >= today.strftime('%Y-%m-%dT00:00:00Z'))]

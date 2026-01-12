@@ -10,17 +10,17 @@ from model.model_total import HockeyTotalModel
 from betting.betting_config import BettingConfig
 from data_pipeline.odd_scraping import HockeyOddScraping
 from data_pipeline.prepare_data import NHLTrainingDataPreparer
-from data_pipeline.injury_data import HockeyInjuryData
+# from data_pipeline.injury_data import HockeyInjuryData
 import glob
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from unified_bankroll import UnifiedBankroll
+# from unified_bankroll import UnifiedBankroll
 
 class BettingRecommender:
     def __init__(self, model_path=None, config=None):
         self.config = config or BettingConfig()
         self.odd_scraping = HockeyOddScraping()
         self.preparer = NHLTrainingDataPreparer()
-        self.injury_data = HockeyInjuryData()
+        # self.injury_data = HockeyInjuryData()
 
         if model_path.split('_')[1] == 'h2h':
             self.model = HockeyH2HModel()
@@ -696,8 +696,8 @@ class BettingRecommender:
             return self.config.STARTING_BANKROLL
         
         # Use unified bankroll if enabled
-        if getattr(self.config, 'USE_UNIFIED_BANKROLL', False):
-            return UnifiedBankroll.getUnifiedBankroll()
+        # if getattr(self.config, 'USE_UNIFIED_BANKROLL', False):
+        #     return UnifiedBankroll.getUnifiedBankroll()
         
         # Otherwise use sport-specific bankroll
         if archive:

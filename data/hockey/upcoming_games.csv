@@ -1,11 +1,10 @@
 GAME_ID,GAME_DATE,HOME_TEAM,HOME_TEAM_ABBR,AWAY_TEAM,AWAY_TEAM_ABBR
-2025020667,2026-01-06,Buffalo Sabres,BUF,Vancouver Canucks,VAN
-2025020668,2026-01-06,Tampa Bay Lightning,TBL,Colorado Avalanche,COL
-2025020670,2026-01-06,Philadelphia Flyers,PHI,Anaheim Ducks,ANA
-2025020671,2026-01-06,Carolina Hurricanes,CAR,Dallas Stars,DAL
-2025020669,2026-01-06,New York Islanders,NYI,New Jersey Devils,NJD
-2025020672,2026-01-06,Toronto Maple Leafs,TOR,Florida Panthers,FLA
-2025020673,2026-01-06,Winnipeg Jets,WPG,Vegas Golden Knights,VGK
-2025020674,2026-01-06,Edmonton Oilers,EDM,Nashville Predators,NSH
-2025020675,2026-01-06,San Jose Sharks,SJS,Columbus Blue Jackets,CBJ
-2025020676,2026-01-06,Seattle Kraken,SEA,Boston Bruins,BOS
+2025020716,2026-01-12,Buffalo Sabres,BUF,Florida Panthers,FLA
+2025020717,2026-01-12,Detroit Red Wings,DET,Carolina Hurricanes,CAR
+2025020718,2026-01-12,New York Rangers,NYR,Seattle Kraken,SEA
+2025020719,2026-01-12,Philadelphia Flyers,PHI,Tampa Bay Lightning,TBL
+2025020720,2026-01-12,Montréal Canadiens,MTL,Vancouver Canucks,VAN
+2025020721,2026-01-12,Minnesota Wild,MIN,New Jersey Devils,NJD
+2025020722,2026-01-12,Chicago Blackhawks,CHI,Edmonton Oilers,EDM
+2025020723,2026-01-12,Colorado Avalanche,COL,Toronto Maple Leafs,TOR
+2025020724,2026-01-12,Los Angeles Kings,LAK,Dallas Stars,DAL

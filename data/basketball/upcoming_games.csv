@@ -1,11 +1,8 @@
 GAME_ID,GAME_DATE,HOME_TEAM,TEAM_ABB_HOME,AWAY_TEAM,TEAM_ABB_AWAY
-0022500548,2026-01-11T00:00:00Z,Orlando Magic,ORL,New Orleans Pelicans,NOP
-0022500549,2026-01-11T00:00:00Z,Memphis Grizzlies,MEM,Brooklyn Nets,BKN
-0022500550,2026-01-11T00:00:00Z,Toronto Raptors,TOR,Philadelphia 76ers,PHI
-0022500551,2026-01-11T00:00:00Z,Portland Trail Blazers,POR,New York Knicks,NYK
-0022500552,2026-01-11T00:00:00Z,Minnesota Timberwolves,MIN,San Antonio Spurs,SAS
-0022500553,2026-01-11T00:00:00Z,Oklahoma City Thunder,OKC,Miami Heat,MIA
-0022500554,2026-01-11T00:00:00Z,Denver Nuggets,DEN,Milwaukee Bucks,MIL
-0022500555,2026-01-11T00:00:00Z,Phoenix Suns,PHX,Washington Wizards,WAS
-0022500556,2026-01-11T00:00:00Z,Golden State Warriors,GSW,Atlanta Hawks,ATL
-0022500557,2026-01-11T00:00:00Z,Sacramento Kings,SAC,Houston Rockets,HOU
+0022500564,2026-01-13T00:00:00Z,Miami Heat,MIA,Phoenix Suns,PHX
+0022500565,2026-01-13T00:00:00Z,Houston Rockets,HOU,Chicago Bulls,CHI
+0022500566,2026-01-13T00:00:00Z,Milwaukee Bucks,MIL,Minnesota Timberwolves,MIN
+0022500567,2026-01-13T00:00:00Z,New Orleans Pelicans,NOP,Denver Nuggets,DEN
+0022500568,2026-01-13T00:00:00Z,Oklahoma City Thunder,OKC,San Antonio Spurs,SAS
+0022500569,2026-01-13T00:00:00Z,Los Angeles Lakers,LAL,Atlanta Hawks,ATL
+0022500570,2026-01-13T00:00:00Z,Golden State Warriors,GSW,Portland Trail Blazers,POR

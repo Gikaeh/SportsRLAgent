@@ -478,25 +478,25 @@ class BettingRecommender:
         print("="*80)
         
         # Get latest skater stats for injury summary
-        try:
-            skater_df, _ = self.preparer.precomputePlayerRollingAverages(self.preparer.getCurrentSeason())
-            latest_skater_stats = skater_df.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
-        except:
-            latest_skater_stats = pd.DataFrame()
+        # try:
+        #     skater_df, _ = self.preparer.precomputePlayerRollingAverages(self.preparer.getCurrentSeason())
+        #     latest_skater_stats = skater_df.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
+        # except:
+        #     latest_skater_stats = pd.DataFrame()
         
         for i, rec in enumerate(recommendations, 1):
             print(f"\nRECOMMENDATION #{i} - {rec['type']}")
             print(f"   Matchup: {rec['matchup']}")
             
             # Display injury summary for this game
-            if not latest_skater_stats.empty:
-                matchup_parts = rec['matchup'].split(' @ ')
-                if len(matchup_parts) == 2:
-                    away_team, home_team = matchup_parts
-                    injury_summary = self.injury_data.getInjurySummaryForGame(home_team, away_team, latest_skater_stats)
-                    if injury_summary:
-                        for line in injury_summary.split('\n'):
-                            print(f"   {line}")
+            # if not latest_skater_stats.empty:
+            #     matchup_parts = rec['matchup'].split(' @ ')
+            #     if len(matchup_parts) == 2:
+            #         away_team, home_team = matchup_parts
+            #         injury_summary = self.injury_data.getInjurySummaryForGame(home_team, away_team, latest_skater_stats)
+            #         if injury_summary:
+            #             for line in injury_summary.split('\n'):
+            #                 print(f"   {line}")
 
             if rec['type'] == 'h2h':
                 print(f"   Bet: {rec['bet_team']} ({rec['bet_side'].upper()})")

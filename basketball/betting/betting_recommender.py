@@ -720,6 +720,8 @@ class BettingRecommender:
             
             if file.exists():
                 df = pd.read_csv(file)
+                if df.empty:
+                    continue
                 
                 for _, row in df.iterrows():
                     if row['result'] == 'W':

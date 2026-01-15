@@ -1,10 +1,5 @@
 GAME_ID,GAME_DATE,HOME_TEAM,HOME_TEAM_ABBR,AWAY_TEAM,AWAY_TEAM_ABBR
-2025020716,2026-01-12,Buffalo Sabres,BUF,Florida Panthers,FLA
-2025020717,2026-01-12,Detroit Red Wings,DET,Carolina Hurricanes,CAR
-2025020718,2026-01-12,New York Rangers,NYR,Seattle Kraken,SEA
-2025020719,2026-01-12,Philadelphia Flyers,PHI,Tampa Bay Lightning,TBL
-2025020720,2026-01-12,Montréal Canadiens,MTL,Vancouver Canucks,VAN
-2025020721,2026-01-12,Minnesota Wild,MIN,New Jersey Devils,NJD
-2025020722,2026-01-12,Chicago Blackhawks,CHI,Edmonton Oilers,EDM
-2025020723,2026-01-12,Colorado Avalanche,COL,Toronto Maple Leafs,TOR
-2025020724,2026-01-12,Los Angeles Kings,LAK,Dallas Stars,DAL
+2025020735,2026-01-14,New Jersey Devils,NJD,Seattle Kraken,SEA
+2025020736,2026-01-14,Buffalo Sabres,BUF,Philadelphia Flyers,PHI
+2025020737,2026-01-14,New York Rangers,NYR,Ottawa Senators,OTT
+2025020738,2026-01-14,Los Angeles Kings,LAK,Vegas Golden Knights,VGK

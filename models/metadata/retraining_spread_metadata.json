@@ -1,7 +1,7 @@
 {
-  "last_retrain_date": "2026-01-07T02:34:03.221364",
-  "total_games_trained": 28672,
-  "model_version": 2,
+  "last_retrain_date": "2026-01-15T02:08:05.246784",
+  "total_games_trained": 28837,
+  "model_version": 3,
   "retrain_history": [
     {
       "date": "2026-01-07T02:34:00.123647",
@@ -18,6 +18,23 @@
       "test_within_3": 0.1921199442119944,
       "test_within_5": 0.3186889818688982,
       "test_within_7": 0.42677824267782427,
+      "hyperparameter_tuning": true
+    },
+    {
+      "date": "2026-01-15T02:08:01.676946",
+      "games_trained": 28837,
+      "val_mae": 9.600456433804853,
+      "val_rmse": 12.183242618911047,
+      "val_r2": 0.19182205306578815,
+      "val_within_3": 0.20249653259361997,
+      "val_within_5": 0.32142857142857145,
+      "val_within_7": 0.44105409153952846,
+      "test_mae": 9.658378880677827,
+      "test_rmse": 12.342241064026487,
+      "test_r2": 0.1963634655230645,
+      "test_within_3": 0.2007628294036061,
+      "test_within_5": 0.32801664355062415,
+      "test_within_7": 0.44660194174757284,
       "hyperparameter_tuning": true
     }
   ]

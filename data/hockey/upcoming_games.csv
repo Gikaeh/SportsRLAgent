@@ -1,5 +1,11 @@
 GAME_ID,GAME_DATE,HOME_TEAM,HOME_TEAM_ABBR,AWAY_TEAM,AWAY_TEAM_ABBR
-2025020735,2026-01-14,New Jersey Devils,NJD,Seattle Kraken,SEA
-2025020736,2026-01-14,Buffalo Sabres,BUF,Philadelphia Flyers,PHI
-2025020737,2026-01-14,New York Rangers,NYR,Ottawa Senators,OTT
-2025020738,2026-01-14,Los Angeles Kings,LAK,Vegas Golden Knights,VGK
+2025020740,2026-01-15,Buffalo Sabres,BUF,Montréal Canadiens,MTL
+2025020741,2026-01-15,Pittsburgh Penguins,PIT,Philadelphia Flyers,PHI
+2025020742,2026-01-15,Washington Capitals,WSH,San Jose Sharks,SJS
+2025020743,2026-01-15,Columbus Blue Jackets,CBJ,Vancouver Canucks,VAN
+2025020739,2026-01-15,Boston Bruins,BOS,Seattle Kraken,SEA
+2025020744,2026-01-15,Minnesota Wild,MIN,Winnipeg Jets,WPG
+2025020745,2026-01-15,Chicago Blackhawks,CHI,Calgary Flames,CGY
+2025020746,2026-01-15,Utah Mammoth,UTA,Dallas Stars,DAL
+2025020747,2026-01-15,Edmonton Oilers,EDM,New York Islanders,NYI
+2025020748,2026-01-15,Vegas Golden Knights,VGK,Toronto Maple Leafs,TOR

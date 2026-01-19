@@ -19,3 +19,7 @@ nhl-api-py>=3.1.1
 
 # Progress Bars
 tqdm>=4.65.0
+
+# Backend Foundation
+fastapi>=0.128.0
+SQLAlchemy>=2.0.45

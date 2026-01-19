@@ -116,13 +116,13 @@ def bettingRecommendations():
         recommendations_spread = recommender.makeBettingRecommendations(predictions=predictions)
         # print(recommendations_spread)
         
-        recommender = BettingRecommender(model_path = './models/hockey_total_model.json')
-        predictions = recommender.predictGames(prediction_data_total, game_info)
-        # print(predictions)
-        recommendations_total = recommender.makeBettingRecommendations(predictions=predictions)
-        # print(recommendations_total)
+        # recommender = BettingRecommender(model_path = './models/hockey_total_model.json')
+        # predictions = recommender.predictGames(prediction_data_total, game_info)
+        # # print(predictions)
+        # recommendations_total = recommender.makeBettingRecommendations(predictions=predictions)
+        # # print(recommendations_total)
         
-        recommendations = recommendations_h2h + recommendations_spread + recommendations_total
+        recommendations = recommendations_h2h + recommendations_spread# + recommendations_total
     else:
         print("Invalid choice")
         return

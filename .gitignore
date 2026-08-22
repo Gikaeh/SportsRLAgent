@@ -2,3 +2,5 @@ idea_for_project.txt
 .venv
 __pycache__
 basketball/*.md
+.env
+!basketball/NOTES.md

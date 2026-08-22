@@ -1,4 +1,5 @@
 import xgboost as xgb
+from sklearn.inspection import permutation_importance
 from sklearn.metrics import accuracy_score, brier_score_loss, log_loss, roc_auc_score, roc_curve
 import pandas as pd
 import numpy as np
@@ -202,6 +203,97 @@ class BasketballH2HModel:
         plt.savefig(f'{save_dir}/feature_importance.png', dpi=300, bbox_inches='tight')
         plt.close()
     
+    def analyzeFeatureImportance(self, X_train, X_val, y_val, save_dir=None, n_repeats=10):
+        """Salvaged from origin/new_player_data (commit 8e8ea37) per NOTES.md.
+
+        Permutation importance beats XGB gain for spotting harmful features.
+        Decisions made with this MUST use clean chronological validation splits
+        (NOTES.md A2) — the source branch ran it against leaky random splits,
+        which is why its old pruning lists are not trustworthy.
+
+        Generalized beyond the source: scoring switches by model type so spread
+        and total regressors can use it too. Returns the full report frame.
+        """
+        scoring = 'roc_auc' if self.getModelType() == 'h2h' else 'neg_mean_absolute_error'
+        perm_importance = permutation_importance(
+            self.model, X_val, y_val, n_repeats=n_repeats, scoring=scoring, random_state=42
+        )
+
+        importance_df = pd.DataFrame({
+            'feature': X_val.columns,
+            'perm_importance': perm_importance.importances_mean,
+            'perm_std': perm_importance.importances_std,
+            'xgb_importance': self.model.feature_importances_
+        }).sort_values('perm_importance', ascending=False)
+
+        negative_features = importance_df[importance_df['perm_importance'] < 0].copy()
+
+        if len(negative_features) > 0:
+            print(f"Total harmful features: {len(negative_features)}\n")
+            print(f"{'Feature':<40} {'Perm Imp':>12} {'XGB Imp':>12}")
+            print("-" * 65)
+            for _, row in negative_features.iterrows():
+                print(f"{row['feature']:<40} {row['perm_importance']:>12.6f} {row['xgb_importance']:>12.6f}")
+        else:
+            print("No harmful features found!")
+
+        low_importance = importance_df[
+            (importance_df['perm_importance'] >= 0) & (importance_df['perm_importance'] < 0.001)
+        ].copy()
+
+        if len(low_importance) > 0:
+            print(f"\nTotal near-zero importance features: {len(low_importance)}\n")
+            print(f"{'Feature':<40} {'Perm Imp':>12} {'XGB Imp':>12}")
+            print("-" * 65)
+            for _, row in low_importance.iterrows():
+                print(f"{row['feature']:<40} {row['perm_importance']:>12.6f} {row['xgb_importance']:>12.6f}")
+
+        corr_matrix = X_train.corr().abs()
+        features_to_remove = []
+        removal_reasons = []
+
+        for feat in importance_df[importance_df['perm_importance'] < 0.001]['feature']:
+            correlated_features = corr_matrix[feat][corr_matrix[feat] > 0.8].index.tolist()
+
+            for corr_feat in correlated_features:
+                if corr_feat != feat:
+                    corr_row = importance_df[importance_df['feature'] == corr_feat]
+                    feat_row = importance_df[importance_df['feature'] == feat]
+                    if len(corr_row) == 0 or len(feat_row) == 0:
+                        continue
+                    if corr_row['perm_importance'].values[0] > 0.001:
+                        features_to_remove.append(feat)
+                        removal_reasons.append({
+                            'feature': feat,
+                            'perm_imp': feat_row['perm_importance'].values[0],
+                            'correlated_with': corr_feat,
+                            'corr_feat_imp': corr_row['perm_importance'].values[0],
+                            'correlation': corr_matrix.loc[feat, corr_feat]
+                        })
+                        break
+
+        features_to_remove = sorted(set(features_to_remove))
+
+        if removal_reasons:
+            print(f"\nFound {len(features_to_remove)} redundant low-importance features:\n")
+            print(f"{'Feature':<30} {'Perm Imp':>10} {'Correlated With':<30} {'Corr':>6} {'Better Imp':>10}")
+            print("-" * 100)
+            for reason in removal_reasons:
+                print(f"{reason['feature']:<30} {reason['perm_imp']:>10.6f} "
+                      f"{reason['correlated_with']:<30} {reason['correlation']:>6.3f} "
+                      f"{reason['corr_feat_imp']:>10.6f}")
+
+        all_removals = sorted(set(list(negative_features['feature']) + features_to_remove))
+        print(f"\nTotal candidate removals: {len(all_removals)}")
+        print(f"  - Harmful (negative importance): {len(negative_features)}")
+        print(f"  - Near-zero + correlated with a useful feature: {len(features_to_remove)}")
+
+        if save_dir is not None:
+            Path(save_dir).mkdir(parents=True, exist_ok=True)
+            importance_df.to_csv(f'{save_dir}/permutation_importance.csv', index=False)
+
+        return importance_df, all_removals
+
     def printLowImportanceFeatures(self, threshold=0.01):
         importance_df = pd.DataFrame({
             'feature': self.model.get_booster().feature_names,

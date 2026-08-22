@@ -196,4 +196,35 @@ aggregate now (see Tier-1 injuries below).
 slots were learned under in-game-minutes ordering. Run `Model Retraining` from
 `.venv/bin/python basketball/main.py` before acting on any new recommendation.
 Expect metrics to DROP vs the old logs — the old numbers were inflated by the
-A2/A1 leakage; that is the point.
+A2/A1 leakage; that is the point. (Reference: main's logged h2h test_acc of
+~0.66-0.67 was leak-inflated; clean chronological splits will likely land
+~0.62-0.65.)
+
+## Salvaged components (2026-08-22, from side branches — none merged as-is)
+
+1. **`basketball/data_pipeline/injury_data.py`** — extracted from `origin/injury`
+   (b64cab7 lineage): ESPN fetch, team-abbr correction, unicode name matching,
+   player-ID matching, OUT/DOUBTFUL-vs-QUESTIONABLE getters with weights.
+   Deliberately EXCLUDED: severity composite and all probability/margin
+   adjustment math (magic constants; owner disabled them live). ADDED vs source:
+   every snapshot write also appends `injury_data/archive/injuries_YYYY-MM-DD.csv`
+   so point-in-time history accumulates (Tier-2 requirement #1).
+   **Status: NOT wired into any pipeline** — revive per §Additions #6 when owner
+   says injuries are back on the table.
+2. **`BasketballH2HModel.analyzeFeatureImportance()`** — permutation-importance +
+   correlation-based redundancy report, salvaged from `origin/new_player_data`
+   (8e8ea37) and generalized (scoring switches by model type; returns a DataFrame;
+   optional CSV export). Use it for Batch 4 pruning decisions ON CLEAN SPLITS —
+   the source branch's own pruning lists came from leaky validation and must not
+   be reused.
+3. **Vectorized rolling + cache: nothing to copy** — main's
+   `shared/base_data_preparer.py` already contains `computeRollingStatsVectorized`,
+   `getCachedData`/`saveCachedData` (with source-file freshness invalidation),
+   identical to the branch version. The remaining work is WIRING:
+   make `NBATrainingDataPreparer` inherit `BaseTrainingDataPreparer`, replace the
+   per-player loop in `precomputePlayerRollingAverages` with
+   `self.computeRollingStatsVectorized(df, 'PLAYER_ID', {...}, min_periods=1)`
+   plus `.shift(1)` per group, and wrap the body in
+   `cached = self.getCachedData('player_rolling', season, source_file=player_file)`.
+   Defer until after the pending retrain to avoid changing feature semantics
+   mid-rebuild (semantics-neutral in principle, but verify parity on one season).

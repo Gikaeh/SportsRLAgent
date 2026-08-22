@@ -98,3 +98,23 @@ stay short and fully readable.
 - Consequence, intended: devigged edges are ~2% higher than before and honest
   cover probabilities are lower than the old heuristics claimed — fewer, better-
   founded recommendations. MIN_EDGE_H2H=0.02 now means 2% vs FAIR prob.
+
+## 2026-08-22 — Salvage from side branches instead of merging or rewriting
+
+Reviewed origin/injury, origin/working, origin/new_player_data in depth. Verdict:
+merge nothing (all predate the A1/A2 fixes and would reintroduce leak-era
+assumptions); rewrite the injury system fresh per NOTES Tier-2 spec; transplant
+three proven pieces by hand:
+- ESPN fetch/matching layer → basketball/data_pipeline/injury_data.py (new file,
+  unwired). Kept verbatim where safe; added dated archive snapshots (Tier-2
+  requirement) and dropped the severity composite + probability/margin
+  multipliers — the owner had already disabled those live on the source branch.
+- Permutation-importance analyzer → additive BasketballH2HModel method,
+  generalized so spread/total regressors can use it (scoring by model type) and
+  returning a DataFrame for scripted use. Old branch's pruning LISTS are invalid
+  (leaky val); only the tool survives.
+- Vectorized rolling + cache: discovered main already contains identical
+  shared/base_data_preparer.py helpers — no copy needed; wiring deferred until
+  after the pending retrain to keep feature semantics frozen during rebuild.
+no_injuries and fullstack-app have zero unique commits vs main; candidates for
+deletion (owner call).

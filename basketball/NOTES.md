@@ -210,7 +210,10 @@ A2/A1 leakage; that is the point. (Reference: main's logged h2h test_acc of
    every snapshot write also appends `injury_data/archive/injuries_YYYY-MM-DD.csv`
    so point-in-time history accumulates (Tier-2 requirement #1).
    **Status: NOT wired into any pipeline** — revive per §Additions #6 when owner
-   says injuries are back on the table.
+   says injuries are back on the table. ⚠️ Smoke-checks of this module MUST pass
+   a temp `data_dir` (e.g. `/tmp/opencode/...`) — the default writes into the real
+   `data/basketball/injury_data/` (a check once overwrote/deleted the tracked
+   snapshot; restored in 0276530).
 2. **`BasketballH2HModel.analyzeFeatureImportance()`** — permutation-importance +
    correlation-based redundancy report, salvaged from `origin/new_player_data`
    (8e8ea37) and generalized (scoring switches by model type; returns a DataFrame;

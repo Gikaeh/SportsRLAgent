@@ -12,10 +12,17 @@ class BettingConfig:
     MAX_RISK_PCT = 0.5        # Maximum 15% total daily exposure
     
     # Edge
-    MIN_EDGE_H2H = 0.02 # Minimum 3% edge to place bet (model_prob - market_prob)
+    MIN_EDGE_H2H = 0.02 # Minimum 2% devigged edge to place bet (model_prob - fair_market_prob)
     MIN_EDGE_SPREAD = 3
     MIN_PROBABILITY = 0.55
-    
+
+    # Cover-probability model (NOTES.md C1): P(cover) = NormalCDF(edge / sigma),
+    # sigma = model's validation residual std, written into
+    # models/metadata/retraining_*_metadata.json by Model Retraining.
+    # Fallbacks are league-typical placeholders until the first post-fix retrain.
+    SPREAD_RESIDUAL_SIGMA_FALLBACK = 11.8
+    TOTAL_RESIDUAL_SIGMA_FALLBACK = 14.0
+
     # Kelly adjustments for underdog bets (H2H)
     UNDERDOG_KELLY_MULTIPLIER = 0.3  # Use 30% of normal Kelly for underdog bets
     

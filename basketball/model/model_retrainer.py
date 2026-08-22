@@ -2,12 +2,12 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
-from sklearn.model_selection import train_test_split
 from model.model_h2h import BasketballH2HModel
 from model.model_spread import BasketballSpreadModel
 from model.model_total import BasketballTotalModel
 from data_pipeline.prepare_data import NBATrainingDataPreparer
 from data_pipeline.basketball_data import BasketballData
+from shared.splitting import chronologicalSplit
 import json
 
 class ModelRetrainer:
@@ -129,8 +129,17 @@ class ModelRetrainer:
         if training_data is None or training_data.empty:
             return {'success': False, 'error': 'No training data available'}
         
-        train_data, test_data = train_test_split(training_data, test_size=self.retrain_config['test_split'], random_state=42)
-        val_data, test_data = train_test_split(test_data, test_size=self.retrain_config['validation_split'], random_state=42)
+        # Time-based split (NOTES.md A2): earliest games train, latest games test.
+        # Never shuffle across seasons — that leaks the future into training.
+        train_data, val_data, test_data = chronologicalSplit(
+            training_data,
+            date_col='date',
+            test_frac=self.retrain_config['test_split'],
+            val_frac_of_test=self.retrain_config['validation_split'],
+        )
+        print(f"Train: {train_data['date'].min()} -> {train_data['date'].max()}")
+        print(f"Val:   {val_data['date'].min()} -> {val_data['date'].max()}")
+        print(f"Test:  {test_data['date'].min()} -> {test_data['date'].max()}")
         
         if self.model.getModelType() == 'h2h':
             leakage_cols = [
@@ -213,6 +222,11 @@ class ModelRetrainer:
         elif self.model.getModelType() == 'spread':
            val_mae, val_rmse, val_r2, val_within_3, val_within_5, val_within_7 = self.model.evaluate(X_val, y_val)
            test_mae, test_rmse, test_r2, test_within_3, test_within_5, test_within_7 = self.model.evaluate(X_test, y_test)
+           # NOTES.md C1: publish validation residual std so the recommender's
+           # normal-approx cover probabilities use a measured sigma.
+           val_residual_std = float(np.std(y_val - self.model.predict(X_val)))
+           test_residual_std = float(np.std(y_test - self.model.predict(X_test)))
+           self.metadata['residual_std'] = val_residual_std
            self.metadata['retrain_history'].append({
                 'date': datetime.now().isoformat(),
                 'games_trained': len(training_data),
@@ -222,17 +236,22 @@ class ModelRetrainer:
                 'val_within_3': val_within_3,
                 'val_within_5': val_within_5,
                 'val_within_7': val_within_7,
+                'val_residual_std': val_residual_std,
                 'test_mae': test_mae,
                 'test_rmse': test_rmse,
                 'test_r2': test_r2,
                 'test_within_3': test_within_3,
                 'test_within_5': test_within_5,
                 'test_within_7': test_within_7,
+                'test_residual_std': test_residual_std,
                 'hyperparameter_tuning': tune_hyperparameters
             })
         elif self.model.getModelType() == 'total':
             val_mae, val_rmse, val_r2, val_within_3, val_within_5, val_within_10 = self.model.evaluate(X_val, y_val)
             test_mae, test_rmse, test_r2, test_within_3, test_within_5, test_within_10 = self.model.evaluate(X_test, y_test)
+            val_residual_std = float(np.std(y_val - self.model.predict(X_val)))
+            test_residual_std = float(np.std(y_test - self.model.predict(X_test)))
+            self.metadata['residual_std'] = val_residual_std
             self.metadata['retrain_history'].append({
                 'date': datetime.now().isoformat(),
                 'games_trained': len(training_data),
@@ -242,12 +261,14 @@ class ModelRetrainer:
                 'val_within_3': val_within_3,
                 'val_within_5': val_within_5,
                 'val_within_10': val_within_10,
+                'val_residual_std': val_residual_std,
                 'test_mae': test_mae,
                 'test_rmse': test_rmse,
                 'test_r2': test_r2,
                 'test_within_3': test_within_3,
                 'test_within_5': test_within_5,
                 'test_within_10': test_within_10,
+                'test_residual_std': test_residual_std,
                 'hyperparameter_tuning': tune_hyperparameters
             })
 

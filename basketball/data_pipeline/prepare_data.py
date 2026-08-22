@@ -142,36 +142,53 @@ class NBATrainingDataPreparer:
         
         return result
     
-    def getTopPlayersWithStats(self, player_df, game_id, team_abbr, top_n=6):
-        game_players = player_df[(player_df['GAME_ID'] == game_id) & (player_df['TEAM_ABBREVIATION'] == team_abbr)].copy()
-        
-        if game_players.empty or len(game_players) < top_n:
+    def getTopPlayersAsOf(self, player_df, game_date, team_abbr, top_n=6):
+        """Top players by PRE-GAME rolling mpg as of game_date.
+
+        Leak fix (NOTES.md A1): selection must not depend on who actually
+        played this game or their in-game minutes. Uses each player's latest
+        row strictly BEFORE the game date — identical semantics to the
+        prediction path's latest_player_stats ranking.
+        """
+        candidates = player_df[
+            (player_df['TEAM_ABBREVIATION'] == team_abbr) &
+            (player_df['GAME_DATE'] < game_date)
+        ]
+        if candidates.empty:
             return pd.DataFrame()
-        
-        game_players = game_players.sort_values('MIN', ascending=False).head(top_n)
-        
-        return game_players[['PLAYER_ID', 'ppg_rolling', 'fg_pct_rolling', 'mpg_rolling', 'plus_minus_rolling', 'apg_rolling', 'rpg_rolling', 'blk_rolling', 'stl_rolling', 'tov_rolling']]
-    
+
+        latest = (
+            candidates.sort_values(['PLAYER_ID', 'GAME_DATE'])
+            .groupby('PLAYER_ID', as_index=False)
+            .tail(1)
+        )
+        latest = latest.sort_values(
+            ['mpg_rolling', 'PLAYER_ID'], ascending=[False, True]
+        ).head(top_n)
+
+        return latest[['PLAYER_ID', 'ppg_rolling', 'fg_pct_rolling', 'mpg_rolling', 'plus_minus_rolling', 'apg_rolling', 'rpg_rolling', 'blk_rolling', 'stl_rolling', 'tov_rolling']].reset_index(drop=True)
+
     def addPlayerFeatures(self, matchup_data, season):
         print(f"Adding player features for {season}...")
         print(f"Precomputing player rolling averages...")
-        
+
         player_df = self.precomputePlayerRollingAverages(season)
-        
+
         if player_df.empty:
             raise ValueError(f"No player data found for {season}. Cannot add player features without player data.")
-        
+
         player_features = []
-        
+
         for idx, row in tqdm(matchup_data.iterrows(), total=len(matchup_data)):
             game_id = row['GAME_ID']
+            game_date = pd.to_datetime(row['GAME_DATE_home'])
             home_team = row['TEAM_ABBREVIATION_home']
             away_team = row['TEAM_ABBREVIATION_away']
-            
+
             game_features = {'game_id': game_id}
 
-            # Get top 6 players for home team with precomputed stats
-            home_players = self.getTopPlayersWithStats(player_df, game_id, home_team, top_n=6)
+            # Get top 6 players for home team as of game date (pre-game only)
+            home_players = self.getTopPlayersAsOf(player_df, game_date, home_team, top_n=6)
             for i in range(6):
                 prefix = f'home_p{i+1}_'
                 if i < len(home_players):
@@ -186,10 +203,18 @@ class NBATrainingDataPreparer:
                     game_features[f'{prefix}tov'] = player['tov_rolling']
                     game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling']
                 else:
-                    print(f"No player data available for {home_team} in game {game_id}")
-            
-            # Get top 6 players for away team with precomputed stats
-            away_players = self.getTopPlayersWithStats(player_df, game_id, away_team, top_n=6)
+                    game_features[f'{prefix}ppg'] = 0
+                    game_features[f'{prefix}fg_pct'] = 0
+                    game_features[f'{prefix}mpg'] = 0
+                    game_features[f'{prefix}apg'] = 0
+                    game_features[f'{prefix}rpg'] = 0
+                    game_features[f'{prefix}blk'] = 0
+                    game_features[f'{prefix}stl'] = 0
+                    game_features[f'{prefix}tov'] = 0
+                    game_features[f'{prefix}plus_minus'] = 0
+
+            # Get top 6 players for away team as of game date (pre-game only)
+            away_players = self.getTopPlayersAsOf(player_df, game_date, away_team, top_n=6)
             for i in range(6):
                 prefix = f'away_p{i+1}_'
                 if i < len(away_players):
@@ -204,10 +229,18 @@ class NBATrainingDataPreparer:
                     game_features[f'{prefix}tov'] = player['tov_rolling']
                     game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling']
                 else:
-                    print(f"No player data available for {away_team} in game {game_id}")
-            
+                    game_features[f'{prefix}ppg'] = 0
+                    game_features[f'{prefix}fg_pct'] = 0
+                    game_features[f'{prefix}mpg'] = 0
+                    game_features[f'{prefix}apg'] = 0
+                    game_features[f'{prefix}rpg'] = 0
+                    game_features[f'{prefix}blk'] = 0
+                    game_features[f'{prefix}stl'] = 0
+                    game_features[f'{prefix}tov'] = 0
+                    game_features[f'{prefix}plus_minus'] = 0
+
             player_features.append(game_features)
-        
+
         return pd.DataFrame(player_features)
     
     def createGameMatchupData(self, season):

@@ -1,4 +1,6 @@
 from os import path
+import json
+import math
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -23,7 +25,7 @@ class BettingRecommender:
             self.model = BasketballSpreadModel()
         elif model_path.split('_')[1] == 'total':
             self.model = BasketballTotalModel()
-        
+
         model_path = model_path or self.config.MODEL_PATH
         if Path(model_path).exists():
             self.model.load(model_path)
@@ -31,11 +33,39 @@ class BettingRecommender:
         else:
             raise FileNotFoundError(f"Model not found at {model_path}")
 
+        # NOTES.md C1: measured validation residual sigmas (fallback until retrain)
+        self.margin_residual_sigma = self.loadResidualSigma(
+            'spread', self.config.SPREAD_RESIDUAL_SIGMA_FALLBACK)
+        self.total_residual_sigma = self.loadResidualSigma(
+            'total', self.config.TOTAL_RESIDUAL_SIGMA_FALLBACK)
+
         self.current_bankroll = self.setBankroll()
         # self.current_bankroll = self.config.STARTING_BANKROLL
-        
+
         Path(self.config.LOG_DIR).mkdir(parents=True, exist_ok=True)
-    
+
+    def loadResidualSigma(self, bet_type, fallback, metadata_dir='./models/metadata'):
+        """Read the validation residual std written by ModelRetrainer; fall back to
+        the league-typical placeholder in betting_config until first clean retrain."""
+        meta_file = Path(metadata_dir) / f'retraining_{bet_type}_metadata.json'
+        try:
+            if meta_file.exists():
+                with open(meta_file) as f:
+                    sigma = json.load(f).get('residual_std')
+                if sigma and float(sigma) > 0:
+                    print(f"{bet_type} residual sigma: {float(sigma):.2f} (measured)")
+                    return float(sigma)
+        except Exception as e:
+            print(f"Could not read residual sigma for {bet_type}: {e}")
+        print(f"{bet_type} residual sigma: {fallback} (config fallback — retrain to measure)")
+        return float(fallback)
+
+    def devigTwoWay(self, implied_a, implied_b):
+        """NOTES.md C2: remove vig by normalizing two-sided implied probabilities."""
+        total = implied_a + implied_b
+        if total <= 0:
+            return implied_a, implied_b
+        return implied_a / total, implied_b / total
     def oddsToProbability(self, american_odds):
         if american_odds > 0:
             return 100 / (american_odds + 100)
@@ -71,9 +101,19 @@ class BettingRecommender:
         
         return min(kelly_fraction, self.config.MAX_BET_SIZE_PCT)
     
-    def calculateEdge(self, model_prob, market_odds):
+    def calculateEdge(self, model_prob, market_odds, opposite_odds=None):
+        """NOTES.md C2: edge vs the DEVIGGED fair probability when both sides'
+        best prices are supplied; falls back to raw implied prob otherwise."""
         market_prob = self.oddsToProbability(market_odds)
+        if opposite_odds is not None:
+            fair_prob, _ = self.devigTwoWay(market_prob, self.oddsToProbability(opposite_odds))
+            return model_prob - fair_prob
         return model_prob - market_prob
+
+    def bestOutcomeRow(self, outcome_df):
+        """NOTES.md B2: best-priced row for one outcome; its point and price
+        must come from the SAME book (books can post different lines)."""
+        return outcome_df.sort_values('price', ascending=False).iloc[0]
     
     def predictGames(self, game_features, game_info):
         results = game_info.copy()
@@ -111,7 +151,11 @@ class BettingRecommender:
                 game_odds = odds_data[odds_data['home_team'] == row['home_team']]
                 if len(game_odds) == 0:
                     continue
-                total_distance = abs(row['predicted_total'] - game_odds['point'].values[0])
+                lines = game_odds['point'].dropna().unique()
+                if len(lines) == 0:
+                    continue
+                market_line = float((lines.min() + lines.max()) / 2)
+                total_distance = abs(row['predicted_total'] - market_line)
                 results.at[idx, 'confidence'] = np.minimum(total_distance / 20, 1)
         return results
     
@@ -146,8 +190,10 @@ class BettingRecommender:
                 else:
                     book = game_odds[(game_odds['price'] == away_odds)]['bookmakers_key'].values[0]
             
-                home_edge = self.calculateEdge(home_prob, home_odds)
-                away_edge = self.calculateEdge(away_prob, away_odds)
+                home_edge = self.calculateEdge(home_prob, home_odds, away_odds)
+                away_edge = self.calculateEdge(away_prob, away_odds, home_odds)
+                fair_home_prob, fair_away_prob = self.devigTwoWay(
+                    self.oddsToProbability(home_odds), self.oddsToProbability(away_odds))
                 
                 if home_prob >= self.config.MIN_PROBABILITY and home_edge >= self.config.MIN_EDGE_H2H:
                 # if home_edge >= self.config.MIN_EDGE_H2H:
@@ -164,7 +210,7 @@ class BettingRecommender:
                         'home_odds': home_odds,
                         'away_model_prob': away_prob,
                         'away_odds': away_odds,
-                        'market_prob': self.oddsToProbability(home_odds),
+                        'market_prob': fair_home_prob,
                         'edge': home_edge,
                         'confidence': game['confidence'],
                         'bet_size_fraction': bet_size_fraction,
@@ -191,7 +237,7 @@ class BettingRecommender:
                         'home_odds': home_odds,
                         'away_model_prob': away_prob,
                         'away_odds': away_odds,
-                        'market_prob': self.oddsToProbability(away_odds),
+                        'market_prob': fair_away_prob,
                         'edge': away_edge,
                         'confidence': game['confidence'],
                         'bet_size_fraction': bet_size_fraction,
@@ -227,10 +273,12 @@ class BettingRecommender:
             if len(home_spread_odds) == 0 or len(away_spread_odds) == 0:
                 continue
             
-            home_spread = home_spread_odds['point'].values[0]
-            home_odds = home_spread_odds['price'].max()
-            away_spread = away_spread_odds['point'].values[0]
-            away_odds = away_spread_odds['price'].max()
+            best_home_row = self.bestOutcomeRow(home_spread_odds)
+            best_away_row = self.bestOutcomeRow(away_spread_odds)
+            home_spread = best_home_row['point']
+            home_odds = best_home_row['price']
+            away_spread = best_away_row['point']
+            away_odds = best_away_row['price']
 
             is_home_favored = home_spread < 0
             is_away_favored = away_spread < 0
@@ -251,7 +299,7 @@ class BettingRecommender:
                     bet_size_fraction = self.kellyCriterion(cover_prob, home_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
 
-                    book = home_spread_odds[home_spread_odds['price'] == home_odds]['bookmakers_key'].values[0]
+                    book = best_home_row['bookmakers_key']
 
                     recommendations.append({
                         'game_id': game_id,
@@ -285,7 +333,7 @@ class BettingRecommender:
                     bet_size_fraction = self.kellyCriterion(cover_prob, away_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
                 
-                    book = away_spread_odds[away_spread_odds['price'] == away_odds]['bookmakers_key'].values[0]
+                    book = best_away_row['bookmakers_key']
                     
                     recommendations.append({
                         'game_id': game_id,
@@ -336,9 +384,14 @@ class BettingRecommender:
             if len(over_odds_data) == 0 or len(under_odds_data) == 0:
                 continue
             
-            total_line = over_odds_data['point'].values[0]
-            over_odds = over_odds_data['price'].max()
-            under_odds = under_odds_data['price'].max()
+            best_over_row = self.bestOutcomeRow(over_odds_data)
+            total_line = best_over_row['point']
+            matching_under = under_odds_data[under_odds_data['point'] == total_line]
+            under_source = matching_under if len(matching_under) > 0 else under_odds_data
+            best_under_row = self.bestOutcomeRow(under_source)
+
+            over_odds = best_over_row['price']
+            under_odds = best_under_row['price']
             
             total_advantage = abs(predicted_total - total_line)
             
@@ -351,7 +404,7 @@ class BettingRecommender:
                     bet_size_fraction = self.kellyCriterion(cover_prob, over_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
                     
-                    book = over_odds_data[over_odds_data['price'] == over_odds]['bookmakers_key'].values[0]
+                    book = best_over_row['bookmakers_key']
                     
                     recommendations.append({
                         'game_id': game_id,
@@ -381,7 +434,7 @@ class BettingRecommender:
                     bet_size_fraction = self.kellyCriterion(cover_prob, under_odds, game['confidence'])
                     bet_amount = round(bet_size_fraction * self.current_bankroll)
                     
-                    book = under_odds_data[under_odds_data['price'] == under_odds]['bookmakers_key'].values[0]
+                    book = best_under_row['bookmakers_key']
                     
                     recommendations.append({
                         'game_id': game_id,
@@ -406,19 +459,22 @@ class BettingRecommender:
         
         return recommendations
 
+    def normalCoverProbability(self, advantage, sigma):
+        """NOTES.md C1: P(cover) = Phi(advantage / sigma), sigma = measured
+        validation residual std. Replaces the old arbitrary logistics (which
+        returned >=0.5 for ANY positive edge and inflated Kelly stakes).
+        Push mass at integer lines is ignored — pushes grade 'P' and refund."""
+        if not sigma or sigma <= 0:
+            raise ValueError("residual sigma must be positive")
+        z = advantage / float(sigma)
+        prob = 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
+        return min(max(prob, 0.01), 0.99)
+
     def totalToProbability(self, total_advantage):
-        k = 0.10 
-        x0 = 10 
-        prob = 0.5 + 0.45 / (1 + np.exp(-k * (total_advantage - x0)))
-        
-        return min(max(prob, 0.5), 0.95)
+        return self.normalCoverProbability(total_advantage, self.total_residual_sigma)
 
     def marginToProbability(self, margin):
-        k = 0.15
-        x0 = 5
-        prob = 0.5 + 0.4 / (1 + np.exp(-k * (margin - x0)))
-
-        return min(max(prob, 0.5), 0.95)
+        return self.normalCoverProbability(margin, self.margin_residual_sigma)
 
     def calculateBetPriority(self, bet):
         weights = {'h2h': .3, 'spread': 1, 'total': .001}
@@ -546,14 +602,14 @@ class BettingRecommender:
         
         for i, (data, file) in enumerate(data_files):
             if not data.empty:
-                write_header = True
-                
+                existing_data = pd.DataFrame()
+
                 if file.exists() and file.stat().st_size > 0:
                     existing_data = pd.read_csv(file)
                     with open(file, 'r') as f:
                         first_line = f.readline().strip()
                         existing_columns = first_line.split(',')
-                        
+
                         cols_to_keep = [col for col in existing_columns if col in data.columns]
                         data = data[cols_to_keep]
 
@@ -612,20 +668,24 @@ class BettingRecommender:
 
                                 if row['bet_side'] == 'home':
                                     spread = row['home_spread']
-                                    home_score += spread
+                                    adjusted = home_score + spread
 
-                                    if home_score > away_score:
+                                    if adjusted > away_score:
                                         df.at[idx, 'result'] = 'W'
-                                    else:
+                                    elif adjusted < away_score:
                                         df.at[idx, 'result'] = 'L'
+                                    else:
+                                        df.at[idx, 'result'] = 'P'
                                 elif row['bet_side'] == 'away':
                                     spread = row['away_spread']
-                                    away_score += spread
+                                    adjusted = away_score + spread
 
-                                    if away_score > home_score:
+                                    if adjusted > home_score:
                                         df.at[idx, 'result'] = 'W'
-                                    else:
+                                    elif adjusted < home_score:
                                         df.at[idx, 'result'] = 'L'
+                                    else:
+                                        df.at[idx, 'result'] = 'P'
                             else:
                                 df.at[idx, 'result'] = ''
 
@@ -641,13 +701,17 @@ class BettingRecommender:
                                 if row['bet_side'].lower() == 'over':
                                     if total_score > row['total_line']:
                                         df.at[idx, 'result'] = 'W'
-                                    else:
+                                    elif total_score < row['total_line']:
                                         df.at[idx, 'result'] = 'L'
+                                    else:
+                                        df.at[idx, 'result'] = 'P'
                                 elif row['bet_side'].lower() == 'under':
                                     if total_score < row['total_line']:
                                         df.at[idx, 'result'] = 'W'
-                                    else:
+                                    elif total_score > row['total_line']:
                                         df.at[idx, 'result'] = 'L'
+                                    else:
+                                        df.at[idx, 'result'] = 'P'
                             else:
                                 df.at[idx, 'result'] = ''
                                 

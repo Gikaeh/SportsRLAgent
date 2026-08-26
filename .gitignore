@@ -3,4 +3,5 @@ idea_for_project.txt
 __pycache__
 basketball/*.md
 .env
+/data/
 !basketball/NOTES.md

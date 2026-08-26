@@ -26,3 +26,6 @@ SQLAlchemy>=2.0.45
 
 # Testing
 pytest>=8.0.0
+
+# Timezone handling (odd_scraping.py)
+pytz>=2024.1

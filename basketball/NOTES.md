@@ -168,7 +168,7 @@ aggregate now (see Tier-1 injuries below).
 - **Cover-probability heuristics replaced** (`marginToProbability` / ✅ FIXED
   2026-08-22 as `normalCoverProbability`): P(cover) = Φ(edge/σ) with σ = measured
   validation residual std, written by ModelRetrainer into
-  `models/metadata/retraining_*_metadata.json['residual_std']` and loaded by the
+  `models/metadata/basketball/retraining_*_metadata.json['residual_std']` and loaded by the
   recommender (config fallbacks until first post-fix retrain). Signed edges now
   allowed (<0.5 rejected by gates). Push mass at integer lines ignored — pushes
   grade 'P' and refund.

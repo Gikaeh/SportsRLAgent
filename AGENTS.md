@@ -26,20 +26,21 @@ Per-area deep-dive context: `basketball/NOTES.md` (audit findings + remediation 
    past rows.
 4. **No silent data leakage.** Model features must be computable at prediction time
    (no season-end stats for mid-season games, no post-game info). Time-based splits only.
-5. **Verify before "done".** Run `.venv/bin/python -m pytest tests/ -v`. All green, or
+5. **Verify before "done".** Run `.venv\Scripts\python.exe -m pytest tests/ -v`. All green, or
    you say explicitly why not.
 
 ## Stack & commands
 
-Python 3.12, venv at `.venv/`, deps via pip from `requirements.txt`.
+Python 3.12, env managed by **uv** at `.venv/`, deps from `requirements.txt`.
+Windows machine — use `.venv\Scripts\python.exe` (not `.venv/bin/python`).
 
 | When | Command |
 |---|---|
-| Install deps | `.venv/bin/pip install -r requirements.txt` |
-| Verify changes | `.venv/bin/python -m pytest tests/ -v` |
-| NHL daily menu (recommendations, grade bets, retrain) | `.venv/bin/python hockey/main.py` |
-| NBA daily menu | `.venv/bin/python basketball/main.py` |
-| Add a dependency | append to `requirements.txt`, then install command above |
+| Create env + install deps | `uv venv`; then `uv pip install -r requirements.txt` |
+| Verify changes | `.venv\Scripts\python.exe -m pytest tests/ -v` |
+| NHL daily menu (recommendations, grade bets, retrain) | `.venv\Scripts\python.exe hockey/main.py` |
+| NBA daily menu | `.venv\Scripts\python.exe basketball/main.py` |
+| Add a dependency | append to `requirements.txt`, then `uv pip install -r requirements.txt` |
 
 Interactive CLIs: choose a menu number; entering one number above the highest
 listed option steps through every task in sequence ("run all"). Odds come from The

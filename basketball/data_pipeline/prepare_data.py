@@ -901,6 +901,7 @@ class NBATrainingDataPreparer:
     def prepareAllSeasons(self, seasons=None, output_dir='././data/training_data/basketball/phase1'):
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
+        (output_path / 'separated_seasons').mkdir(parents=True, exist_ok=True)
         current_season = self.getCurrentSeason()
 
         files = [f.stem.replace('_training_data', '') for f in output_path.glob('separated_seasons/*_training_data.csv')]

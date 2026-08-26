@@ -1,7 +1,10 @@
 idea_for_project.txt
 .venv
 __pycache__
+.pytest_cache
 basketball/*.md
 .env
-/data/
+/data/**
+!/data/**/
+!/data/**/odds_data/**
 !basketball/NOTES.md

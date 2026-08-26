@@ -44,7 +44,7 @@ class BettingRecommender:
 
         Path(self.config.LOG_DIR).mkdir(parents=True, exist_ok=True)
 
-    def loadResidualSigma(self, bet_type, fallback, metadata_dir='./models/metadata'):
+    def loadResidualSigma(self, bet_type, fallback, metadata_dir='./models/metadata/basketball'):
         """Read the validation residual std written by ModelRetrainer; fall back to
         the league-typical placeholder in betting_config until first clean retrain."""
         meta_file = Path(metadata_dir) / f'retraining_{bet_type}_metadata.json'

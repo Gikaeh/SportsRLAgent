@@ -81,7 +81,7 @@ stay short and fully readable.
 
 - **Ïƒ source of truth:** ModelRetrainer computes validation residual std after
   each spread/total retrain and publishes it as top-level `residual_std` in
-  `models/metadata/retraining_*_metadata.json`; BettingRecommender loads it at
+  `models/metadata/<sport>/retraining_*_metadata.json`; BettingRecommender loads it at
   init and falls back to `SPREAD_RESIDUAL_SIGMA_FALLBACK=11.8` /
   `TOTAL_RESIDUAL_SIGMA_FALLBACK=14.0` (league-typical placeholders) until the
   first post-fix retrain measures real values. Chosen over storing Ïƒ inside the
@@ -118,3 +118,24 @@ three proven pieces by hand:
   after the pending retrain to keep feature semantics frozen during rebuild.
 no_injuries and fullstack-app have zero unique commits vs main; candidates for
 deletion (owner call).
+
+
+## 2026-08-25 — data/ untracked from git EXCEPT odds_data
+
+All of data/ is fetched/derived and regenerable, so it was untracked (593 files)
+to stop git bloat (~530 MB of blobs). Exception carved out via .gitignore
+negation: data/*/odds_data/** stays tracked. Why: odds snapshots are the only
+data the pipeline CANNOT regenerate — they are point-in-time market observations
+consumed at recommendation time; once a game passes, those prices are gone unless
+paid historical endpoints are used. They double as future training data for
+market-feature work (NOTES.md C3/C4) and CLV checks. Cost is trivial (~360
+files, 4.2 MB).
+
+## 2026-08-25 — models/metadata restructured to per-sport subfolders
+
+models/metadata/basketball/ and models/metadata/hockey/ now hold each sport's
+retraining_*_metadata.json. Why: hockey's retrainer already auto-derived a
+hockey/ subfolder while basketball wrote flat files with sport-ambiguous names;
+the flat layout also made cross-sport glob accidents possible. BettingRecommender
+residual-sigma loader and both main.py menus updated; hockey folder materializes
+in git on first hockey metadata write.

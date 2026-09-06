@@ -143,10 +143,7 @@ class ModelRetrainer:
         print(f"Test:  {test_data['date'].min()} -> {test_data['date'].max()}")
         
         if self.model.getModelType() == 'h2h':
-            leakage_cols = [
-                'game_id', 'date', 'home_score', 'away_score', 'total_score',
-                'season', 'home_team', 'away_team', 'point_diff', 
-            ] + self.model.getLeakageColumns()
+            leakage_cols = self.model.getLeakageColumns()
 
             train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
             val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
@@ -156,10 +153,7 @@ class ModelRetrainer:
             X_val, y_val = val_data.drop('home_won', axis=1), val_data['home_won']
             X_test, y_test = test_data.drop('home_won', axis=1), test_data['home_won']
         elif self.model.getModelType() == 'spread':
-            leakage_cols = [
-                'game_id', 'date', 'home_score', 'away_score', 'total_score',
-                'season', 'home_team', 'away_team', 'home_won',
-            ] + self.model.getLeakageColumns()
+            leakage_cols = self.model.getLeakageColumns()
 
             train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
             val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
@@ -169,10 +163,7 @@ class ModelRetrainer:
             X_val, y_val = val_data.drop('point_diff', axis=1), val_data['point_diff']
             X_test, y_test = test_data.drop('point_diff', axis=1), test_data['point_diff']
         elif self.model.getModelType() == 'total':
-            leakage_cols = [
-                'game_id', 'date', 'home_score', 'away_score', 'point_diff',
-                'season', 'home_team', 'away_team', 'home_won',
-            ] + self.model.getLeakageColumns()
+            leakage_cols = self.model.getLeakageColumns()
 
             train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
             val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])

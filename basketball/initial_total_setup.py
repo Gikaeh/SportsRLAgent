@@ -18,10 +18,7 @@ val_data, test_data = train_test_split(test_data, test_size=0.5, random_state=42
 
 # Drop leakage columns (post-game data, identifiers, and season)
 # Season is dropped to prevent data leakage - model should learn patterns, not season-specific trends
-leakage_cols = [
-    'game_id', 'date', 'home_score', 'away_score', 'point_diff',
-    'season', 'home_team', 'away_team', 'home_won',
-] + basketball_model.getLeakageColumns()
+leakage_cols = basketball_model.getLeakageColumns()
 
 train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
 val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])

@@ -22,12 +22,16 @@ class BasketballSpreadModel:
         self.model = xgb.XGBRegressor(**params)
         self.best_params = None
         self.leakage_cols = [
+            'game_id', 'date', 'home_score', 'away_score', 'total_score',
+            'season', 'home_team', 'away_team', 'home_won',
+        ]
+        self.low_importance_cols = [
             'home_blk_l10', 'away_blk_l10', 'home_stl_l10', 'away_stl_l10', 
             'home_fg_pct_l10', 'away_fg_pct_l10', 'home_fg3_pct_l10', 'away_fg3_pct_l10'
         ]
         
     def getLeakageColumns(self):
-        return self.leakage_cols
+        return self.leakage_cols + self.low_importance_cols
 
     def train(self, X_train, y_train, X_val=None, y_val=None, verbose=True):
         if X_val is not None and y_val is not None:

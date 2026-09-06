@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import re
 from pathlib import Path
 from tqdm import tqdm
 from datetime import datetime
@@ -28,6 +29,9 @@ class NBATrainingDataPreparer:
         
         df['OPP_PTS'] = df['PTS'] - df['PLUS_MINUS']
         df['TOT_PTS'] = df['PTS'] + df['OPP_PTS']
+
+        # Adds opp_avg_win_pct_l10 (strength of schedule) per team-game
+        df = self.calculateOpponentStrengthL10(df)
         
         l10_stats = []
         
@@ -53,7 +57,7 @@ class NBATrainingDataPreparer:
             # After shift(1), game 11 will have stats from games 1-10
             team_df = team_df.iloc[10:].copy()
             
-            team_l10 = team_df[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID', 'wins_l10', 'ppg_l10', 'opp_ppg_l10', 'fg_pct_l10', 'fg3_pct_l10', 'reb_l10', 'ast_l10', 'tov_l10', 'blk_l10', 'stl_l10', 'plus_minus_l10', 'total_l10']]
+            team_l10 = team_df[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID', 'wins_l10', 'opp_avg_win_pct_l10', 'ppg_l10', 'opp_ppg_l10', 'fg_pct_l10', 'fg3_pct_l10', 'reb_l10', 'ast_l10', 'tov_l10', 'blk_l10', 'stl_l10', 'plus_minus_l10', 'total_l10']]
             
             l10_stats.append(team_l10)
         
@@ -79,6 +83,64 @@ class NBATrainingDataPreparer:
         df['rest_days'] = (df['GAME_DATE'] - df['prev_game_date']).dt.days - 1
         df['is_back_to_back'] = (df['rest_days'] == 0).astype(int)
         
+        return df
+    
+    def parseOpponentFromMatchup(self, matchup_row):
+        team_abbr = matchup_row['TEAM_ABBREVIATION']
+        matchup = matchup_row['MATCHUP']
+        if pd.isna(matchup):
+            return team_abbr
+        parts = re.split(r'\s*(?:@|vs\.)\s*', str(matchup))
+        if len(parts) < 2:
+            return team_abbr
+        return (parts[1] if parts[0].strip() == team_abbr else parts[0]).strip()
+
+    def calculateOpponentStrengthL10(self, df):
+        df = df.copy()
+        df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'])
+        df = df.sort_values(['TEAM_ABBREVIATION', 'GAME_DATE']).reset_index(drop=True)
+
+        df['opponent_abbr'] = df.apply(self.parseOpponentFromMatchup, axis=1)
+        df['win_flag'] = (df['WL'] == 'W').astype(int)
+
+        df['prior_games'] = df.groupby('TEAM_ABBREVIATION')['win_flag'].transform(
+            lambda x: x.rolling(window=10, min_periods=1).count().shift(1)
+        ).fillna(0)
+        df['prior_wins'] = df.groupby('TEAM_ABBREVIATION')['win_flag'].transform(
+            lambda x: x.rolling(window=10, min_periods=1).sum().shift(1)
+        ).fillna(0)
+
+        # Raw win pct over games actually played (0 games -> league mean)
+        df['raw_pct'] = df['prior_wins'] / df['prior_games'].replace(0, np.nan)
+        df['raw_pct'] = df['raw_pct'].fillna(0.50)
+
+        # Linear fade: weight -> 1 (pure pct) once a full 10-game record exists
+        df['weight'] = (df['prior_games'] / 10.0).clip(0, 1)
+        df['win_pct_adj'] = df['weight'] * df['raw_pct'] + (1 - df['weight']) * 0.50
+
+        # Each opponent's adjusted win pct + raw record at the same game
+        opp_lookup = df[['GAME_ID', 'TEAM_ABBREVIATION', 'win_pct_adj', 'prior_wins', 'prior_games']].rename(
+            columns={
+                'TEAM_ABBREVIATION': 'opponent_abbr',
+                'win_pct_adj': 'opponent_win_pct_adj',
+                'prior_wins': 'opponent_prior_wins',
+                'prior_games': 'opponent_prior_games',
+            }
+        )
+        df = df.merge(opp_lookup, on=['GAME_ID', 'opponent_abbr'], how='left')
+
+        # Average of the last 10 opponents' adjusted win pct, shifted (no leakage)
+        df['opp_avg_win_pct_l10'] = df.groupby('TEAM_ABBREVIATION')['opponent_win_pct_adj'].transform(
+            lambda x: x.rolling(window=10, min_periods=1).mean().shift(1)
+        ).fillna(0.50)
+
+        df = df.drop(
+            columns=['opponent_abbr', 'win_flag', 'prior_games', 'prior_wins',
+                        'raw_pct', 'weight', 'win_pct_adj', 'opponent_win_pct_adj',
+                        'opponent_prior_wins', 'opponent_prior_games'],
+            errors='ignore',
+        )
+
         return df
     
     def precomputePlayerRollingAverages(self, season):
@@ -143,13 +205,6 @@ class NBATrainingDataPreparer:
         return result
     
     def getTopPlayersAsOf(self, player_df, game_date, team_abbr, top_n=6):
-        """Top players by PRE-GAME rolling mpg as of game_date.
-
-        Leak fix (NOTES.md A1): selection must not depend on who actually
-        played this game or their in-game minutes. Uses each player's latest
-        row strictly BEFORE the game date — identical semantics to the
-        prediction path's latest_player_stats ranking.
-        """
         candidates = player_df[
             (player_df['TEAM_ABBREVIATION'] == team_abbr) &
             (player_df['GAME_DATE'] < game_date)
@@ -387,25 +442,36 @@ class NBATrainingDataPreparer:
             # Team Performance
             'home_wins_l10': matchup_data['wins_l10_home'],
             'away_wins_l10': matchup_data['wins_l10_away'],
-            'home_total_l10': matchup_data['total_l10_home'],
-            'away_total_l10': matchup_data['total_l10_away'],
             'home_plus_minus_l10': matchup_data['plus_minus_l10_home'],
             'away_plus_minus_l10': matchup_data['plus_minus_l10_away'],
             'plus_minus_diff': matchup_data['plus_minus_l10_home'] - matchup_data['plus_minus_l10_away'],
+            'home_total_l10': matchup_data['total_l10_home'],
+            'away_total_l10': matchup_data['total_l10_away'],
+            'total_l10_diff': matchup_data['total_l10_home'] - matchup_data['total_l10_away'],
+            'home_opp_avg_win_pct_l10': matchup_data['opp_avg_win_pct_l10_home'],
+            'away_opp_avg_win_pct_l10': matchup_data['opp_avg_win_pct_l10_away'],
+            'opp_avg_win_pct_diff': matchup_data['opp_avg_win_pct_l10_home'] - matchup_data['opp_avg_win_pct_l10_away'],
             'home_ppg_l10': matchup_data['ppg_l10_home'],
             'away_ppg_l10': matchup_data['ppg_l10_away'],
             'ppg_diff': matchup_data['ppg_l10_home'] - matchup_data['ppg_l10_away'],
             'home_opp_ppg_l10': matchup_data['opp_ppg_l10_home'],
             'away_opp_ppg_l10': matchup_data['opp_ppg_l10_away'],
             'opp_ppg_diff': matchup_data['opp_ppg_l10_home'] - matchup_data['opp_ppg_l10_away'],
-            # 'home_apg_l10': matchup_data['ast_l10_home'],
-            # 'away_apg_l10': matchup_data['ast_l10_away'],
+            'home_apg_l10': matchup_data['ast_l10_home'],
+            'away_apg_l10': matchup_data['ast_l10_away'],
+            'apg_l10_diff': matchup_data['ast_l10_home']- matchup_data['ast_l10_away'],
             'home_tov_l10': matchup_data['tov_l10_home'],
             'away_tov_l10': matchup_data['tov_l10_away'],
+            'tov_l10_diff': matchup_data['tov_l10_home']- matchup_data['tov_l10_away'],
             'home_blk_l10': matchup_data['blk_l10_home'],
             'away_blk_l10': matchup_data['blk_l10_away'],
+            'blk_l10_diff': matchup_data['blk_l10_home']- matchup_data['blk_l10_away'],
             'home_stl_l10': matchup_data['stl_l10_home'],
             'away_stl_l10': matchup_data['stl_l10_away'],
+            'stl_l10_diff': matchup_data['stl_l10_home']- matchup_data['stl_l10_away'],
+            'home_reb_l10': matchup_data['reb_l10_home'],
+            'away_reb_l10': matchup_data['reb_l10_away'],
+            'reb_l10_diff': matchup_data['reb_l10_home']- matchup_data['reb_l10_away'],
             
             # Game Context
             'home_rest_days': matchup_data['rest_days_home'],
@@ -571,8 +637,12 @@ class NBATrainingDataPreparer:
                 # Home team L10 stats
                 'wins_l10_home': home_stats['wins_l10'],
                 'wins_l10_away': away_stats['wins_l10'],
+                'plus_minus_l10_home': home_stats['plus_minus_l10'],
+                'plus_minus_l10_away': away_stats['plus_minus_l10'],
                 'total_l10_home': home_stats['total_l10'],
                 'total_l10_away': away_stats['total_l10'],
+                'opp_avg_win_pct_l10_home': home_stats['opp_avg_win_pct_l10'],
+                'opp_avg_win_pct_l10_away': away_stats['opp_avg_win_pct_l10'],
                 'ppg_l10_home': home_stats['ppg_l10'],
                 'ppg_l10_away': away_stats['ppg_l10'],
                 'opp_ppg_l10_home': home_stats['opp_ppg_l10'],
@@ -581,18 +651,16 @@ class NBATrainingDataPreparer:
                 'fg_pct_l10_away': away_stats['fg_pct_l10'],
                 'fg3_pct_l10_home': home_stats['fg3_pct_l10'],
                 'fg3_pct_l10_away': away_stats['fg3_pct_l10'],
-                # 'home_rpg_l10': home_stats['reb_l10'],
-                # 'away_rpg_l10': away_stats['reb_l10'],
-                # 'home_apg_l10': home_stats['ast_l10'],
-                # 'away_apg_l10': away_stats['ast_l10'],
+                'home_rpg_l10': home_stats['reb_l10'],
+                'away_rpg_l10': away_stats['reb_l10'],
+                'home_apg_l10': home_stats['ast_l10'],
+                'away_apg_l10': away_stats['ast_l10'],
                 'blk_l10_home': home_stats['blk_l10'],
                 'blk_l10_away': away_stats['blk_l10'],
                 'stl_l10_home': home_stats['stl_l10'],
                 'stl_l10_away': away_stats['stl_l10'],
                 'tov_l10_home': home_stats['tov_l10'],
                 'tov_l10_away': away_stats['tov_l10'],
-                'plus_minus_l10_home': home_stats['plus_minus_l10'],
-                'plus_minus_l10_away': away_stats['plus_minus_l10'],
                 
                 'rest_days_home': home_rest,
                 'rest_days_away': away_rest,
@@ -698,25 +766,36 @@ class NBATrainingDataPreparer:
             # Team Performance
             'home_wins_l10': matchup_data['wins_l10_home'],
             'away_wins_l10': matchup_data['wins_l10_away'],
-            'home_total_l10': matchup_data['total_l10_home'],
-            'away_total_l10': matchup_data['total_l10_away'],
             'home_plus_minus_l10': matchup_data['plus_minus_l10_home'],
             'away_plus_minus_l10': matchup_data['plus_minus_l10_away'],
             'plus_minus_diff': matchup_data['plus_minus_l10_home'] - matchup_data['plus_minus_l10_away'],
+            'home_total_l10': matchup_data['total_l10_home'],
+            'away_total_l10': matchup_data['total_l10_away'],
+            'total_l10_diff': matchup_data['total_l10_home'] - matchup_data['total_l10_away'],
+            'home_opp_avg_win_pct_l10': matchup_data['opp_avg_win_pct_l10_home'],
+            'away_opp_avg_win_pct_l10': matchup_data['opp_avg_win_pct_l10_away'],
+            'opp_avg_win_pct_diff': matchup_data['opp_avg_win_pct_l10_home'] - matchup_data['opp_avg_win_pct_l10_away'],
             'home_ppg_l10': matchup_data['ppg_l10_home'],
             'away_ppg_l10': matchup_data['ppg_l10_away'],
             'ppg_diff': matchup_data['ppg_l10_home'] - matchup_data['ppg_l10_away'],
             'home_opp_ppg_l10': matchup_data['opp_ppg_l10_home'],
             'away_opp_ppg_l10': matchup_data['opp_ppg_l10_away'],
             'opp_ppg_diff': matchup_data['opp_ppg_l10_home'] - matchup_data['opp_ppg_l10_away'],
-            # 'home_apg_l10': matchup_data['ast_l10_home'],
-            # 'away_apg_l10': matchup_data['ast_l10_away'],
+            'home_apg_l10': matchup_data['ast_l10_home'],
+            'away_apg_l10': matchup_data['ast_l10_away'],
+            'apg_l10_diff': matchup_data['ast_l10_home']- matchup_data['ast_l10_away'],
             'home_tov_l10': matchup_data['tov_l10_home'],
             'away_tov_l10': matchup_data['tov_l10_away'],
+            'tov_l10_diff': matchup_data['tov_l10_home']- matchup_data['tov_l10_away'],
             'home_blk_l10': matchup_data['blk_l10_home'],
             'away_blk_l10': matchup_data['blk_l10_away'],
+            'blk_l10_diff': matchup_data['blk_l10_home']- matchup_data['blk_l10_away'],
             'home_stl_l10': matchup_data['stl_l10_home'],
             'away_stl_l10': matchup_data['stl_l10_away'],
+            'stl_l10_diff': matchup_data['stl_l10_home']- matchup_data['stl_l10_away'],
+            'home_reb_l10': matchup_data['reb_l10_home'],
+            'away_reb_l10': matchup_data['reb_l10_away'],
+            'reb_l10_diff': matchup_data['reb_l10_home']- matchup_data['reb_l10_away'],
             
             # Game Context
             'home_rest_days': matchup_data['rest_days_home'],

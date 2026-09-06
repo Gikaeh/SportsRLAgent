@@ -66,18 +66,17 @@ class LiveDataUpdater:
             return pd.DataFrame(), pd.DataFrame()
         
         game_info = game_features[['game_id', 'date', 'home_team', 'away_team']].copy()
-        leakage_cols = ['game_id', 'date', 'season', 'home_team', 'away_team',]
         
         if model_type == 'h2h':
-            leakage_cols = leakage_cols + self.h2h_model.getLeakageColumns()
+            leakage_cols = self.h2h_model.getLeakageColumns()
         elif model_type == 'spread':
-            leakage_cols =  leakage_cols + self.spread_model.getLeakageColumns()
+            leakage_cols =  self.spread_model.getLeakageColumns()
         elif model_type == 'total':
-            leakage_cols = leakage_cols + self.total_model.getLeakageColumns()
+            leakage_cols = self.total_model.getLeakageColumns()
         elif model_type == 'all':
-            leakage_cols_h2h = leakage_cols + self.h2h_model.getLeakageColumns()
-            leakage_cols_spread = leakage_cols + self.spread_model.getLeakageColumns()
-            leakage_cols_total = leakage_cols + self.total_model.getLeakageColumns()
+            leakage_cols_h2h = self.h2h_model.getLeakageColumns()
+            leakage_cols_spread = self.spread_model.getLeakageColumns()
+            leakage_cols_total = self.total_model.getLeakageColumns()
             
             prediction_data_h2h = game_features.drop(columns=[col for col in leakage_cols_h2h if col in game_features.columns])
             prediction_data_spread = game_features.drop(columns=[col for col in leakage_cols_spread if col in game_features.columns])

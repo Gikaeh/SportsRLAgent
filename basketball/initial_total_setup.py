@@ -46,9 +46,10 @@ print("\n" + "="*60)
 print("TRAINING MODEL")
 print("="*60)
 basketball_model.trainWithBestParams(X_train, y_train, X_val, y_val, verbose=50)  # Show eval every 100 rounds
+# basketball_model.train(X_train, y_train, X_val, y_val)
 
 # Evaluate on validation set
-val_mae, val_rmse, val_r2, val_within_3, val_within_5, val_within_10 = basketball_model.evaluate(X_val, y_val)
+val_mae, val_rmse, val_r2, val_within_3, val_within_5, val_within_10, removals = basketball_model.evaluate(X_val, y_val, X_train)
 
 # Evaluate on test set
 test_mae, test_rmse, test_r2, test_within_3, test_within_5, test_within_10 = basketball_model.evaluate(X_test, y_test)
@@ -62,8 +63,7 @@ basketball_model.plotDiagnostics(X_val, y_val, X_test, y_test, save_dir='./plots
 print("\n" + "="*60)
 print("LOW IMPORTANCE FEATURES ANALYSIS")
 print("="*60)
-threshold = 0.01  # Adjust this threshold as needed
-low_importance_features = basketball_model.printLowImportanceFeatures(threshold)
+print(f"Features to Remove: {removals}")
 
 # Print prediction summary
 basketball_model.printPredictionSummary(X_test, y_test)

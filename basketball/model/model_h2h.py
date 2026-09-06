@@ -27,9 +27,15 @@ class BasketballH2HModel:
             'season', 'home_team', 'away_team', 'point_diff',
         ]
         self.low_importance_cols = [
-            'home_ppg_l10', 'away_ppg_l10', 'home_blk_l10', 'away_blk_l10', 
-            'home_stl_l10', 'away_stl_l10', 'home_fg_pct_l10', 'away_fg_pct_l10', 
-            'home_fg3_pct_l10', 'away_fg3_pct_l10', 'ppg_diff', 'opp_ppg_diff'
+            'away_apg_l10', 'away_fg_pct_l10', 'away_opp_ppg_l10', 'away_ppg_l10', 'away_top3_avg_rpg', 
+            'away_top5_avg_ppg', 'away_top5_avg_rpg', 'away_top5_avg_tov', 'away_top6_avg_apg', 'away_top6_avg_mpg', 
+            'away_top6_avg_ppg', 'away_total_l10', 'home_plus_minus_l10', 'home_ppg_l10', 'home_reb_l10', 
+            'home_rest_days', 'home_stl_l10', 'home_top3_avg_ppg', 'home_top3_avg_stl', 'home_top3_avg_tov', 
+            'home_top5_avg_tov', 'home_top6_avg_blk', 'home_top6_avg_mpg', 'home_top6_avg_ppg', 'home_total_l10', 
+            'opp_avg_win_pct_diff', 'reb_l10_diff', 'total_l10_diff', 'apg_l10_diff', 'away_blk_l10', 
+            'away_fg3_pct_l10', 'away_opp_avg_win_pct_l10', 'away_top3_avg_ppg', 'away_top6_avg_blk', 'away_tov_l10', 
+            'home_blk_l10', 'home_fg3_pct_l10', 'home_top3_avg_blk', 'home_top5_avg_mpg', 'home_top6_avg_apg', 
+            'home_top6_avg_tov', 'home_wins_l10', 'ppg_diff', 'rest_days_diff', 'away_reb_l10'
         ]
         
     def getLeakageColumns(self):
@@ -49,7 +55,9 @@ class BasketballH2HModel:
             # Train without early stopping
             self.model.fit(X_train, y_train)
         
-    def evaluate(self, X_val, y_val):
+    def evaluate(self, X_val, y_val, X_train=None, save_dir='./plots/basketball/h2h/'):
+        Path(save_dir).mkdir(parents=True, exist_ok=True)
+
         y_pred = self.model.predict(X_val)
         y_pred_proba = self.model.predict_proba(X_val)[:, 1]
         
@@ -57,6 +65,9 @@ class BasketballH2HModel:
         brier = brier_score_loss(y_val, y_pred_proba)
         logloss = log_loss(y_val, y_pred_proba)
         auc = roc_auc_score(y_val, y_pred_proba)
+        if X_train is not None:
+            _, removals = self.analyzeFeatureImportance(X_train, X_val, y_val, save_dir)
+            return accuracy, brier, logloss, auc, removals
         
         return accuracy, brier, logloss, auc
 
@@ -208,17 +219,7 @@ class BasketballH2HModel:
         plt.close()
     
     def analyzeFeatureImportance(self, X_train, X_val, y_val, save_dir=None, n_repeats=10):
-        """Salvaged from origin/new_player_data (commit 8e8ea37) per NOTES.md.
-
-        Permutation importance beats XGB gain for spotting harmful features.
-        Decisions made with this MUST use clean chronological validation splits
-        (NOTES.md A2) — the source branch ran it against leaky random splits,
-        which is why its old pruning lists are not trustworthy.
-
-        Generalized beyond the source: scoring switches by model type so spread
-        and total regressors can use it too. Returns the full report frame.
-        """
-        scoring = 'roc_auc' if self.getModelType() == 'h2h' else 'neg_mean_absolute_error'
+        scoring = 'roc_auc'
         perm_importance = permutation_importance(
             self.model, X_val, y_val, n_repeats=n_repeats, scoring=scoring, random_state=42
         )
@@ -297,33 +298,6 @@ class BasketballH2HModel:
             importance_df.to_csv(f'{save_dir}/permutation_importance.csv', index=False)
 
         return importance_df, all_removals
-
-    def printLowImportanceFeatures(self, threshold=0.01):
-        importance_df = pd.DataFrame({
-            'feature': self.model.get_booster().feature_names,
-            'importance': self.model.feature_importances_
-        }).sort_values('importance', ascending=True)
-        
-        low_importance = importance_df[importance_df['importance'] < threshold]
-        
-        print(f"\nFeatures with importance < {threshold}:")
-        print(f"Total: {len(low_importance)} features\n")
-        
-        if len(low_importance) > 0:
-            print(f"{'Feature':<40} {'Importance':>12}")
-            print("-" * 52)
-            for _, row in low_importance.iterrows():
-                print(f"{row['feature']:<40} {row['importance']:>12.6f}")
-            
-            print("\n" + "="*52)
-            print("Copy-paste ready list for removal:")
-            print("="*52)
-            feature_list = "[\n    '" + "',\n    '".join(low_importance['feature'].tolist()) + "'\n]"
-            print(feature_list)
-        else:
-            print(f"No features found below threshold {threshold}")
-        
-        return low_importance['feature'].tolist()
     
     def plotRocCurves(self, y_val, val_proba, y_test, test_proba, save_dir):
         fpr_val, tpr_val, _ = roc_curve(y_val, val_proba)

@@ -46,11 +46,12 @@ print("\n" + "="*60)
 print("TRAINING MODEL")
 print("="*60)
 basketball_model.trainWithBestParams(X_train, y_train, X_val, y_val, verbose=50)  # Show eval every 100 rounds
+# basketball_model.train(X_train, y_train, X_val, y_val)
 
 basketball_model.analyzeCalibration(y_val, basketball_model.predictProb(X_val)[:, 1])
 
 # Evaluate on validation set
-val_accuracy, val_brier, val_logloss, val_auc = basketball_model.evaluate(X_val, y_val)
+val_accuracy, val_brier, val_logloss, val_auc, removals = basketball_model.evaluate(X_val, y_val, X_train)
 print(f"\nValidation Metrics:")
 print(f"Accuracy: {val_accuracy:.4f}")
 print(f"Brier Score: {val_brier:.4f}")
@@ -65,17 +66,13 @@ print(f"Brier Score: {test_brier:.4f}")
 print(f"Log Loss: {test_logloss:.4f}")
 print(f"AUC-ROC: {test_auc:.4f}")
 
+print(f"\nLow Importance Features:")
+print(f"Feature to remove: {removals}")
+
 basketball_model.saveModel('././models/basketball_h2h_model.json')
 
 # Generate diagnostic plots
 basketball_model.plotDiagnostics(X_val, y_val, X_test, y_test, save_dir='././plots/basketball/h2h')
-
-# Print low importance features for manual removal
-print("\n" + "="*60)
-print("LOW IMPORTANCE FEATURES ANALYSIS")
-print("="*60)
-threshold = 0.01  # Adjust this threshold as needed
-low_importance_features = basketball_model.printLowImportanceFeatures(threshold)
 
 # Print prediction summary
 basketball_model.printPredictionSummary(X_test, y_test)

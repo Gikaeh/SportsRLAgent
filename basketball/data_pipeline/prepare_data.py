@@ -351,77 +351,81 @@ class NBATrainingDataPreparer:
         
         print(f"Calculating aggregated player features for {season}...")
         
-        home_star_ppg = matchup_data['home_p1_ppg']
-        home_top3_avg_ppg = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg']].mean(axis=1)
+        # home_star_ppg = matchup_data['home_p1_ppg']
+        # home_top3_avg_ppg = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg']].mean(axis=1)
         home_top5_avg_ppg = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg']].mean(axis=1)
-        home_top6_avg_ppg = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg', 'home_p6_ppg']].mean(axis=1)
+        # home_top6_avg_ppg = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg', 'home_p6_ppg']].mean(axis=1)
         
         home_top5_avg_mpg = matchup_data[['home_p1_mpg', 'home_p2_mpg', 'home_p3_mpg', 'home_p4_mpg', 'home_p5_mpg']].mean(axis=1)
-        home_top6_avg_mpg = matchup_data[['home_p1_mpg', 'home_p2_mpg', 'home_p3_mpg', 'home_p4_mpg', 'home_p5_mpg', 'home_p6_mpg']].mean(axis=1)
+        # home_top6_avg_mpg = matchup_data[['home_p1_mpg', 'home_p2_mpg', 'home_p3_mpg', 'home_p4_mpg', 'home_p5_mpg', 'home_p6_mpg']].mean(axis=1)
         
-        home_star_apg = matchup_data['home_p1_apg']
-        home_top3_avg_apg = matchup_data[['home_p1_apg', 'home_p2_apg', 'home_p3_apg']].mean(axis=1)
+        # home_star_apg = matchup_data['home_p1_apg']
+        # home_top3_avg_apg = matchup_data[['home_p1_apg', 'home_p2_apg', 'home_p3_apg']].mean(axis=1)
         home_top5_avg_apg = matchup_data[['home_p1_apg', 'home_p2_apg', 'home_p3_apg', 'home_p4_apg', 'home_p5_apg']].mean(axis=1)
-        home_top6_avg_apg = matchup_data[['home_p1_apg', 'home_p2_apg', 'home_p3_apg', 'home_p4_apg', 'home_p5_apg', 'home_p6_apg']].mean(axis=1)
+        # home_top6_avg_apg = matchup_data[['home_p1_apg', 'home_p2_apg', 'home_p3_apg', 'home_p4_apg', 'home_p5_apg', 'home_p6_apg']].mean(axis=1)
 
-        home_star_rpg = matchup_data['home_p1_rpg']
-        home_top3_avg_rpg = matchup_data[['home_p1_rpg', 'home_p2_rpg', 'home_p3_rpg']].mean(axis=1)
+        # home_star_rpg = matchup_data['home_p1_rpg']
+        # home_top3_avg_rpg = matchup_data[['home_p1_rpg', 'home_p2_rpg', 'home_p3_rpg']].mean(axis=1)
         home_top5_avg_rpg = matchup_data[['home_p1_rpg', 'home_p2_rpg', 'home_p3_rpg', 'home_p4_rpg', 'home_p5_rpg']].mean(axis=1)
-        home_top6_avg_rpg = matchup_data[['home_p1_rpg', 'home_p2_rpg', 'home_p3_rpg', 'home_p4_rpg', 'home_p5_rpg', 'home_p6_rpg']].mean(axis=1)
+        # home_top6_avg_rpg = matchup_data[['home_p1_rpg', 'home_p2_rpg', 'home_p3_rpg', 'home_p4_rpg', 'home_p5_rpg', 'home_p6_rpg']].mean(axis=1)
         
-        home_star_blk = matchup_data['home_p1_blk']
-        home_top3_avg_blk = matchup_data[['home_p1_blk', 'home_p2_blk', 'home_p3_blk']].mean(axis=1)
+        # home_star_blk = matchup_data['home_p1_blk']
+        # home_top3_avg_blk = matchup_data[['home_p1_blk', 'home_p2_blk', 'home_p3_blk']].mean(axis=1)
         home_top5_avg_blk = matchup_data[['home_p1_blk', 'home_p2_blk', 'home_p3_blk', 'home_p4_blk', 'home_p5_blk']].mean(axis=1)
-        home_top6_avg_blk = matchup_data[['home_p1_blk', 'home_p2_blk', 'home_p3_blk', 'home_p4_blk', 'home_p5_blk', 'home_p6_blk']].mean(axis=1)
+        # home_top6_avg_blk = matchup_data[['home_p1_blk', 'home_p2_blk', 'home_p3_blk', 'home_p4_blk', 'home_p5_blk', 'home_p6_blk']].mean(axis=1)
         
-        home_star_stl = matchup_data['home_p1_stl']
-        home_top3_avg_stl = matchup_data[['home_p1_stl', 'home_p2_stl', 'home_p3_stl']].mean(axis=1)
+        # home_star_stl = matchup_data['home_p1_stl']
+        # home_top3_avg_stl = matchup_data[['home_p1_stl', 'home_p2_stl', 'home_p3_stl']].mean(axis=1)
         home_top5_avg_stl = matchup_data[['home_p1_stl', 'home_p2_stl', 'home_p3_stl', 'home_p4_stl', 'home_p5_stl']].mean(axis=1)
-        home_top6_avg_stl = matchup_data[['home_p1_stl', 'home_p2_stl', 'home_p3_stl', 'home_p4_stl', 'home_p5_stl', 'home_p6_stl']].mean(axis=1)
+        # home_top6_avg_stl = matchup_data[['home_p1_stl', 'home_p2_stl', 'home_p3_stl', 'home_p4_stl', 'home_p5_stl', 'home_p6_stl']].mean(axis=1)
         
-        home_star_tov = matchup_data['home_p1_tov']
-        home_top3_avg_tov = matchup_data[['home_p1_tov', 'home_p2_tov', 'home_p3_tov']].mean(axis=1)
+        # home_star_tov = matchup_data['home_p1_tov']
+        # home_top3_avg_tov = matchup_data[['home_p1_tov', 'home_p2_tov', 'home_p3_tov']].mean(axis=1)
         home_top5_avg_tov = matchup_data[['home_p1_tov', 'home_p2_tov', 'home_p3_tov', 'home_p4_tov', 'home_p5_tov']].mean(axis=1)
-        home_top6_avg_tov = matchup_data[['home_p1_tov', 'home_p2_tov', 'home_p3_tov', 'home_p4_tov', 'home_p5_tov', 'home_p6_tov']].mean(axis=1)
+        # home_top6_avg_tov = matchup_data[['home_p1_tov', 'home_p2_tov', 'home_p3_tov', 'home_p4_tov', 'home_p5_tov', 'home_p6_tov']].mean(axis=1)
         
-        home_top6_total_plusminus = matchup_data[['home_p1_plus_minus', 'home_p2_plus_minus', 'home_p3_plus_minus', 'home_p4_plus_minus', 'home_p5_plus_minus', 'home_p6_plus_minus']].sum(axis=1)
-        home_depth_variance = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg', 'home_p6_ppg']].std(axis=1)
-        
-        away_star_ppg = matchup_data['away_p1_ppg']
-        away_top3_avg_ppg = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg']].mean(axis=1)
+        # home_top6_total_plusminus = matchup_data[['home_p1_plus_minus', 'home_p2_plus_minus', 'home_p3_plus_minus', 'home_p4_plus_minus', 'home_p5_plus_minus', 'home_p6_plus_minus']].sum(axis=1)
+        # home_depth_variance = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg', 'home_p6_ppg']].std(axis=1)
+
+        # home_top6_player_contribution = (matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg', 'home_p6_ppg']] * matchup_data[['home_p1_mpg', 'home_p2_mpg', 'home_p3_mpg', 'home_p4_mpg', 'home_p5_mpg', 'home_p6_mpg']]).sum(axis=1)
+
+        # away_star_ppg = matchup_data['away_p1_ppg']
+        # away_top3_avg_ppg = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg']].mean(axis=1)
         away_top5_avg_ppg = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg']].mean(axis=1)
-        away_top6_avg_ppg = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg', 'away_p6_ppg']].mean(axis=1)
+        # away_top6_avg_ppg = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg', 'away_p6_ppg']].mean(axis=1)
         
         away_top5_avg_mpg = matchup_data[['away_p1_mpg', 'away_p2_mpg', 'away_p3_mpg', 'away_p4_mpg', 'away_p5_mpg']].mean(axis=1)
-        away_top6_avg_mpg = matchup_data[['away_p1_mpg', 'away_p2_mpg', 'away_p3_mpg', 'away_p4_mpg', 'away_p5_mpg', 'away_p6_mpg']].mean(axis=1)
+        # away_top6_avg_mpg = matchup_data[['away_p1_mpg', 'away_p2_mpg', 'away_p3_mpg', 'away_p4_mpg', 'away_p5_mpg', 'away_p6_mpg']].mean(axis=1)
         
-        away_star_apg = matchup_data['away_p1_apg']
-        away_top3_avg_apg = matchup_data[['away_p1_apg', 'away_p2_apg', 'away_p3_apg']].mean(axis=1)
+        # away_star_apg = matchup_data['away_p1_apg']
+        # away_top3_avg_apg = matchup_data[['away_p1_apg', 'away_p2_apg', 'away_p3_apg']].mean(axis=1)
         away_top5_avg_apg = matchup_data[['away_p1_apg', 'away_p2_apg', 'away_p3_apg', 'away_p4_apg', 'away_p5_apg']].mean(axis=1)
-        away_top6_avg_apg = matchup_data[['away_p1_apg', 'away_p2_apg', 'away_p3_apg', 'away_p4_apg', 'away_p5_apg', 'away_p6_apg']].mean(axis=1)
+        # away_top6_avg_apg = matchup_data[['away_p1_apg', 'away_p2_apg', 'away_p3_apg', 'away_p4_apg', 'away_p5_apg', 'away_p6_apg']].mean(axis=1)
         
-        away_star_rpg = matchup_data['away_p1_rpg']
-        away_top3_avg_rpg = matchup_data[['away_p1_rpg', 'away_p2_rpg', 'away_p3_rpg']].mean(axis=1)
+        # away_star_rpg = matchup_data['away_p1_rpg']
+        # away_top3_avg_rpg = matchup_data[['away_p1_rpg', 'away_p2_rpg', 'away_p3_rpg']].mean(axis=1)
         away_top5_avg_rpg = matchup_data[['away_p1_rpg', 'away_p2_rpg', 'away_p3_rpg', 'away_p4_rpg', 'away_p5_rpg']].mean(axis=1)
-        away_top6_avg_rpg = matchup_data[['away_p1_rpg', 'away_p2_rpg', 'away_p3_rpg', 'away_p4_rpg', 'away_p5_rpg', 'away_p6_rpg']].mean(axis=1)
+        # away_top6_avg_rpg = matchup_data[['away_p1_rpg', 'away_p2_rpg', 'away_p3_rpg', 'away_p4_rpg', 'away_p5_rpg', 'away_p6_rpg']].mean(axis=1)
 
-        away_star_blk = matchup_data['away_p1_blk']
-        away_top3_avg_blk = matchup_data[['away_p1_blk', 'away_p2_blk', 'away_p3_blk']].mean(axis=1)
+        # away_star_blk = matchup_data['away_p1_blk']
+        # away_top3_avg_blk = matchup_data[['away_p1_blk', 'away_p2_blk', 'away_p3_blk']].mean(axis=1)
         away_top5_avg_blk = matchup_data[['away_p1_blk', 'away_p2_blk', 'away_p3_blk', 'away_p4_blk', 'away_p5_blk']].mean(axis=1)
-        away_top6_avg_blk = matchup_data[['away_p1_blk', 'away_p2_blk', 'away_p3_blk', 'away_p4_blk', 'away_p5_blk', 'away_p6_blk']].mean(axis=1)
+        # away_top6_avg_blk = matchup_data[['away_p1_blk', 'away_p2_blk', 'away_p3_blk', 'away_p4_blk', 'away_p5_blk', 'away_p6_blk']].mean(axis=1)
         
-        away_star_stl = matchup_data['away_p1_stl']
-        away_top3_avg_stl = matchup_data[['away_p1_stl', 'away_p2_stl', 'away_p3_stl']].mean(axis=1)
+        # away_star_stl = matchup_data['away_p1_stl']
+        # away_top3_avg_stl = matchup_data[['away_p1_stl', 'away_p2_stl', 'away_p3_stl']].mean(axis=1)
         away_top5_avg_stl = matchup_data[['away_p1_stl', 'away_p2_stl', 'away_p3_stl', 'away_p4_stl', 'away_p5_stl']].mean(axis=1)
-        away_top6_avg_stl = matchup_data[['away_p1_stl', 'away_p2_stl', 'away_p3_stl', 'away_p4_stl', 'away_p5_stl', 'away_p6_stl']].mean(axis=1)
+        # away_top6_avg_stl = matchup_data[['away_p1_stl', 'away_p2_stl', 'away_p3_stl', 'away_p4_stl', 'away_p5_stl', 'away_p6_stl']].mean(axis=1)
         
-        away_star_tov = matchup_data['away_p1_tov']
-        away_top3_avg_tov = matchup_data[['away_p1_tov', 'away_p2_tov', 'away_p3_tov']].mean(axis=1)
+        # away_star_tov = matchup_data['away_p1_tov']
+        # away_top3_avg_tov = matchup_data[['away_p1_tov', 'away_p2_tov', 'away_p3_tov']].mean(axis=1)
         away_top5_avg_tov = matchup_data[['away_p1_tov', 'away_p2_tov', 'away_p3_tov', 'away_p4_tov', 'away_p5_tov']].mean(axis=1)
-        away_top6_avg_tov = matchup_data[['away_p1_tov', 'away_p2_tov', 'away_p3_tov', 'away_p4_tov', 'away_p5_tov', 'away_p6_tov']].mean(axis=1)
+        # away_top6_avg_tov = matchup_data[['away_p1_tov', 'away_p2_tov', 'away_p3_tov', 'away_p4_tov', 'away_p5_tov', 'away_p6_tov']].mean(axis=1)
         
-        away_top6_total_plusminus = matchup_data[['away_p1_plus_minus', 'away_p2_plus_minus', 'away_p3_plus_minus', 'away_p4_plus_minus', 'away_p5_plus_minus', 'away_p6_plus_minus']].sum(axis=1)
-        away_depth_variance = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg', 'away_p6_ppg']].std(axis=1)
+        # away_top6_total_plusminus = matchup_data[['away_p1_plus_minus', 'away_p2_plus_minus', 'away_p3_plus_minus', 'away_p4_plus_minus', 'away_p5_plus_minus', 'away_p6_plus_minus']].sum(axis=1)
+        # away_depth_variance = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg', 'away_p6_ppg']].std(axis=1)
+
+        # away_top6_player_contribution = (matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg', 'away_p6_ppg']] * matchup_data[['away_p1_mpg', 'away_p2_mpg', 'away_p3_mpg', 'away_p4_mpg', 'away_p5_mpg', 'away_p6_mpg']]).sum(axis=1)
         
         training_data = pd.DataFrame({
             'game_id': matchup_data['GAME_ID'],
@@ -432,7 +436,7 @@ class NBATrainingDataPreparer:
             'home_team': matchup_data['TEAM_ABBREVIATION_home'],
             'away_team': matchup_data['TEAM_ABBREVIATION_away'],
             
-            # Game outcome
+            # Game outcome (leakage columns)
             'home_score': matchup_data['PTS_home'],
             'away_score': matchup_data['PTS_away'],
             'total_score': matchup_data['PTS_home'] + matchup_data['PTS_away'],
@@ -442,115 +446,154 @@ class NBATrainingDataPreparer:
             # Team Performance
             'home_wins_l10': matchup_data['wins_l10_home'],
             'away_wins_l10': matchup_data['wins_l10_away'],
+            # 'wins_l10_diff': matchup_data['wins_l10_home'] - matchup_data['wins_l10_away'],
+
             'home_plus_minus_l10': matchup_data['plus_minus_l10_home'],
             'away_plus_minus_l10': matchup_data['plus_minus_l10_away'],
-            'plus_minus_diff': matchup_data['plus_minus_l10_home'] - matchup_data['plus_minus_l10_away'],
+            # 'plus_minus_diff': matchup_data['plus_minus_l10_home'] - matchup_data['plus_minus_l10_away'],
+
             'home_total_l10': matchup_data['total_l10_home'],
             'away_total_l10': matchup_data['total_l10_away'],
-            'total_l10_diff': matchup_data['total_l10_home'] - matchup_data['total_l10_away'],
+            # 'total_l10_diff': matchup_data['total_l10_home'] - matchup_data['total_l10_away'],
+
             'home_opp_avg_win_pct_l10': matchup_data['opp_avg_win_pct_l10_home'],
             'away_opp_avg_win_pct_l10': matchup_data['opp_avg_win_pct_l10_away'],
-            'opp_avg_win_pct_diff': matchup_data['opp_avg_win_pct_l10_home'] - matchup_data['opp_avg_win_pct_l10_away'],
+            # 'opp_avg_win_pct_diff': matchup_data['opp_avg_win_pct_l10_home'] - matchup_data['opp_avg_win_pct_l10_away'],
+
             'home_ppg_l10': matchup_data['ppg_l10_home'],
             'away_ppg_l10': matchup_data['ppg_l10_away'],
-            'ppg_diff': matchup_data['ppg_l10_home'] - matchup_data['ppg_l10_away'],
+            # 'ppg_diff': matchup_data['ppg_l10_home'] - matchup_data['ppg_l10_away'],
+            # 'ppg_sum': matchup_data['ppg_l10_home'] + matchup_data['ppg_l10_away'],
+
             'home_opp_ppg_l10': matchup_data['opp_ppg_l10_home'],
             'away_opp_ppg_l10': matchup_data['opp_ppg_l10_away'],
-            'opp_ppg_diff': matchup_data['opp_ppg_l10_home'] - matchup_data['opp_ppg_l10_away'],
+            # 'opp_ppg_diff': matchup_data['opp_ppg_l10_home'] - matchup_data['opp_ppg_l10_away'],
+
             'home_apg_l10': matchup_data['ast_l10_home'],
             'away_apg_l10': matchup_data['ast_l10_away'],
-            'apg_l10_diff': matchup_data['ast_l10_home']- matchup_data['ast_l10_away'],
+            # 'apg_l10_diff': matchup_data['ast_l10_home']- matchup_data['ast_l10_away'],
+
             'home_tov_l10': matchup_data['tov_l10_home'],
             'away_tov_l10': matchup_data['tov_l10_away'],
-            'tov_l10_diff': matchup_data['tov_l10_home']- matchup_data['tov_l10_away'],
+            # 'tov_l10_diff': matchup_data['tov_l10_home']- matchup_data['tov_l10_away'],
+
             'home_blk_l10': matchup_data['blk_l10_home'],
             'away_blk_l10': matchup_data['blk_l10_away'],
-            'blk_l10_diff': matchup_data['blk_l10_home']- matchup_data['blk_l10_away'],
+            # 'blk_l10_diff': matchup_data['blk_l10_home']- matchup_data['blk_l10_away'],
+
             'home_stl_l10': matchup_data['stl_l10_home'],
             'away_stl_l10': matchup_data['stl_l10_away'],
-            'stl_l10_diff': matchup_data['stl_l10_home']- matchup_data['stl_l10_away'],
+            # 'stl_l10_diff': matchup_data['stl_l10_home']- matchup_data['stl_l10_away'],
+
             'home_reb_l10': matchup_data['reb_l10_home'],
             'away_reb_l10': matchup_data['reb_l10_away'],
-            'reb_l10_diff': matchup_data['reb_l10_home']- matchup_data['reb_l10_away'],
+            # 'reb_l10_diff': matchup_data['reb_l10_home']- matchup_data['reb_l10_away'],
             
             # Game Context
             'home_rest_days': matchup_data['rest_days_home'],
             'away_rest_days': matchup_data['rest_days_away'],
-            'rest_days_diff': matchup_data['rest_days_home'] - matchup_data['rest_days_away'],
+            # 'rest_days_diff': matchup_data['rest_days_home'] - matchup_data['rest_days_away'],
+
             'is_back_to_back_home': matchup_data['is_back_to_back_home'],
             'is_back_to_back_away': matchup_data['is_back_to_back_away'],
 
             # Player Aggregates
             # 'home_star_ppg': home_star_ppg,
             # 'away_star_ppg': away_star_ppg,
-            'home_top3_avg_ppg': home_top3_avg_ppg,
-            'away_top3_avg_ppg': away_top3_avg_ppg,
+            # 'home_top3_avg_ppg': home_top3_avg_ppg,
+            # 'away_top3_avg_ppg': away_top3_avg_ppg,
             'home_top5_avg_ppg': home_top5_avg_ppg,
             'away_top5_avg_ppg': away_top5_avg_ppg,
-            'home_top6_avg_ppg': home_top6_avg_ppg,
-            'away_top6_avg_ppg': away_top6_avg_ppg,
+            # 'home_top6_avg_ppg': home_top6_avg_ppg,
+            # 'away_top6_avg_ppg': away_top6_avg_ppg,
             
             'home_top5_avg_mpg': home_top5_avg_mpg,
             'away_top5_avg_mpg': away_top5_avg_mpg,
-            'home_top6_avg_mpg': home_top6_avg_mpg,
-            'away_top6_avg_mpg': away_top6_avg_mpg,
+            # 'home_top6_avg_mpg': home_top6_avg_mpg,
+            # 'away_top6_avg_mpg': away_top6_avg_mpg,
             
             # 'home_star_apg': home_star_apg,
             # 'away_star_apg': away_star_apg,
-            'home_top3_avg_apg': home_top3_avg_apg,
-            'away_top3_avg_apg': away_top3_avg_apg,
+            # 'home_top3_avg_apg': home_top3_avg_apg,
+            # 'away_top3_avg_apg': away_top3_avg_apg,
             'home_top5_avg_apg': home_top5_avg_apg,
             'away_top5_avg_apg': away_top5_avg_apg,
-            'home_top6_avg_apg': home_top6_avg_apg,
-            'away_top6_avg_apg': away_top6_avg_apg,
+            # 'home_top6_avg_apg': home_top6_avg_apg,
+            # 'away_top6_avg_apg': away_top6_avg_apg,
 
             # 'home_star_rpg': home_star_rpg,
             # 'away_star_rpg': away_star_rpg,
-            'home_top3_avg_rpg': home_top3_avg_rpg,
-            'away_top3_avg_rpg': away_top3_avg_rpg,
+            # 'home_top3_avg_rpg': home_top3_avg_rpg,
+            # 'away_top3_avg_rpg': away_top3_avg_rpg,
             'home_top5_avg_rpg': home_top5_avg_rpg,
             'away_top5_avg_rpg': away_top5_avg_rpg,
-            'home_top6_avg_rpg': home_top6_avg_rpg,
-            'away_top6_avg_rpg': away_top6_avg_rpg,
+            # 'home_top6_avg_rpg': home_top6_avg_rpg,
+            # 'away_top6_avg_rpg': away_top6_avg_rpg,
             
             # 'home_star_blk': home_star_blk,
             # 'away_star_blk': away_star_blk,
-            'home_top3_avg_blk': home_top3_avg_blk,
-            'away_top3_avg_blk': away_top3_avg_blk,
+            # 'home_top3_avg_blk': home_top3_avg_blk,
+            # 'away_top3_avg_blk': away_top3_avg_blk,
             'home_top5_avg_blk': home_top5_avg_blk,
             'away_top5_avg_blk': away_top5_avg_blk,
-            'home_top6_avg_blk': home_top6_avg_blk,
-            'away_top6_avg_blk': away_top6_avg_blk,
+            # 'home_top6_avg_blk': home_top6_avg_blk,
+            # 'away_top6_avg_blk': away_top6_avg_blk,
             
             # 'home_star_stl': home_star_stl,
             # 'away_star_stl': away_star_stl,
-            'home_top3_avg_stl': home_top3_avg_stl,
-            'away_top3_avg_stl': away_top3_avg_stl,
+            # 'home_top3_avg_stl': home_top3_avg_stl,
+            # 'away_top3_avg_stl': away_top3_avg_stl,
             'home_top5_avg_stl': home_top5_avg_stl,
             'away_top5_avg_stl': away_top5_avg_stl,
-            'home_top6_avg_stl': home_top6_avg_stl,
-            'away_top6_avg_stl': away_top6_avg_stl,
+            # 'home_top6_avg_stl': home_top6_avg_stl,
+            # 'away_top6_avg_stl': away_top6_avg_stl,
             
             # 'home_star_tov': home_star_tov,
             # 'away_star_tov': away_star_tov,
-            'home_top3_avg_tov': home_top3_avg_tov,
-            'away_top3_avg_tov': away_top3_avg_tov,
+            # 'home_top3_avg_tov': home_top3_avg_tov,
+            # 'away_top3_avg_tov': away_top3_avg_tov,
             'home_top5_avg_tov': home_top5_avg_tov,
             'away_top5_avg_tov': away_top5_avg_tov,
-            'home_top6_avg_tov': home_top6_avg_tov,
-            'away_top6_avg_tov': away_top6_avg_tov,
+            # 'home_top6_avg_tov': home_top6_avg_tov,
+            # 'away_top6_avg_tov': away_top6_avg_tov,
             
-            'home_top6_total_plusminus': home_top6_total_plusminus,
-            'away_top6_total_plusminus': away_top6_total_plusminus,
+            # 'home_top6_total_plusminus': home_top6_total_plusminus,
+            # 'away_top6_total_plusminus': away_top6_total_plusminus,
             
-            'home_depth_variance': home_depth_variance,
-            'away_depth_variance': away_depth_variance,
+            # 'home_depth_variance': home_depth_variance,
+            # 'away_depth_variance': away_depth_variance,
             
             # Shooting Efficiency
             'home_fg_pct_l10': matchup_data['fg_pct_l10_home'],
             'away_fg_pct_l10': matchup_data['fg_pct_l10_away'],
             'home_fg3_pct_l10': matchup_data['fg3_pct_l10_home'],
             'away_fg3_pct_l10': matchup_data['fg3_pct_l10_away'],
+
+            # Interaction Features
+            # 'home_off_pace': matchup_data['ppg_l10_home'] * (matchup_data['opp_avg_win_pct_l10_home'] + .5),
+            # 'away_off_pace': matchup_data['ppg_l10_away'] * (matchup_data['opp_avg_win_pct_l10_away'] + .5),
+            # 'off_pace_diff': (matchup_data['ppg_l10_home'] * (matchup_data['opp_avg_win_pct_l10_home'] + .5)) - (matchup_data['ppg_l10_away'] * (matchup_data['opp_avg_win_pct_l10_away'] + .5)),
+
+            # 'home_true_skill': matchup_data['plus_minus_l10_home'] * matchup_data['opp_avg_win_pct_l10_home'],
+            # 'away_true_skill': matchup_data['plus_minus_l10_away'] * matchup_data['opp_avg_win_pct_l10_away'],
+
+            # 'home_off_vs_away_def': (matchup_data['ppg_l10_home'] * matchup_data['opp_ppg_l10_away']) / 100,
+            # 'away_off_vs_home_def': (matchup_data['ppg_l10_away'] * matchup_data['opp_ppg_l10_home']) / 100,
+
+            # 'home_off_vs_away_def_diff': matchup_data['ppg_l10_home'] - matchup_data['opp_ppg_l10_away'],
+            # 'away_off_vs_home_def_diff': matchup_data['ppg_l10_away'] - matchup_data['opp_ppg_l10_home'],
+
+            # 'home_player_contribution': home_top6_player_contribution,
+            # 'away_player_contribution': away_top6_player_contribution,
+
+            # 'home_rest_adv': matchup_data['rest_days_home'] * (matchup_data['rest_days_home'] - matchup_data['rest_days_away']),
+            # 'fatigue_disadv': matchup_data['is_back_to_back_home'] * (matchup_data['rest_days_home'] - matchup_data['rest_days_away']),
+
+            # 'home_sched_density': matchup_data['rest_days_home'] * matchup_data['opp_avg_win_pct_l10_home'],
+            # 'away_sched_density': matchup_data['rest_days_away'] * matchup_data['opp_avg_win_pct_l10_away'],
+            # 'sched_density_diff': (matchup_data['rest_days_home'] * matchup_data['opp_avg_win_pct_l10_home']) - (matchup_data['rest_days_away'] * matchup_data['opp_avg_win_pct_l10_away']),
+
+            # 'home_total_efficiency': matchup_data['ppg_l10_home'] * (matchup_data['fg_pct_l10_home'] + .5),
         })
         
         training_data = training_data.sort_values('date').reset_index(drop=True)
@@ -681,77 +724,81 @@ class NBATrainingDataPreparer:
         
         print(f"Calculating aggregated player features...")
         
-        home_star_ppg = matchup_data['home_p1_ppg']
-        home_top3_avg_ppg = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg']].mean(axis=1)
+        # home_star_ppg = matchup_data['home_p1_ppg']
+        # home_top3_avg_ppg = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg']].mean(axis=1)
         home_top5_avg_ppg = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg']].mean(axis=1)
-        home_top6_avg_ppg = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg', 'home_p6_ppg']].mean(axis=1)
+        # home_top6_avg_ppg = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg', 'home_p6_ppg']].mean(axis=1)
         
         home_top5_avg_mpg = matchup_data[['home_p1_mpg', 'home_p2_mpg', 'home_p3_mpg', 'home_p4_mpg', 'home_p5_mpg']].mean(axis=1)
-        home_top6_avg_mpg = matchup_data[['home_p1_mpg', 'home_p2_mpg', 'home_p3_mpg', 'home_p4_mpg', 'home_p5_mpg', 'home_p6_mpg']].mean(axis=1)
+        # home_top6_avg_mpg = matchup_data[['home_p1_mpg', 'home_p2_mpg', 'home_p3_mpg', 'home_p4_mpg', 'home_p5_mpg', 'home_p6_mpg']].mean(axis=1)
         
-        home_star_apg = matchup_data['home_p1_apg']
-        home_top3_avg_apg = matchup_data[['home_p1_apg', 'home_p2_apg', 'home_p3_apg']].mean(axis=1)
+        # home_star_apg = matchup_data['home_p1_apg']
+        # home_top3_avg_apg = matchup_data[['home_p1_apg', 'home_p2_apg', 'home_p3_apg']].mean(axis=1)
         home_top5_avg_apg = matchup_data[['home_p1_apg', 'home_p2_apg', 'home_p3_apg', 'home_p4_apg', 'home_p5_apg']].mean(axis=1)
-        home_top6_avg_apg = matchup_data[['home_p1_apg', 'home_p2_apg', 'home_p3_apg', 'home_p4_apg', 'home_p5_apg', 'home_p6_apg']].mean(axis=1)
+        # home_top6_avg_apg = matchup_data[['home_p1_apg', 'home_p2_apg', 'home_p3_apg', 'home_p4_apg', 'home_p5_apg', 'home_p6_apg']].mean(axis=1)
 
-        home_star_rpg = matchup_data['home_p1_rpg']
-        home_top3_avg_rpg = matchup_data[['home_p1_rpg', 'home_p2_rpg', 'home_p3_rpg']].mean(axis=1)
+        # home_star_rpg = matchup_data['home_p1_rpg']
+        # home_top3_avg_rpg = matchup_data[['home_p1_rpg', 'home_p2_rpg', 'home_p3_rpg']].mean(axis=1)
         home_top5_avg_rpg = matchup_data[['home_p1_rpg', 'home_p2_rpg', 'home_p3_rpg', 'home_p4_rpg', 'home_p5_rpg']].mean(axis=1)
-        home_top6_avg_rpg = matchup_data[['home_p1_rpg', 'home_p2_rpg', 'home_p3_rpg', 'home_p4_rpg', 'home_p5_rpg', 'home_p6_rpg']].mean(axis=1)
+        # home_top6_avg_rpg = matchup_data[['home_p1_rpg', 'home_p2_rpg', 'home_p3_rpg', 'home_p4_rpg', 'home_p5_rpg', 'home_p6_rpg']].mean(axis=1)
         
-        home_star_blk = matchup_data['home_p1_blk']
-        home_top3_avg_blk = matchup_data[['home_p1_blk', 'home_p2_blk', 'home_p3_blk']].mean(axis=1)
+        # home_star_blk = matchup_data['home_p1_blk']
+        # home_top3_avg_blk = matchup_data[['home_p1_blk', 'home_p2_blk', 'home_p3_blk']].mean(axis=1)
         home_top5_avg_blk = matchup_data[['home_p1_blk', 'home_p2_blk', 'home_p3_blk', 'home_p4_blk', 'home_p5_blk']].mean(axis=1)
-        home_top6_avg_blk = matchup_data[['home_p1_blk', 'home_p2_blk', 'home_p3_blk', 'home_p4_blk', 'home_p5_blk', 'home_p6_blk']].mean(axis=1)
+        # home_top6_avg_blk = matchup_data[['home_p1_blk', 'home_p2_blk', 'home_p3_blk', 'home_p4_blk', 'home_p5_blk', 'home_p6_blk']].mean(axis=1)
         
-        home_star_stl = matchup_data['home_p1_stl']
-        home_top3_avg_stl = matchup_data[['home_p1_stl', 'home_p2_stl', 'home_p3_stl']].mean(axis=1)
+        # home_star_stl = matchup_data['home_p1_stl']
+        # home_top3_avg_stl = matchup_data[['home_p1_stl', 'home_p2_stl', 'home_p3_stl']].mean(axis=1)
         home_top5_avg_stl = matchup_data[['home_p1_stl', 'home_p2_stl', 'home_p3_stl', 'home_p4_stl', 'home_p5_stl']].mean(axis=1)
-        home_top6_avg_stl = matchup_data[['home_p1_stl', 'home_p2_stl', 'home_p3_stl', 'home_p4_stl', 'home_p5_stl', 'home_p6_stl']].mean(axis=1)
+        # home_top6_avg_stl = matchup_data[['home_p1_stl', 'home_p2_stl', 'home_p3_stl', 'home_p4_stl', 'home_p5_stl', 'home_p6_stl']].mean(axis=1)
         
-        home_star_tov = matchup_data['home_p1_tov']
-        home_top3_avg_tov = matchup_data[['home_p1_tov', 'home_p2_tov', 'home_p3_tov']].mean(axis=1)
+        # home_star_tov = matchup_data['home_p1_tov']
+        # home_top3_avg_tov = matchup_data[['home_p1_tov', 'home_p2_tov', 'home_p3_tov']].mean(axis=1)
         home_top5_avg_tov = matchup_data[['home_p1_tov', 'home_p2_tov', 'home_p3_tov', 'home_p4_tov', 'home_p5_tov']].mean(axis=1)
-        home_top6_avg_tov = matchup_data[['home_p1_tov', 'home_p2_tov', 'home_p3_tov', 'home_p4_tov', 'home_p5_tov', 'home_p6_tov']].mean(axis=1)
+        # home_top6_avg_tov = matchup_data[['home_p1_tov', 'home_p2_tov', 'home_p3_tov', 'home_p4_tov', 'home_p5_tov', 'home_p6_tov']].mean(axis=1)
         
-        home_top6_total_plusminus = matchup_data[['home_p1_plus_minus', 'home_p2_plus_minus', 'home_p3_plus_minus', 'home_p4_plus_minus', 'home_p5_plus_minus', 'home_p6_plus_minus']].sum(axis=1)
-        home_depth_variance = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg', 'home_p6_ppg']].std(axis=1)
-        
-        away_star_ppg = matchup_data['away_p1_ppg']
-        away_top3_avg_ppg = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg']].mean(axis=1)
+        # home_top6_total_plusminus = matchup_data[['home_p1_plus_minus', 'home_p2_plus_minus', 'home_p3_plus_minus', 'home_p4_plus_minus', 'home_p5_plus_minus', 'home_p6_plus_minus']].sum(axis=1)
+        # home_depth_variance = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg', 'home_p6_ppg']].std(axis=1)
+
+        # home_top6_player_contribution = (matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg', 'home_p6_ppg']] * matchup_data[['home_p1_mpg', 'home_p2_mpg', 'home_p3_mpg', 'home_p4_mpg', 'home_p5_mpg', 'home_p6_mpg']]).sum(axis=1)
+
+        # away_star_ppg = matchup_data['away_p1_ppg']
+        # away_top3_avg_ppg = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg']].mean(axis=1)
         away_top5_avg_ppg = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg']].mean(axis=1)
-        away_top6_avg_ppg = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg', 'away_p6_ppg']].mean(axis=1)
+        # away_top6_avg_ppg = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg', 'away_p6_ppg']].mean(axis=1)
         
         away_top5_avg_mpg = matchup_data[['away_p1_mpg', 'away_p2_mpg', 'away_p3_mpg', 'away_p4_mpg', 'away_p5_mpg']].mean(axis=1)
-        away_top6_avg_mpg = matchup_data[['away_p1_mpg', 'away_p2_mpg', 'away_p3_mpg', 'away_p4_mpg', 'away_p5_mpg', 'away_p6_mpg']].mean(axis=1)
+        # away_top6_avg_mpg = matchup_data[['away_p1_mpg', 'away_p2_mpg', 'away_p3_mpg', 'away_p4_mpg', 'away_p5_mpg', 'away_p6_mpg']].mean(axis=1)
         
-        away_star_apg = matchup_data['away_p1_apg']
-        away_top3_avg_apg = matchup_data[['away_p1_apg', 'away_p2_apg', 'away_p3_apg']].mean(axis=1)
+        # away_star_apg = matchup_data['away_p1_apg']
+        # away_top3_avg_apg = matchup_data[['away_p1_apg', 'away_p2_apg', 'away_p3_apg']].mean(axis=1)
         away_top5_avg_apg = matchup_data[['away_p1_apg', 'away_p2_apg', 'away_p3_apg', 'away_p4_apg', 'away_p5_apg']].mean(axis=1)
-        away_top6_avg_apg = matchup_data[['away_p1_apg', 'away_p2_apg', 'away_p3_apg', 'away_p4_apg', 'away_p5_apg', 'away_p6_apg']].mean(axis=1)
+        # away_top6_avg_apg = matchup_data[['away_p1_apg', 'away_p2_apg', 'away_p3_apg', 'away_p4_apg', 'away_p5_apg', 'away_p6_apg']].mean(axis=1)
         
-        away_star_rpg = matchup_data['away_p1_rpg']
-        away_top3_avg_rpg = matchup_data[['away_p1_rpg', 'away_p2_rpg', 'away_p3_rpg']].mean(axis=1)
+        # away_star_rpg = matchup_data['away_p1_rpg']
+        # away_top3_avg_rpg = matchup_data[['away_p1_rpg', 'away_p2_rpg', 'away_p3_rpg']].mean(axis=1)
         away_top5_avg_rpg = matchup_data[['away_p1_rpg', 'away_p2_rpg', 'away_p3_rpg', 'away_p4_rpg', 'away_p5_rpg']].mean(axis=1)
-        away_top6_avg_rpg = matchup_data[['away_p1_rpg', 'away_p2_rpg', 'away_p3_rpg', 'away_p4_rpg', 'away_p5_rpg', 'away_p6_rpg']].mean(axis=1)
+        # away_top6_avg_rpg = matchup_data[['away_p1_rpg', 'away_p2_rpg', 'away_p3_rpg', 'away_p4_rpg', 'away_p5_rpg', 'away_p6_rpg']].mean(axis=1)
 
-        away_star_blk = matchup_data['away_p1_blk']
-        away_top3_avg_blk = matchup_data[['away_p1_blk', 'away_p2_blk', 'away_p3_blk']].mean(axis=1)
+        # away_star_blk = matchup_data['away_p1_blk']
+        # away_top3_avg_blk = matchup_data[['away_p1_blk', 'away_p2_blk', 'away_p3_blk']].mean(axis=1)
         away_top5_avg_blk = matchup_data[['away_p1_blk', 'away_p2_blk', 'away_p3_blk', 'away_p4_blk', 'away_p5_blk']].mean(axis=1)
-        away_top6_avg_blk = matchup_data[['away_p1_blk', 'away_p2_blk', 'away_p3_blk', 'away_p4_blk', 'away_p5_blk', 'away_p6_blk']].mean(axis=1)
+        # away_top6_avg_blk = matchup_data[['away_p1_blk', 'away_p2_blk', 'away_p3_blk', 'away_p4_blk', 'away_p5_blk', 'away_p6_blk']].mean(axis=1)
         
-        away_star_stl = matchup_data['away_p1_stl']
-        away_top3_avg_stl = matchup_data[['away_p1_stl', 'away_p2_stl', 'away_p3_stl']].mean(axis=1)
+        # away_star_stl = matchup_data['away_p1_stl']
+        # away_top3_avg_stl = matchup_data[['away_p1_stl', 'away_p2_stl', 'away_p3_stl']].mean(axis=1)
         away_top5_avg_stl = matchup_data[['away_p1_stl', 'away_p2_stl', 'away_p3_stl', 'away_p4_stl', 'away_p5_stl']].mean(axis=1)
-        away_top6_avg_stl = matchup_data[['away_p1_stl', 'away_p2_stl', 'away_p3_stl', 'away_p4_stl', 'away_p5_stl', 'away_p6_stl']].mean(axis=1)
+        # away_top6_avg_stl = matchup_data[['away_p1_stl', 'away_p2_stl', 'away_p3_stl', 'away_p4_stl', 'away_p5_stl', 'away_p6_stl']].mean(axis=1)
         
-        away_star_tov = matchup_data['away_p1_tov']
-        away_top3_avg_tov = matchup_data[['away_p1_tov', 'away_p2_tov', 'away_p3_tov']].mean(axis=1)
+        # away_star_tov = matchup_data['away_p1_tov']
+        # away_top3_avg_tov = matchup_data[['away_p1_tov', 'away_p2_tov', 'away_p3_tov']].mean(axis=1)
         away_top5_avg_tov = matchup_data[['away_p1_tov', 'away_p2_tov', 'away_p3_tov', 'away_p4_tov', 'away_p5_tov']].mean(axis=1)
-        away_top6_avg_tov = matchup_data[['away_p1_tov', 'away_p2_tov', 'away_p3_tov', 'away_p4_tov', 'away_p5_tov', 'away_p6_tov']].mean(axis=1)
+        # away_top6_avg_tov = matchup_data[['away_p1_tov', 'away_p2_tov', 'away_p3_tov', 'away_p4_tov', 'away_p5_tov', 'away_p6_tov']].mean(axis=1)
         
-        away_top6_total_plusminus = matchup_data[['away_p1_plus_minus', 'away_p2_plus_minus', 'away_p3_plus_minus', 'away_p4_plus_minus', 'away_p5_plus_minus', 'away_p6_plus_minus']].sum(axis=1)
-        away_depth_variance = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg', 'away_p6_ppg']].std(axis=1)
+        # away_top6_total_plusminus = matchup_data[['away_p1_plus_minus', 'away_p2_plus_minus', 'away_p3_plus_minus', 'away_p4_plus_minus', 'away_p5_plus_minus', 'away_p6_plus_minus']].sum(axis=1)
+        # away_depth_variance = matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg', 'away_p6_ppg']].std(axis=1)
+
+        # away_top6_player_contribution = (matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg', 'away_p6_ppg']] * matchup_data[['away_p1_mpg', 'away_p2_mpg', 'away_p3_mpg', 'away_p4_mpg', 'away_p5_mpg', 'away_p6_mpg']]).sum(axis=1)
         
         # Create final prediction features (same structure as training data but without outcome columns)
         prediction_data = pd.DataFrame({
@@ -766,115 +813,154 @@ class NBATrainingDataPreparer:
             # Team Performance
             'home_wins_l10': matchup_data['wins_l10_home'],
             'away_wins_l10': matchup_data['wins_l10_away'],
+            # 'wins_l10_diff': matchup_data['wins_l10_home'] - matchup_data['wins_l10_away'],
+
             'home_plus_minus_l10': matchup_data['plus_minus_l10_home'],
             'away_plus_minus_l10': matchup_data['plus_minus_l10_away'],
-            'plus_minus_diff': matchup_data['plus_minus_l10_home'] - matchup_data['plus_minus_l10_away'],
+            # 'plus_minus_diff': matchup_data['plus_minus_l10_home'] - matchup_data['plus_minus_l10_away'],
+
             'home_total_l10': matchup_data['total_l10_home'],
             'away_total_l10': matchup_data['total_l10_away'],
-            'total_l10_diff': matchup_data['total_l10_home'] - matchup_data['total_l10_away'],
+            # 'total_l10_diff': matchup_data['total_l10_home'] - matchup_data['total_l10_away'],
+
             'home_opp_avg_win_pct_l10': matchup_data['opp_avg_win_pct_l10_home'],
             'away_opp_avg_win_pct_l10': matchup_data['opp_avg_win_pct_l10_away'],
-            'opp_avg_win_pct_diff': matchup_data['opp_avg_win_pct_l10_home'] - matchup_data['opp_avg_win_pct_l10_away'],
+            # 'opp_avg_win_pct_diff': matchup_data['opp_avg_win_pct_l10_home'] - matchup_data['opp_avg_win_pct_l10_away'],
+
             'home_ppg_l10': matchup_data['ppg_l10_home'],
             'away_ppg_l10': matchup_data['ppg_l10_away'],
-            'ppg_diff': matchup_data['ppg_l10_home'] - matchup_data['ppg_l10_away'],
+            # 'ppg_diff': matchup_data['ppg_l10_home'] - matchup_data['ppg_l10_away'],
+            # 'ppg_sum': matchup_data['ppg_l10_home'] + matchup_data['ppg_l10_away'],
+
             'home_opp_ppg_l10': matchup_data['opp_ppg_l10_home'],
             'away_opp_ppg_l10': matchup_data['opp_ppg_l10_away'],
-            'opp_ppg_diff': matchup_data['opp_ppg_l10_home'] - matchup_data['opp_ppg_l10_away'],
+            # 'opp_ppg_diff': matchup_data['opp_ppg_l10_home'] - matchup_data['opp_ppg_l10_away'],
+
             'home_apg_l10': matchup_data['ast_l10_home'],
             'away_apg_l10': matchup_data['ast_l10_away'],
-            'apg_l10_diff': matchup_data['ast_l10_home']- matchup_data['ast_l10_away'],
+            # 'apg_l10_diff': matchup_data['ast_l10_home']- matchup_data['ast_l10_away'],
+
             'home_tov_l10': matchup_data['tov_l10_home'],
             'away_tov_l10': matchup_data['tov_l10_away'],
-            'tov_l10_diff': matchup_data['tov_l10_home']- matchup_data['tov_l10_away'],
+            # 'tov_l10_diff': matchup_data['tov_l10_home']- matchup_data['tov_l10_away'],
+
             'home_blk_l10': matchup_data['blk_l10_home'],
             'away_blk_l10': matchup_data['blk_l10_away'],
-            'blk_l10_diff': matchup_data['blk_l10_home']- matchup_data['blk_l10_away'],
+            # 'blk_l10_diff': matchup_data['blk_l10_home']- matchup_data['blk_l10_away'],
+
             'home_stl_l10': matchup_data['stl_l10_home'],
             'away_stl_l10': matchup_data['stl_l10_away'],
-            'stl_l10_diff': matchup_data['stl_l10_home']- matchup_data['stl_l10_away'],
+            # 'stl_l10_diff': matchup_data['stl_l10_home']- matchup_data['stl_l10_away'],
+
             'home_reb_l10': matchup_data['reb_l10_home'],
             'away_reb_l10': matchup_data['reb_l10_away'],
-            'reb_l10_diff': matchup_data['reb_l10_home']- matchup_data['reb_l10_away'],
+            # 'reb_l10_diff': matchup_data['reb_l10_home']- matchup_data['reb_l10_away'],
             
             # Game Context
             'home_rest_days': matchup_data['rest_days_home'],
             'away_rest_days': matchup_data['rest_days_away'],
-            'rest_days_diff': matchup_data['rest_days_home'] - matchup_data['rest_days_away'],
+            # 'rest_days_diff': matchup_data['rest_days_home'] - matchup_data['rest_days_away'],
+
             'is_back_to_back_home': matchup_data['is_back_to_back_home'],
             'is_back_to_back_away': matchup_data['is_back_to_back_away'],
 
             # Player Aggregates
             # 'home_star_ppg': home_star_ppg,
             # 'away_star_ppg': away_star_ppg,
-            'home_top3_avg_ppg': home_top3_avg_ppg,
-            'away_top3_avg_ppg': away_top3_avg_ppg,
+            # 'home_top3_avg_ppg': home_top3_avg_ppg,
+            # 'away_top3_avg_ppg': away_top3_avg_ppg,
             'home_top5_avg_ppg': home_top5_avg_ppg,
             'away_top5_avg_ppg': away_top5_avg_ppg,
-            'home_top6_avg_ppg': home_top6_avg_ppg,
-            'away_top6_avg_ppg': away_top6_avg_ppg,
+            # 'home_top6_avg_ppg': home_top6_avg_ppg,
+            # 'away_top6_avg_ppg': away_top6_avg_ppg,
             
             'home_top5_avg_mpg': home_top5_avg_mpg,
             'away_top5_avg_mpg': away_top5_avg_mpg,
-            'home_top6_avg_mpg': home_top6_avg_mpg,
-            'away_top6_avg_mpg': away_top6_avg_mpg,
+            # 'home_top6_avg_mpg': home_top6_avg_mpg,
+            # 'away_top6_avg_mpg': away_top6_avg_mpg,
             
             # 'home_star_apg': home_star_apg,
             # 'away_star_apg': away_star_apg,
-            'home_top3_avg_apg': home_top3_avg_apg,
-            'away_top3_avg_apg': away_top3_avg_apg,
+            # 'home_top3_avg_apg': home_top3_avg_apg,
+            # 'away_top3_avg_apg': away_top3_avg_apg,
             'home_top5_avg_apg': home_top5_avg_apg,
             'away_top5_avg_apg': away_top5_avg_apg,
-            'home_top6_avg_apg': home_top6_avg_apg,
-            'away_top6_avg_apg': away_top6_avg_apg,
+            # 'home_top6_avg_apg': home_top6_avg_apg,
+            # 'away_top6_avg_apg': away_top6_avg_apg,
 
             # 'home_star_rpg': home_star_rpg,
             # 'away_star_rpg': away_star_rpg,
-            'home_top3_avg_rpg': home_top3_avg_rpg,
-            'away_top3_avg_rpg': away_top3_avg_rpg,
+            # 'home_top3_avg_rpg': home_top3_avg_rpg,
+            # 'away_top3_avg_rpg': away_top3_avg_rpg,
             'home_top5_avg_rpg': home_top5_avg_rpg,
             'away_top5_avg_rpg': away_top5_avg_rpg,
-            'home_top6_avg_rpg': home_top6_avg_rpg,
-            'away_top6_avg_rpg': away_top6_avg_rpg,
+            # 'home_top6_avg_rpg': home_top6_avg_rpg,
+            # 'away_top6_avg_rpg': away_top6_avg_rpg,
             
             # 'home_star_blk': home_star_blk,
             # 'away_star_blk': away_star_blk,
-            'home_top3_avg_blk': home_top3_avg_blk,
-            'away_top3_avg_blk': away_top3_avg_blk,
+            # 'home_top3_avg_blk': home_top3_avg_blk,
+            # 'away_top3_avg_blk': away_top3_avg_blk,
             'home_top5_avg_blk': home_top5_avg_blk,
             'away_top5_avg_blk': away_top5_avg_blk,
-            'home_top6_avg_blk': home_top6_avg_blk,
-            'away_top6_avg_blk': away_top6_avg_blk,
+            # 'home_top6_avg_blk': home_top6_avg_blk,
+            # 'away_top6_avg_blk': away_top6_avg_blk,
             
             # 'home_star_stl': home_star_stl,
             # 'away_star_stl': away_star_stl,
-            'home_top3_avg_stl': home_top3_avg_stl,
-            'away_top3_avg_stl': away_top3_avg_stl,
+            # 'home_top3_avg_stl': home_top3_avg_stl,
+            # 'away_top3_avg_stl': away_top3_avg_stl,
             'home_top5_avg_stl': home_top5_avg_stl,
             'away_top5_avg_stl': away_top5_avg_stl,
-            'home_top6_avg_stl': home_top6_avg_stl,
-            'away_top6_avg_stl': away_top6_avg_stl,
+            # 'home_top6_avg_stl': home_top6_avg_stl,
+            # 'away_top6_avg_stl': away_top6_avg_stl,
             
             # 'home_star_tov': home_star_tov,
             # 'away_star_tov': away_star_tov,
-            'home_top3_avg_tov': home_top3_avg_tov,
-            'away_top3_avg_tov': away_top3_avg_tov,
+            # 'home_top3_avg_tov': home_top3_avg_tov,
+            # 'away_top3_avg_tov': away_top3_avg_tov,
             'home_top5_avg_tov': home_top5_avg_tov,
             'away_top5_avg_tov': away_top5_avg_tov,
-            'home_top6_avg_tov': home_top6_avg_tov,
-            'away_top6_avg_tov': away_top6_avg_tov,
+            # 'home_top6_avg_tov': home_top6_avg_tov,
+            # 'away_top6_avg_tov': away_top6_avg_tov,
             
-            'home_top6_total_plusminus': home_top6_total_plusminus,
-            'away_top6_total_plusminus': away_top6_total_plusminus,
+            # 'home_top6_total_plusminus': home_top6_total_plusminus,
+            # 'away_top6_total_plusminus': away_top6_total_plusminus,
             
-            'home_depth_variance': home_depth_variance,
-            'away_depth_variance': away_depth_variance,
+            # 'home_depth_variance': home_depth_variance,
+            # 'away_depth_variance': away_depth_variance,
             
             # Shooting Efficiency
             'home_fg_pct_l10': matchup_data['fg_pct_l10_home'],
             'away_fg_pct_l10': matchup_data['fg_pct_l10_away'],
             'home_fg3_pct_l10': matchup_data['fg3_pct_l10_home'],
             'away_fg3_pct_l10': matchup_data['fg3_pct_l10_away'],
+
+            # Interaction Features
+            # 'home_off_pace': matchup_data['ppg_l10_home'] * (matchup_data['opp_avg_win_pct_l10_home'] + .5),
+            # 'away_off_pace': matchup_data['ppg_l10_away'] * (matchup_data['opp_avg_win_pct_l10_away'] + .5),
+            # 'off_pace_diff': (matchup_data['ppg_l10_home'] * (matchup_data['opp_avg_win_pct_l10_home'] + .5)) - (matchup_data['ppg_l10_away'] * (matchup_data['opp_avg_win_pct_l10_away'] + .5)),
+
+            # 'home_true_skill': matchup_data['plus_minus_l10_home'] * matchup_data['opp_avg_win_pct_l10_home'],
+            # 'away_true_skill': matchup_data['plus_minus_l10_away'] * matchup_data['opp_avg_win_pct_l10_away'],
+
+            # 'home_off_vs_away_def': (matchup_data['ppg_l10_home'] * matchup_data['opp_ppg_l10_away']) / 100,
+            # 'away_off_vs_home_def': (matchup_data['ppg_l10_away'] * matchup_data['opp_ppg_l10_home']) / 100,
+
+            # 'home_off_vs_away_def_diff': matchup_data['ppg_l10_home'] - matchup_data['opp_ppg_l10_away'],
+            # 'away_off_vs_home_def_diff': matchup_data['ppg_l10_away'] - matchup_data['opp_ppg_l10_home'],
+
+            # 'home_player_contribution': home_top6_player_contribution,
+            # 'away_player_contribution': away_top6_player_contribution,
+
+            # 'home_rest_adv': matchup_data['rest_days_home'] * (matchup_data['rest_days_home'] - matchup_data['rest_days_away']),
+            # 'fatigue_disadv': matchup_data['is_back_to_back_home'] * (matchup_data['rest_days_home'] - matchup_data['rest_days_away']),
+
+            # 'home_sched_density': matchup_data['rest_days_home'] * matchup_data['opp_avg_win_pct_l10_home'],
+            # 'away_sched_density': matchup_data['rest_days_away'] * matchup_data['opp_avg_win_pct_l10_away'],
+            # 'sched_density_diff': (matchup_data['rest_days_home'] * matchup_data['opp_avg_win_pct_l10_home']) - (matchup_data['rest_days_away'] * matchup_data['opp_avg_win_pct_l10_away']),
+
+            # 'home_total_efficiency': matchup_data['ppg_l10_home'] * (matchup_data['fg_pct_l10_home'] + .5),
         })
         
         if prediction_data.empty:

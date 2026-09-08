@@ -14,7 +14,7 @@ class NBATrainingDataPreparer:
         # self.season_data_dir = self.data_dir / 'season_data'
         self.season_averages_cache = {}  
 
-    def calculateTeamL10Stats(self, season):
+    def calculateTeamWindowStats(self, season, window):
         team_file = self.team_data_dir / f'{season}_team_stats.csv'
         if not team_file.exists():
             raise FileNotFoundError(f"Team data file not found: {team_file}")
@@ -30,10 +30,13 @@ class NBATrainingDataPreparer:
         df['OPP_PTS'] = df['PTS'] - df['PLUS_MINUS']
         df['TOT_PTS'] = df['PTS'] + df['OPP_PTS']
 
+        # Add advanced game stats (like possession and net rating) to the dataframe
+        df = self.addAdvancedGameStats(df)
+
         # Adds opp_avg_win_pct_l10 (strength of schedule) per team-game
-        df = self.calculateOpponentStrengthL10(df)
+        df = self.calculateOpponentStrength(df, window=window)
         
-        l10_stats = []
+        window_stats = []
         
         for team, team_df in df.groupby('TEAM_ABBREVIATION'):
             team_df = team_df.reset_index(drop=True)
@@ -41,41 +44,95 @@ class NBATrainingDataPreparer:
             team_df['win_flag'] = (team_df['WL'] == 'W').astype(int)
             
             # Using min_periods=1 allows calculation to start, but we'll drop first 10 games later
-            team_df['wins_l10'] = team_df['win_flag'].rolling(window=10, min_periods=1).sum().shift(1)
-            team_df['total_l10'] = team_df['TOT_PTS'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['ppg_l10'] = team_df['PTS'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['opp_ppg_l10'] = team_df['OPP_PTS'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['fg_pct_l10'] = team_df['FG_PCT'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['fg3_pct_l10'] = team_df['FG3_PCT'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['reb_l10'] = team_df['REB'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['ast_l10'] = team_df['AST'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['tov_l10'] = team_df['TOV'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['blk_l10'] = team_df['BLK'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['stl_l10'] = team_df['STL'].rolling(window=10, min_periods=1).mean().shift(1)
-            team_df['plus_minus_l10'] = team_df['PLUS_MINUS'].rolling(window=10, min_periods=1).mean().shift(1)
+            team_df[f'wins_l{window}'] = team_df['win_flag'].rolling(window=window, min_periods=1).sum().shift(1)
+            team_df[f'total_l{window}'] = team_df['TOT_PTS'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'ppg_l{window}'] = team_df['PTS'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'opp_ppg_l{window}'] = team_df['OPP_PTS'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'efg_pct_l{window}'] = team_df['EFG_PCT'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'fg3_pct_l{window}'] = team_df['FG3_PCT'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'reb_l{window}'] = team_df['REB'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'ast_l{window}'] = team_df['AST'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'tov_l{window}'] = team_df['TOV'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'blk_l{window}'] = team_df['BLK'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'stl_l{window}'] = team_df['STL'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'plus_minus_l{window}'] = team_df['PLUS_MINUS'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'pace_l{window}'] = team_df['PACE'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'off_rating_l{window}'] = team_df['OFF_RATING'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'def_rating_l{window}'] = team_df['DEF_RATING'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'net_rating_l{window}'] = team_df['NET_RATING'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'pts_rank_l{window}'] = team_df['PTS_RANK'].rolling(window=window, min_periods=1).mean().shift(1)
+            team_df[f'plus_minus_rank_l{window}'] = team_df['PLUS_MINUS_RANK'].rolling(window=window, min_periods=1).mean().shift(1)
             
             # After shift(1), game 11 will have stats from games 1-10
-            team_df = team_df.iloc[10:].copy()
+            team_df = team_df.iloc[window:].copy()
             
-            team_l10 = team_df[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID', 'wins_l10', 'opp_avg_win_pct_l10', 'ppg_l10', 'opp_ppg_l10', 'fg_pct_l10', 'fg3_pct_l10', 'reb_l10', 'ast_l10', 'tov_l10', 'blk_l10', 'stl_l10', 'plus_minus_l10', 'total_l10']]
+            team_window = team_df[[
+                'TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID', f'wins_l{window}', f'rolling_sos_l{window}', f'rolling_srs_l{window}',
+                f'ppg_l{window}', f'opp_ppg_l{window}', f'efg_pct_l{window}', f'fg3_pct_l{window}', f'reb_l{window}', 
+                f'ast_l{window}', f'tov_l{window}', f'blk_l{window}', f'stl_l{window}', f'plus_minus_l{window}', 
+                f'pace_l{window}', f'off_rating_l{window}', f'def_rating_l{window}', f'net_rating_l{window}', 
+                f'total_l{window}', f'pts_rank_l{window}', f'plus_minus_rank_l{window}'
+            ]].copy()
             
-            l10_stats.append(team_l10)
+            window_stats.append(team_window)
         
-        result = pd.concat(l10_stats, ignore_index=True)
+        result = pd.concat(window_stats, ignore_index=True)
         
         current_season = self.getCurrentSeason()
         if result.empty:
             if season == current_season:
                 max_games_per_team = df.groupby('TEAM_ABBREVIATION').size().max()
                 if max_games_per_team < 11:
-                    raise ValueError(f"Current season {season} has insufficient games (max {max_games_per_team} per team, need 11+) to calculate L10 stats")
-            raise ValueError(f"calculateTeamL10Stats returned empty dataframe for season {season}. Data may be corrupted.")
+                    raise ValueError(f"Current season {season} has insufficient games (max {max_games_per_team} per team, need 11+) to calculate Window stats")
+            raise ValueError(f"calculateTeamWindowStats returned empty dataframe for season {season}. Data may be corrupted.")
         
-        stat_cols = ['ppg_l10', 'opp_ppg_l10', 'fg_pct_l10', 'reb_l10', 'ast_l10', 'tov_l10', 'blk_l10', 'stl_l10', 'total_l10']
+        stat_cols = [
+            f'ppg_l{window}', f'opp_ppg_l{window}', f'efg_pct_l{window}', f'fg3_pct_l{window}', f'reb_l{window}', 
+            f'ast_l{window}', f'tov_l{window}', f'blk_l{window}', f'stl_l{window}', f'total_l{window}'
+        ]
         if (result[stat_cols] == 0).all().all():
-            raise ValueError(f"calculateTeamL10Stats returned all-zero stats for season {season}. Data may be corrupted.")
+            raise ValueError(f"calculateTeamWindowStats returned all-zero stats for season {season}. Data may be corrupted.")
         
         return result
+
+    def addAdvancedGameStats(self, df):
+        required = ['FGA', 'FTA', 'OREB', 'DREB', 'TOV', 'FGM', 'FG3M']
+        if not all(col in df.columns for col in required):
+            return df
+
+        # Create opponent stats columns (only necessary ones)
+        opp_cols = ['GAME_ID', 'TEAM_ABBREVIATION', 'FGA', 'FTA', 'FGM', 'OREB', 'DREB', 'TOV']
+        opp_renamed = {
+            'GAME_ID': 'GAME_ID',
+            'TEAM_ABBREVIATION': 'OPP_TEAM_ABBREVIATION',
+            'FGA': 'OPP_FGA',
+            'FTA': 'OPP_FTA',
+            'FGM': 'OPP_FGM',
+            'OREB': 'OPP_OREB',
+            'DREB': 'OPP_DREB',
+            'TOV': 'OPP_TOV'
+        }
+        opp_df = df[opp_cols].rename(columns=opp_renamed)
+        
+        # Merge and keep only correct opponent rows
+        df = df.merge(opp_df, on='GAME_ID', how='left')
+        df = df[df['TEAM_ABBREVIATION'] != df['OPP_TEAM_ABBREVIATION']]
+
+        df['EFG_PCT'] = (df['FGM'] + 0.5 * df['FG3M']) / df['FGA']
+        df['POSS'] = 0.5 * ((df['FGA'] + 0.4 * df['FTA'] - 1.07 * (df['OREB'] / (df['OREB'] + df['OPP_DREB'])) * (df['FGA'] - df['FGM']) + df['TOV']) + (df['OPP_FGA'] + 0.4 * df['OPP_FTA'] - 1.07 * (df['OPP_OREB'] / (df['OPP_OREB'] + df['DREB'])) * (df['OPP_FGA'] - df['OPP_FGM']) + df['OPP_TOV']))
+        df['OPP_POSS'] = 0.5 * ((df['OPP_FGA'] + 0.4 * df['OPP_FTA'] - 1.07 * (df['OPP_OREB'] / (df['OPP_OREB'] + df['DREB'])) * (df['OPP_FGA'] - df['OPP_FGM']) + df['OPP_TOV']) + (df['FGA'] + 0.4 * df['FTA'] - 1.07 * (df['OREB'] / (df['OREB'] + df['OPP_DREB'])) * (df['FGA'] - df['FGM']) + df['TOV']))
+        df['PACE'] = 48 * ((df['POSS'] + df['OPP_POSS']) / (2 * df['MIN']))
+        df['OFF_RATING'] = 100 * (df['PTS'] / df['POSS'])
+        df['DEF_RATING'] = 100 * (df['OPP_PTS'] / df['OPP_POSS'])
+        df['NET_RATING'] = df['OFF_RATING'] - df['DEF_RATING']
+
+        # Drop temporary opponent columns to keep the dataframe clean
+        df = df.drop(columns=[
+            'OPP_TEAM_ABBREVIATION', 'OPP_FGA', 'OPP_FTA', 'OPP_FGM', 'OPP_OREB', 
+            'OPP_DREB', 'OPP_TOV', 'OPP_POSS'
+        ])
+
+        return df
     
     def calculateRestDays(self, df):
         df = df.sort_values(['TEAM_ABBREVIATION', 'GAME_DATE'])
@@ -95,53 +152,82 @@ class NBATrainingDataPreparer:
             return team_abbr
         return (parts[1] if parts[0].strip() == team_abbr else parts[0]).strip()
 
-    def calculateOpponentStrengthL10(self, df):
+    def calculateOpponentStrength(self, df, iterations=15, window=10):
         df = df.copy()
         df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'])
-        df = df.sort_values(['TEAM_ABBREVIATION', 'GAME_DATE']).reset_index(drop=True)
-
+        df = df.sort_values(['GAME_DATE', 'TEAM_ABBREVIATION']).reset_index(drop=True)
         df['opponent_abbr'] = df.apply(self.parseOpponentFromMatchup, axis=1)
-        df['win_flag'] = (df['WL'] == 'W').astype(int)
 
-        df['prior_games'] = df.groupby('TEAM_ABBREVIATION')['win_flag'].transform(
-            lambda x: x.rolling(window=10, min_periods=1).count().shift(1)
-        ).fillna(0)
-        df['prior_wins'] = df.groupby('TEAM_ABBREVIATION')['win_flag'].transform(
-            lambda x: x.rolling(window=10, min_periods=1).sum().shift(1)
-        ).fillna(0)
+        # 1. Map teams to fixed matrix indices
+        unique_teams = sorted(df['TEAM_ABBREVIATION'].unique())
+        team_to_idx = {team: i for i, team in enumerate(unique_teams)}
+        num_teams = len(unique_teams)
 
-        # Raw win pct over games actually played (0 games -> league mean)
-        df['raw_pct'] = df['prior_wins'] / df['prior_games'].replace(0, np.nan)
-        df['raw_pct'] = df['raw_pct'].fillna(0.50)
+        # Pre-allocate output arrays
+        srs_arr = np.zeros(len(df))
+        sos_arr = np.zeros(len(df))
 
-        # Linear fade: weight -> 1 (pure pct) once a full 10-game record exists
-        df['weight'] = (df['prior_games'] / 10.0).clip(0, 1)
-        df['win_pct_adj'] = df['weight'] * df['raw_pct'] + (1 - df['weight']) * 0.50
+        # 2. Track team game histories using a list of lists
+        # Each team index will store a list of tuples: (game_date, opponent_idx, plus_minus)
+        team_histories = [[] for _ in range(num_teams)]
 
-        # Each opponent's adjusted win pct + raw record at the same game
-        opp_lookup = df[['GAME_ID', 'TEAM_ABBREVIATION', 'win_pct_adj', 'prior_wins', 'prior_games']].rename(
-            columns={
-                'TEAM_ABBREVIATION': 'opponent_abbr',
-                'win_pct_adj': 'opponent_win_pct_adj',
-                'prior_wins': 'opponent_prior_wins',
-                'prior_games': 'opponent_prior_games',
-            }
-        )
-        df = df.merge(opp_lookup, on=['GAME_ID', 'opponent_abbr'], how='left')
+        # Group data by game date to process day-by-day (maintaining zero-leakage chronology)
+        for date, group in df.groupby('GAME_DATE'):
+            
+            # --- PHASE A: SOLVE MATRIX FOR CURRENT SYSTEM STATE ---
+            # Build matrices reflecting the league status strictly BEFORE today's games
+            mov_vec = np.zeros(num_teams)
+            adj_mat = np.zeros((num_teams, num_teams))
 
-        # Average of the last 10 opponents' adjusted win pct, shifted (no leakage)
-        df['opp_avg_win_pct_l10'] = df.groupby('TEAM_ABBREVIATION')['opponent_win_pct_adj'].transform(
-            lambda x: x.rolling(window=10, min_periods=1).mean().shift(1)
-        ).fillna(0.50)
+            for t_idx in range(num_teams):
+                history = team_histories[t_idx]
+                if history:
+                    # Take up to the last window games played before today
+                    recent_games = history[-window:]
+                    num_games = len(recent_games)
+                    
+                    # Calculate rolling mean point margin (MOV)
+                    mov_vec[t_idx] = sum(g[2] for g in recent_games) / num_games
+                    
+                    # Fill adjacency matrix row with opponent weights
+                    for _, opp_idx, _ in recent_games:
+                        adj_mat[t_idx, opp_idx] += 1.0 / num_games
 
-        df = df.drop(
-            columns=['opponent_abbr', 'win_flag', 'prior_games', 'prior_wins',
-                        'raw_pct', 'weight', 'win_pct_adj', 'opponent_win_pct_adj',
-                        'opponent_prior_wins', 'opponent_prior_games'],
-            errors='ignore',
-        )
+            # Solve the system of simultaneous equations using NumPy iteration
+            # Formula: SRS = MOV + (Adj_Matrix @ SRS)
+            srs_vec = mov_vec.copy()
+            for _ in range(iterations):
+                srs_vec = mov_vec + np.dot(adj_mat, srs_vec)
 
+            # Compute the corresponding SOS vector (Average Opponent SRS)
+            sos_vec = srs_vec - mov_vec
+
+            # --- PHASE B: MAP CALCULATED VALUES TO TODAY'S GAMES ---
+            indices = group.index
+            for idx in indices:
+                t_name = df.at[idx, 'TEAM_ABBREVIATION']
+                t_idx = team_to_idx[t_name]
+                
+                srs_arr[idx] = srs_vec[t_idx]
+                sos_arr[idx] = sos_vec[t_idx]
+
+            # --- PHASE C: UPDATE SYSTEM HISTORIES WITH TODAY'S RESULTS ---
+            # Append today's games to team histories so they are available for tomorrow
+            for idx, row in group.iterrows():
+                t_idx = team_to_idx[row['TEAM_ABBREVIATION']]
+                o_idx = team_to_idx[row['opponent_abbr']]
+                pm = row['PLUS_MINUS']
+                
+                team_histories[t_idx].append((date, o_idx, pm))
+
+        # Append final vectorized calculations directly to your dataframe
+        df[f'rolling_srs_l{window}'] = srs_arr
+        df[f'rolling_sos_l{window}'] = sos_arr
+
+        # Drop temporary tracking column
+        df = df.drop(columns=['opponent_abbr'], errors='ignore')
         return df
+
     
     def precomputePlayerRollingAverages(self, season):
         player_file = self.player_data_dir / f'{season}_player_stats.csv'
@@ -314,9 +400,9 @@ class NBATrainingDataPreparer:
 
                 matchup_data[f'{side}_top{top_players}_avg_{stat}'] = matchup_data[existing_cols].mean(axis=1)
 
-        return matchup_data
+        return matchup_data        
     
-    def createGameMatchupData(self, season):
+    def createGameMatchupData(self, season, game_window=10, top_players=5):
         game_file = self.game_data_dir / f'{season}_game_stats.csv'
         if not game_file.exists():
             raise FileNotFoundError(f"Game data file not found: {game_file}")
@@ -324,13 +410,13 @@ class NBATrainingDataPreparer:
         games_df = pd.read_csv(game_file)
         games_df['GAME_DATE'] = pd.to_datetime(games_df['GAME_DATE'])
         
-        print(f"Calculating L10 stats for {season}...")
-        l10_stats = self.calculateTeamL10Stats(season)
+        print(f"Calculating L{game_window} stats for {season}...")
+        window_stats = self.calculateTeamWindowStats(season, window=game_window)
         
         print(f"Calculating rest days for {season}...")
         team_rest = self.calculateRestDays(games_df[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID']].copy())
         
-        team_features = l10_stats.merge(
+        team_features = window_stats.merge(
             team_rest[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID', 'rest_days', 'is_back_to_back']],
             on=['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID'],
             how='left'
@@ -343,7 +429,7 @@ class NBATrainingDataPreparer:
         home_games = games_df[games_df['is_home']].copy()
         away_games = games_df[~games_df['is_home']].copy()
         
-        # This automatically drops the first 10 games for each team
+        # This automatically drops the first {game_window} games for each team
         home_features = home_games.merge(
             team_features,
             on=['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID'],
@@ -368,7 +454,7 @@ class NBATrainingDataPreparer:
         matchup_data = matchup_data.merge(player_features, left_on='GAME_ID', right_on='game_id', how='left')
         
         print(f"Calculating aggregated player features for {season}...")
-        matchup_data = self.calculateAggregatedPlayerFeatures(matchup_data)
+        matchup_data = self.calculateAggregatedPlayerFeatures(matchup_data, top_players=top_players)
 
         # home_top6_total_plusminus = matchup_data[['home_p1_plus_minus', 'home_p2_plus_minus', 'home_p3_plus_minus', 'home_p4_plus_minus', 'home_p5_plus_minus', 'home_p6_plus_minus']].sum(axis=1)
         # home_depth_variance = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg', 'home_p6_ppg']].std(axis=1)
@@ -390,24 +476,25 @@ class NBATrainingDataPreparer:
             'is_back_to_back_home': 'is_back_to_back_home',
             'is_back_to_back_away': 'is_back_to_back_away',
         }
-        team_l10_stats = [
-            'wins', 'plus_minus', 'total', 'opp_avg_win_pct', 'ppg', 
+        team_window_stats = [
+            'wins', 'plus_minus', 'total', 'rolling_sos', 'rolling_srs', 'ppg', 
             'opp_ppg', 'ast', 'tov', 'blk', 'stl', 
-            'reb', 'fg_pct', 'fg3_pct'
+            'reb', 'efg_pct', 'fg3_pct', 'pts_rank', 'plus_minus_rank',
+            'pace', 'off_rating', 'def_rating', 'net_rating'
         ]                
-        team_l10_map = {}
+        team_window_map = {}
         player_stats = ['ppg', 'mpg', 'apg', 'rpg', 'blk', 'stl', 'tov']
         player_map = {}
 
-        for stat in team_l10_stats:
-            team_l10_map[f'{stat}_l10_home'] = f'home_{stat}_l10'
-            team_l10_map[f'{stat}_l10_away'] = f'away_{stat}_l10'
+        for stat in team_window_stats:
+            team_window_map[f'{stat}_l{game_window}_home'] = f'home_{stat}_l{game_window}'
+            team_window_map[f'{stat}_l{game_window}_away'] = f'away_{stat}_l{game_window}'
 
         for stat in player_stats:
-            player_map[f'home_top5_avg_{stat}'] = f'home_top5_avg_{stat}'
-            player_map[f'away_top5_avg_{stat}'] = f'away_top5_avg_{stat}'
+            player_map[f'home_top{top_players}_avg_{stat}'] = f'home_top{top_players}_avg_{stat}'
+            player_map[f'away_top{top_players}_avg_{stat}'] = f'away_top{top_players}_avg_{stat}'
 
-        full_rename_map = {**metadata, **team_l10_map, **player_map}
+        full_rename_map = {**metadata, **team_window_map, **player_map}
         existing_source_cols = []
 
         for col in full_rename_map.keys():
@@ -432,7 +519,7 @@ class NBATrainingDataPreparer:
  
         return training_data
     
-    def createUpcomingMatchupData(self, upcoming_games_file=None):
+    def createUpcomingMatchupData(self, upcoming_games_file=None, game_window=10, top_players=5):
         if upcoming_games_file is None:
             upcoming_games_file = self.data_dir / 'upcoming_games.csv'
         
@@ -458,13 +545,13 @@ class NBATrainingDataPreparer:
         team_df = pd.read_csv(team_file)
         team_df['GAME_DATE'] = pd.to_datetime(team_df['GAME_DATE'])
         
-        print(f"Calculating L10 stats for {current_season}...")
-        l10_stats = self.calculateTeamL10Stats(current_season)
+        print(f"Calculating L{game_window} stats for {current_season}...")
+        window_stats = self.calculateTeamWindowStats(current_season, window=game_window)
         
         print(f"Calculating rest days for {current_season}...")
         team_rest = self.calculateRestDays(team_df[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID']].copy())
         
-        team_features = l10_stats.merge(
+        team_features = window_stats.merge(
             team_rest[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID', 'rest_days', 'is_back_to_back']],
             on=['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID'],
             how='left'
@@ -507,32 +594,46 @@ class NBATrainingDataPreparer:
                 'TEAM_ABBREVIATION_away': away_team,
                 
                 # Home team L10 stats
-                'wins_l10_home': home_stats['wins_l10'],
-                'wins_l10_away': away_stats['wins_l10'],
-                'plus_minus_l10_home': home_stats['plus_minus_l10'],
-                'plus_minus_l10_away': away_stats['plus_minus_l10'],
-                'total_l10_home': home_stats['total_l10'],
-                'total_l10_away': away_stats['total_l10'],
-                'opp_avg_win_pct_l10_home': home_stats['opp_avg_win_pct_l10'],
-                'opp_avg_win_pct_l10_away': away_stats['opp_avg_win_pct_l10'],
-                'ppg_l10_home': home_stats['ppg_l10'],
-                'ppg_l10_away': away_stats['ppg_l10'],
-                'opp_ppg_l10_home': home_stats['opp_ppg_l10'],
-                'opp_ppg_l10_away': away_stats['opp_ppg_l10'],
-                'fg_pct_l10_home': home_stats['fg_pct_l10'],
-                'fg_pct_l10_away': away_stats['fg_pct_l10'],
-                'fg3_pct_l10_home': home_stats['fg3_pct_l10'],
-                'fg3_pct_l10_away': away_stats['fg3_pct_l10'],
-                'home_rpg_l10': home_stats['reb_l10'],
-                'away_rpg_l10': away_stats['reb_l10'],
-                'home_apg_l10': home_stats['ast_l10'],
-                'away_apg_l10': away_stats['ast_l10'],
-                'blk_l10_home': home_stats['blk_l10'],
-                'blk_l10_away': away_stats['blk_l10'],
-                'stl_l10_home': home_stats['stl_l10'],
-                'stl_l10_away': away_stats['stl_l10'],
-                'tov_l10_home': home_stats['tov_l10'],
-                'tov_l10_away': away_stats['tov_l10'],
+                f'wins_l{game_window}_home': home_stats[f'wins_l{game_window}'],
+                f'wins_l{game_window}_away': away_stats[f'wins_l{game_window}'],
+                f'plus_minus_l{game_window}_home': home_stats[f'plus_minus_l{game_window}'],
+                f'plus_minus_l{game_window}_away': away_stats[f'plus_minus_l{game_window}'],
+                f'total_l{game_window}_home': home_stats[f'total_l{game_window}'],
+                f'total_l{game_window}_away': away_stats[f'total_l{game_window}'],
+                f'rolling_sos_l{game_window}_home': home_stats[f'rolling_sos_l{game_window}'],
+                f'rolling_sos_l{game_window}_away': away_stats[f'rolling_sos_l{game_window}'],
+                f'rolling_srs_l{game_window}_home': home_stats[f'rolling_srs_l{game_window}'],
+                f'rolling_srs_l{game_window}_away': away_stats[f'rolling_srs_l{game_window}'],
+                f'ppg_l{game_window}_home': home_stats[f'ppg_l{game_window}'],
+                f'ppg_l{game_window}_away': away_stats[f'ppg_l{game_window}'],
+                f'opp_ppg_l{game_window}_home': home_stats[f'opp_ppg_l{game_window}'],
+                f'opp_ppg_l{game_window}_away': away_stats[f'opp_ppg_l{game_window}'],
+                f'efg_pct_l{game_window}_home': home_stats[f'efg_pct_l{game_window}'],
+                f'efg_pct_l{game_window}_away': away_stats[f'efg_pct_l{game_window}'],
+                f'fg3_pct_l{game_window}_home': home_stats[f'fg3_pct_l{game_window}'],
+                f'fg3_pct_l{game_window}_away': away_stats[f'fg3_pct_l{game_window}'],
+                f'rpg_l{game_window}_home': home_stats[f'reb_l{game_window}'],
+                f'rpg_l{game_window}_away': away_stats[f'reb_l{game_window}'],
+                f'apg_l{game_window}_home': home_stats[f'ast_l{game_window}'],
+                f'apg_l{game_window}_away': away_stats[f'ast_l{game_window}'],
+                f'blk_l{game_window}_home': home_stats[f'blk_l{game_window}'],
+                f'blk_l{game_window}_away': away_stats[f'blk_l{game_window}'],
+                f'stl_l{game_window}_home': home_stats[f'stl_l{game_window}'],
+                f'stl_l{game_window}_away': away_stats[f'stl_l{game_window}'],
+                f'tov_l{game_window}_home': home_stats[f'tov_l{game_window}'],
+                f'tov_l{game_window}_away': away_stats[f'tov_l{game_window}'],
+                f'pace_l{game_window}_home': home_stats[f'pace_l{game_window}'],
+                f'pace_l{game_window}_away': away_stats[f'pace_l{game_window}'],
+                f'off_rating_l{game_window}_home': home_stats[f'off_rating_l{game_window}'],
+                f'off_rating_l{game_window}_away': away_stats[f'off_rating_l{game_window}'],
+                f'def_rating_l{game_window}_home': home_stats[f'def_rating_l{game_window}'],
+                f'def_rating_l{game_window}_away': away_stats[f'def_rating_l{game_window}'],
+                f'net_rating_l{game_window}_home': home_stats[f'net_rating_l{game_window}'],
+                f'net_rating_l{game_window}_away': away_stats[f'net_rating_l{game_window}'],
+                f'pts_rank_l{game_window}_home': home_stats[f'pts_rank_l{game_window}'],
+                f'pts_rank_l{game_window}_away': away_stats[f'pts_rank_l{game_window}'],
+                f'plus_minus_rank_l{game_window}_home': home_stats[f'plus_minus_rank_l{game_window}'],
+                f'plus_minus_rank_l{game_window}_away': away_stats[f'plus_minus_rank_l{game_window}'],
                 
                 'rest_days_home': home_rest,
                 'rest_days_away': away_rest,
@@ -552,7 +653,7 @@ class NBATrainingDataPreparer:
         matchup_data = matchup_data.merge(player_features, left_on='GAME_ID', right_on='game_id', how='left')
         
         print(f"Calculating aggregated player features...")
-        matchup_data = self.calculateAggregatedPlayerFeatures(matchup_data)
+        matchup_data = self.calculateAggregatedPlayerFeatures(matchup_data, top_players=top_players)
         
         # home_top6_total_plusminus = matchup_data[['home_p1_plus_minus', 'home_p2_plus_minus', 'home_p3_plus_minus', 'home_p4_plus_minus', 'home_p5_plus_minus', 'home_p6_plus_minus']].sum(axis=1)
         # home_depth_variance = matchup_data[['home_p1_ppg', 'home_p2_ppg', 'home_p3_ppg', 'home_p4_ppg', 'home_p5_ppg', 'home_p6_ppg']].std(axis=1)
@@ -576,24 +677,25 @@ class NBATrainingDataPreparer:
             'is_back_to_back_home': 'is_back_to_back_home',
             'is_back_to_back_away': 'is_back_to_back_away',
         }
-        team_l10_stats = [
-            'wins', 'plus_minus', 'total', 'opp_avg_win_pct', 'ppg', 
+        team_window_stats = [
+            'wins', 'plus_minus', 'total', 'rolling_sos', 'rolling_srs', 'ppg', 
             'opp_ppg', 'ast', 'tov', 'blk', 'stl', 
-            'reb', 'fg_pct', 'fg3_pct'
+            'reb', 'efg_pct', 'fg3_pct', 'pace', 'off_rating', 
+            'def_rating', 'net_rating', 'pts_rank', 'plus_minus_rank',
         ]                
-        team_l10_map = {}
+        team_window_map = {}
         player_stats = ['ppg', 'mpg', 'apg', 'rpg', 'blk', 'stl', 'tov']
         player_map = {}
 
-        for stat in team_l10_stats:
-            team_l10_map[f'{stat}_l10_home'] = f'home_{stat}_l10'
-            team_l10_map[f'{stat}_l10_away'] = f'away_{stat}_l10'
+        for stat in team_window_stats:
+            team_window_map[f'{stat}_l{game_window}_home'] = f'home_{stat}_l{game_window}'
+            team_window_map[f'{stat}_l{game_window}_away'] = f'away_{stat}_l{game_window}'
 
         for stat in player_stats:
-            player_map[f'home_top5_avg_{stat}'] = f'home_top5_avg_{stat}'
-            player_map[f'away_top5_avg_{stat}'] = f'away_top5_avg_{stat}'
+            player_map[f'home_top{top_players}_avg_{stat}'] = f'home_top{top_players}_avg_{stat}'
+            player_map[f'away_top{top_players}_avg_{stat}'] = f'away_top{top_players}_avg_{stat}'
 
-        full_rename_map = {**metadata, **team_l10_map, **player_map}
+        full_rename_map = {**metadata, **team_window_map, **player_map}
         existing_source_cols = []
 
         for col in full_rename_map.keys():

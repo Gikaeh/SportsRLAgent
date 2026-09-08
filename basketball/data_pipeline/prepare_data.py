@@ -4,15 +4,20 @@ import re
 from pathlib import Path
 from tqdm import tqdm
 from datetime import datetime
+from shared.base_data_preparer import BaseTrainingDataPreparer
 
-class NBATrainingDataPreparer:
+PLAYER_SLOT_STATS = ['ppg', 'fg_pct', 'mpg', 'apg', 'rpg', 'blk', 'stl', 'tov', 'plus_minus']
+PLAYER_AGG_STATS = ['ppg', 'mpg', 'apg', 'rpg', 'blk', 'stl', 'tov']
+TEAM_WINDOW_STATS = [
+    'wins', 'plus_minus', 'total', 'rolling_sos', 'rolling_srs', 'ppg',
+    'opp_ppg', 'ast', 'tov', 'blk', 'stl', 'reb', 'efg_pct', 'fg3_pct',
+    'pts_rank', 'plus_minus_rank', 'pace', 'off_rating', 'def_rating', 'net_rating',
+]
+
+class NBATrainingDataPreparer(BaseTrainingDataPreparer):
     def __init__(self, data_dir='././data/basketball'):
-        self.data_dir = Path(data_dir)
-        self.team_data_dir = self.data_dir / 'team_data'
-        self.game_data_dir = self.data_dir / 'game_data'
-        self.player_data_dir = self.data_dir / 'player_data'
-        # self.season_data_dir = self.data_dir / 'season_data'
-        self.season_averages_cache = {}  
+        super().__init__(data_dir, 'basketball')
+        self.season_averages_cache = {}
 
     def calculateTeamWindowStats(self, season, window):
         team_file = self.team_data_dir / f'{season}_team_stats.csv'
@@ -134,14 +139,6 @@ class NBATrainingDataPreparer:
 
         return df
     
-    def calculateRestDays(self, df):
-        df = df.sort_values(['TEAM_ABBREVIATION', 'GAME_DATE'])
-        df['prev_game_date'] = df.groupby('TEAM_ABBREVIATION')['GAME_DATE'].shift(1)
-        df['rest_days'] = (df['GAME_DATE'] - df['prev_game_date']).dt.days - 1
-        df['is_back_to_back'] = (df['rest_days'] == 0).astype(int)
-        
-        return df
-    
     def parseOpponentFromMatchup(self, matchup_row):
         team_abbr = matchup_row['TEAM_ABBREVIATION']
         matchup = matchup_row['MATCHUP']
@@ -233,61 +230,51 @@ class NBATrainingDataPreparer:
         player_file = self.player_data_dir / f'{season}_player_stats.csv'
         if not player_file.exists():
             return pd.DataFrame()
-        
+
+        cached = self.getCachedData('player_rolling', season, source_file=player_file)
+        if cached is not None:
+            return cached
+
         df = pd.read_csv(player_file)
-        
+
         if df.empty:
             raise ValueError(f"Player data file for {season} is empty: {player_file}")
-        
+
         df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'])
         df = df.sort_values(['PLAYER_ID', 'GAME_DATE'])
-        
+
         # Calculate rolling averages for each player (shifted to exclude current game)
-        rolling_stats = []
-        for player_id, player_df in df.groupby('PLAYER_ID'):
-            player_df = player_df.reset_index(drop=True)
-            
-            player_df['ppg_rolling'] = player_df['PTS'].expanding().mean().shift(1)
-            player_df['fg_pct_rolling'] = player_df['FG_PCT'].expanding().mean().shift(1)
-            player_df['mpg_rolling'] = player_df['MIN'].expanding().mean().shift(1)
-            player_df['apg_rolling'] = player_df['AST'].expanding().mean().shift(1)
-            player_df['rpg_rolling'] = player_df['REB'].expanding().mean().shift(1)
-            player_df['blk_rolling'] = player_df['BLK'].expanding().mean().shift(1)
-            player_df['stl_rolling'] = player_df['STL'].expanding().mean().shift(1)
-            player_df['tov_rolling'] = player_df['TOV'].expanding().mean().shift(1)
-            player_df['plus_minus_rolling'] = player_df['PLUS_MINUS'].expanding().mean().shift(1)
-            
-            player_df['ppg_rolling'] = player_df['ppg_rolling'].fillna(0)
-            player_df['fg_pct_rolling'] = player_df['fg_pct_rolling'].fillna(0)
-            player_df['mpg_rolling'] = player_df['mpg_rolling'].fillna(0)
-            player_df['apg_rolling'] = player_df['apg_rolling'].fillna(0)
-            player_df['rpg_rolling'] = player_df['rpg_rolling'].fillna(0)
-            player_df['blk_rolling'] = player_df['blk_rolling'].fillna(0)
-            player_df['stl_rolling'] = player_df['stl_rolling'].fillna(0)
-            player_df['tov_rolling'] = player_df['tov_rolling'].fillna(0)
-            player_df['plus_minus_rolling'] = player_df['plus_minus_rolling'].fillna(0)
-            
-            rolling_stats.append(player_df)
-        
-        result = pd.concat(rolling_stats, ignore_index=True)
-        
+        rolling_map = {
+            'PTS': 'ppg_rolling',
+            'FG_PCT': 'fg_pct_rolling',
+            'MIN': 'mpg_rolling',
+            'AST': 'apg_rolling',
+            'REB': 'rpg_rolling',
+            'BLK': 'blk_rolling',
+            'STL': 'stl_rolling',
+            'TOV': 'tov_rolling',
+            'PLUS_MINUS': 'plus_minus_rolling',
+        }
+        result = self.computeRollingStatsVectorized(df, 'PLAYER_ID', rolling_map, window=None, min_periods=1)
+        self.saveCachedData(result, 'player_rolling', season)
+
         if len(result) > 0:
             # Group by player and check if any player has games beyond their first
             player_game_counts = result.groupby('PLAYER_ID').size()
             players_with_multiple_games = player_game_counts[player_game_counts > 1].index
-            
+
             if len(players_with_multiple_games) > 0:
                 # For players with multiple games, check if all their non-first-game stats are zero
                 multi_game_data = result[result['PLAYER_ID'].isin(players_with_multiple_games)].copy()
                 multi_game_data['game_num'] = multi_game_data.groupby('PLAYER_ID').cumcount() + 1
                 non_first_games = multi_game_data[multi_game_data['game_num'] > 1]
-                
+
                 if len(non_first_games) > 0:
                     stat_cols = ['ppg_rolling', 'mpg_rolling', 'apg_rolling', 'rpg_rolling', 'blk_rolling', 'stl_rolling', 'tov_rolling']
                     # Check if all non-first-game rolling stats are zero
                     if (non_first_games[stat_cols] == 0).all().all():
                         raise ValueError(f"precomputePlayerRollingAverages returned all-zero rolling stats for non-first games in season {season}. Data may be corrupted.")
-        
+
         return result
     
     def getTopPlayersAsOf(self, player_df, game_date, team_abbr, top_n=6):
@@ -310,82 +297,51 @@ class NBATrainingDataPreparer:
         return latest[['PLAYER_ID', 'ppg_rolling', 'fg_pct_rolling', 'mpg_rolling', 'plus_minus_rolling', 'apg_rolling', 'rpg_rolling', 'blk_rolling', 'stl_rolling', 'tov_rolling']].reset_index(drop=True)
 
     def addPlayerFeatures(self, matchup_data, season):
+        return self.buildPlayerFeatureMatrix(matchup_data, season, use_game_date=True, error_msg=f"No player data found for {season}. Cannot add player features without player data.")
+
+    def buildPlayerFeatureMatrix(self, matchup_data, season, top_n=6, use_game_date=True, error_msg=None):
         print(f"Adding player features for {season}...")
         print(f"Precomputing player rolling averages...")
 
         player_df = self.precomputePlayerRollingAverages(season)
 
         if player_df.empty:
-            raise ValueError(f"No player data found for {season}. Cannot add player features without player data.")
+            raise ValueError(error_msg or f"No player data found for {season}.")
+
+        latest_player_stats = None
+        if not use_game_date:
+            latest_player_stats = player_df.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
 
         player_features = []
 
         for idx, row in tqdm(matchup_data.iterrows(), total=len(matchup_data)):
-            game_id = row['GAME_ID']
-            game_date = pd.to_datetime(row['GAME_DATE_home'])
-            home_team = row['TEAM_ABBREVIATION_home']
-            away_team = row['TEAM_ABBREVIATION_away']
+            game_features = {'game_id': row['GAME_ID']}
 
-            game_features = {'game_id': game_id}
-
-            # Get top 6 players for home team as of game date (pre-game only)
-            home_players = self.getTopPlayersAsOf(player_df, game_date, home_team, top_n=6)
-            for i in range(6):
-                prefix = f'home_p{i+1}_'
-                if i < len(home_players):
-                    player = home_players.iloc[i]
-                    game_features[f'{prefix}ppg'] = player['ppg_rolling']
-                    game_features[f'{prefix}fg_pct'] = player['fg_pct_rolling']
-                    game_features[f'{prefix}mpg'] = player['mpg_rolling']
-                    game_features[f'{prefix}apg'] = player['apg_rolling']
-                    game_features[f'{prefix}rpg'] = player['rpg_rolling']
-                    game_features[f'{prefix}blk'] = player['blk_rolling']
-                    game_features[f'{prefix}stl'] = player['stl_rolling']
-                    game_features[f'{prefix}tov'] = player['tov_rolling']
-                    game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling']
+            for side in ('home', 'away'):
+                team = row[f'TEAM_ABBREVIATION_{side}']
+                if use_game_date:
+                    game_date = pd.to_datetime(row['GAME_DATE_home'])
+                    players = self.getTopPlayersAsOf(player_df, game_date, team, top_n=top_n)
                 else:
-                    game_features[f'{prefix}ppg'] = 0
-                    game_features[f'{prefix}fg_pct'] = 0
-                    game_features[f'{prefix}mpg'] = 0
-                    game_features[f'{prefix}apg'] = 0
-                    game_features[f'{prefix}rpg'] = 0
-                    game_features[f'{prefix}blk'] = 0
-                    game_features[f'{prefix}stl'] = 0
-                    game_features[f'{prefix}tov'] = 0
-                    game_features[f'{prefix}plus_minus'] = 0
+                    players = latest_player_stats[latest_player_stats['TEAM_ABBREVIATION'] == team].copy()
+                    players = players.sort_values('mpg_rolling', ascending=False).head(top_n)
 
-            # Get top 6 players for away team as of game date (pre-game only)
-            away_players = self.getTopPlayersAsOf(player_df, game_date, away_team, top_n=6)
-            for i in range(6):
-                prefix = f'away_p{i+1}_'
-                if i < len(away_players):
-                    player = away_players.iloc[i]
-                    game_features[f'{prefix}ppg'] = player['ppg_rolling']
-                    game_features[f'{prefix}fg_pct'] = player['fg_pct_rolling']
-                    game_features[f'{prefix}mpg'] = player['mpg_rolling']
-                    game_features[f'{prefix}apg'] = player['apg_rolling']
-                    game_features[f'{prefix}rpg'] = player['rpg_rolling']
-                    game_features[f'{prefix}blk'] = player['blk_rolling']
-                    game_features[f'{prefix}stl'] = player['stl_rolling']
-                    game_features[f'{prefix}tov'] = player['tov_rolling']
-                    game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling']
-                else:
-                    game_features[f'{prefix}ppg'] = 0
-                    game_features[f'{prefix}fg_pct'] = 0
-                    game_features[f'{prefix}mpg'] = 0
-                    game_features[f'{prefix}apg'] = 0
-                    game_features[f'{prefix}rpg'] = 0
-                    game_features[f'{prefix}blk'] = 0
-                    game_features[f'{prefix}stl'] = 0
-                    game_features[f'{prefix}tov'] = 0
-                    game_features[f'{prefix}plus_minus'] = 0
+                for i in range(top_n):
+                    prefix = f'{side}_p{i + 1}_'
+                    if i < len(players):
+                        attrs = players.iloc[i]
+                        for stat in PLAYER_SLOT_STATS:
+                            game_features[f'{prefix}{stat}'] = attrs[f'{stat}_rolling']
+                    else:
+                        for stat in PLAYER_SLOT_STATS:
+                            game_features[f'{prefix}{stat}'] = 0
 
             player_features.append(game_features)
 
         return pd.DataFrame(player_features)
 
     def calculateAggregatedPlayerFeatures(self, matchup_data, top_players=5):
-        stats = ['ppg', 'mpg', 'apg', 'rpg', 'blk', 'stl', 'tov']
+        stats = PLAYER_AGG_STATS
 
         for side in ['home', 'away']:
             for stat in stats:
@@ -401,7 +357,34 @@ class NBATrainingDataPreparer:
                 matchup_data[f'{side}_top{top_players}_avg_{stat}'] = matchup_data[existing_cols].mean(axis=1)
 
         return matchup_data        
-    
+
+    def buildMatchupFeatureFrame(self, matchup_data, game_window, top_players):
+        metadata = {
+            'GAME_ID': 'game_id',
+            'GAME_DATE_home': 'date',
+            'TEAM_ABBREVIATION_home': 'home_team',
+            'TEAM_ABBREVIATION_away': 'away_team',
+            'rest_days_home': 'home_rest_days',
+            'rest_days_away': 'away_rest_days',
+            'is_back_to_back_home': 'is_back_to_back_home',
+            'is_back_to_back_away': 'is_back_to_back_away',
+        }
+        rename_map = {**metadata}
+
+        for stat in TEAM_WINDOW_STATS:
+            rename_map[f'{stat}_l{game_window}_home'] = f'home_{stat}_l{game_window}'
+            rename_map[f'{stat}_l{game_window}_away'] = f'away_{stat}_l{game_window}'
+
+        for stat in PLAYER_AGG_STATS:
+            rename_map[f'home_top{top_players}_avg_{stat}'] = f'home_top{top_players}_avg_{stat}'
+            rename_map[f'away_top{top_players}_avg_{stat}'] = f'away_top{top_players}_avg_{stat}'
+
+        existing_source_cols = [col for col in rename_map.keys() if col in matchup_data.columns]
+        feature_frame = matchup_data[existing_source_cols].rename(columns=rename_map)
+        float_cols = feature_frame.select_dtypes(include=['float']).columns
+        feature_frame[float_cols] = feature_frame[float_cols].round(3)
+        return feature_frame
+
     def createGameMatchupData(self, season, game_window=10, top_players=5):
         game_file = self.game_data_dir / f'{season}_game_stats.csv'
         if not game_file.exists():
@@ -466,44 +449,7 @@ class NBATrainingDataPreparer:
 
         # away_top6_player_contribution = (matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg', 'away_p6_ppg']] * matchup_data[['away_p1_mpg', 'away_p2_mpg', 'away_p3_mpg', 'away_p4_mpg', 'away_p5_mpg', 'away_p6_mpg']]).sum(axis=1)
 
-        metadata = {
-            'GAME_ID': 'game_id',
-            'GAME_DATE_home': 'date',
-            'TEAM_ABBREVIATION_home': 'home_team',
-            'TEAM_ABBREVIATION_away': 'away_team',
-            'rest_days_home': 'home_rest_days',
-            'rest_days_away': 'away_rest_days',
-            'is_back_to_back_home': 'is_back_to_back_home',
-            'is_back_to_back_away': 'is_back_to_back_away',
-        }
-        team_window_stats = [
-            'wins', 'plus_minus', 'total', 'rolling_sos', 'rolling_srs', 'ppg', 
-            'opp_ppg', 'ast', 'tov', 'blk', 'stl', 
-            'reb', 'efg_pct', 'fg3_pct', 'pts_rank', 'plus_minus_rank',
-            'pace', 'off_rating', 'def_rating', 'net_rating'
-        ]                
-        team_window_map = {}
-        player_stats = ['ppg', 'mpg', 'apg', 'rpg', 'blk', 'stl', 'tov']
-        player_map = {}
-
-        for stat in team_window_stats:
-            team_window_map[f'{stat}_l{game_window}_home'] = f'home_{stat}_l{game_window}'
-            team_window_map[f'{stat}_l{game_window}_away'] = f'away_{stat}_l{game_window}'
-
-        for stat in player_stats:
-            player_map[f'home_top{top_players}_avg_{stat}'] = f'home_top{top_players}_avg_{stat}'
-            player_map[f'away_top{top_players}_avg_{stat}'] = f'away_top{top_players}_avg_{stat}'
-
-        full_rename_map = {**metadata, **team_window_map, **player_map}
-        existing_source_cols = []
-
-        for col in full_rename_map.keys():
-            if col in matchup_data.columns:
-                existing_source_cols.append(col)
-
-        training_data = matchup_data[existing_source_cols].rename(columns=full_rename_map)
-        float_cols = training_data.select_dtypes(include=['float']).columns
-        training_data[float_cols] = training_data[float_cols].round(3)
+        training_data = self.buildMatchupFeatureFrame(matchup_data, game_window, top_players)
 
         training_data['season'] = season
         training_data['home_score'] = matchup_data['PTS_home']
@@ -665,185 +611,10 @@ class NBATrainingDataPreparer:
 
         # away_top6_player_contribution = (matchup_data[['away_p1_ppg', 'away_p2_ppg', 'away_p3_ppg', 'away_p4_ppg', 'away_p5_ppg', 'away_p6_ppg']] * matchup_data[['away_p1_mpg', 'away_p2_mpg', 'away_p3_mpg', 'away_p4_mpg', 'away_p5_mpg', 'away_p6_mpg']]).sum(axis=1)
         
-        # Create final prediction features (same structure as training data but without outcome columns)
-
-        metadata = {
-            'GAME_ID': 'game_id',
-            'GAME_DATE_home': 'date',
-            'TEAM_ABBREVIATION_home': 'home_team',
-            'TEAM_ABBREVIATION_away': 'away_team',
-            'rest_days_home': 'home_rest_days',
-            'rest_days_away': 'away_rest_days',
-            'is_back_to_back_home': 'is_back_to_back_home',
-            'is_back_to_back_away': 'is_back_to_back_away',
-        }
-        team_window_stats = [
-            'wins', 'plus_minus', 'total', 'rolling_sos', 'rolling_srs', 'ppg', 
-            'opp_ppg', 'ast', 'tov', 'blk', 'stl', 
-            'reb', 'efg_pct', 'fg3_pct', 'pace', 'off_rating', 
-            'def_rating', 'net_rating', 'pts_rank', 'plus_minus_rank',
-        ]                
-        team_window_map = {}
-        player_stats = ['ppg', 'mpg', 'apg', 'rpg', 'blk', 'stl', 'tov']
-        player_map = {}
-
-        for stat in team_window_stats:
-            team_window_map[f'{stat}_l{game_window}_home'] = f'home_{stat}_l{game_window}'
-            team_window_map[f'{stat}_l{game_window}_away'] = f'away_{stat}_l{game_window}'
-
-        for stat in player_stats:
-            player_map[f'home_top{top_players}_avg_{stat}'] = f'home_top{top_players}_avg_{stat}'
-            player_map[f'away_top{top_players}_avg_{stat}'] = f'away_top{top_players}_avg_{stat}'
-
-        full_rename_map = {**metadata, **team_window_map, **player_map}
-        existing_source_cols = []
-
-        for col in full_rename_map.keys():
-            if col in matchup_data.columns:
-                existing_source_cols.append(col)
-
-        prediction_data = matchup_data[existing_source_cols].rename(columns=full_rename_map)
-        float_cols = prediction_data.select_dtypes(include=['float']).columns
-        prediction_data[float_cols] = prediction_data[float_cols].round(3)
+        prediction_data = self.buildMatchupFeatureFrame(matchup_data, game_window, top_players)
 
         prediction_data['season'] = current_season
 
-        # prediction_data = pd.DataFrame({
-        #     'game_id': matchup_data['GAME_ID'],
-        #     'date': matchup_data['GAME_DATE_home'],
-        #     'season': current_season,
-            
-        #     # Team identifiers
-        #     'home_team': matchup_data['TEAM_ABBREVIATION_home'],
-        #     'away_team': matchup_data['TEAM_ABBREVIATION_away'],
-            
-        #     # Team Performance
-        #     'home_wins_l10': matchup_data['wins_l10_home'].round(3),
-        #     'away_wins_l10': matchup_data['wins_l10_away'].round(3),
-        #     # 'wins_l10_diff': matchup_data['wins_l10_home'] - matchup_data['wins_l10_away'],
-
-        #     'home_plus_minus_l10': matchup_data['plus_minus_l10_home'].round(3),
-        #     'away_plus_minus_l10': matchup_data['plus_minus_l10_away'].round(3),
-        #     # 'plus_minus_diff': matchup_data['plus_minus_l10_home'] - matchup_data['plus_minus_l10_away'],
-
-        #     'home_total_l10': matchup_data['total_l10_home'].round(3),
-        #     'away_total_l10': matchup_data['total_l10_away'].round(3),
-        #     # 'total_l10_diff': matchup_data['total_l10_home'] - matchup_data['total_l10_away'],
-
-        #     'home_opp_avg_win_pct_l10': matchup_data['opp_avg_win_pct_l10_home'].round(3),
-        #     'away_opp_avg_win_pct_l10': matchup_data['opp_avg_win_pct_l10_away'].round(3),
-        #     # 'opp_avg_win_pct_diff': matchup_data['opp_avg_win_pct_l10_home'] - matchup_data['opp_avg_win_pct_l10_away'],
-
-        #     'home_ppg_l10': matchup_data['ppg_l10_home'].round(3),
-        #     'away_ppg_l10': matchup_data['ppg_l10_away'].round(3),
-        #     # 'ppg_diff': matchup_data['ppg_l10_home'] - matchup_data['ppg_l10_away'],
-        #     # 'ppg_sum': matchup_data['ppg_l10_home'] + matchup_data['ppg_l10_away'],
-
-        #     'home_opp_ppg_l10': matchup_data['opp_ppg_l10_home'].round(3),
-        #     'away_opp_ppg_l10': matchup_data['opp_ppg_l10_away'].round(3),
-        #     # 'opp_ppg_diff': matchup_data['opp_ppg_l10_home'] - matchup_data['opp_ppg_l10_away'],
-
-        #     'home_apg_l10': matchup_data['ast_l10_home'].round(3),
-        #     'away_apg_l10': matchup_data['ast_l10_away'].round(3),
-        #     # 'apg_l10_diff': matchup_data['ast_l10_home']- matchup_data['ast_l10_away'],
-
-        #     'home_tov_l10': matchup_data['tov_l10_home'].round(3),
-        #     'away_tov_l10': matchup_data['tov_l10_away'].round(3),
-        #     # 'tov_l10_diff': matchup_data['tov_l10_home']- matchup_data['tov_l10_away'],
-
-        #     'home_blk_l10': matchup_data['blk_l10_home'].round(3),
-        #     'away_blk_l10': matchup_data['blk_l10_away'].round(3),
-        #     # 'blk_l10_diff': matchup_data['blk_l10_home']- matchup_data['blk_l10_away'],
-
-        #     'home_stl_l10': matchup_data['stl_l10_home'].round(3),
-        #     'away_stl_l10': matchup_data['stl_l10_away'].round(3),
-        #     # 'stl_l10_diff': matchup_data['stl_l10_home']- matchup_data['stl_l10_away'],
-
-        #     'home_reb_l10': matchup_data['reb_l10_home'].round(3),
-        #     'away_reb_l10': matchup_data['reb_l10_away'].round(3),
-        #     # 'reb_l10_diff': matchup_data['reb_l10_home']- matchup_data['reb_l10_away'],
-            
-        #     # Game Context
-        #     'home_rest_days': matchup_data['rest_days_home'],
-        #     'away_rest_days': matchup_data['rest_days_away'],
-        #     # 'rest_days_diff': matchup_data['rest_days_home'] - matchup_data['rest_days_away'],
-
-        #     'is_back_to_back_home': matchup_data['is_back_to_back_home'],
-        #     'is_back_to_back_away': matchup_data['is_back_to_back_away'],
-
-        #     # Player Aggregates
-        #     # 'home_star_ppg': home_star_ppg,
-        #     # 'away_star_ppg': away_star_ppg,
-        #     # 'home_top3_avg_ppg': home_top3_avg_ppg,
-        #     # 'away_top3_avg_ppg': away_top3_avg_ppg,
-        #     'home_top5_avg_ppg': matchup_data['home_top5_avg_ppg'].round(3),
-        #     'away_top5_avg_ppg': matchup_data['away_top5_avg_ppg'].round(3),
-        #     # 'home_top6_avg_ppg': home_top6_avg_ppg,
-        #     # 'away_top6_avg_ppg': away_top6_avg_ppg,
-            
-        #     'home_top5_avg_mpg': matchup_data['home_top5_avg_mpg'].round(3),
-        #     'away_top5_avg_mpg': matchup_data['away_top5_avg_mpg'].round(3),
-        #     # 'home_top6_avg_mpg': home_top6_avg_mpg,
-        #     # 'away_top6_avg_mpg': away_top6_avg_mpg,
-            
-        #     # 'home_star_apg': home_star_apg,
-        #     # 'away_star_apg': away_star_apg,
-        #     # 'home_top3_avg_apg': home_top3_avg_apg,
-        #     # 'away_top3_avg_apg': away_top3_avg_apg,
-        #     'home_top5_avg_apg': matchup_data['home_top5_avg_apg'].round(3),
-        #     'away_top5_avg_apg': matchup_data['away_top5_avg_apg'].round(3),
-        #     # 'home_top6_avg_apg': home_top6_avg_apg,
-        #     # 'away_top6_avg_apg': away_top6_avg_apg,
-
-        #     # 'home_star_rpg': home_star_rpg,
-        #     # 'away_star_rpg': away_star_rpg,
-        #     # 'home_top3_avg_rpg': home_top3_avg_rpg,
-        #     # 'away_top3_avg_rpg': away_top3_avg_rpg,
-        #     'home_top5_avg_rpg': matchup_data['home_top5_avg_rpg'].round(3),
-        #     'away_top5_avg_rpg': matchup_data['away_top5_avg_rpg'].round(3),
-        #     # 'home_top6_avg_rpg': home_top6_avg_rpg,
-        #     # 'away_top6_avg_rpg': away_top6_avg_rpg,
-            
-        #     # 'home_star_blk': home_star_blk,
-        #     # 'away_star_blk': away_star_blk,
-        #     # 'home_top3_avg_blk': home_top3_avg_blk,
-        #     # 'away_top3_avg_blk': away_top3_avg_blk,
-        #     'home_top5_avg_blk': matchup_data['home_top5_avg_blk'].round(3),
-        #     'away_top5_avg_blk': matchup_data['away_top5_avg_blk'].round(3),
-        #     # 'home_top6_avg_blk': home_top6_avg_blk,
-        #     # 'away_top6_avg_blk': away_top6_avg_blk,
-            
-        #     # 'home_star_stl': home_star_stl,
-        #     # 'away_star_stl': away_star_stl,
-        #     # 'home_top3_avg_stl': home_top3_avg_stl,
-        #     # 'away_top3_avg_stl': away_top3_avg_stl,
-        #     'home_top5_avg_stl': matchup_data['home_top5_avg_stl'].round(3),
-        #     'away_top5_avg_stl': matchup_data['away_top5_avg_stl'].round(3),
-        #     # 'home_top6_avg_stl': home_top6_avg_stl,
-        #     # 'away_top6_avg_stl': away_top6_avg_stl,
-            
-        #     # 'home_star_tov': home_star_tov,
-        #     # 'away_star_tov': away_star_tov,
-        #     # 'home_top3_avg_tov': home_top3_avg_tov,
-        #     # 'away_top3_avg_tov': away_top3_avg_tov,
-        #     'home_top5_avg_tov': matchup_data['home_top5_avg_tov'].round(3),
-        #     'away_top5_avg_tov': matchup_data['away_top5_avg_tov'].round(3),
-        #     # 'home_top6_avg_tov': home_top6_avg_tov,
-        #     # 'away_top6_avg_tov': away_top6_avg_tov,
-            
-        #     # 'home_top6_total_plusminus': home_top6_total_plusminus,
-        #     # 'away_top6_total_plusminus': away_top6_total_plusminus,
-            
-        #     # 'home_depth_variance': home_depth_variance,
-        #     # 'away_depth_variance': away_depth_variance,
-            
-        #     # Shooting Efficiency
-        #     'home_fg_pct_l10': matchup_data['fg_pct_l10_home'].round(3),
-        #     'away_fg_pct_l10': matchup_data['fg_pct_l10_away'].round(3),
-        #     'home_fg3_pct_l10': matchup_data['fg3_pct_l10_home'].round(3),
-        #     'away_fg3_pct_l10': matchup_data['fg3_pct_l10_away'].round(3),
-        # })
-        
         if prediction_data.empty:
             if team_df.groupby('TEAM_ABBREVIATION').size().max() < 11:
                 raise ValueError(f"Current season {current_season} has insufficient games (need 11+ per team) to generate predictions")
@@ -867,84 +638,9 @@ class NBATrainingDataPreparer:
             return f"{year}-{str(year+1)[-2:]}"
     
     def addUpcomingPlayerFeatures(self, matchup_data, season):
-        print(f"Adding player features for upcoming games...")
-        print(f"Precomputing player rolling averages...")
-        
-        player_df = self.precomputePlayerRollingAverages(season)
-        
-        if player_df.empty:
-            raise ValueError(f"No player data found for {season}. Cannot generate predictions without player data.")
-        
-        latest_player_stats = player_df.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
-        
-        player_features = []
-        
-        for idx, row in tqdm(matchup_data.iterrows(), total=len(matchup_data)):
-            game_id = row['GAME_ID']
-            home_team = row['TEAM_ABBREVIATION_home']
-            away_team = row['TEAM_ABBREVIATION_away']
-            
-            game_features = {'game_id': game_id}
-            
-            home_players = latest_player_stats[latest_player_stats['TEAM_ABBREVIATION'] == home_team].copy()
-            home_players = home_players.sort_values('mpg_rolling', ascending=False).head(6)
-            
-            for i in range(6):
-                prefix = f'home_p{i+1}_'
-                if i < len(home_players):
-                    player = home_players.iloc[i]
-                    game_features[f'{prefix}ppg'] = player['ppg_rolling']
-                    game_features[f'{prefix}fg_pct'] = player['fg_pct_rolling']
-                    game_features[f'{prefix}mpg'] = player['mpg_rolling']
-                    game_features[f'{prefix}apg'] = player['apg_rolling']
-                    game_features[f'{prefix}rpg'] = player['rpg_rolling']
-                    game_features[f'{prefix}blk'] = player['blk_rolling']
-                    game_features[f'{prefix}stl'] = player['stl_rolling']
-                    game_features[f'{prefix}tov'] = player['tov_rolling']
-                    game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling']
-                else:
-                    game_features[f'{prefix}ppg'] = 0
-                    game_features[f'{prefix}fg_pct'] = 0
-                    game_features[f'{prefix}mpg'] = 0
-                    game_features[f'{prefix}apg'] = 0
-                    game_features[f'{prefix}rpg'] = 0
-                    game_features[f'{prefix}blk'] = 0
-                    game_features[f'{prefix}stl'] = 0
-                    game_features[f'{prefix}tov'] = 0
-                    game_features[f'{prefix}plus_minus'] = 0
-            
-            away_players = latest_player_stats[latest_player_stats['TEAM_ABBREVIATION'] == away_team].copy()
-            away_players = away_players.sort_values('mpg_rolling', ascending=False).head(6)
-            
-            for i in range(6):
-                prefix = f'away_p{i+1}_'
-                if i < len(away_players):
-                    player = away_players.iloc[i]
-                    game_features[f'{prefix}ppg'] = player['ppg_rolling']
-                    game_features[f'{prefix}fg_pct'] = player['fg_pct_rolling']
-                    game_features[f'{prefix}mpg'] = player['mpg_rolling']
-                    game_features[f'{prefix}apg'] = player['apg_rolling']
-                    game_features[f'{prefix}rpg'] = player['rpg_rolling']
-                    game_features[f'{prefix}blk'] = player['blk_rolling']
-                    game_features[f'{prefix}stl'] = player['stl_rolling']
-                    game_features[f'{prefix}tov'] = player['tov_rolling']
-                    game_features[f'{prefix}plus_minus'] = player['plus_minus_rolling']
-                else:
-                    game_features[f'{prefix}ppg'] = 0
-                    game_features[f'{prefix}fg_pct'] = 0
-                    game_features[f'{prefix}mpg'] = 0
-                    game_features[f'{prefix}apg'] = 0
-                    game_features[f'{prefix}rpg'] = 0
-                    game_features[f'{prefix}blk'] = 0
-                    game_features[f'{prefix}stl'] = 0
-                    game_features[f'{prefix}tov'] = 0
-                    game_features[f'{prefix}plus_minus'] = 0
-            
-            player_features.append(game_features)
-        
-        return pd.DataFrame(player_features)
+        return self.buildPlayerFeatureMatrix(matchup_data, season, use_game_date=False, error_msg=f"No player data found for {season}. Cannot generate predictions without player data.")
     
-    def prepareAllSeasons(self, seasons=None, output_dir='././data/training_data/basketball/phase1'):
+    def prepareAllSeasons(self, seasons=None, output_dir='././data/training_data/basketball'):
         output_path = Path(output_dir)
         output_path.mkdir(parents=True, exist_ok=True)
         (output_path / 'separated_seasons').mkdir(parents=True, exist_ok=True)

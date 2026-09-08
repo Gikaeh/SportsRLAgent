@@ -7,25 +7,24 @@ xgboost>=2.0.0
 scikit-learn>=1.3.0
 optuna>=3.0.0
 
-# Visualization
+# Visualization (feature-importance / diagnostics plots in model_*.py)
 matplotlib>=3.7.0
 seaborn>=0.12.0
 
 # NBA API
 nba-api>=1.1.0
 
-# NHL API
-nhl-api-py>=3.1.1
+# HTTP (shared/base_data_fetcher.py, odd_scraping.py, injury_data.py)
+requests>=2.31.0
 
 # Progress Bars
 tqdm>=4.65.0
 
-# Backend Foundation
-fastapi>=0.128.0
-SQLAlchemy>=2.0.45
+# Timezone handling (odd_scraping.py)
+pytz>=2024.1
+
+# Parquet engine for the data cache (shared/base_data_preparer.py getCachedData/saveCachedData)
+pyarrow>=16.0.0
 
 # Testing
 pytest>=8.0.0
-
-# Timezone handling (odd_scraping.py)
-pytz>=2024.1

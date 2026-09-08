@@ -40,6 +40,7 @@ Windows machine — use `.venv\Scripts\python.exe` (not `.venv/bin/python`).
 | Verify changes | `.venv\Scripts\python.exe -m pytest tests/ -v` |
 | NHL daily menu (recommendations, grade bets, retrain) | `.venv\Scripts\python.exe hockey/main.py` |
 | NBA daily menu | `.venv\Scripts\python.exe basketball/main.py` |
+| Home/away calibration of graded bets (tools/) | `.venv\Scripts\python.exe tools\calibration_diagnostic.py` |
 | Add a dependency | append to `requirements.txt`, then `uv pip install -r requirements.txt` |
 
 Interactive CLIs: choose a menu number; entering one number above the highest
@@ -64,7 +65,7 @@ models/       trained XGBoost JSONs + metadata/ (retrain timestamps)
 logs/<sport>/betting/  *_bets.csv bet journals (IMMUTABLE — see rule #3)
 plots/        generated diagnostics (regenerable, low value)
 tests/        pytest smoke tests
-tools/        standalone scripts (none yet); each MUST get an AGENTS.md table row on creation
+tools/        standalone scripts (e.g. calibration_diagnostic.py); each MUST get an AGENTS.md table row on creation
 docs/         PROJECT.md, DECISIONS.md, SESSION-LOG.md (+ -ARCHIVE.md)
 ```
 

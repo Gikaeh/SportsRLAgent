@@ -223,11 +223,9 @@ A2/A1 leakage; that is the point. (Reference: main's logged h2h test_acc of
 3. **Vectorized rolling + cache: nothing to copy** — main's
    `shared/base_data_preparer.py` already contains `computeRollingStatsVectorized`,
    `getCachedData`/`saveCachedData` (with source-file freshness invalidation),
-   identical to the branch version. The remaining work is WIRING:
-   make `NBATrainingDataPreparer` inherit `BaseTrainingDataPreparer`, replace the
-   per-player loop in `precomputePlayerRollingAverages` with
-   `self.computeRollingStatsVectorized(df, 'PLAYER_ID', {...}, min_periods=1)`
-   plus `.shift(1)` per group, and wrap the body in
-   `cached = self.getCachedData('player_rolling', season, source_file=player_file)`.
-   Defer until after the pending retrain to avoid changing feature semantics
-   mid-rebuild (semantics-neutral in principle, but verify parity on one season).
+   identical to the branch version. ✅ WIRED 2026-09-07: `NBATrainingDataPreparer`
+   now inherits `BaseTrainingDataPreparer` and its `precomputePlayerRollingAverages`
+   uses `computeRollingStatsVectorized(df, 'PLAYER_ID', {...}, window=None,
+   min_periods=1)` plus the `player_rolling` parquet cache. Semantics unchanged
+   (verified old-loop == vectorized on synthetic data); no retrain required on
+   semantic grounds, and no data backfill needed.

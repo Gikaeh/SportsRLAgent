@@ -277,7 +277,7 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
 
         return result
     
-    def getTopPlayersAsOf(self, player_df, game_date, team_abbr, top_n=6):
+    def getTopPlayersAsOf(self, player_df, game_date, team_abbr, top_n=5):
         candidates = player_df[
             (player_df['TEAM_ABBREVIATION'] == team_abbr) &
             (player_df['GAME_DATE'] < game_date)
@@ -299,7 +299,7 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
     def addPlayerFeatures(self, matchup_data, season):
         return self.buildPlayerFeatureMatrix(matchup_data, season, use_game_date=True, error_msg=f"No player data found for {season}. Cannot add player features without player data.")
 
-    def buildPlayerFeatureMatrix(self, matchup_data, season, top_n=6, use_game_date=True, error_msg=None):
+    def buildPlayerFeatureMatrix(self, matchup_data, season, top_n=5, use_game_date=True, error_msg=None):
         print(f"Adding player features for {season}...")
         print(f"Precomputing player rolling averages...")
 
@@ -558,10 +558,10 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
                 f'efg_pct_l{game_window}_away': away_stats[f'efg_pct_l{game_window}'],
                 f'fg3_pct_l{game_window}_home': home_stats[f'fg3_pct_l{game_window}'],
                 f'fg3_pct_l{game_window}_away': away_stats[f'fg3_pct_l{game_window}'],
-                f'rpg_l{game_window}_home': home_stats[f'reb_l{game_window}'],
-                f'rpg_l{game_window}_away': away_stats[f'reb_l{game_window}'],
-                f'apg_l{game_window}_home': home_stats[f'ast_l{game_window}'],
-                f'apg_l{game_window}_away': away_stats[f'ast_l{game_window}'],
+                f'reb_l{game_window}_home': home_stats[f'reb_l{game_window}'],
+                f'reb_l{game_window}_away': away_stats[f'reb_l{game_window}'],
+                f'ast_l{game_window}_home': home_stats[f'ast_l{game_window}'],
+                f'ast_l{game_window}_away': away_stats[f'ast_l{game_window}'],
                 f'blk_l{game_window}_home': home_stats[f'blk_l{game_window}'],
                 f'blk_l{game_window}_away': away_stats[f'blk_l{game_window}'],
                 f'stl_l{game_window}_home': home_stats[f'stl_l{game_window}'],

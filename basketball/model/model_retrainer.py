@@ -11,18 +11,19 @@ from shared.splitting import chronologicalSplit
 import json
 
 class ModelRetrainer:
-    def __init__(self, model_path='./models/basketball_h2h_model.json', data_dir='./data/basketball', metadata_path='./models/metadata/basketball/retraining_h2h_metadata.json'):
+    def __init__(self, model_type=None, model_path=None, data_dir='./data/basketball', metadata_path=None):
+        self.model_type = model_type
         self.model_path = Path(model_path)
         self.data_dir = Path(data_dir)
-        self.training_data_dir = Path('./data/training_data/basketball/phase1')
+        self.training_data_dir = Path('./data/training_data/basketball')
         self.preparer = NBATrainingDataPreparer(data_dir=str(data_dir))
         self.basketball_data = BasketballData()
 
-        if str(model_path).split('_')[1] == 'h2h':
+        if self.model_type == 'h2h':
             self.model = BasketballH2HModel()
-        elif str(model_path).split('_')[1] == 'spread':
+        elif self.model_type == 'spread':
             self.model = BasketballSpreadModel()
-        elif str(model_path).split('_')[1] == 'total':
+        elif self.model_type == 'total':
             self.model = BasketballTotalModel()
 
         if self.model_path.exists():

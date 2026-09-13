@@ -104,7 +104,7 @@ class BasketballSpreadModel:
         
         return accuracy
     
-    def save(self, path):
+    def saveModel(self, path):
         self.model.save_model(path)
     
     def load(self, path):
@@ -437,9 +437,6 @@ class BasketballSpreadModel:
             accuracy = self.evaluateSpreadAccuracy(X_test, y_test, spread)
         
         print("="*60)
-    
-    def saveModel(self, path):
-        self.model.save_model(path)
 
     def getModelType(self):
         return 'spread'

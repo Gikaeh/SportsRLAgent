@@ -19,7 +19,7 @@ class BasketballData(BaseDataFetcher):
             'Portland Trail Blazers', 'Sacramento Kings', 'San Antonio Spurs', 'Oklahoma City Thunder', 'Toronto Raptors', 'Utah Jazz', 'Memphis Grizzlies', 'Washington Wizards', 'Detroit Pistons', 'Charlotte Hornets',
             'New Jersey Nets', 'Charlotte Bobcats', 'Vancouver Grizzlies', 'New Orleans Hornets', ' Seattle SuperSonics', 'New Orleans/Oklahoma City Hornets', 'Los Angeles Clippers'
         ]
-        self.end_year = datetime.date.today().year if datetime.date.today().month >= 7 else datetime.date.today().year - 1
+        self.end_year = datetime.date.today().year if datetime.date.today().month >= 10 else datetime.date.today().year - 1
     
     def getAllSeasonData(self, season=None):
         if season == None:

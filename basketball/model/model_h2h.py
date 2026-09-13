@@ -77,8 +77,8 @@ class BasketballH2HModel:
     def predictProb(self, X_test):
         return self.model.predict_proba(X_test)
     
-    def save(self, path):
-        self.model.saveModel(path)
+    def saveModel(self, path):
+        self.model.save_model(path)
     
     def load(self, path):
         self.model.load_model(path)
@@ -429,9 +429,6 @@ class BasketballH2HModel:
                     f"Avg pred={predicted_avg:.1%}, "
                     f"Actual={actual_win_rate:.1%}, "
                     f"n={mask.sum()}")
-
-    def saveModel(self, path):
-        self.model.save_model(path)
 
     def getModelType(self):
         return 'h2h'

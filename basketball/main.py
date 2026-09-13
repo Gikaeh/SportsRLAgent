@@ -129,7 +129,8 @@ def modelRetraining():
     print("="*80)
     
     for model_path in Path('./models').glob('basketball_*.json'):
-        retrainer = ModelRetrainer(model_path=model_path, metadata_path=model_path.parent / f'metadata/basketball/retraining_{model_path.stem.split('_')[1]}_metadata.json')
+        model_type = model_path.stem.split('_')[1]
+        retrainer = ModelRetrainer(model_type=model_type, model_path=model_path, metadata_path=model_path.parent / f'metadata/basketball/retraining_{model_type}_metadata.json')
         
         retrainer.getRetrainingStatus()
         

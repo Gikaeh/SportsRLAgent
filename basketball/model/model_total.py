@@ -103,7 +103,7 @@ class BasketballTotalModel:
         
         return accuracy
     
-    def save(self, path):
+    def saveModel(self, path):
         self.model.save_model(path)
     
     def load(self, path):
@@ -443,9 +443,6 @@ class BasketballTotalModel:
             accuracy = self.evaluateOverUnderAccuracy(X_test, y_test, total_line)
         
         print("="*60)
-    
-    def saveModel(self, path):
-        self.model.save_model(path)
 
     def getModelType(self):
         return 'total'

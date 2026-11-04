@@ -111,18 +111,20 @@ class BasketballData(BaseDataFetcher):
             team_yearly_data.to_csv(f'{self.data_dir}/season_data/{team_abbreviation}_season_stats.csv', index=False)
 
     def getUpcomingGames(self):
-        today = pd.Timestamp.now().normalize()
-        tomorrow = today + pd.Timedelta(days=1)
         columns = ['gameId', 'gameDateEst', 'homeTeam_teamName', 'homeTeam_teamTricode', 'awayTeam_teamName', 'awayTeam_teamTricode']
-        
+
         def fetch_schedule():
             gamefinder = scheduleleaguev2.ScheduleLeagueV2()
             return gamefinder.get_data_frames()[0]
-        
+
         games = self.retryApiCall(fetch_schedule)
         games = games[columns]
         games.rename(columns={'gameId': 'GAME_ID', 'gameDateEst': 'GAME_DATE', 'homeTeam_teamName': 'HOME_TEAM', 'awayTeam_teamName': 'AWAY_TEAM', 'homeTeam_teamTricode': 'TEAM_ABB_HOME', 'awayTeam_teamTricode': 'TEAM_ABB_AWAY'}, inplace=True)
-        games = games[(games['GAME_DATE'] < tomorrow.strftime('%Y-%m-%dT00:00:00Z')) & (games['GAME_DATE'] >= today.strftime('%Y-%m-%dT00:00:00Z'))]
+        # US-evening games tip off after the next UTC midnight, so a pure UTC-day
+        # window misses them. Keep games whose US/Eastern date is today.
+        games['GAME_DATE_EASTERN'] = pd.to_datetime(games['GAME_DATE'], errors='coerce').dt.tz_convert('US/Eastern').dt.date
+        today_eastern = pd.Timestamp.now(tz='US/Eastern').date()
+        games = games[games['GAME_DATE_EASTERN'] == today_eastern].drop(columns=['GAME_DATE_EASTERN'])
         games['HOME_TEAM'] = games['HOME_TEAM'].apply(self.matchTeamName)
         games['AWAY_TEAM'] = games['AWAY_TEAM'].apply(self.matchTeamName)
         games.to_csv(f'{self.data_dir}/upcoming_games.csv', index=False)

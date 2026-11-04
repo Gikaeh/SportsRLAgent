@@ -61,15 +61,16 @@ class BasketballOddScraping:
 
             df = df[['commence_time','home_team','away_team','bookmakers_key','bookmakers_markets_key','bookmakers_markets_last_update','name','price']]
 
+            df['commence_time'] = pd.to_datetime(df['commence_time'])
+            df['bookmakers_markets_last_update'] = pd.to_datetime(df['bookmakers_markets_last_update'])
+
             for i in range(len(df)):
                 utc_date = df.iat[i,0]
-                utc_datetime = datetime.fromisoformat(utc_date.replace('Z', '+00:00'))
-                pst_datetime = utc_datetime.astimezone(self.pst_timezone)
+                pst_datetime = utc_date.tz_convert(self.pst_timezone)
                 df.iat[i,0] = pst_datetime
 
                 utc_last_update = df.iat[i,5]
-                utc_last_update_datetime = datetime.fromisoformat(utc_last_update.replace('Z', '+00:00'))
-                pst_last_update_datetime = utc_last_update_datetime.astimezone(self.pst_timezone)
+                pst_last_update_datetime = utc_last_update.tz_convert(self.pst_timezone)
                 df.iat[i,5] = pst_last_update_datetime
 
                 home_team = df.at[i,'home_team']
@@ -124,15 +125,16 @@ class BasketballOddScraping:
 
             df = df[['commence_time','home_team','away_team','bookmakers_key','bookmakers_markets_key','bookmakers_markets_last_update','name','price','point']]
 
+            df['commence_time'] = pd.to_datetime(df['commence_time'])
+            df['bookmakers_markets_last_update'] = pd.to_datetime(df['bookmakers_markets_last_update'])
+
             for i in range(len(df)):
                 utc_date = df.iat[i,0]
-                utc_datetime = datetime.fromisoformat(utc_date.replace('Z', '+00:00'))
-                pst_datetime = utc_datetime.astimezone(self.pst_timezone)
+                pst_datetime = utc_date.tz_convert(self.pst_timezone)
                 df.iat[i,0] = pst_datetime
 
                 utc_last_update = df.iat[i,5]
-                utc_last_update_datetime = datetime.fromisoformat(utc_last_update.replace('Z', '+00:00'))
-                pst_last_update_datetime = utc_last_update_datetime.astimezone(self.pst_timezone)
+                pst_last_update_datetime = utc_last_update.tz_convert(self.pst_timezone)
                 df.iat[i,5] = pst_last_update_datetime
 
                 home_team = df.at[i,'home_team']
@@ -187,15 +189,16 @@ class BasketballOddScraping:
 
             df = df[['commence_time','home_team','away_team','bookmakers_key','bookmakers_markets_key','bookmakers_markets_last_update','name','price','point']]
 
+            df['commence_time'] = pd.to_datetime(df['commence_time'])
+            df['bookmakers_markets_last_update'] = pd.to_datetime(df['bookmakers_markets_last_update'])
+
             for i in range(len(df)):
                 utc_date = df.iat[i,0]
-                utc_datetime = datetime.fromisoformat(utc_date.replace('Z', '+00:00'))
-                pst_datetime = utc_datetime.astimezone(self.pst_timezone)
+                pst_datetime = utc_date.tz_convert(self.pst_timezone)
                 df.iat[i,0] = pst_datetime
 
                 utc_last_update = df.iat[i,5]
-                utc_last_update_datetime = datetime.fromisoformat(utc_last_update.replace('Z', '+00:00'))
-                pst_last_update_datetime = utc_last_update_datetime.astimezone(self.pst_timezone)
+                pst_last_update_datetime = utc_last_update.tz_convert(self.pst_timezone)
                 df.iat[i,5] = pst_last_update_datetime
 
                 home_team = df.at[i,'home_team']

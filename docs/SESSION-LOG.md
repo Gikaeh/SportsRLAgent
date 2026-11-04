@@ -5,58 +5,50 @@ When a session ends, move the old entry verbatim into `docs/SESSION-LOG-ARCHIVE.
 
 ---
 
-## 2026-09-07 — NBA prepare_data.py de-duplicated; shrunk 996 → 712 lines
+## 2026-11-04 — NBA data pipeline run + pandas-3 odds fix + upcoming-games timezone fix
 
 **Done**
-- Removed the near-identical duplicate feature-building paths in
-  `basketball/data_pipeline/prepare_data.py` (no behavior change; same feature
-  sets and output column names).
-- `addPlayerFeatures` + `addUpcomingPlayerFeatures` collapsed into one
-  `_buildPlayerFeatureMatrix(matchup_data, season, use_game_date=...)`; the only
-  prior difference — top-6 selection by game date (`getTopPlayersAsOf`, the A1
-  non-leaky path) vs latest-rolling — is now a parameter. Both wrappers kept
-  their original ValueError messages.
-- Shared block in `createGameMatchupData` + `createUpcomingMatchupData`
-  (metadata + team-window rename map + player-agg rename map + existing-col
-  selection + rename + float-3 rounding) extracted to `_buildMatchupFeatureFrame()`.
-- Added module constants `PLAYER_SLOT_STATS`, `PLAYER_AGG_STATS`,
-  `TEAM_WINDOW_STATS`. Both methods previously carried their own copies; the two
-  team-window lists were the same 20 stats in different order, which risks
-  column-order drift between train and predict.
-- Deleted ~135 lines of dead commented-out `prediction_data = pd.DataFrame({...})`
-  legacy block (already removed from the training path in the prior commit).
-- File: 996 → 712 lines. Net `git diff`: 67 insertions / 350 deletions.
-- (follow-up) NBA `NBATrainingDataPreparer` now genuinely uses the shared base:
-  inherits `BaseTrainingDataPreparer`; dropped its duplicate `calculateRestDays`;
-  `precomputePlayerRollingAverages` rewritten to the shared
-  `computeRollingStatsVectorized` (expanding mean, shift 1, fillna 0) + parquet
-  cache via `getCachedData`/`saveCachedData` — resolves NOTES §Salvaged #3.
-  Semantics are unchanged (verified parity old-loop == vectorized on synthetic
-  data); no retrain required on semantic grounds.
-- Remaining `shared/` usage after wiring: `base_data_fetcher.py` (BasketballData)
-  and `splitting.py` (model_retrainer) were already NBA-consumed; all three
-  shared modules are now NBA-used, so nothing is dead code.
-- New standalone tool `tools/calibration_diagnostic.py` prints pick share + win
-  rate (W/(W+L), pushes excluded) by bet_side for each market from the graded
-  bet logs — a home-bias read. Registered in AGENTS.md command table. It already
-  surfaces a h2h signal: home picks 3/9=33.3% vs away picks 6/9=66.7% (n=18).
-- `requirements.txt` trimmed to NBA: removed `nhl-api-py`, `fastapi`,
-  `SQLAlchemy`; added `requests` (direct import) and `pyarrow` (parquet cache
-  engine for `shared/base_data_preparer.py`).
+- Ran the full basketball data pipeline in a fresh uv venv (Python 3.12,
+  `uv venv` + `uv pip install -r requirements.txt`; `brew install libomp` was
+  needed on macOS for xgboost).
+- Dataset rebuilt: training master `data/training_data/basketball/all_seasons_training_data.csv`
+  now 29,278 games across 27 seasons (2000-01 → 2026-27). 2025-26 refreshed to the
+  complete season (through the 2026-06-13 Finals; the old file stopped 2026-01-19).
+  2026-27 fetched through Nov 2 (347 team-games); only 16 training rows so far —
+  expected: `calculateTeamWindowStats` drops each team's first 10 games, so the
+  current season contributes once teams pass 11 games.
+- Fresh odds snapshots written: `data/basketball/odds_data/{h2h,spread,total}_2026-11-03_23-51.csv`
+  (18 events, ~250 rows each; The Odds API quota used: 6 of ~500). Left untracked in the
+  working tree — not part of this commit (owner's call whether to commit them).
+- Fix 1 — pandas-3 compat in `basketball/data_pipeline/odd_scraping.py`: parse
+  `commence_time` / `bookmakers_markets_last_update` to datetime right after
+  column selection, then `tz_convert(PST)` in the loop. The old
+  `df.iat[i,0] = pst_datetime` assignment into an Arrow string column raises
+  `TypeError` on pandas 3.x (was silently coerced on the old pandas).
+- Fix 2 — `getUpcomingGames()` in `basketball/data_pipeline/basketball_data.py`:
+  US-evening games tip off after the next UTC midnight, so the old
+  `[today 00:00Z, tomorrow 00:00Z)` window returned an empty file. Now filters to
+  games whose US/Eastern date is today (with `errors='coerce'` for TBD games).
+- Tests: `python -m pytest tests/ -q` → 12 passed, 2 FAILED. The 2 failures are the
+  pre-existing `test_opp_avg_win_pct.py` ones (call the never-existing
+  `calculateOpponentStrengthL10`); unchanged by these fixes.
 
 **Verify**
-- `.venv\Scripts\python.exe -m pytest tests/ -v`: 11 passed, 2 FAILED.
-  The 2 failures — `tests/test_opp_avg_win_pct.py::test_opp_avg_win_pct_invariants`
-  and `::test_preview_opponent_breakdown` — are PRE-EXISTING and unrelated: the
-  test calls `NBATrainingDataPreparer.calculateOpponentStrengthL10()`, which has
-  never existed in the codebase (method is `calculateOpponentStrength`). Confirmed
-  they fail identically on the stashed (unmodified) HEAD.
-- `tests/test_basketball_fixes.py` (incl. A1 player-selection regression): 6/6 pass.
+- Odds CSVs: commence_time in PST, both bookmakers_markets_last_update + team
+  abbreviations populated (sampled rows).
+- `upcoming_games.csv` carries the day's 2 games (PHX–ORL, GSW–MIA).
+- pytest result above; no new failures vs the 2026-09-07 baseline (11+1 → 12 passed
+  because libomp unblocked xgboost-importing tests).
 
 **Next**
-1. OWNER: review working tree (`prepare_data.py`, README.md, docs changes) +
-   commit if desired.
-2. Batch 4 hardening (NOTES §Suggested fix order) remains — A5 drop-list single
-   source of truth, C-R3 availability gating, C3/C4 features, etc.
-3. Hockey is out of scope for now (per owner: NBA focus) — NHL shared-base wiring
-   and its mirror debt are frozen until it comes back in scope.
+1. OWNER: review this branch (`pipeline-fixes`, off `basketball-remediation`) and
+   merge if good. Uncommitted on the source branch: nothing — fixes are on this branch.
+2. Retrain the NBA models on the fresh dataset. This also clears the stale-booster
+   vs SRS/SOS-schema mismatch (models predate the 2026-09-07 feature change and
+   would raise a feature-name error at predict time).
+3. The same pandas-3 datetime-assignment pattern still exists in
+   `hockey/data_pipeline/odd_scraping.py` and `baseball/odd_scraping.py` (latent —
+   will fail on the next run). Hockey's `getUpcomingGames` also indexes
+   `data.get('gameWeek', [])[0]` before its None check (`hockey_data.py:467`).
+4. M1 secrets cleanup is still pending: the Odds API key remains hardcoded in all
+   three `odd_scraping.py` files; rotate + env-var inject per PROJECT.md.

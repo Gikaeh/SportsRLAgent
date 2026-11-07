@@ -120,18 +120,18 @@ no_injuries and fullstack-app have zero unique commits vs main; candidates for
 deletion (owner call).
 
 
-## 2026-08-25 — data/ untracked from git EXCEPT odds_data
+## 2026-08-25 ï¿½ data/ untracked from git EXCEPT odds_data
 
 All of data/ is fetched/derived and regenerable, so it was untracked (593 files)
 to stop git bloat (~530 MB of blobs). Exception carved out via .gitignore
 negation: data/*/odds_data/** stays tracked. Why: odds snapshots are the only
-data the pipeline CANNOT regenerate — they are point-in-time market observations
+data the pipeline CANNOT regenerate ï¿½ they are point-in-time market observations
 consumed at recommendation time; once a game passes, those prices are gone unless
 paid historical endpoints are used. They double as future training data for
 market-feature work (NOTES.md C3/C4) and CLV checks. Cost is trivial (~360
 files, 4.2 MB).
 
-## 2026-08-25 — models/metadata restructured to per-sport subfolders
+## 2026-08-25 ï¿½ models/metadata restructured to per-sport subfolders
 
 models/metadata/basketball/ and models/metadata/hockey/ now hold each sport's
 retraining_*_metadata.json. Why: hockey's retrainer already auto-derived a
@@ -139,3 +139,13 @@ hockey/ subfolder while basketball wrote flat files with sport-ambiguous names;
 the flat layout also made cross-sport glob accidents possible. BettingRecommender
 residual-sigma loader and both main.py menus updated; hockey folder materializes
 in git on first hockey metadata write.
+
+## 2026-11-07 â€” Initial-model splits aligned to 80/10/10 chronological
+
+`initial_*_setup.py` still used `train_test_split(random_state=42)` (60/20/20)
+after the A2 retrainer fix. Converted to `chronologicalSplit` at 80/10/10 â€” the
+same rule as `ModelRetrainer` and `tools/pipeline_smoke_test.py`. Why: a single
+split rule across every training entry point removes the cross-season leak and
+keeps "initial model" vs "retrained model" metrics on the same kind of holdout.
+Cost: initial-model metrics will drop vs the old leak-inflated numbers; that is
+the expected correction, not a regression.

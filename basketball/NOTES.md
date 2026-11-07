@@ -63,6 +63,14 @@ now splits by date preserving the old proportions chronologically (80% train /
 10% val / 10% test; earliest→latest). Split date ranges printed during retraining.
 Regression test: `tests/test_basketball_fixes.py::TestChronologicalSplit`.
 
+**Follow-up (2026-11-07):** the three `initial_*_setup.py` scripts still had the
+random split — now converted to `chronologicalSplit` at 80/10/10 (they previously
+used 60/20/20). All four training entry points normalize `date` before splitting
+(mixed cached-CSV string vs fresh datetime dtypes), and the retrainer's three
+duplicated drop/target blocks became `splitFeaturesAndTarget()`. Guard tests:
+`test_basketball_training_paths_split_chronologically` and
+`test_retrainer_splits_features_and_target_consistently`.
+
 ### A3 — Validation metrics double-dipped
 After tuning + early stopping on X_val, `evaluate(X_val)` is logged as
 "val_accuracy" (`model_retrainer.py:191-199`). Biased high even ignoring A2.

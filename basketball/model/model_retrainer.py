@@ -119,6 +119,30 @@ class ModelRetrainer:
         print(f"Total games in training data: {len(training_data)}")
         
         return training_data
+
+    def splitFeaturesAndTarget(self, train_data, val_data, test_data):
+        """Drop non-predictive columns and separate features from the target.
+
+        Mirrors tools/pipeline_smoke_test.py: the leakage/low-importance list and
+        the target column come from the model class, so the training and live
+        prediction paths cannot drift apart.
+        """
+        target_col = {
+            'h2h': 'home_won',
+            'spread': 'point_diff',
+            'total': 'total_score',
+        }[self.model.getModelType()]
+        leakage_cols = self.model.getLeakageColumns()
+
+        def splitXY(df):
+            df = df.drop(columns=[col for col in leakage_cols if col in df.columns])
+            return df.drop(target_col, axis=1), df[target_col]
+
+        return (
+            splitXY(train_data),
+            splitXY(val_data),
+            splitXY(test_data),
+        )
     
     def retrainModel(self, training_data=None, tune_hyperparameters=True, n_trials=100):
         print("\n" + "="*80)
@@ -131,6 +155,12 @@ class ModelRetrainer:
         if training_data is None or training_data.empty:
             return False, {'reason': 'No training data available'}
         
+        # Normalize the date dtype before splitting: prepareAllSeasons mixes
+        # freshly-built datetime columns with cached CSV string columns, and a
+        # chronological order is the whole point of this split.
+        training_data = training_data.copy()
+        training_data['date'] = pd.to_datetime(training_data['date'], utc=True).dt.tz_localize(None)
+
         # Time-based split (NOTES.md A2): earliest games train, latest games test.
         # Never shuffle across seasons — that leaks the future into training.
         train_data, val_data, test_data = chronologicalSplit(
@@ -143,37 +173,9 @@ class ModelRetrainer:
         print(f"Val:   {val_data['date'].min()} -> {val_data['date'].max()}")
         print(f"Test:  {test_data['date'].min()} -> {test_data['date'].max()}")
         
-        if self.model.getModelType() == 'h2h':
-            leakage_cols = self.model.getLeakageColumns()
-
-            train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
-            val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
-            test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
-            
-            X_train, y_train = train_data.drop('home_won', axis=1), train_data['home_won']
-            X_val, y_val = val_data.drop('home_won', axis=1), val_data['home_won']
-            X_test, y_test = test_data.drop('home_won', axis=1), test_data['home_won']
-        elif self.model.getModelType() == 'spread':
-            leakage_cols = self.model.getLeakageColumns()
-
-            train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
-            val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
-            test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
-            
-            X_train, y_train = train_data.drop('point_diff', axis=1), train_data['point_diff']
-            X_val, y_val = val_data.drop('point_diff', axis=1), val_data['point_diff']
-            X_test, y_test = test_data.drop('point_diff', axis=1), test_data['point_diff']
-        elif self.model.getModelType() == 'total':
-            leakage_cols = self.model.getLeakageColumns()
-
-            train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
-            val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
-            test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
-
-            # Separate features and target
-            X_train, y_train = train_data.drop('total_score', axis=1), train_data['total_score']
-            X_val, y_val = val_data.drop('total_score', axis=1), val_data['total_score']
-            X_test, y_test = test_data.drop('total_score', axis=1), test_data['total_score']
+        (X_train, y_train), (X_val, y_val), (X_test, y_test) = self.splitFeaturesAndTarget(
+            train_data, val_data, test_data
+        )
         
         
         print(f"\nTraining set: {len(X_train)} games")

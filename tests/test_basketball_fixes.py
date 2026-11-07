@@ -196,3 +196,62 @@ print('ok')
 def test_cover_probability_and_devig_math(sport):
     result = run_in_basketball(COVER_PROB_CHECK)
     assert result.returncode == 0, f"C1/C2 regression failed:\n{result.stderr}"
+
+
+# ---------------------------------------------------------------------------
+# A2 regression: no basketball training path may shuffle rows across dates.
+# ---------------------------------------------------------------------------
+
+TRAINING_ENTRYPOINTS = [
+    "initial_h2h_setup.py",
+    "initial_spread_setup.py",
+    "initial_total_setup.py",
+    "model/model_retrainer.py",
+]
+
+
+def test_basketball_training_paths_split_chronologically():
+    for rel in TRAINING_ENTRYPOINTS:
+        src = (ROOT / "basketball" / rel).read_text(encoding="utf-8")
+        assert "train_test_split" not in src, f"{rel} still uses a random split"
+        assert "chronologicalSplit" in src, f"{rel} does not use chronologicalSplit"
+
+
+SPLIT_FEATURES_CHECK = """
+import pandas as pd
+from model.model_retrainer import ModelRetrainer
+from model.model_h2h import BasketballH2HModel
+from model.model_spread import BasketballSpreadModel
+from model.model_total import BasketballTotalModel
+
+cases = [
+    (BasketballH2HModel(), 'home_won'),
+    (BasketballSpreadModel(), 'point_diff'),
+    (BasketballTotalModel(), 'total_score'),
+]
+
+for model, target in cases:
+    retrainer = ModelRetrainer.__new__(ModelRetrainer)  # skip data fetching __init__
+    retrainer.model = model
+    leak_col = next(c for c in model.getLeakageColumns() if c not in ('date', target))
+    frames = [
+        pd.DataFrame({
+            'date': pd.to_datetime(['2025-01-01']),
+            'feat': [1.0],
+            target: [0],
+            leak_col: [1],
+        })
+        for _ in range(3)
+    ]
+    (X_train, y_train), (X_val, y_val), (X_test, y_test) = retrainer.splitFeaturesAndTarget(*frames)
+    for X in (X_train, X_val, X_test):
+        assert list(X.columns) == ['feat'], f"{model.getModelType()}: {list(X.columns)}"
+    assert y_train.tolist() == [0] and y_val.tolist() == [0] and y_test.tolist() == [0]
+print('ok')
+"""
+
+
+@pytest.mark.parametrize("sport", ["basketball"])
+def test_retrainer_splits_features_and_target_consistently(sport):
+    result = run_in_basketball(SPLIT_FEATURES_CHECK)
+    assert result.returncode == 0, f"splitFeaturesAndTarget regression failed:\n{result.stderr}"

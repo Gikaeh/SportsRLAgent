@@ -1,7 +1,9 @@
+import pandas as pd
+
 from data_pipeline.basketball_data import BasketballData
 from data_pipeline.prepare_data import NBATrainingDataPreparer
 from model.model_spread import BasketballSpreadModel
-from sklearn.model_selection import train_test_split
+from shared.splitting import chronologicalSplit
 
 basketball_data = BasketballData()
 basketball_data.getAllSeasonData()
@@ -13,8 +15,16 @@ training_data = preparer.prepareAllSeasons()
 
 basketball_model = BasketballSpreadModel()
 
-train_data, test_data = train_test_split(training_data, test_size=0.4, random_state=42)
-val_data, test_data = train_test_split(test_data, test_size=0.5, random_state=42)
+# Chronological split (NOTES.md A2): earliest games train, then validation,
+# latest games test. Random shuffling leaks future games into training.
+training_data['date'] = pd.to_datetime(training_data['date'], utc=True).dt.tz_localize(None)
+train_data, val_data, test_data = chronologicalSplit(
+    training_data, date_col='date', test_frac=0.2, val_frac_of_test=0.5
+)
+
+print(f"Train: {train_data['date'].min().date()} -> {train_data['date'].max().date()}")
+print(f"Val:   {val_data['date'].min().date()} -> {val_data['date'].max().date()}")
+print(f"Test:  {test_data['date'].min().date()} -> {test_data['date'].max().date()}")
 
 # Drop leakage columns (post-game data, identifiers, and season)
 # Season is dropped to prevent data leakage - model should learn patterns, not season-specific trends

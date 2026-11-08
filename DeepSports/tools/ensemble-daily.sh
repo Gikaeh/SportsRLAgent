@@ -13,22 +13,42 @@ ts() { date '+%Y-%m-%d %H:%M:%S'; }
 AGENTS="${ENSEMBLE_AGENTS:-10}"
 DAYS="${ENSEMBLE_DAYS:-1}"
 
+# Under launchd, macOS only lets uv's Python touch the external drive: bash globs, cp, rm and the
+# system python3 get "Operation not permitted" there. So every file operation on $RUN goes through
+# $PY (DECISIONS 2026-11-07). It's also Python 3.12; the system python3 is 3.9.
+PY="uv run python"
+# copy_matching <glob> <dest dir>: copies the matches, prints how many there were.
+copy_matching() {
+  $PY -c '
+import glob, os, shutil, sys
+files = glob.glob(sys.argv[1])
+for f in files:
+    shutil.copyfile(f, os.path.join(sys.argv[2], os.path.basename(f)))
+print(len(files))' "$1" "$2"
+}
+
 echo "=== $(ts) ensemble vote start (agents $AGENTS, days $DAYS)"
 out=$(uv run deepsports ensemble-bets context --agents "$AGENTS" --days "$DAYS") || {
   echo "$(ts) ensemble context failed"; exit 1; }
-RUN=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["run"])' <<<"$out")
-GAMES=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["games"])' <<<"$out")
+RUN=$($PY -c 'import json,sys; print(json.load(sys.stdin)["run"])' <<<"$out")
+GAMES=$($PY -c 'import json,sys; print(json.load(sys.stdin)["games"])' <<<"$out")
 echo "$(ts) run $RUN, $GAMES bettable games"
 if [ "$GAMES" -eq 0 ]; then
   echo "$(ts) no bettable games; skipping the vote"
-  rm -rf "$RUN"
+  $PY -c 'import shutil,sys; shutil.rmtree(sys.argv[1])' "$RUN"
   exit 0
 fi
 
 # Headless Claude works on a copy inside the repo (its sandbox is unreliable on the external drive).
 WORK="$REPO/.sync/ensemble"
 rm -rf "$WORK" && mkdir -p "$WORK"
-cp "$RUN"/context-*.md "$WORK"/
+copied=$(copy_matching "$RUN/context-*.md" "$WORK")
+if [ "${copied:-0}" -ne "$AGENTS" ]; then
+  # Don't launch bettors with nothing to read.
+  echo "$(ts) copied ${copied:-0} of $AGENTS context files; skipping the vote"
+  $NOTIFY --kind blocked "DeepSports ensemble vote skipped: copied ${copied:-0} of $AGENTS context files. See ~/Library/Logs/DeepSports/sync.log" || true
+  exit 1
+fi
 
 # Sonnet coordinates (it only launches bettors and saves replies); bettors are Sonnet too.
 claude -p "/ensemble-betting prefetched $WORK $AGENTS" --model sonnet \
@@ -36,19 +56,19 @@ claude -p "/ensemble-betting prefetched $WORK $AGENTS" --model sonnet \
 status=$?
 echo "$(ts) claude exit $status; $(ls "$WORK"/picks-*.json 2>/dev/null | wc -l | tr -d ' ') of $AGENTS replies"
 
-cp "$WORK"/picks-*.json "$RUN"/ 2>/dev/null || true
+copy_matching "$WORK/picks-*.json" "$RUN" >/dev/null || echo "$(ts) couldn't copy picks to $RUN"
 if ! tally=$(uv run deepsports ensemble-bets tally "$RUN"); then
   echo "$(ts) tally failed"
   $NOTIFY --kind blocked "DeepSports ensemble vote: tally failed. See ~/Library/Logs/DeepSports/sync.log" || true
   exit 1
 fi
-record=$(uv run deepsports ensemble-bets grade | python3 -c '
+record=$(uv run deepsports ensemble-bets grade | $PY -c '
 import json, sys
 g = json.load(sys.stdin)["majority"]
-print(f"Majority record so far: {g[\"record\"]} (W-L-P), {g[\"units_profit\"]:+} units" if g["bets"] else "No graded majority picks yet.")')
+print("Majority record so far: {} (W-L-P), {:+} units".format(g["record"], g["units_profit"]) if g["bets"] else "No graded majority picks yet.")')
 
 # Discord: the majority section only (the full tally stays in the run dir).
-summary=$(python3 - "$RUN/tally.md" <<'PY'
+summary=$($PY - "$RUN/tally.md" <<'PY'
 import sys
 lines = open(sys.argv[1]).read().splitlines()
 keep, on = [], False

@@ -1,0 +1,4677 @@
+{
+ "leagues": [
+  {
+   "id": "41",
+   "name": "NCAA Men's Basketball",
+   "abbreviation": "NCAAM",
+   "midsizeName": "NCAAM Basketball",
+   "slug": "mens-college-basketball",
+   "season": {
+    "year": 2027,
+    "startDate": "2026-07-13T07:00Z",
+    "endDate": "2027-04-07T06:59Z",
+    "displayName": "2026-27",
+    "type": {
+     "id": "2",
+     "type": 2,
+     "name": "Regular Season",
+     "abbreviation": "reg"
+    }
+   },
+   "calendarType": "day",
+   "calendarIsWhitelist": true,
+   "calendarStartDate": "2026-07-13T07:00Z",
+   "calendarEndDate": "2027-04-07T06:59Z"
+  }
+ ],
+ "groups": [
+  "50"
+ ],
+ "events": [
+  {
+   "id": "401920422",
+   "date": "2026-11-04T00:30Z",
+   "name": "Drexel Dragons at Virginia Cavaliers",
+   "shortName": "DREX @ UVA",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920422",
+     "date": "2026-11-04T00:30Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "1927",
+      "fullName": "John Paul Jones Arena",
+      "address": {
+       "city": "Charlottesville",
+       "state": "VA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "258",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "258",
+        "location": "Virginia",
+        "name": "Cavaliers",
+        "abbreviation": "UVA",
+        "displayName": "Virginia Cavaliers",
+        "shortDisplayName": "Virginia",
+        "isActive": true,
+        "venue": {
+         "id": "1927"
+        },
+        "conferenceId": "2"
+       },
+       "score": "68",
+       "linescores": [
+        {
+         "value": 51.0,
+         "displayValue": "51",
+         "period": 1
+        },
+        {
+         "value": 17.0,
+         "displayValue": "17",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2182",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2182",
+        "location": "Drexel",
+        "name": "Dragons",
+        "abbreviation": "DREX",
+        "displayName": "Drexel Dragons",
+        "shortDisplayName": "Drexel",
+        "isActive": true,
+        "venue": {
+         "id": "1903"
+        },
+        "conferenceId": "10"
+       },
+       "score": "46",
+       "linescores": [
+        {
+         "value": 27.0,
+         "displayValue": "27",
+         "period": 1
+        },
+        {
+         "value": 19.0,
+         "displayValue": "19",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 432.0,
+      "displayClock": "7:12",
+      "period": 2,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "7:12 - 2nd Half",
+       "shortDetail": "7:12 - 2nd"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ACC Network"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T00:30Z"
+    }
+   ],
+   "status": {
+    "clock": 432.0,
+    "displayClock": "7:12",
+    "period": 2,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "7:12 - 2nd Half",
+     "shortDetail": "7:12 - 2nd"
+    }
+   }
+  },
+  {
+   "id": "401929372",
+   "date": "2026-11-04T01:00Z",
+   "name": "Arkansas-Pine Bluff Golden Lions at Arkansas Razorbacks",
+   "shortName": "UAPB @ ARK",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401929372",
+     "date": "2026-11-04T01:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "2142",
+      "fullName": "Bud Walton Arena",
+      "address": {
+       "city": "Fayetteville",
+       "state": "AR"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "8",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "8",
+        "location": "Arkansas",
+        "name": "Razorbacks",
+        "abbreviation": "ARK",
+        "displayName": "Arkansas Razorbacks",
+        "shortDisplayName": "Arkansas",
+        "isActive": true,
+        "venue": {
+         "id": "2142"
+        },
+        "conferenceId": "23"
+       },
+       "score": "51",
+       "linescores": [
+        {
+         "value": 47.0,
+         "displayValue": "47",
+         "period": 1
+        },
+        {
+         "value": 4.0,
+         "displayValue": "4",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2029",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2029",
+        "location": "Arkansas-Pine Bluff",
+        "name": "Golden Lions",
+        "abbreviation": "UAPB",
+        "displayName": "Arkansas-Pine Bluff Golden Lions",
+        "shortDisplayName": "AR-Pine Bluff",
+        "isActive": true,
+        "venue": {
+         "id": "2105"
+        },
+        "conferenceId": "26"
+       },
+       "score": "33",
+       "linescores": [
+        {
+         "value": 28.0,
+         "displayValue": "28",
+         "period": 1
+        },
+        {
+         "value": 5.0,
+         "displayValue": "5",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 1096.0,
+      "displayClock": "18:16",
+      "period": 2,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "18:16 - 2nd Half",
+       "shortDetail": "18:16 - 2nd"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "SECN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T01:00Z"
+    }
+   ],
+   "status": {
+    "clock": 1096.0,
+    "displayClock": "18:16",
+    "period": 2,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "18:16 - 2nd Half",
+     "shortDetail": "18:16 - 2nd"
+    }
+   }
+  },
+  {
+   "id": "401906757",
+   "date": "2026-11-04T00:30Z",
+   "name": "Sam Houston Bearkats at Alabama Crimson Tide",
+   "shortName": "SHSU @ ALA",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401906757",
+     "date": "2026-11-04T00:30Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "1925",
+      "fullName": "Coleman Coliseum",
+      "address": {
+       "city": "Tuscaloosa",
+       "state": "AL"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "333",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "333",
+        "location": "Alabama",
+        "name": "Crimson Tide",
+        "abbreviation": "ALA",
+        "displayName": "Alabama Crimson Tide",
+        "shortDisplayName": "Alabama",
+        "isActive": true,
+        "venue": {
+         "id": "1925"
+        },
+        "conferenceId": "23"
+       },
+       "score": "92",
+       "linescores": [
+        {
+         "value": 40.0,
+         "displayValue": "40",
+         "period": 1
+        },
+        {
+         "value": 52.0,
+         "displayValue": "52",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2534",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2534",
+        "location": "Sam Houston",
+        "name": "Bearkats",
+        "abbreviation": "SHSU",
+        "displayName": "Sam Houston Bearkats",
+        "shortDisplayName": "Sam Houston",
+        "isActive": true,
+        "venue": {
+         "id": "4585"
+        },
+        "conferenceId": "11"
+       },
+       "score": "67",
+       "linescores": [
+        {
+         "value": 29.0,
+         "displayValue": "29",
+         "period": 1
+        },
+        {
+         "value": 35.0,
+         "displayValue": "35",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 126.0,
+      "displayClock": "2:06",
+      "period": 2,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "2:06 - 2nd Half",
+       "shortDetail": "2:06 - 2nd"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "SECN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T00:30Z"
+    }
+   ],
+   "weather": {
+    "displayValue": "12",
+    "temperature": 70,
+    "highTemperature": 70,
+    "conditionId": "Light rain",
+    "link": {
+     "language": "en-US",
+     "rel": [
+      "35401"
+     ],
+     "href": "http://www.accuweather.com/en/us/stillman-stadium-al/35401/current-weather/209259_poi?lang=en-us",
+     "text": "Weather",
+     "shortText": "Weather",
+     "isExternal": true,
+     "isPremium": false
+    }
+   },
+   "status": {
+    "clock": 126.0,
+    "displayClock": "2:06",
+    "period": 2,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "2:06 - 2nd Half",
+     "shortDetail": "2:06 - 2nd"
+    }
+   }
+  },
+  {
+   "id": "401920376",
+   "date": "2026-11-04T00:00Z",
+   "name": "Coppin State Eagles at Virginia Tech Hokies",
+   "shortName": "COPP @ VT",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920376",
+     "date": "2026-11-04T00:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "2119",
+      "fullName": "Cassell Coliseum",
+      "address": {
+       "city": "Blacksburg",
+       "state": "VA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "259",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "winner": true,
+       "team": {
+        "id": "259",
+        "location": "Virginia Tech",
+        "name": "Hokies",
+        "abbreviation": "VT",
+        "displayName": "Virginia Tech Hokies",
+        "shortDisplayName": "Virginia Tech",
+        "isActive": true,
+        "venue": {
+         "id": "2119"
+        },
+        "conferenceId": "2"
+       },
+       "score": "88",
+       "linescores": [
+        {
+         "value": 45.0,
+         "displayValue": "45",
+         "period": 1
+        },
+        {
+         "value": 43.0,
+         "displayValue": "43",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2154",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "winner": false,
+       "team": {
+        "id": "2154",
+        "location": "Coppin State",
+        "name": "Eagles",
+        "abbreviation": "COPP",
+        "displayName": "Coppin State Eagles",
+        "shortDisplayName": "Coppin St",
+        "isActive": true,
+        "venue": {
+         "id": "2164"
+        },
+        "conferenceId": "16"
+       },
+       "score": "54",
+       "linescores": [
+        {
+         "value": 27.0,
+         "displayValue": "27",
+         "period": 1
+        },
+        {
+         "value": 27.0,
+         "displayValue": "27",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 2,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ACCNX"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T00:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 2,
+    "type": {
+     "id": "3",
+     "name": "STATUS_FINAL",
+     "state": "post",
+     "completed": true,
+     "description": "Final",
+     "detail": "Final",
+     "shortDetail": "Final"
+    }
+   }
+  },
+  {
+   "id": "401920304",
+   "date": "2026-11-04T00:00Z",
+   "name": "Hampton Pirates at Georgia Tech Yellow Jackets",
+   "shortName": "HAMP @ GT",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920304",
+     "date": "2026-11-04T00:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "2206",
+      "fullName": "McCamish Pavilion",
+      "address": {
+       "city": "Atlanta",
+       "state": "GA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "59",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "winner": true,
+       "team": {
+        "id": "59",
+        "location": "Georgia Tech",
+        "name": "Yellow Jackets",
+        "abbreviation": "GT",
+        "displayName": "Georgia Tech Yellow Jackets",
+        "shortDisplayName": "Georgia Tech",
+        "isActive": true,
+        "venue": {
+         "id": "2206"
+        },
+        "conferenceId": "2"
+       },
+       "score": "75",
+       "linescores": [
+        {
+         "value": 42.0,
+         "displayValue": "42",
+         "period": 1
+        },
+        {
+         "value": 33.0,
+         "displayValue": "33",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2261",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "winner": false,
+       "team": {
+        "id": "2261",
+        "location": "Hampton",
+        "name": "Pirates",
+        "abbreviation": "HAMP",
+        "displayName": "Hampton Pirates",
+        "shortDisplayName": "Hampton",
+        "isActive": true,
+        "venue": {
+         "id": "2017"
+        },
+        "conferenceId": "10"
+       },
+       "score": "55",
+       "linescores": [
+        {
+         "value": 15.0,
+         "displayValue": "15",
+         "period": 1
+        },
+        {
+         "value": 40.0,
+         "displayValue": "40",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 2,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ACCNX"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T00:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 2,
+    "type": {
+     "id": "3",
+     "name": "STATUS_FINAL",
+     "state": "post",
+     "completed": true,
+     "description": "Final",
+     "detail": "Final",
+     "shortDetail": "Final"
+    }
+   }
+  },
+  {
+   "id": "401928621",
+   "date": "2026-11-04T01:00Z",
+   "name": "Lincoln (MO) Blue Tigers at Missouri State Bears",
+   "shortName": "LNMO @ MOST",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401928621",
+     "date": "2026-11-04T01:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "1966",
+      "fullName": "Great Southern Bank Arena",
+      "address": {
+       "city": "Springfield",
+       "state": "MO"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2623",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2623",
+        "location": "Missouri State",
+        "name": "Bears",
+        "abbreviation": "MOST",
+        "displayName": "Missouri State Bears",
+        "shortDisplayName": "Missouri St",
+        "isActive": true,
+        "venue": {
+         "id": "1966"
+        },
+        "conferenceId": "11"
+       },
+       "score": "71",
+       "linescores": [
+        {
+         "value": 49.0,
+         "displayValue": "49",
+         "period": 1
+        },
+        {
+         "value": 19.0,
+         "displayValue": "19",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2876",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2876",
+        "location": "Lincoln (MO)",
+        "name": "Blue Tigers",
+        "abbreviation": "LNMO",
+        "displayName": "Lincoln (MO) Blue Tigers",
+        "shortDisplayName": "Lincoln (MO)",
+        "isActive": false
+       },
+       "score": "40",
+       "linescores": [
+        {
+         "value": 26.0,
+         "displayValue": "26",
+         "period": 1
+        },
+        {
+         "value": 14.0,
+         "displayValue": "14",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 788.0,
+      "displayClock": "13:08",
+      "period": 2,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "13:08 - 2nd Half",
+       "shortDetail": "13:08 - 2nd"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T01:00Z"
+    }
+   ],
+   "status": {
+    "clock": 788.0,
+    "displayClock": "13:08",
+    "period": 2,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "13:08 - 2nd Half",
+     "shortDetail": "13:08 - 2nd"
+    }
+   }
+  },
+  {
+   "id": "401927385",
+   "date": "2026-11-04T01:00Z",
+   "name": "Cornell (IA) Rams at Northern Iowa Panthers",
+   "shortName": "CNIA @ UNI",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401927385",
+     "date": "2026-11-04T01:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "1948",
+      "fullName": "McLeod Center",
+      "address": {
+       "city": "Cedar Falls",
+       "state": "IA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2460",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2460",
+        "location": "Northern Iowa",
+        "name": "Panthers",
+        "abbreviation": "UNI",
+        "displayName": "Northern Iowa Panthers",
+        "shortDisplayName": "Northern Iowa",
+        "isActive": true,
+        "venue": {
+         "id": "1948"
+        },
+        "conferenceId": "18"
+       },
+       "score": "57",
+       "linescores": [
+        {
+         "value": 45.0,
+         "displayValue": "45",
+         "period": 1
+        },
+        {
+         "value": 12.0,
+         "displayValue": "12",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2155",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2155",
+        "location": "Cornell (IA)",
+        "name": "Rams",
+        "abbreviation": "CNIA",
+        "displayName": "Cornell (IA) Rams",
+        "shortDisplayName": "Cornell (IA)",
+        "isActive": false
+       },
+       "score": "47",
+       "linescores": [
+        {
+         "value": 42.0,
+         "displayValue": "42",
+         "period": 1
+        },
+        {
+         "value": 5.0,
+         "displayValue": "5",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 925.0,
+      "displayClock": "15:25",
+      "period": 2,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "15:25 - 2nd Half",
+       "shortDetail": "15:25 - 2nd"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T01:00Z"
+    }
+   ],
+   "status": {
+    "clock": 925.0,
+    "displayClock": "15:25",
+    "period": 2,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "15:25 - 2nd Half",
+     "shortDetail": "15:25 - 2nd"
+    }
+   }
+  },
+  {
+   "id": "401924950",
+   "date": "2026-11-04T01:00Z",
+   "name": "Louisiana Christian Wildcats at Houston Christian Huskies",
+   "shortName": "LCHR @ HCU",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401924950",
+     "date": "2026-11-04T01:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "2012",
+      "fullName": "Sharp Gymnasium",
+      "address": {
+       "city": "Houston",
+       "state": "TX"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2277",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2277",
+        "location": "Houston Christian",
+        "name": "Huskies",
+        "abbreviation": "HCU",
+        "displayName": "Houston Christian Huskies",
+        "shortDisplayName": "Hou Christian",
+        "isActive": true,
+        "venue": {
+         "id": "2012"
+        },
+        "conferenceId": "25"
+       },
+       "score": "78",
+       "linescores": [
+        {
+         "value": 58.0,
+         "displayValue": "58",
+         "period": 1
+        },
+        {
+         "value": 20.0,
+         "displayValue": "20",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2347",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2347",
+        "location": "Louisiana Christian",
+        "name": "Wildcats",
+        "abbreviation": "LCHR",
+        "displayName": "Louisiana Christian Wildcats",
+        "shortDisplayName": "LA Christian",
+        "isActive": false
+       },
+       "score": "30",
+       "linescores": [
+        {
+         "value": 21.0,
+         "displayValue": "21",
+         "period": 1
+        },
+        {
+         "value": 9.0,
+         "displayValue": "9",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 669.0,
+      "displayClock": "11:09",
+      "period": 2,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "11:09 - 2nd Half",
+       "shortDetail": "11:09 - 2nd"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T01:00Z"
+    }
+   ],
+   "status": {
+    "clock": 669.0,
+    "displayClock": "11:09",
+    "period": 2,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "11:09 - 2nd Half",
+     "shortDetail": "11:09 - 2nd"
+    }
+   }
+  },
+  {
+   "id": "401921808",
+   "date": "2026-11-04T01:00Z",
+   "name": "LSU New Orleans Privateers at LSU Tigers",
+   "shortName": "NOLA @ LSU",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401921808",
+     "date": "2026-11-04T01:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "557",
+      "fullName": "Pete Maravich Assembly Center",
+      "address": {
+       "city": "Baton Rouge",
+       "state": "LA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "99",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "99",
+        "location": "LSU",
+        "name": "Tigers",
+        "abbreviation": "LSU",
+        "displayName": "LSU Tigers",
+        "shortDisplayName": "LSU",
+        "isActive": true,
+        "venue": {
+         "id": "557"
+        },
+        "conferenceId": "23"
+       },
+       "score": "68",
+       "linescores": [
+        {
+         "value": 53.0,
+         "displayValue": "53",
+         "period": 1
+        },
+        {
+         "value": 15.0,
+         "displayValue": "15",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2443",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2443",
+        "location": "LSU New Orleans",
+        "name": "Privateers",
+        "abbreviation": "NOLA",
+        "displayName": "LSU New Orleans Privateers",
+        "shortDisplayName": "LSU N Orleans",
+        "isActive": true,
+        "venue": {
+         "id": "1926"
+        },
+        "conferenceId": "25"
+       },
+       "score": "18",
+       "linescores": [
+        {
+         "value": 17.0,
+         "displayValue": "17",
+         "period": 1
+        },
+        {
+         "value": 1.0,
+         "displayValue": "1",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 840.0,
+      "displayClock": "14:00",
+      "period": 2,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "14:00 - 2nd Half",
+       "shortDetail": "14:00 - 2nd"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "SECN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T01:00Z"
+    }
+   ],
+   "status": {
+    "clock": 840.0,
+    "displayClock": "14:00",
+    "period": 2,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "14:00 - 2nd Half",
+     "shortDetail": "14:00 - 2nd"
+    }
+   }
+  },
+  {
+   "id": "401921165",
+   "date": "2026-11-04T01:00Z",
+   "name": "Cleveland State Vikings at Missouri Tigers",
+   "shortName": "CLE @ MIZ",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401921165",
+     "date": "2026-11-04T01:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "2071",
+      "fullName": "Mizzou Arena",
+      "address": {
+       "city": "Columbia",
+       "state": "MO"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "142",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "142",
+        "location": "Missouri",
+        "name": "Tigers",
+        "abbreviation": "MIZ",
+        "displayName": "Missouri Tigers",
+        "shortDisplayName": "Missouri",
+        "isActive": true,
+        "venue": {
+         "id": "2071"
+        },
+        "conferenceId": "23"
+       },
+       "score": "77",
+       "linescores": [
+        {
+         "value": 56.0,
+         "displayValue": "56",
+         "period": 1
+        },
+        {
+         "value": 21.0,
+         "displayValue": "21",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "325",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "325",
+        "location": "Cleveland State",
+        "name": "Vikings",
+        "abbreviation": "CLE",
+        "displayName": "Cleveland State Vikings",
+        "shortDisplayName": "Cleveland St",
+        "isActive": true,
+        "venue": {
+         "id": "2143"
+        },
+        "conferenceId": "45"
+       },
+       "score": "32",
+       "linescores": [
+        {
+         "value": 18.0,
+         "displayValue": "18",
+         "period": 1
+        },
+        {
+         "value": 14.0,
+         "displayValue": "14",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 715.0,
+      "displayClock": "11:55",
+      "period": 2,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "11:55 - 2nd Half",
+       "shortDetail": "11:55 - 2nd"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "SECN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T01:00Z"
+    }
+   ],
+   "status": {
+    "clock": 715.0,
+    "displayClock": "11:55",
+    "period": 2,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "11:55 - 2nd Half",
+     "shortDetail": "11:55 - 2nd"
+    }
+   }
+  },
+  {
+   "id": "401920806",
+   "date": "2026-11-04T01:00Z",
+   "name": "Alabama State Hornets at Texas A&M Aggies",
+   "shortName": "ALST @ TA&M",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920806",
+     "date": "2026-11-04T01:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "2114",
+      "fullName": "Reed Arena",
+      "address": {
+       "city": "College Station",
+       "state": "TX"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "245",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "245",
+        "location": "Texas A&M",
+        "name": "Aggies",
+        "abbreviation": "TA&M",
+        "displayName": "Texas A&M Aggies",
+        "shortDisplayName": "Texas A&M",
+        "isActive": true,
+        "venue": {
+         "id": "2114"
+        },
+        "conferenceId": "23"
+       },
+       "score": "50",
+       "linescores": [
+        {
+         "value": 44.0,
+         "displayValue": "44",
+         "period": 1
+        },
+        {
+         "value": 6.0,
+         "displayValue": "6",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2011",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2011",
+        "location": "Alabama State",
+        "name": "Hornets",
+        "abbreviation": "ALST",
+        "displayName": "Alabama State Hornets",
+        "shortDisplayName": "Alabama St",
+        "isActive": true,
+        "venue": {
+         "id": "2204"
+        },
+        "conferenceId": "26"
+       },
+       "score": "34",
+       "linescores": [
+        {
+         "value": 29.0,
+         "displayValue": "29",
+         "period": 1
+        },
+        {
+         "value": 5.0,
+         "displayValue": "5",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 1046.0,
+      "displayClock": "17:26",
+      "period": 2,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "17:26 - 2nd Half",
+       "shortDetail": "17:26 - 2nd"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "SECN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T01:00Z"
+    }
+   ],
+   "status": {
+    "clock": 1046.0,
+    "displayClock": "17:26",
+    "period": 2,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "17:26 - 2nd Half",
+     "shortDetail": "17:26 - 2nd"
+    }
+   }
+  },
+  {
+   "id": "401920702",
+   "date": "2026-11-04T01:00Z",
+   "name": "Lipscomb Bisons at Iowa Hawkeyes",
+   "shortName": "LIP @ IOWA",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920702",
+     "date": "2026-11-04T01:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "363",
+      "fullName": "Carver-Hawkeye Arena",
+      "address": {
+       "city": "Iowa City",
+       "state": "IA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2294",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2294",
+        "location": "Iowa",
+        "name": "Hawkeyes",
+        "abbreviation": "IOWA",
+        "displayName": "Iowa Hawkeyes",
+        "shortDisplayName": "Iowa",
+        "isActive": true,
+        "venue": {
+         "id": "363"
+        },
+        "conferenceId": "7"
+       },
+       "score": "41",
+       "linescores": [
+        {
+         "value": 38.0,
+         "displayValue": "38",
+         "period": 1
+        },
+        {
+         "value": 3.0,
+         "displayValue": "3",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "288",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "288",
+        "location": "Lipscomb",
+        "name": "Bisons",
+        "abbreviation": "LIP",
+        "displayName": "Lipscomb Bisons",
+        "shortDisplayName": "Lipscomb",
+        "isActive": true,
+        "venue": {
+         "id": "2038"
+        },
+        "conferenceId": "46"
+       },
+       "score": "31",
+       "linescores": [
+        {
+         "value": 29.0,
+         "displayValue": "29",
+         "period": 1
+        },
+        {
+         "value": 2.0,
+         "displayValue": "2",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 954.0,
+      "displayClock": "15:54",
+      "period": 2,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "15:54 - 2nd Half",
+       "shortDetail": "15:54 - 2nd"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "BTN"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T01:00Z"
+    }
+   ],
+   "status": {
+    "clock": 954.0,
+    "displayClock": "15:54",
+    "period": 2,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "15:54 - 2nd Half",
+     "shortDetail": "15:54 - 2nd"
+    }
+   }
+  },
+  {
+   "id": "401909796",
+   "date": "2026-11-04T01:00Z",
+   "name": "South Dakota State Jackrabbits at Kansas State Wildcats",
+   "shortName": "SDST @ KSU",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401909796",
+     "date": "2026-11-04T01:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "2131",
+      "fullName": "Bramlage Coliseum",
+      "address": {
+       "city": "Manhattan",
+       "state": "KS"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2306",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2306",
+        "location": "Kansas State",
+        "name": "Wildcats",
+        "abbreviation": "KSU",
+        "displayName": "Kansas State Wildcats",
+        "shortDisplayName": "Kansas St",
+        "isActive": true,
+        "venue": {
+         "id": "2131"
+        },
+        "conferenceId": "8"
+       },
+       "score": "48",
+       "linescores": [
+        {
+         "value": 28.0,
+         "displayValue": "28",
+         "period": 1
+        },
+        {
+         "value": 20.0,
+         "displayValue": "20",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2571",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2571",
+        "location": "South Dakota State",
+        "name": "Jackrabbits",
+        "abbreviation": "SDST",
+        "displayName": "South Dakota State Jackrabbits",
+        "shortDisplayName": "S Dakota St",
+        "isActive": true,
+        "venue": {
+         "id": "10796"
+        },
+        "conferenceId": "49"
+       },
+       "score": "43",
+       "linescores": [
+        {
+         "value": 35.0,
+         "displayValue": "35",
+         "period": 1
+        },
+        {
+         "value": 8.0,
+         "displayValue": "8",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 699.0,
+      "displayClock": "11:39",
+      "period": 2,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "11:39 - 2nd Half",
+       "shortDetail": "11:39 - 2nd"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T01:00Z"
+    }
+   ],
+   "status": {
+    "clock": 699.0,
+    "displayClock": "11:39",
+    "period": 2,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "11:39 - 2nd Half",
+     "shortDetail": "11:39 - 2nd"
+    }
+   }
+  },
+  {
+   "id": "401928787",
+   "date": "2026-11-04T01:30Z",
+   "name": "Western New Mexico Mustangs at New Mexico State Aggies",
+   "shortName": "WNMU @ NMSU",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401928787",
+     "date": "2026-11-04T01:30Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "1937",
+      "fullName": "Pan American Center",
+      "address": {
+       "city": "Las Cruces",
+       "state": "NM"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "166",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "166",
+        "location": "New Mexico State",
+        "name": "Aggies",
+        "abbreviation": "NMSU",
+        "displayName": "New Mexico State Aggies",
+        "shortDisplayName": "New Mexico St",
+        "isActive": true,
+        "venue": {
+         "id": "1937"
+        },
+        "conferenceId": "11"
+       },
+       "score": "26",
+       "linescores": [
+        {
+         "value": 26.0,
+         "displayValue": "26",
+         "period": 1
+        }
+       ]
+      },
+      {
+       "id": "2703",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2703",
+        "location": "Western New Mexico",
+        "name": "Mustangs",
+        "abbreviation": "WNMU",
+        "displayName": "Western New Mexico Mustangs",
+        "shortDisplayName": "Western NM",
+        "isActive": false
+       },
+       "score": "31",
+       "linescores": [
+        {
+         "value": 31.0,
+         "displayValue": "31",
+         "period": 1
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 1,
+      "type": {
+       "id": "23",
+       "name": "STATUS_HALFTIME",
+       "state": "in",
+       "completed": false,
+       "description": "Halftime",
+       "detail": "Halftime",
+       "shortDetail": "Halftime"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T01:30Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 1,
+    "type": {
+     "id": "23",
+     "name": "STATUS_HALFTIME",
+     "state": "in",
+     "completed": false,
+     "description": "Halftime",
+     "detail": "Halftime",
+     "shortDetail": "Halftime"
+    }
+   }
+  },
+  {
+   "id": "401924920",
+   "date": "2026-11-04T01:30Z",
+   "name": "Regis University REGIS UNIVERSITY at Wyoming Cowboys",
+   "shortName": "REGU @ WYO",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401924920",
+     "date": "2026-11-04T01:30Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "2053",
+      "fullName": "Arena-Auditorium",
+      "address": {
+       "city": "Laramie",
+       "state": "WY"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2751",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2751",
+        "location": "Wyoming",
+        "name": "Cowboys",
+        "abbreviation": "WYO",
+        "displayName": "Wyoming Cowboys",
+        "shortDisplayName": "Wyoming",
+        "isActive": true,
+        "venue": {
+         "id": "2053"
+        },
+        "conferenceId": "44"
+       },
+       "score": "37",
+       "linescores": [
+        {
+         "value": 37.0,
+         "displayValue": "37",
+         "period": 1
+        }
+       ]
+      },
+      {
+       "id": "2518",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2518",
+        "location": "Regis University",
+        "name": "REGIS UNIVERSITY",
+        "abbreviation": "REGU",
+        "displayName": "Regis University REGIS UNIVERSITY",
+        "shortDisplayName": "Regis U",
+        "isActive": false
+       },
+       "score": "22",
+       "linescores": [
+        {
+         "value": 22.0,
+         "displayValue": "22",
+         "period": 1
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 146.0,
+      "displayClock": "2:26",
+      "period": 1,
+      "type": {
+       "id": "2",
+       "name": "STATUS_IN_PROGRESS",
+       "state": "in",
+       "completed": false,
+       "description": "In Progress",
+       "detail": "2:26 - 1st Half",
+       "shortDetail": "2:26 - 1st"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "MW+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T01:30Z"
+    }
+   ],
+   "status": {
+    "clock": 146.0,
+    "displayClock": "2:26",
+    "period": 1,
+    "type": {
+     "id": "2",
+     "name": "STATUS_IN_PROGRESS",
+     "state": "in",
+     "completed": false,
+     "description": "In Progress",
+     "detail": "2:26 - 1st Half",
+     "shortDetail": "2:26 - 1st"
+    }
+   }
+  },
+  {
+   "id": "401906848",
+   "date": "2026-11-03T23:00Z",
+   "name": "Wofford Terriers at Tennessee Volunteers",
+   "shortName": "WOF @ TENN",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401906848",
+     "date": "2026-11-03T23:00Z",
+     "attendance": 18389,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "2044",
+      "fullName": "Food City Center",
+      "address": {
+       "city": "Knoxville",
+       "state": "TN"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2633",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "winner": true,
+       "team": {
+        "id": "2633",
+        "location": "Tennessee",
+        "name": "Volunteers",
+        "abbreviation": "TENN",
+        "displayName": "Tennessee Volunteers",
+        "shortDisplayName": "Tennessee",
+        "isActive": true,
+        "venue": {
+         "id": "2044"
+        },
+        "conferenceId": "23"
+       },
+       "score": "90",
+       "linescores": [
+        {
+         "value": 34.0,
+         "displayValue": "34",
+         "period": 1
+        },
+        {
+         "value": 56.0,
+         "displayValue": "56",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2747",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "winner": false,
+       "team": {
+        "id": "2747",
+        "location": "Wofford",
+        "name": "Terriers",
+        "abbreviation": "WOF",
+        "displayName": "Wofford Terriers",
+        "shortDisplayName": "Wofford",
+        "isActive": true,
+        "venue": {
+         "id": "5426"
+        },
+        "conferenceId": "24"
+       },
+       "score": "59",
+       "linescores": [
+        {
+         "value": 31.0,
+         "displayValue": "31",
+         "period": 1
+        },
+        {
+         "value": 28.0,
+         "displayValue": "28",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 2,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "SEC Network"
+       ]
+      }
+     ],
+     "startDate": "2026-11-03T23:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 2,
+    "type": {
+     "id": "3",
+     "name": "STATUS_FINAL",
+     "state": "post",
+     "completed": true,
+     "description": "Final",
+     "detail": "Final",
+     "shortDetail": "Final"
+    }
+   }
+  },
+  {
+   "id": "401921801",
+   "date": "2026-11-04T00:00Z",
+   "name": "Manhattan Jaspers at Kentucky Wildcats",
+   "shortName": "MAN @ UK",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401921801",
+     "date": "2026-11-04T00:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "251",
+      "fullName": "Rupp Arena",
+      "address": {
+       "city": "Lexington",
+       "state": "KY"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "96",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "winner": true,
+       "team": {
+        "id": "96",
+        "location": "Kentucky",
+        "name": "Wildcats",
+        "abbreviation": "UK",
+        "displayName": "Kentucky Wildcats",
+        "shortDisplayName": "Kentucky",
+        "isActive": true,
+        "venue": {
+         "id": "251"
+        },
+        "conferenceId": "23"
+       },
+       "score": "85",
+       "linescores": [
+        {
+         "value": 48.0,
+         "displayValue": "48",
+         "period": 1
+        },
+        {
+         "value": 37.0,
+         "displayValue": "37",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2363",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "winner": false,
+       "team": {
+        "id": "2363",
+        "location": "Manhattan",
+        "name": "Jaspers",
+        "abbreviation": "MAN",
+        "displayName": "Manhattan Jaspers",
+        "shortDisplayName": "Manhattan",
+        "isActive": true,
+        "venue": {
+         "id": "2062"
+        },
+        "conferenceId": "13"
+       },
+       "score": "57",
+       "linescores": [
+        {
+         "value": 22.0,
+         "displayValue": "22",
+         "period": 1
+        },
+        {
+         "value": 35.0,
+         "displayValue": "35",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 2,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "SECN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T00:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 2,
+    "type": {
+     "id": "3",
+     "name": "STATUS_FINAL",
+     "state": "post",
+     "completed": true,
+     "description": "Final",
+     "detail": "Final",
+     "shortDetail": "Final"
+    }
+   }
+  },
+  {
+   "id": "401926180",
+   "date": "2026-11-04T00:00Z",
+   "name": "Milligan Buffaloes at UNC Greensboro Spartans",
+   "shortName": "MILG @ UNCG",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401926180",
+     "date": "2026-11-04T00:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "349",
+      "fullName": "First Horizon Coliseum",
+      "address": {
+       "city": "Greensboro",
+       "state": "NC"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2430",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "winner": true,
+       "team": {
+        "id": "2430",
+        "location": "UNC Greensboro",
+        "name": "Spartans",
+        "abbreviation": "UNCG",
+        "displayName": "UNC Greensboro Spartans",
+        "shortDisplayName": "UNC Greensboro",
+        "isActive": true,
+        "venue": {
+         "id": "349"
+        },
+        "conferenceId": "24"
+       },
+       "score": "96",
+       "linescores": [
+        {
+         "value": 47.0,
+         "displayValue": "47",
+         "period": 1
+        },
+        {
+         "value": 49.0,
+         "displayValue": "49",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2397",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "winner": false,
+       "team": {
+        "id": "2397",
+        "location": "Milligan",
+        "name": "Buffaloes",
+        "abbreviation": "MILG",
+        "displayName": "Milligan Buffaloes",
+        "shortDisplayName": "Milligan",
+        "isActive": false
+       },
+       "score": "43",
+       "linescores": [
+        {
+         "value": 21.0,
+         "displayValue": "21",
+         "period": 1
+        },
+        {
+         "value": 22.0,
+         "displayValue": "22",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 2,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T00:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 2,
+    "type": {
+     "id": "3",
+     "name": "STATUS_FINAL",
+     "state": "post",
+     "completed": true,
+     "description": "Final",
+     "detail": "Final",
+     "shortDetail": "Final"
+    }
+   }
+  },
+  {
+   "id": "401925779",
+   "date": "2026-11-04T00:00Z",
+   "name": "Purdue Fort Wayne Mastodons at Duquesne Dukes",
+   "shortName": "PFW @ DUQ",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401925779",
+     "date": "2026-11-04T00:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "1958",
+      "fullName": "UPMC Cooper Fieldhouse",
+      "address": {
+       "city": "Pittsburgh",
+       "state": "PA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2184",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "winner": true,
+       "team": {
+        "id": "2184",
+        "location": "Duquesne",
+        "name": "Dukes",
+        "abbreviation": "DUQ",
+        "displayName": "Duquesne Dukes",
+        "shortDisplayName": "Duquesne",
+        "isActive": true,
+        "venue": {
+         "id": "1958"
+        },
+        "conferenceId": "3"
+       },
+       "score": "78",
+       "linescores": [
+        {
+         "value": 36.0,
+         "displayValue": "36",
+         "period": 1
+        },
+        {
+         "value": 42.0,
+         "displayValue": "42",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2870",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "winner": false,
+       "team": {
+        "id": "2870",
+        "location": "Purdue Fort Wayne",
+        "name": "Mastodons",
+        "abbreviation": "PFW",
+        "displayName": "Purdue Fort Wayne Mastodons",
+        "shortDisplayName": "Purdue FW",
+        "isActive": true,
+        "venue": {
+         "id": "684"
+        },
+        "conferenceId": "45"
+       },
+       "score": "71",
+       "linescores": [
+        {
+         "value": 37.0,
+         "displayValue": "37",
+         "period": 1
+        },
+        {
+         "value": 34.0,
+         "displayValue": "34",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 2,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T00:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 2,
+    "type": {
+     "id": "3",
+     "name": "STATUS_FINAL",
+     "state": "post",
+     "completed": true,
+     "description": "Final",
+     "detail": "Final",
+     "shortDetail": "Final"
+    }
+   }
+  },
+  {
+   "id": "401921819",
+   "date": "2026-11-04T00:00Z",
+   "name": "Stetson Hatters at South Carolina Gamecocks",
+   "shortName": "STET @ SC",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401921819",
+     "date": "2026-11-04T00:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "1962",
+      "fullName": "Colonial Life Arena",
+      "address": {
+       "city": "Columbia",
+       "state": "SC"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2579",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "winner": true,
+       "team": {
+        "id": "2579",
+        "location": "South Carolina",
+        "name": "Gamecocks",
+        "abbreviation": "SC",
+        "displayName": "South Carolina Gamecocks",
+        "shortDisplayName": "South Carolina",
+        "isActive": true,
+        "venue": {
+         "id": "1962"
+        },
+        "conferenceId": "23"
+       },
+       "score": "81",
+       "linescores": [
+        {
+         "value": 42.0,
+         "displayValue": "42",
+         "period": 1
+        },
+        {
+         "value": 39.0,
+         "displayValue": "39",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "56",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "winner": false,
+       "team": {
+        "id": "56",
+        "location": "Stetson",
+        "name": "Hatters",
+        "abbreviation": "STET",
+        "displayName": "Stetson Hatters",
+        "shortDisplayName": "Stetson",
+        "isActive": true,
+        "venue": {
+         "id": "2080"
+        },
+        "conferenceId": "46"
+       },
+       "score": "55",
+       "linescores": [
+        {
+         "value": 25.0,
+         "displayValue": "25",
+         "period": 1
+        },
+        {
+         "value": 30.0,
+         "displayValue": "30",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 2,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "SECN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T00:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 2,
+    "type": {
+     "id": "3",
+     "name": "STATUS_FINAL",
+     "state": "post",
+     "completed": true,
+     "description": "Final",
+     "detail": "Final",
+     "shortDetail": "Final"
+    }
+   }
+  },
+  {
+   "id": "401920061",
+   "date": "2026-11-04T00:00Z",
+   "name": "Holy Cross Crusaders at Rhode Island Rams",
+   "shortName": "HC @ URI",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920061",
+     "date": "2026-11-04T00:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "2179",
+      "fullName": "Thomas M. Ryan Center",
+      "address": {
+       "city": "Kingston",
+       "state": "RI"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "227",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "winner": true,
+       "team": {
+        "id": "227",
+        "location": "Rhode Island",
+        "name": "Rams",
+        "abbreviation": "URI",
+        "displayName": "Rhode Island Rams",
+        "shortDisplayName": "Rhode Island",
+        "isActive": true,
+        "venue": {
+         "id": "2179"
+        },
+        "conferenceId": "3"
+       },
+       "score": "103",
+       "linescores": [
+        {
+         "value": 58.0,
+         "displayValue": "58",
+         "period": 1
+        },
+        {
+         "value": 45.0,
+         "displayValue": "45",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "107",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "winner": false,
+       "team": {
+        "id": "107",
+        "location": "Holy Cross",
+        "name": "Crusaders",
+        "abbreviation": "HC",
+        "displayName": "Holy Cross Crusaders",
+        "shortDisplayName": "Holy Cross",
+        "isActive": true,
+        "venue": {
+         "id": "137"
+        },
+        "conferenceId": "22"
+       },
+       "score": "59",
+       "linescores": [
+        {
+         "value": 27.0,
+         "displayValue": "27",
+         "period": 1
+        },
+        {
+         "value": 32.0,
+         "displayValue": "32",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 2,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T00:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 2,
+    "type": {
+     "id": "3",
+     "name": "STATUS_FINAL",
+     "state": "post",
+     "completed": true,
+     "description": "Final",
+     "detail": "Final",
+     "shortDetail": "Final"
+    }
+   }
+  },
+  {
+   "id": "401909551",
+   "date": "2026-11-04T00:00Z",
+   "name": "Wagner Seahawks at Boston College Eagles",
+   "shortName": "WAG @ BC",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401909551",
+     "date": "2026-11-04T00:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "135",
+      "fullName": "Conte Forum",
+      "address": {
+       "city": "Chestnut Hill",
+       "state": "MA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "103",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "winner": true,
+       "team": {
+        "id": "103",
+        "location": "Boston College",
+        "name": "Eagles",
+        "abbreviation": "BC",
+        "displayName": "Boston College Eagles",
+        "shortDisplayName": "Boston College",
+        "isActive": true,
+        "venue": {
+         "id": "135"
+        },
+        "conferenceId": "2"
+       },
+       "score": "76",
+       "linescores": [
+        {
+         "value": 38.0,
+         "displayValue": "38",
+         "period": 1
+        },
+        {
+         "value": 38.0,
+         "displayValue": "38",
+         "period": 2
+        }
+       ]
+      },
+      {
+       "id": "2681",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "winner": false,
+       "team": {
+        "id": "2681",
+        "location": "Wagner",
+        "name": "Seahawks",
+        "abbreviation": "WAG",
+        "displayName": "Wagner Seahawks",
+        "shortDisplayName": "Wagner",
+        "isActive": true,
+        "venue": {
+         "id": "2085"
+        },
+        "conferenceId": "19"
+       },
+       "score": "50",
+       "linescores": [
+        {
+         "value": 23.0,
+         "displayValue": "23",
+         "period": 1
+        },
+        {
+         "value": 27.0,
+         "displayValue": "27",
+         "period": 2
+        }
+       ]
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 2,
+      "type": {
+       "id": "3",
+       "name": "STATUS_FINAL",
+       "state": "post",
+       "completed": true,
+       "description": "Final",
+       "detail": "Final",
+       "shortDetail": "Final"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ACCNX"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T00:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 2,
+    "type": {
+     "id": "3",
+     "name": "STATUS_FINAL",
+     "state": "post",
+     "completed": true,
+     "description": "Final",
+     "detail": "Final",
+     "shortDetail": "Final"
+    }
+   }
+  },
+  {
+   "id": "401921153",
+   "date": "2026-11-04T00:00Z",
+   "name": "Warren Wilson Owls at North Carolina A&T Aggies",
+   "shortName": "WNWL @ NCAT",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401921153",
+     "date": "2026-11-04T00:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "2066",
+      "fullName": "Corbett Sports Center",
+      "address": {
+       "city": "Greensboro",
+       "state": "NC"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2448",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2448",
+        "location": "North Carolina A&T",
+        "name": "Aggies",
+        "abbreviation": "NCAT",
+        "displayName": "North Carolina A&T Aggies",
+        "shortDisplayName": "NC A&T",
+        "isActive": true,
+        "venue": {
+         "id": "2066"
+        },
+        "conferenceId": "10"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2684",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2684",
+        "location": "Warren Wilson",
+        "name": "Owls",
+        "abbreviation": "WNWL",
+        "displayName": "Warren Wilson Owls",
+        "shortDisplayName": "Warren Wilson",
+        "isActive": false
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Tue, November 3rd at 7:00 PM EST",
+       "shortDetail": "11/3 - 7:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "home",
+       "names": [
+        "FloSports"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T00:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Tue, November 3rd at 7:00 PM EST",
+     "shortDetail": "11/3 - 7:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401929624",
+   "date": "2026-11-04T03:00Z",
+   "name": "Chapman Panthers at UC Irvine Anteaters",
+   "shortName": "CHAP @ UCI",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401929624",
+     "date": "2026-11-04T03:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "469",
+      "fullName": "Bren Events Center",
+      "address": {
+       "city": "Irvine",
+       "state": "CA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "300",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "300",
+        "location": "UC Irvine",
+        "name": "Anteaters",
+        "abbreviation": "UCI",
+        "displayName": "UC Irvine Anteaters",
+        "shortDisplayName": "UC Irvine",
+        "isActive": true,
+        "venue": {
+         "id": "469"
+        },
+        "conferenceId": "9"
+       },
+       "score": "0"
+      },
+      {
+       "id": "411",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "411",
+        "location": "Chapman",
+        "name": "Panthers",
+        "abbreviation": "CHAP",
+        "displayName": "Chapman Panthers",
+        "shortDisplayName": "Chapman",
+        "isActive": false
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Tue, November 3rd at 10:00 PM EST",
+       "shortDetail": "11/3 - 10:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T03:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Tue, November 3rd at 10:00 PM EST",
+     "shortDetail": "11/3 - 10:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401925914",
+   "date": "2026-11-04T03:00Z",
+   "name": "Lewis & Clark River Otters at Portland State Vikings",
+   "shortName": "LC @ PRST",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401925914",
+     "date": "2026-11-04T03:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "6020",
+      "fullName": "Viking Pavilion",
+      "address": {
+       "city": "Portland",
+       "state": "OR"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2502",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2502",
+        "location": "Portland State",
+        "name": "Vikings",
+        "abbreviation": "PRST",
+        "displayName": "Portland State Vikings",
+        "shortDisplayName": "Portland St",
+        "isActive": true,
+        "venue": {
+         "id": "6020"
+        },
+        "conferenceId": "5"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2333",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2333",
+        "location": "Lewis & Clark",
+        "name": "River Otters",
+        "abbreviation": "LC",
+        "displayName": "Lewis & Clark River Otters",
+        "shortDisplayName": "Lewis & Clark",
+        "isActive": false
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Tue, November 3rd at 10:00 PM EST",
+       "shortDetail": "11/3 - 10:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T03:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Tue, November 3rd at 10:00 PM EST",
+     "shortDetail": "11/3 - 10:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401924911",
+   "date": "2026-11-04T03:00Z",
+   "name": "Northern Arizona Lumberjacks at UNLV Rebels",
+   "shortName": "NAU @ UNLV",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401924911",
+     "date": "2026-11-04T03:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "2083",
+      "fullName": "Thomas & Mack Center",
+      "address": {
+       "city": "Las Vegas",
+       "state": "NV"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2439",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2439",
+        "location": "UNLV",
+        "name": "Rebels",
+        "abbreviation": "UNLV",
+        "displayName": "UNLV Rebels",
+        "shortDisplayName": "UNLV",
+        "isActive": true,
+        "venue": {
+         "id": "2083"
+        },
+        "conferenceId": "44"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2464",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2464",
+        "location": "Northern Arizona",
+        "name": "Lumberjacks",
+        "abbreviation": "NAU",
+        "displayName": "Northern Arizona Lumberjacks",
+        "shortDisplayName": "N Arizona",
+        "isActive": true,
+        "venue": {
+         "id": "2023"
+        },
+        "conferenceId": "5"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Tue, November 3rd at 10:00 PM EST",
+       "shortDetail": "11/3 - 10:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "MW+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T03:00Z",
+     "odds": [
+      {
+       "provider": {
+        "id": "100",
+        "name": "Draft Kings",
+        "priority": 1,
+        "displayName": "Draft Kings"
+       },
+       "details": "UNLV -20.5",
+       "overUnder": 153.5,
+       "spread": -20.5,
+       "awayTeamOdds": {
+        "favorite": false,
+        "underdog": true,
+        "team": {
+         "id": "2464",
+         "abbreviation": "NAU",
+         "name": "Lumberjacks",
+         "displayName": "Northern Arizona Lumberjacks"
+        },
+        "favoriteAtOpen": false
+       },
+       "homeTeamOdds": {
+        "favorite": true,
+        "underdog": false,
+        "team": {
+         "id": "2439",
+         "abbreviation": "UNLV",
+         "name": "Rebels",
+         "displayName": "UNLV Rebels"
+        },
+        "favoriteAtOpen": true
+       },
+       "moneyline": {
+        "displayName": "Moneyline",
+        "shortDisplayName": "ML",
+        "home": {
+         "close": {
+          "odds": "-5000",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "home",
+            "desktop",
+            "bets",
+            "draft-kings"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952519%3Foutcomes%3D0ML87066548_1",
+           "text": "Home Bet",
+           "shortText": "Home Bet",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401924911,
+             "betSide": "home",
+             "betType": "straight"
+            }
+           }
+          }
+         },
+         "open": {
+          "odds": "-5000"
+         }
+        },
+        "away": {
+         "close": {
+          "odds": "+1800",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "away",
+            "desktop",
+            "bets",
+            "draft-kings"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952519%3Foutcomes%3D0ML87066548_3",
+           "text": "Away Bet",
+           "shortText": "Away Bet",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401924911,
+             "betSide": "away",
+             "betType": "straight"
+            }
+           }
+          }
+         },
+         "open": {
+          "odds": "+1800"
+         }
+        }
+       },
+       "pointSpread": {
+        "displayName": "Spread",
+        "shortDisplayName": "Spread",
+        "home": {
+         "close": {
+          "line": "-20.5",
+          "odds": "-112",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "homeSpread",
+            "desktop",
+            "bets"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952519%3Foutcomes%3D0HC87066548N2050_1",
+           "text": "Home Point Spread",
+           "shortText": "Home Point Spread",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401924911,
+             "betSide": "none",
+             "betType": "straight",
+             "betDetails": "Spread:UNLV-20.5"
+            }
+           }
+          }
+         },
+         "open": {
+          "line": "-21.5",
+          "odds": "-110"
+         }
+        },
+        "away": {
+         "close": {
+          "line": "+20.5",
+          "odds": "-108",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "awaySpread",
+            "desktop",
+            "bets"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952519%3Foutcomes%3D0HC87066548P2050_3",
+           "text": "Away Point Spread",
+           "shortText": "Away Point Spread",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401924911,
+             "betSide": "none",
+             "betType": "straight",
+             "betDetails": "Spread:NAU+20.5"
+            }
+           }
+          }
+         },
+         "open": {
+          "line": "+21.5",
+          "odds": "-110"
+         }
+        }
+       },
+       "total": {
+        "displayName": "Total",
+        "shortDisplayName": "Total",
+        "over": {
+         "close": {
+          "line": "o153.5",
+          "odds": "-115",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "over",
+            "desktop",
+            "bets"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952519%3Foutcomes%3D0OU87066548O15350_1",
+           "text": "Over Odds",
+           "shortText": "Over Odds",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401924911,
+             "betSide": "over",
+             "betType": "straight",
+             "betDetails": "Over:153.5"
+            }
+           }
+          }
+         },
+         "open": {
+          "line": "o148.5",
+          "odds": "-115"
+         }
+        },
+        "under": {
+         "close": {
+          "line": "u153.5",
+          "odds": "-105",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "under",
+            "desktop",
+            "bets"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952519%3Foutcomes%3D0OU87066548U15350_3",
+           "text": "Under Odds",
+           "shortText": "Under Odds",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401924911,
+             "betSide": "under",
+             "betType": "straight",
+             "betDetails": "Under:153.5"
+            }
+           }
+          }
+         },
+         "open": {
+          "line": "u148.5",
+          "odds": "-105"
+         }
+        }
+       },
+       "link": {
+        "language": "en-US",
+        "rel": [
+         "game",
+         "desktop",
+         "bets"
+        ],
+        "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952519",
+        "text": "See More Odds",
+        "shortText": "Game",
+        "isExternal": true,
+        "isPremium": false,
+        "tracking": {
+         "campaign": "betting-integrations",
+         "tags": {
+          "league": "mens-college-basketball",
+          "sport": "basketball",
+          "gameId": 401924911,
+          "betSide": "none",
+          "betType": "straight"
+         }
+        }
+       },
+       "header": {
+        "text": "Game Odds"
+       },
+       "footer": {
+        "disclaimer": "GAMBLING PROBLEM? CALL 1-800-GAMBLER or 1-800-MY-RESET, (800) 327-5050 or visit gamblinghelplinema.org (MA). Call 877-8-HOPENY/text HOPENY (467369) (NY). Call 888-789-7777/visit ccpg.org (CT), or visit www.mdgamblinghelp.org (MD), 1-800-981-0023 (PR). 21+ and present in most states. (18+ DC/KY/NH/PR/WY). Void in ONT. Eligibility restrictions apply. Terms: draftkings.com/sportsbook. On behalf of Boot Hill Casino (KS). Pass-thru of per wager tax may apply in IL."
+       }
+      }
+     ]
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Tue, November 3rd at 10:00 PM EST",
+     "shortDetail": "11/3 - 10:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401920343",
+   "date": "2026-11-04T03:00Z",
+   "name": "North Florida Ospreys at California Baptist Lancers",
+   "shortName": "UNF @ CBU",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920343",
+     "date": "2026-11-04T03:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "5994",
+      "fullName": "Dale E. and Sarah Ann Fowler Events Center",
+      "address": {
+       "city": "Riverside",
+       "state": "CA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2856",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2856",
+        "location": "California Baptist",
+        "name": "Lancers",
+        "abbreviation": "CBU",
+        "displayName": "California Baptist Lancers",
+        "shortDisplayName": "CA Baptist",
+        "isActive": true,
+        "venue": {
+         "id": "5994"
+        },
+        "conferenceId": "9"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2454",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2454",
+        "location": "North Florida",
+        "name": "Ospreys",
+        "abbreviation": "UNF",
+        "displayName": "North Florida Ospreys",
+        "shortDisplayName": "North Florida",
+        "isActive": true,
+        "venue": {
+         "id": "2123"
+        },
+        "conferenceId": "46"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Tue, November 3rd at 10:00 PM EST",
+       "shortDetail": "11/3 - 10:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T03:00Z",
+     "odds": [
+      {
+       "provider": {
+        "id": "100",
+        "name": "Draft Kings",
+        "priority": 1
+       },
+       "details": "CBU -10.5",
+       "overUnder": 155.5,
+       "spread": -10.5,
+       "awayTeamOdds": {
+        "favorite": false,
+        "underdog": true,
+        "team": {
+         "id": "2454",
+         "abbreviation": "UNF",
+         "name": "Ospreys",
+         "displayName": "North Florida Ospreys"
+        },
+        "favoriteAtOpen": false
+       },
+       "homeTeamOdds": {
+        "favorite": true,
+        "underdog": false,
+        "team": {
+         "id": "2856",
+         "abbreviation": "CBU",
+         "name": "Lancers",
+         "displayName": "California Baptist Lancers"
+        },
+        "favoriteAtOpen": true
+       },
+       "moneyline": {
+        "displayName": "Moneyline",
+        "shortDisplayName": "ML",
+        "home": {
+         "close": {
+          "odds": "-650",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "home",
+            "desktop",
+            "bets",
+            "draft-kings"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952518%3Foutcomes%3D0ML87066547_1",
+           "text": "Home Bet",
+           "shortText": "Home Bet",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401920343,
+             "betSide": "home",
+             "betType": "straight"
+            }
+           }
+          }
+         },
+         "open": {
+          "odds": "-500"
+         }
+        },
+        "away": {
+         "close": {
+          "odds": "+470",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "away",
+            "desktop",
+            "bets",
+            "draft-kings"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952518%3Foutcomes%3D0ML87066547_3",
+           "text": "Away Bet",
+           "shortText": "Away Bet",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401920343,
+             "betSide": "away",
+             "betType": "straight"
+            }
+           }
+          }
+         },
+         "open": {
+          "odds": "+380"
+         }
+        }
+       },
+       "pointSpread": {
+        "displayName": "Spread",
+        "shortDisplayName": "Spread",
+        "home": {
+         "close": {
+          "line": "-10.5",
+          "odds": "-115",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "homeSpread",
+            "desktop",
+            "bets"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952518%3Foutcomes%3D0HC87066547N1050_1",
+           "text": "Home Point Spread",
+           "shortText": "Home Point Spread",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401920343,
+             "betSide": "none",
+             "betType": "straight",
+             "betDetails": "Spread:CBU-10.5"
+            }
+           }
+          }
+         },
+         "open": {
+          "line": "-9.5",
+          "odds": "-110"
+         }
+        },
+        "away": {
+         "close": {
+          "line": "+10.5",
+          "odds": "-105",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "awaySpread",
+            "desktop",
+            "bets"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952518%3Foutcomes%3D0HC87066547P1050_3",
+           "text": "Away Point Spread",
+           "shortText": "Away Point Spread",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401920343,
+             "betSide": "none",
+             "betType": "straight",
+             "betDetails": "Spread:UNF+10.5"
+            }
+           }
+          }
+         },
+         "open": {
+          "line": "+9.5",
+          "odds": "-110"
+         }
+        }
+       },
+       "total": {
+        "displayName": "Total",
+        "shortDisplayName": "Total",
+        "over": {
+         "close": {
+          "line": "o155.5",
+          "odds": "-110",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "over",
+            "desktop",
+            "bets"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952518%3Foutcomes%3D0OU87066547O15550_1",
+           "text": "Over Odds",
+           "shortText": "Over Odds",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401920343,
+             "betSide": "over",
+             "betType": "straight",
+             "betDetails": "Over:155.5"
+            }
+           }
+          }
+         },
+         "open": {
+          "line": "o155.5",
+          "odds": "-110"
+         }
+        },
+        "under": {
+         "close": {
+          "line": "u155.5",
+          "odds": "-110",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "under",
+            "desktop",
+            "bets"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952518%3Foutcomes%3D0OU87066547U15550_3",
+           "text": "Under Odds",
+           "shortText": "Under Odds",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401920343,
+             "betSide": "under",
+             "betType": "straight",
+             "betDetails": "Under:155.5"
+            }
+           }
+          }
+         },
+         "open": {
+          "line": "u155.5",
+          "odds": "-110"
+         }
+        }
+       },
+       "link": {
+        "language": "en-US",
+        "rel": [
+         "game",
+         "desktop",
+         "bets"
+        ],
+        "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952518",
+        "text": "See More Odds",
+        "shortText": "Game",
+        "isExternal": true,
+        "isPremium": false,
+        "tracking": {
+         "campaign": "betting-integrations",
+         "tags": {
+          "league": "mens-college-basketball",
+          "sport": "basketball",
+          "gameId": 401920343,
+          "betSide": "none",
+          "betType": "straight"
+         }
+        }
+       },
+       "header": {
+        "text": "Game Odds"
+       },
+       "footer": {
+        "disclaimer": "GAMBLING PROBLEM? CALL 1-800-GAMBLER or 1-800-MY-RESET, (800) 327-5050 or visit gamblinghelplinema.org (MA). Call 877-8-HOPENY/text HOPENY (467369) (NY). Call 888-789-7777/visit ccpg.org (CT), or visit www.mdgamblinghelp.org (MD), 1-800-981-0023 (PR). 21+ and present in most states. (18+ DC/KY/NH/PR/WY). Void in ONT. Eligibility restrictions apply. Terms: draftkings.com/sportsbook. On behalf of Boot Hill Casino (KS). Pass-thru of per wager tax may apply in IL."
+       }
+      }
+     ]
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Tue, November 3rd at 10:00 PM EST",
+     "shortDetail": "11/3 - 10:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401920155",
+   "date": "2026-11-04T03:00Z",
+   "name": "Cal State Fullerton Titans at San Diego State Aztecs",
+   "shortName": "CSUF @ SDSU",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920155",
+     "date": "2026-11-04T03:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "2111",
+      "fullName": "Viejas Arena",
+      "address": {
+       "city": "San Diego",
+       "state": "CA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "21",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "21",
+        "location": "San Diego State",
+        "name": "Aztecs",
+        "abbreviation": "SDSU",
+        "displayName": "San Diego State Aztecs",
+        "shortDisplayName": "San Diego St",
+        "isActive": true,
+        "venue": {
+         "id": "2111"
+        },
+        "conferenceId": "21"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2239",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2239",
+        "location": "Cal State Fullerton",
+        "name": "Titans",
+        "abbreviation": "CSUF",
+        "displayName": "Cal State Fullerton Titans",
+        "shortDisplayName": "Fullerton",
+        "isActive": true,
+        "venue": {
+         "id": "2003"
+        },
+        "conferenceId": "9"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Tue, November 3rd at 10:00 PM EST",
+       "shortDetail": "11/3 - 10:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "YouTube"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T03:00Z",
+     "odds": [
+      {
+       "provider": {
+        "id": "100",
+        "name": "Draft Kings",
+        "priority": 1
+       },
+       "details": "SDSU -13.5",
+       "overUnder": 155.5,
+       "spread": -13.5,
+       "awayTeamOdds": {
+        "favorite": false,
+        "underdog": true,
+        "team": {
+         "id": "2239",
+         "abbreviation": "CSUF",
+         "name": "Titans",
+         "displayName": "Cal State Fullerton Titans"
+        },
+        "favoriteAtOpen": false
+       },
+       "homeTeamOdds": {
+        "favorite": true,
+        "underdog": false,
+        "team": {
+         "id": "21",
+         "abbreviation": "SDSU",
+         "name": "Aztecs",
+         "displayName": "San Diego State Aztecs"
+        },
+        "favoriteAtOpen": true
+       },
+       "moneyline": {
+        "displayName": "Moneyline",
+        "shortDisplayName": "ML",
+        "home": {
+         "close": {
+          "odds": "-1200",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "home",
+            "desktop",
+            "bets",
+            "draft-kings"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952517%3Foutcomes%3D0ML87066546_1",
+           "text": "Home Bet",
+           "shortText": "Home Bet",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401920155,
+             "betSide": "home",
+             "betType": "straight"
+            }
+           }
+          }
+         },
+         "open": {
+          "odds": "-1450"
+         }
+        },
+        "away": {
+         "close": {
+          "odds": "+750",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "away",
+            "desktop",
+            "bets",
+            "draft-kings"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952517%3Foutcomes%3D0ML87066546_3",
+           "text": "Away Bet",
+           "shortText": "Away Bet",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401920155,
+             "betSide": "away",
+             "betType": "straight"
+            }
+           }
+          }
+         },
+         "open": {
+          "odds": "+850"
+         }
+        }
+       },
+       "pointSpread": {
+        "displayName": "Spread",
+        "shortDisplayName": "Spread",
+        "home": {
+         "close": {
+          "line": "-13.5",
+          "odds": "-115",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "homeSpread",
+            "desktop",
+            "bets"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952517%3Foutcomes%3D0HC87066546N1350_1",
+           "text": "Home Point Spread",
+           "shortText": "Home Point Spread",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401920155,
+             "betSide": "none",
+             "betType": "straight",
+             "betDetails": "Spread:SDSU-13.5"
+            }
+           }
+          }
+         },
+         "open": {
+          "line": "-16.5",
+          "odds": "-110"
+         }
+        },
+        "away": {
+         "close": {
+          "line": "+13.5",
+          "odds": "-105",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "awaySpread",
+            "desktop",
+            "bets"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952517%3Foutcomes%3D0HC87066546P1350_3",
+           "text": "Away Point Spread",
+           "shortText": "Away Point Spread",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401920155,
+             "betSide": "none",
+             "betType": "straight",
+             "betDetails": "Spread:CSUF+13.5"
+            }
+           }
+          }
+         },
+         "open": {
+          "line": "+16.5",
+          "odds": "-110"
+         }
+        }
+       },
+       "total": {
+        "displayName": "Total",
+        "shortDisplayName": "Total",
+        "over": {
+         "close": {
+          "line": "o155.5",
+          "odds": "-115",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "over",
+            "desktop",
+            "bets"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952517%3Foutcomes%3D0OU87066546O15550_1",
+           "text": "Over Odds",
+           "shortText": "Over Odds",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401920155,
+             "betSide": "over",
+             "betType": "straight",
+             "betDetails": "Over:155.5"
+            }
+           }
+          }
+         },
+         "open": {
+          "line": "o154.5",
+          "odds": "-115"
+         }
+        },
+        "under": {
+         "close": {
+          "line": "u155.5",
+          "odds": "-105",
+          "link": {
+           "language": "en-US",
+           "rel": [
+            "under",
+            "desktop",
+            "bets"
+           ],
+           "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952517%3Foutcomes%3D0OU87066546U15550_3",
+           "text": "Under Odds",
+           "shortText": "Under Odds",
+           "isExternal": true,
+           "isPremium": false,
+           "tracking": {
+            "campaign": "betting-integrations",
+            "tags": {
+             "league": "mens-college-basketball",
+             "sport": "basketball",
+             "gameId": 401920155,
+             "betSide": "under",
+             "betType": "straight",
+             "betDetails": "Under:155.5"
+            }
+           }
+          }
+         },
+         "open": {
+          "line": "u154.5",
+          "odds": "-105"
+         }
+        }
+       },
+       "link": {
+        "language": "en-US",
+        "rel": [
+         "game",
+         "desktop",
+         "bets"
+        ],
+        "href": "https://sportsbook.draftkings.com/gateway?s=__s__&wpcid=__wpcid__&wpsrc=413&wpcn=ESPN&wpscn=Widget&wpcrn=BetSlipDeepLink&wpscid=__wpscid__&wpcrid=xx&preurl=https%3A%2F%2Fsportsbook.draftkings.com%2Fevent%2F34952517",
+        "text": "See More Odds",
+        "shortText": "Game",
+        "isExternal": true,
+        "isPremium": false,
+        "tracking": {
+         "campaign": "betting-integrations",
+         "tags": {
+          "league": "mens-college-basketball",
+          "sport": "basketball",
+          "gameId": 401920155,
+          "betSide": "none",
+          "betType": "straight"
+         }
+        }
+       },
+       "header": {
+        "text": "Game Odds"
+       },
+       "footer": {
+        "disclaimer": "GAMBLING PROBLEM? CALL 1-800-GAMBLER or 1-800-MY-RESET, (800) 327-5050 or visit gamblinghelplinema.org (MA). Call 877-8-HOPENY/text HOPENY (467369) (NY). Call 888-789-7777/visit ccpg.org (CT), or visit www.mdgamblinghelp.org (MD), 1-800-981-0023 (PR). 21+ and present in most states. (18+ DC/KY/NH/PR/WY). Void in ONT. Eligibility restrictions apply. Terms: draftkings.com/sportsbook. On behalf of Boot Hill Casino (KS). Pass-thru of per wager tax may apply in IL."
+       }
+      }
+     ]
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Tue, November 3rd at 10:00 PM EST",
+     "shortDetail": "11/3 - 10:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401917511",
+   "date": "2026-11-04T03:00Z",
+   "name": "Bethesda Flames at Pacific Tigers",
+   "shortName": "BTHS @ PAC",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401917511",
+     "date": "2026-11-04T03:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": true,
+     "venue": {
+      "id": "553",
+      "fullName": "Alex G. Spanos Center",
+      "address": {
+       "city": "Stockton",
+       "state": "CA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "279",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "279",
+        "location": "Pacific",
+        "name": "Tigers",
+        "abbreviation": "PAC",
+        "displayName": "Pacific Tigers",
+        "shortDisplayName": "Pacific",
+        "isActive": true,
+        "venue": {
+         "id": "553"
+        },
+        "conferenceId": "29"
+       },
+       "score": "0"
+      },
+      {
+       "id": "3246",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "3246",
+        "location": "Bethesda",
+        "name": "Flames",
+        "abbreviation": "BTHS",
+        "displayName": "Bethesda Flames",
+        "shortDisplayName": "Bethesda",
+        "isActive": false
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Tue, November 3rd at 10:00 PM EST",
+       "shortDetail": "11/3 - 10:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-04T03:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Tue, November 3rd at 10:00 PM EST",
+     "shortDetail": "11/3 - 10:00 PM EST"
+    }
+   }
+  }
+ ],
+ "provider": {
+  "id": "100",
+  "name": "Draft Kings",
+  "priority": 1,
+  "displayName": "Draft Kings"
+ },
+ "eventsDate": {
+  "date": "2026-11-04T00:30Z",
+  "seasonType": 2
+ }
+}

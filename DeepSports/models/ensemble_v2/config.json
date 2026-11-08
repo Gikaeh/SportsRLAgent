@@ -1,0 +1,625 @@
+{
+ "created_at": "2026-11-04T22:52:49+00:00",
+ "holdout_season": 2026,
+ "validation_seasons": [
+  2024,
+  2025
+ ],
+ "max_season_seen": 2025,
+ "trees": {
+  "grid": [
+   {
+    "params": {
+     "learning_rate": 0.03,
+     "max_iter": 200,
+     "max_leaf_nodes": 7,
+     "min_samples_leaf": 40,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6275548071743222,
+    "margin_mae": 11.267910460601865,
+    "total_mae": 15.043182367527395,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.03,
+     "max_iter": 200,
+     "max_leaf_nodes": 7,
+     "min_samples_leaf": 120,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6254516421819077,
+    "margin_mae": 11.202746937466491,
+    "total_mae": 15.006120448576914,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.03,
+     "max_iter": 200,
+     "max_leaf_nodes": 15,
+     "min_samples_leaf": 40,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6345747608897273,
+    "margin_mae": 11.32933837186187,
+    "total_mae": 15.152355552278136,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.03,
+     "max_iter": 200,
+     "max_leaf_nodes": 15,
+     "min_samples_leaf": 120,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6316223180631532,
+    "margin_mae": 11.250356551683,
+    "total_mae": 15.0745782423973,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.05,
+     "max_iter": 400,
+     "max_leaf_nodes": 7,
+     "min_samples_leaf": 40,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6449658958424063,
+    "margin_mae": 11.462525438270374,
+    "total_mae": 15.265259070127545,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.05,
+     "max_iter": 400,
+     "max_leaf_nodes": 7,
+     "min_samples_leaf": 120,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.641954295478556,
+    "margin_mae": 11.400181814784098,
+    "total_mae": 15.216531722707574,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.05,
+     "max_iter": 400,
+     "max_leaf_nodes": 15,
+     "min_samples_leaf": 40,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6737834196126284,
+    "margin_mae": 11.703902779638184,
+    "total_mae": 15.570740059998432,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.05,
+     "max_iter": 400,
+     "max_leaf_nodes": 15,
+     "min_samples_leaf": 120,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6625316541607252,
+    "margin_mae": 11.589286057908692,
+    "total_mae": 15.3995357896591,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.1,
+     "max_iter": 100,
+     "max_leaf_nodes": 7,
+     "min_samples_leaf": 40,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6322739593839005,
+    "margin_mae": 11.323036422852022,
+    "total_mae": 15.120141918884634,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.1,
+     "max_iter": 100,
+     "max_leaf_nodes": 7,
+     "min_samples_leaf": 120,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6323293587451068,
+    "margin_mae": 11.269112067615602,
+    "total_mae": 15.085986279043606,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.1,
+     "max_iter": 100,
+     "max_leaf_nodes": 15,
+     "min_samples_leaf": 40,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6478256451743022,
+    "margin_mae": 11.455455769642944,
+    "total_mae": 15.307526555831133,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.1,
+     "max_iter": 100,
+     "max_leaf_nodes": 15,
+     "min_samples_leaf": 120,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6420782884536674,
+    "margin_mae": 11.376650977899397,
+    "total_mae": 15.165475285880438,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.02,
+     "max_iter": 150,
+     "max_leaf_nodes": 4,
+     "min_samples_leaf": 120,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6226537985377323,
+    "margin_mae": 11.226138663110818,
+    "total_mae": 14.97125287487654,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.02,
+     "max_iter": 150,
+     "max_leaf_nodes": 7,
+     "min_samples_leaf": 250,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6255720932334785,
+    "margin_mae": 11.257168722411105,
+    "total_mae": 14.940265342213918,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.02,
+     "max_iter": 150,
+     "max_leaf_nodes": 4,
+     "min_samples_leaf": 250,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6246544475926925,
+    "margin_mae": 11.266632990239227,
+    "total_mae": 14.97124289273067,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.01,
+     "max_iter": 300,
+     "max_leaf_nodes": 4,
+     "min_samples_leaf": 120,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6228277207176175,
+    "margin_mae": 11.227596425427647,
+    "total_mae": 14.970023603111848,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.01,
+     "max_iter": 300,
+     "max_leaf_nodes": 7,
+     "min_samples_leaf": 250,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.6256262151512626,
+    "margin_mae": 11.257365858881142,
+    "total_mae": 14.93996856398572,
+    "n": 2640
+   },
+   {
+    "params": {
+     "learning_rate": 0.01,
+     "max_iter": 300,
+     "max_leaf_nodes": 4,
+     "min_samples_leaf": 250,
+     "l2_regularization": 1.0,
+     "mono_elo": true
+    },
+    "log_loss": 0.624723320447038,
+    "margin_mae": 11.266009526255033,
+    "total_mae": 14.972095111325572,
+    "n": 2640
+   }
+  ],
+  "best": {
+   "log_loss": {
+    "learning_rate": 0.02,
+    "max_iter": 150,
+    "max_leaf_nodes": 4,
+    "min_samples_leaf": 120,
+    "l2_regularization": 1.0,
+    "mono_elo": true
+   },
+   "margin_mae": {
+    "learning_rate": 0.03,
+    "max_iter": 200,
+    "max_leaf_nodes": 7,
+    "min_samples_leaf": 120,
+    "l2_regularization": 1.0,
+    "mono_elo": true
+   },
+   "total_mae": {
+    "learning_rate": 0.01,
+    "max_iter": 300,
+    "max_leaf_nodes": 7,
+    "min_samples_leaf": 250,
+    "l2_regularization": 1.0,
+    "mono_elo": true
+   }
+  }
+ },
+ "blends": {
+  "candidates": {
+   "prob": [
+    {
+     "method": "mean",
+     "inputs": [
+      "p_elo",
+      "p_v10",
+      "p_v11",
+      "p_tree"
+     ],
+     "loss": 0.6115677964378612,
+     "weights": [
+      0.25,
+      0.25,
+      0.25,
+      0.25
+     ],
+     "intercept": 0.0
+    },
+    {
+     "method": "convex",
+     "inputs": [
+      "p_elo",
+      "p_v10",
+      "p_v11",
+      "p_tree"
+     ],
+     "loss": 0.6091273195562457,
+     "weights": [
+      0.15138750843236318,
+      0.10625527291101741,
+      0.7423572186566193,
+      3.169334740294639e-302
+     ],
+     "intercept": 0.0
+    },
+    {
+     "method": "stack",
+     "inputs": [
+      "p_elo",
+      "p_v10",
+      "p_v11",
+      "p_tree"
+     ],
+     "loss": 0.6088244608064056,
+     "weights": [
+      0.8045618103660334,
+      -0.29769377881447695,
+      0.721064021626141,
+      -0.2959350657788216
+     ],
+     "intercept": -0.2919020858658674
+    },
+    {
+     "method": "mean",
+     "inputs": [
+      "p_v11",
+      "p_tree"
+     ],
+     "loss": 0.6116140823102783,
+     "weights": [
+      0.5,
+      0.5
+     ],
+     "intercept": 0.0
+    },
+    {
+     "method": "convex",
+     "inputs": [
+      "p_v11",
+      "p_tree"
+     ],
+     "loss": 0.6087125056639616,
+     "weights": [
+      0.9999999999999978,
+      2.1567119936841113e-15
+     ],
+     "intercept": 0.0
+    },
+    {
+     "method": "stack",
+     "inputs": [
+      "p_v11",
+      "p_tree"
+     ],
+     "loss": 0.6081933212765424,
+     "weights": [
+      0.9882152087406276,
+      0.0811250847317701
+     ],
+     "intercept": -0.13100325964619722
+    }
+   ],
+   "margin": [
+    {
+     "method": "mean",
+     "inputs": [
+      "m_elo",
+      "m_v10",
+      "m_v11",
+      "m_tree"
+     ],
+     "loss": 11.104737840567044,
+     "weights": [
+      0.25,
+      0.25,
+      0.25,
+      0.25
+     ],
+     "intercept": 0.0
+    },
+    {
+     "method": "convex",
+     "inputs": [
+      "m_elo",
+      "m_v10",
+      "m_v11",
+      "m_tree"
+     ],
+     "loss": 11.080965520288254,
+     "weights": [
+      2.871674653128609e-12,
+      0.453938067358009,
+      0.2763252593942664,
+      0.26973667324485295
+     ],
+     "intercept": 0.0
+    },
+    {
+     "method": "stack",
+     "inputs": [
+      "m_elo",
+      "m_v10",
+      "m_v11",
+      "m_tree"
+     ],
+     "loss": 11.061976177317035,
+     "weights": [
+      0.47089041001368537,
+      -0.1354363804404931,
+      0.704813813747587,
+      0.09118361434713293
+     ],
+     "intercept": -0.9517162687194589
+    },
+    {
+     "method": "mean",
+     "inputs": [
+      "m_v11",
+      "m_tree"
+     ],
+     "loss": 11.10850729089498,
+     "weights": [
+      0.5,
+      0.5
+     ],
+     "intercept": 0.0
+    },
+    {
+     "method": "convex",
+     "inputs": [
+      "m_v11",
+      "m_tree"
+     ],
+     "loss": 11.080182925618653,
+     "weights": [
+      0.7480350192516297,
+      0.2519649807483703
+     ],
+     "intercept": 0.0
+    },
+    {
+     "method": "stack",
+     "inputs": [
+      "m_v11",
+      "m_tree"
+     ],
+     "loss": 11.059949488723316,
+     "weights": [
+      0.931670346785362,
+      0.14499550535719158
+     ],
+     "intercept": -0.284876447686929
+    }
+   ],
+   "total": [
+    {
+     "method": "mean",
+     "inputs": [
+      "t_v10",
+      "t_v11",
+      "t_tree"
+     ],
+     "loss": 14.907273817189411,
+     "weights": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+     ],
+     "intercept": 0.0
+    },
+    {
+     "method": "convex",
+     "inputs": [
+      "t_v10",
+      "t_v11",
+      "t_tree"
+     ],
+     "loss": 14.935952607700221,
+     "weights": [
+      0.8966950293617727,
+      1.286105676439317e-13,
+      0.10330497063809876
+     ],
+     "intercept": 0.0
+    },
+    {
+     "method": "stack",
+     "inputs": [
+      "t_v10",
+      "t_v11",
+      "t_tree"
+     ],
+     "loss": 14.948063838310201,
+     "weights": [
+      1.4945113360901547,
+      -0.6431626990901109,
+      0.2060697274670232
+     ],
+     "intercept": -12.609523571286815
+    },
+    {
+     "method": "mean",
+     "inputs": [
+      "t_v11",
+      "t_tree"
+     ],
+     "loss": 14.898000109556486,
+     "weights": [
+      0.5,
+      0.5
+     ],
+     "intercept": 0.0
+    },
+    {
+     "method": "convex",
+     "inputs": [
+      "t_v11",
+      "t_tree"
+     ],
+     "loss": 14.917229119049905,
+     "weights": [
+      0.8309515455164139,
+      0.1690484544835861
+     ],
+     "intercept": 0.0
+    },
+    {
+     "method": "stack",
+     "inputs": [
+      "t_v11",
+      "t_tree"
+     ],
+     "loss": 14.92339192635133,
+     "weights": [
+      0.8100145335701611,
+      0.2570478565643848
+     ],
+     "intercept": -14.897793644337497
+    }
+   ]
+  },
+  "chosen": {
+   "prob": {
+    "method": "stack",
+    "inputs": [
+     "p_v11",
+     "p_tree"
+    ],
+    "weights": [
+     1.0228752043034133,
+     0.019825328058614658
+    ],
+    "intercept": -0.10827297544764716,
+    "val_loss_s2": 0.6081933212765424
+   },
+   "margin": {
+    "method": "stack",
+    "inputs": [
+     "m_v11",
+     "m_tree"
+    ],
+    "weights": [
+     0.9425435754215763,
+     0.15217419650211406
+    ],
+    "intercept": -0.5598381722698704,
+    "val_loss_s2": 11.059949488723316
+   },
+   "total": {
+    "method": "mean",
+    "inputs": [
+     "t_v11",
+     "t_tree"
+    ],
+    "weights": [
+     0.5,
+     0.5
+    ],
+    "intercept": 0.0,
+    "val_loss_s2": 14.898000109556486
+   }
+  },
+  "single": {
+   "prob": {
+    "p_elo": 0.6266747606206376,
+    "p_v10": 0.6085351526973155,
+    "p_v11": 0.6087125056639616,
+    "p_tree": 0.6179768017235738
+   },
+   "margin": {
+    "m_elo": 11.271613795686436,
+    "m_v10": 11.094192573062978,
+    "m_v11": 11.070836658222401,
+    "m_tree": 11.20861161410791
+   },
+   "total": {
+    "t_v10": 14.951593672391018,
+    "t_v11": 14.942392322363686,
+    "t_tree": 14.931870198063967
+   }
+  }
+ }
+}

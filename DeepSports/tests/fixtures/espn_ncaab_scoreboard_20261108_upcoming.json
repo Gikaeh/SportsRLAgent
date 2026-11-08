@@ -1,0 +1,3988 @@
+{
+ "leagues": [
+  {
+   "id": "41",
+   "name": "NCAA Men's Basketball",
+   "abbreviation": "NCAAM",
+   "midsizeName": "NCAAM Basketball",
+   "slug": "mens-college-basketball",
+   "season": {
+    "year": 2027,
+    "startDate": "2026-07-13T07:00Z",
+    "endDate": "2027-04-07T06:59Z",
+    "displayName": "2026-27",
+    "type": {
+     "id": "2",
+     "type": 2,
+     "name": "Regular Season",
+     "abbreviation": "reg"
+    }
+   },
+   "calendarType": "day",
+   "calendarIsWhitelist": true,
+   "calendarStartDate": "2026-07-13T07:00Z",
+   "calendarEndDate": "2027-04-07T06:59Z"
+  }
+ ],
+ "groups": [
+  "50"
+ ],
+ "events": [
+  {
+   "id": "401924646",
+   "date": "2026-11-08T17:00Z",
+   "name": "Iona Gaels at St. John's Red Storm",
+   "shortName": "IONA @ SJU",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401924646",
+     "date": "2026-11-08T17:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "1830",
+      "fullName": "Madison Square Garden",
+      "address": {
+       "city": "New York",
+       "state": "NY"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2599",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2599",
+        "location": "St. John's",
+        "name": "Red Storm",
+        "abbreviation": "SJU",
+        "displayName": "St. John's Red Storm",
+        "shortDisplayName": "St John's",
+        "isActive": true,
+        "venue": {
+         "id": "2019"
+        },
+        "conferenceId": "4"
+       },
+       "score": "0"
+      },
+      {
+       "id": "314",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "314",
+        "location": "Iona",
+        "name": "Gaels",
+        "abbreviation": "IONA",
+        "displayName": "Iona Gaels",
+        "shortDisplayName": "Iona",
+        "isActive": true,
+        "venue": {
+         "id": "2001"
+        },
+        "conferenceId": "13"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 12:00 PM EST",
+       "shortDetail": "11/8 - 12:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "Peacock"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T17:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 12:00 PM EST",
+     "shortDetail": "11/8 - 12:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401920424",
+   "date": "2026-11-08T18:00Z",
+   "name": "Arkansas Razorbacks at Virginia Cavaliers",
+   "shortName": "ARK VS UVA",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920424",
+     "date": "2026-11-08T18:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": true,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "1823",
+      "fullName": "Capital One Arena",
+      "address": {
+       "city": "Washington",
+       "state": "DC"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "258",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "258",
+        "location": "Virginia",
+        "name": "Cavaliers",
+        "abbreviation": "UVA",
+        "displayName": "Virginia Cavaliers",
+        "shortDisplayName": "Virginia",
+        "isActive": true,
+        "venue": {
+         "id": "1927"
+        },
+        "conferenceId": "2"
+       },
+       "score": "0"
+      },
+      {
+       "id": "8",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "8",
+        "location": "Arkansas",
+        "name": "Razorbacks",
+        "abbreviation": "ARK",
+        "displayName": "Arkansas Razorbacks",
+        "shortDisplayName": "Arkansas",
+        "isActive": true,
+        "venue": {
+         "id": "2142"
+        },
+        "conferenceId": "23"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 1:00 PM EST",
+       "shortDetail": "11/8 - 1:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T18:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 1:00 PM EST",
+     "shortDetail": "11/8 - 1:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401926867",
+   "date": "2026-11-08T18:00Z",
+   "name": "Ripon Red Hawks at Milwaukee Panthers",
+   "shortName": "RIP @ MILW",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401926867",
+     "date": "2026-11-08T18:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "1983",
+      "fullName": "UW-Milwaukee Panther Arena",
+      "address": {
+       "city": "Milwaukee",
+       "state": "WI"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "270",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "270",
+        "location": "Milwaukee",
+        "name": "Panthers",
+        "abbreviation": "MILW",
+        "displayName": "Milwaukee Panthers",
+        "shortDisplayName": "Milwaukee",
+        "isActive": true,
+        "venue": {
+         "id": "1983"
+        },
+        "conferenceId": "45"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2891",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2891",
+        "location": "Ripon",
+        "name": "Red Hawks",
+        "abbreviation": "RIP",
+        "displayName": "Ripon Red Hawks",
+        "shortDisplayName": "Ripon",
+        "isActive": false
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 1:00 PM EST",
+       "shortDetail": "11/8 - 1:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T18:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 1:00 PM EST",
+     "shortDetail": "11/8 - 1:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401924734",
+   "date": "2026-11-08T18:00Z",
+   "name": "Princeton Tigers at Siena Saints",
+   "shortName": "PRIN @ SIE",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401924734",
+     "date": "2026-11-08T18:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "20",
+      "fullName": "MVP Arena",
+      "address": {
+       "city": "Albany",
+       "state": "NY"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2561",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2561",
+        "location": "Siena",
+        "name": "Saints",
+        "abbreviation": "SIE",
+        "displayName": "Siena Saints",
+        "shortDisplayName": "Siena",
+        "isActive": true,
+        "venue": {
+         "id": "20"
+        },
+        "conferenceId": "13"
+       },
+       "score": "0"
+      },
+      {
+       "id": "163",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "163",
+        "location": "Princeton",
+        "name": "Tigers",
+        "abbreviation": "PRIN",
+        "displayName": "Princeton Tigers",
+        "shortDisplayName": "Princeton",
+        "isActive": true,
+        "venue": {
+         "id": "1900"
+        },
+        "conferenceId": "12"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 1:00 PM EST",
+       "shortDetail": "11/8 - 1:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T18:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 1:00 PM EST",
+     "shortDetail": "11/8 - 1:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401921820",
+   "date": "2026-11-08T18:00Z",
+   "name": "Southeast Missouri State Redhawks at South Carolina Gamecocks",
+   "shortName": "SEMO @ SC",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401921820",
+     "date": "2026-11-08T18:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "1962",
+      "fullName": "Colonial Life Arena",
+      "address": {
+       "city": "Columbia",
+       "state": "SC"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2579",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2579",
+        "location": "South Carolina",
+        "name": "Gamecocks",
+        "abbreviation": "SC",
+        "displayName": "South Carolina Gamecocks",
+        "shortDisplayName": "South Carolina",
+        "isActive": true,
+        "venue": {
+         "id": "1962"
+        },
+        "conferenceId": "23"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2546",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2546",
+        "location": "Southeast Missouri State",
+        "name": "Redhawks",
+        "abbreviation": "SEMO",
+        "displayName": "Southeast Missouri State Redhawks",
+        "shortDisplayName": "SE Missouri",
+        "isActive": true,
+        "venue": {
+         "id": "1917"
+        },
+        "conferenceId": "20"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 1:00 PM EST",
+       "shortDetail": "11/8 - 1:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "SECN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T18:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 1:00 PM EST",
+     "shortDetail": "11/8 - 1:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401921687",
+   "date": "2026-11-08T18:00Z",
+   "name": "Marist Red Foxes at UMass Lowell River Hawks",
+   "shortName": "MRST @ UML",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401921687",
+     "date": "2026-11-08T18:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "4485",
+      "fullName": "Kennedy Family Athletic Complex",
+      "address": {
+       "city": "Lowell",
+       "state": "MA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2349",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2349",
+        "location": "UMass Lowell",
+        "name": "River Hawks",
+        "abbreviation": "UML",
+        "displayName": "UMass Lowell River Hawks",
+        "shortDisplayName": "UMass Lowell",
+        "isActive": true,
+        "venue": {
+         "id": "4485"
+        },
+        "conferenceId": "1"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2368",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2368",
+        "location": "Marist",
+        "name": "Red Foxes",
+        "abbreviation": "MRST",
+        "displayName": "Marist Red Foxes",
+        "shortDisplayName": "Marist",
+        "isActive": true,
+        "venue": {
+         "id": "1934"
+        },
+        "conferenceId": "13"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 1:00 PM EST",
+       "shortDetail": "11/8 - 1:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T18:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 1:00 PM EST",
+     "shortDetail": "11/8 - 1:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401921685",
+   "date": "2026-11-08T18:00Z",
+   "name": "Sacred Heart Pioneers at New Hampshire Wildcats",
+   "shortName": "SHU @ UNH",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401921685",
+     "date": "2026-11-08T18:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "1936",
+      "fullName": "Lundholm Gymnasium",
+      "address": {
+       "city": "Durham",
+       "state": "NH"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "160",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "160",
+        "location": "New Hampshire",
+        "name": "Wildcats",
+        "abbreviation": "UNH",
+        "displayName": "New Hampshire Wildcats",
+        "shortDisplayName": "New Hampshire",
+        "isActive": true,
+        "venue": {
+         "id": "1936"
+        },
+        "conferenceId": "1"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2529",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2529",
+        "location": "Sacred Heart",
+        "name": "Pioneers",
+        "abbreviation": "SHU",
+        "displayName": "Sacred Heart Pioneers",
+        "shortDisplayName": "Sacred Heart",
+        "isActive": true,
+        "venue": {
+         "id": "1916"
+        },
+        "conferenceId": "13"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 1:00 PM EST",
+       "shortDetail": "11/8 - 1:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T18:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 1:00 PM EST",
+     "shortDetail": "11/8 - 1:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401921684",
+   "date": "2026-11-08T18:00Z",
+   "name": "Manhattan Jaspers at Maine Black Bears",
+   "shortName": "MAN @ ME",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401921684",
+     "date": "2026-11-08T18:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "4606",
+      "fullName": "Skip Chappelle Court in Memorial Gymnasium",
+      "address": {
+       "city": "Orono",
+       "state": "ME"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "311",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "311",
+        "location": "Maine",
+        "name": "Black Bears",
+        "abbreviation": "ME",
+        "displayName": "Maine Black Bears",
+        "shortDisplayName": "Maine",
+        "isActive": true,
+        "venue": {
+         "id": "4606"
+        },
+        "conferenceId": "1"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2363",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2363",
+        "location": "Manhattan",
+        "name": "Jaspers",
+        "abbreviation": "MAN",
+        "displayName": "Manhattan Jaspers",
+        "shortDisplayName": "Manhattan",
+        "isActive": true,
+        "venue": {
+         "id": "2062"
+        },
+        "conferenceId": "13"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 1:00 PM EST",
+       "shortDetail": "11/8 - 1:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T18:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 1:00 PM EST",
+     "shortDetail": "11/8 - 1:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401921683",
+   "date": "2026-11-08T18:00Z",
+   "name": "Fairfield Stags at Bryant Bulldogs",
+   "shortName": "FAIR @ BRY",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401921683",
+     "date": "2026-11-08T18:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "2182",
+      "fullName": "Chace Athletic Center",
+      "address": {
+       "city": "Smithfield",
+       "state": "RI"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2803",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2803",
+        "location": "Bryant",
+        "name": "Bulldogs",
+        "abbreviation": "BRY",
+        "displayName": "Bryant Bulldogs",
+        "shortDisplayName": "Bryant",
+        "isActive": true,
+        "venue": {
+         "id": "2182"
+        },
+        "conferenceId": "1"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2217",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2217",
+        "location": "Fairfield",
+        "name": "Stags",
+        "abbreviation": "FAIR",
+        "displayName": "Fairfield Stags",
+        "shortDisplayName": "Fairfield",
+        "isActive": true,
+        "venue": {
+         "id": "7413"
+        },
+        "conferenceId": "13"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 1:00 PM EST",
+       "shortDetail": "11/8 - 1:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T18:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 1:00 PM EST",
+     "shortDetail": "11/8 - 1:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401921220",
+   "date": "2026-11-08T18:00Z",
+   "name": "Central Penn Knights at Navy Midshipmen",
+   "shortName": "CPC @ NAVY",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401921220",
+     "date": "2026-11-08T18:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "2176",
+      "fullName": "Alumni Hall (Navy)",
+      "address": {
+       "city": "Annapolis",
+       "state": "MD"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2426",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2426",
+        "location": "Navy",
+        "name": "Midshipmen",
+        "abbreviation": "NAVY",
+        "displayName": "Navy Midshipmen",
+        "shortDisplayName": "Navy",
+        "isActive": true,
+        "venue": {
+         "id": "2176"
+        },
+        "conferenceId": "22"
+       },
+       "score": "0"
+      },
+      {
+       "id": "3164",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "3164",
+        "location": "Central Penn",
+        "name": "Knights",
+        "abbreviation": "CPC",
+        "displayName": "Central Penn Knights",
+        "shortDisplayName": "Central Penn",
+        "isActive": false
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 1:00 PM EST",
+       "shortDetail": "11/8 - 1:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      },
+      {
+       "market": "home",
+       "names": [
+        "Patriot League TV"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T18:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 1:00 PM EST",
+     "shortDetail": "11/8 - 1:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401920355",
+   "date": "2026-11-08T18:00Z",
+   "name": "Harvard Crimson at Chicago Maroons",
+   "shortName": "HARV @ CHI",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920355",
+     "date": "2026-11-08T18:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "12825",
+      "fullName": "Ratner Athletics Center",
+      "address": {
+       "city": "Chicago",
+       "state": "IL"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "80",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "80",
+        "location": "Chicago",
+        "name": "Maroons",
+        "abbreviation": "CHI",
+        "displayName": "Chicago Maroons",
+        "shortDisplayName": "Chicago",
+        "isActive": false,
+        "venue": {
+         "id": "12825"
+        }
+       },
+       "score": "0"
+      },
+      {
+       "id": "108",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "108",
+        "location": "Harvard",
+        "name": "Crimson",
+        "abbreviation": "HARV",
+        "displayName": "Harvard Crimson",
+        "shortDisplayName": "Harvard",
+        "isActive": true,
+        "venue": {
+         "id": "2209"
+        },
+        "conferenceId": "12"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 1:00 PM EST",
+       "shortDetail": "11/8 - 1:00 PM EST"
+      }
+     },
+     "broadcasts": [],
+     "startDate": "2026-11-08T18:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 1:00 PM EST",
+     "shortDetail": "11/8 - 1:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401926210",
+   "date": "2026-11-08T19:00Z",
+   "name": "Allen Yellow Jackets at Wofford Terriers",
+   "shortName": "ALNU @ WOF",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401926210",
+     "date": "2026-11-08T19:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "5426",
+      "fullName": "Jerry Richardson Indoor Stadium",
+      "address": {
+       "city": "Spartanburg",
+       "state": "SC"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2747",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2747",
+        "location": "Wofford",
+        "name": "Terriers",
+        "abbreviation": "WOF",
+        "displayName": "Wofford Terriers",
+        "shortDisplayName": "Wofford",
+        "isActive": true,
+        "venue": {
+         "id": "5426"
+        },
+        "conferenceId": "24"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2019",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2019",
+        "location": "Allen",
+        "name": "Yellow Jackets",
+        "abbreviation": "ALNU",
+        "displayName": "Allen Yellow Jackets",
+        "shortDisplayName": "Allen",
+        "isActive": false
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 2:00 PM EST",
+       "shortDetail": "11/8 - 2:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T19:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 2:00 PM EST",
+     "shortDetail": "11/8 - 2:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401924719",
+   "date": "2026-11-08T19:00Z",
+   "name": "Keuka Storm at Cornell Big Red",
+   "shortName": "KEUK @ COR",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401924719",
+     "date": "2026-11-08T19:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "1913",
+      "fullName": "Newman Arena",
+      "address": {
+       "city": "Ithaca",
+       "state": "NY"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "172",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "172",
+        "location": "Cornell",
+        "name": "Big Red",
+        "abbreviation": "COR",
+        "displayName": "Cornell Big Red",
+        "shortDisplayName": "Cornell",
+        "isActive": true,
+        "venue": {
+         "id": "1913"
+        },
+        "conferenceId": "12"
+       },
+       "score": "0"
+      },
+      {
+       "id": "6319",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "6319",
+        "location": "Keuka",
+        "name": "Storm",
+        "abbreviation": "KEUK",
+        "displayName": "Keuka Storm",
+        "shortDisplayName": "Keuka",
+        "isActive": false
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 2:00 PM EST",
+       "shortDetail": "11/8 - 2:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T19:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 2:00 PM EST",
+     "shortDetail": "11/8 - 2:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401921686",
+   "date": "2026-11-08T19:00Z",
+   "name": "Merrimack Warriors at UAlbany Great Danes",
+   "shortName": "MRMK @ UALB",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401921686",
+     "date": "2026-11-08T19:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "1976",
+      "fullName": "Broadview Center",
+      "address": {
+       "city": "Albany",
+       "state": "NY"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "399",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "399",
+        "location": "UAlbany",
+        "name": "Great Danes",
+        "abbreviation": "UALB",
+        "displayName": "UAlbany Great Danes",
+        "shortDisplayName": "UAlbany",
+        "isActive": true,
+        "venue": {
+         "id": "1976"
+        },
+        "conferenceId": "1"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2771",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2771",
+        "location": "Merrimack",
+        "name": "Warriors",
+        "abbreviation": "MRMK",
+        "displayName": "Merrimack Warriors",
+        "shortDisplayName": "Merrimack",
+        "isActive": true,
+        "venue": {
+         "id": "1218"
+        },
+        "conferenceId": "13"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 2:00 PM EST",
+       "shortDetail": "11/8 - 2:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T19:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 2:00 PM EST",
+     "shortDetail": "11/8 - 2:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401920843",
+   "date": "2026-11-08T19:00Z",
+   "name": "Green Bay Phoenix at St. Thomas Tommies",
+   "shortName": "GB @ STMN",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920843",
+     "date": "2026-11-08T19:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "11629",
+      "fullName": "Lee & Penny Anderson Arena",
+      "address": {
+       "city": "Saint Paul",
+       "state": "MN"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2900",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2900",
+        "location": "St. Thomas",
+        "name": "Tommies",
+        "abbreviation": "STMN",
+        "displayName": "St. Thomas Tommies",
+        "shortDisplayName": "St Thomas",
+        "isActive": true,
+        "venue": {
+         "id": "11629"
+        },
+        "conferenceId": "49"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2739",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2739",
+        "location": "Green Bay",
+        "name": "Phoenix",
+        "abbreviation": "GB",
+        "displayName": "Green Bay Phoenix",
+        "shortDisplayName": "Green Bay",
+        "isActive": true,
+        "venue": {
+         "id": "522"
+        },
+        "conferenceId": "45"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 2:00 PM EST",
+       "shortDetail": "11/8 - 2:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "home",
+       "names": [
+        "Summit League Network",
+        "Midco Sports Plus"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T19:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 2:00 PM EST",
+     "shortDetail": "11/8 - 2:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401920739",
+   "date": "2026-11-08T19:00Z",
+   "name": "Campbell Fighting Camels at Western Michigan Broncos",
+   "shortName": "CAM @ WMU",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920739",
+     "date": "2026-11-08T19:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "1972",
+      "fullName": "University Arena (MI)",
+      "address": {
+       "city": "Kalamazoo",
+       "state": "MI"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2711",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2711",
+        "location": "Western Michigan",
+        "name": "Broncos",
+        "abbreviation": "WMU",
+        "displayName": "Western Michigan Broncos",
+        "shortDisplayName": "W Michigan",
+        "isActive": true,
+        "venue": {
+         "id": "1972"
+        },
+        "conferenceId": "14"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2097",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2097",
+        "location": "Campbell",
+        "name": "Fighting Camels",
+        "abbreviation": "CAM",
+        "displayName": "Campbell Fighting Camels",
+        "shortDisplayName": "Campbell",
+        "isActive": true,
+        "venue": {
+         "id": "1906"
+        },
+        "conferenceId": "10"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 2:00 PM EST",
+       "shortDetail": "11/8 - 2:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T19:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 2:00 PM EST",
+     "shortDetail": "11/8 - 2:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401920692",
+   "date": "2026-11-08T19:00Z",
+   "name": "Quinnipiac Bobcats at Vermont Catamounts",
+   "shortName": "QUIN @ UVM",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920692",
+     "date": "2026-11-08T19:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "2118",
+      "fullName": "Patrick Gymnasium",
+      "address": {
+       "city": "Burlington",
+       "state": "VT"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "261",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "261",
+        "location": "Vermont",
+        "name": "Catamounts",
+        "abbreviation": "UVM",
+        "displayName": "Vermont Catamounts",
+        "shortDisplayName": "Vermont",
+        "isActive": true,
+        "venue": {
+         "id": "2118"
+        },
+        "conferenceId": "1"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2514",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2514",
+        "location": "Quinnipiac",
+        "name": "Bobcats",
+        "abbreviation": "QUIN",
+        "displayName": "Quinnipiac Bobcats",
+        "shortDisplayName": "Quinnipiac",
+        "isActive": true,
+        "venue": {
+         "id": "1907"
+        },
+        "conferenceId": "13"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 2:00 PM EST",
+       "shortDetail": "11/8 - 2:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T19:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 2:00 PM EST",
+     "shortDetail": "11/8 - 2:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401920233",
+   "date": "2026-11-08T19:00Z",
+   "name": "Central Connecticut Blue Devils at Dartmouth Big Green",
+   "shortName": "CCSU @ DART",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920233",
+     "date": "2026-11-08T19:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "2004",
+      "fullName": "Leede Arena",
+      "address": {
+       "city": "Hanover",
+       "state": "NH"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "159",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "159",
+        "location": "Dartmouth",
+        "name": "Big Green",
+        "abbreviation": "DART",
+        "displayName": "Dartmouth Big Green",
+        "shortDisplayName": "Dartmouth",
+        "isActive": true,
+        "venue": {
+         "id": "2004"
+        },
+        "conferenceId": "12"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2115",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2115",
+        "location": "Central Connecticut",
+        "name": "Blue Devils",
+        "abbreviation": "CCSU",
+        "displayName": "Central Connecticut Blue Devils",
+        "shortDisplayName": "C Connecticut",
+        "isActive": true,
+        "venue": {
+         "id": "2144"
+        },
+        "conferenceId": "19"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 2:00 PM EST",
+       "shortDetail": "11/8 - 2:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T19:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 2:00 PM EST",
+     "shortDetail": "11/8 - 2:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401911306",
+   "date": "2026-11-08T19:00Z",
+   "name": "Brown Bears at Lehigh Mountain Hawks",
+   "shortName": "BRWN @ LEH",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401911306",
+     "date": "2026-11-08T19:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "2141",
+      "fullName": "Stabler Arena",
+      "address": {
+       "city": "Bethlehem",
+       "state": "PA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2329",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2329",
+        "location": "Lehigh",
+        "name": "Mountain Hawks",
+        "abbreviation": "LEH",
+        "displayName": "Lehigh Mountain Hawks",
+        "shortDisplayName": "Lehigh",
+        "isActive": true,
+        "venue": {
+         "id": "2141"
+        },
+        "conferenceId": "22"
+       },
+       "score": "0"
+      },
+      {
+       "id": "225",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "225",
+        "location": "Brown",
+        "name": "Bears",
+        "abbreviation": "BRWN",
+        "displayName": "Brown Bears",
+        "shortDisplayName": "Brown",
+        "isActive": true,
+        "venue": {
+         "id": "2036"
+        },
+        "conferenceId": "12"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 2:00 PM EST",
+       "shortDetail": "11/8 - 2:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T19:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 2:00 PM EST",
+     "shortDetail": "11/8 - 2:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401902277",
+   "date": "2026-11-08T19:00Z",
+   "name": "Butler Bulldogs at Boise State Broncos",
+   "shortName": "BTLR @ BOIS",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401902277",
+     "date": "2026-11-08T19:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "2028",
+      "fullName": "ExtraMile Arena",
+      "address": {
+       "city": "Boise",
+       "state": "ID"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "68",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "68",
+        "location": "Boise State",
+        "name": "Broncos",
+        "abbreviation": "BOIS",
+        "displayName": "Boise State Broncos",
+        "shortDisplayName": "Boise St",
+        "isActive": true,
+        "venue": {
+         "id": "2028"
+        },
+        "conferenceId": "21"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2086",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2086",
+        "location": "Butler",
+        "name": "Bulldogs",
+        "abbreviation": "BTLR",
+        "displayName": "Butler Bulldogs",
+        "shortDisplayName": "Butler",
+        "isActive": true,
+        "venue": {
+         "id": "2032"
+        },
+        "conferenceId": "4"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 2:00 PM EST",
+       "shortDetail": "11/8 - 2:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "USA Net"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T19:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 2:00 PM EST",
+     "shortDetail": "11/8 - 2:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401927362",
+   "date": "2026-11-08T20:00Z",
+   "name": "Southern Jaguars at Drake Bulldogs",
+   "shortName": "SOU @ DRKE",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401927362",
+     "date": "2026-11-08T20:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "2075",
+      "fullName": "Knapp Center",
+      "address": {
+       "city": "Des Moines",
+       "state": "IA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2181",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2181",
+        "location": "Drake",
+        "name": "Bulldogs",
+        "abbreviation": "DRKE",
+        "displayName": "Drake Bulldogs",
+        "shortDisplayName": "Drake",
+        "isActive": true,
+        "venue": {
+         "id": "2075"
+        },
+        "conferenceId": "18"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2582",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2582",
+        "location": "Southern",
+        "name": "Jaguars",
+        "abbreviation": "SOU",
+        "displayName": "Southern Jaguars",
+        "shortDisplayName": "Southern",
+        "isActive": true,
+        "venue": {
+         "id": "2210"
+        },
+        "conferenceId": "26"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 3:00 PM EST",
+       "shortDetail": "11/8 - 3:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T20:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 3:00 PM EST",
+     "shortDetail": "11/8 - 3:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401926215",
+   "date": "2026-11-08T20:00Z",
+   "name": "Western Kentucky Hilltoppers at Tennessee Tech Golden Eagles",
+   "shortName": "WKU @ TNTC",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401926215",
+     "date": "2026-11-08T20:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "2152",
+      "fullName": "Hooper Eblen Center",
+      "address": {
+       "city": "Cookeville",
+       "state": "TN"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2635",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2635",
+        "location": "Tennessee Tech",
+        "name": "Golden Eagles",
+        "abbreviation": "TNTC",
+        "displayName": "Tennessee Tech Golden Eagles",
+        "shortDisplayName": "Tennessee Tech",
+        "isActive": true,
+        "venue": {
+         "id": "2152"
+        },
+        "conferenceId": "24"
+       },
+       "score": "0"
+      },
+      {
+       "id": "98",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "98",
+        "location": "Western Kentucky",
+        "name": "Hilltoppers",
+        "abbreviation": "WKU",
+        "displayName": "Western Kentucky Hilltoppers",
+        "shortDisplayName": "Western KY",
+        "isActive": true,
+        "venue": {
+         "id": "1971"
+        },
+        "conferenceId": "11"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 3:00 PM EST",
+       "shortDetail": "11/8 - 3:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T20:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 3:00 PM EST",
+     "shortDetail": "11/8 - 3:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401911335",
+   "date": "2026-11-08T20:00Z",
+   "name": "Idaho State Bengals at Air Force Falcons",
+   "shortName": "IDST @ AF",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401911335",
+     "date": "2026-11-08T20:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "2014",
+      "fullName": "Clune Arena",
+      "address": {
+       "city": "Colorado Springs",
+       "state": "CO"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2005",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2005",
+        "location": "Air Force",
+        "name": "Falcons",
+        "abbreviation": "AF",
+        "displayName": "Air Force Falcons",
+        "shortDisplayName": "Air Force",
+        "isActive": true,
+        "venue": {
+         "id": "2014"
+        },
+        "conferenceId": "44"
+       },
+       "score": "0"
+      },
+      {
+       "id": "304",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "304",
+        "location": "Idaho State",
+        "name": "Bengals",
+        "abbreviation": "IDST",
+        "displayName": "Idaho State Bengals",
+        "shortDisplayName": "Idaho St",
+        "isActive": true,
+        "venue": {
+         "id": "1904"
+        },
+        "conferenceId": "5"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 3:00 PM EST",
+       "shortDetail": "11/8 - 3:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "MW+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T20:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 3:00 PM EST",
+     "shortDetail": "11/8 - 3:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401920865",
+   "date": "2026-11-08T21:00Z",
+   "name": "Saint Peter's Peacocks at NJIT Highlanders",
+   "shortName": "SPU @ NJIT",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920865",
+     "date": "2026-11-08T21:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "5420",
+      "fullName": "Joel & Diane Bloom Wellness and Events Center",
+      "address": {
+       "city": "Newark",
+       "state": "NJ"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2885",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2885",
+        "location": "NJIT",
+        "name": "Highlanders",
+        "abbreviation": "NJIT",
+        "displayName": "NJIT Highlanders",
+        "shortDisplayName": "NJIT",
+        "isActive": true,
+        "venue": {
+         "id": "5420"
+        },
+        "conferenceId": "1"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2612",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2612",
+        "location": "Saint Peter's",
+        "name": "Peacocks",
+        "abbreviation": "SPU",
+        "displayName": "Saint Peter's Peacocks",
+        "shortDisplayName": "Saint Peter's",
+        "isActive": true,
+        "venue": {
+         "id": "1963"
+        },
+        "conferenceId": "13"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 4:00 PM EST",
+       "shortDetail": "11/8 - 4:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T21:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 4:00 PM EST",
+     "shortDetail": "11/8 - 4:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401911274",
+   "date": "2026-11-08T21:00Z",
+   "name": "Rider Broncs at Binghamton Bearcats",
+   "shortName": "RID @ BING",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401911274",
+     "date": "2026-11-08T21:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "1924",
+      "fullName": "Events Center (Binghamton)",
+      "address": {
+       "city": "Binghamton",
+       "state": "NY"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2066",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2066",
+        "location": "Binghamton",
+        "name": "Bearcats",
+        "abbreviation": "BING",
+        "displayName": "Binghamton Bearcats",
+        "shortDisplayName": "Binghamton",
+        "isActive": true,
+        "venue": {
+         "id": "1924"
+        },
+        "conferenceId": "1"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2520",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2520",
+        "location": "Rider",
+        "name": "Broncs",
+        "abbreviation": "RID",
+        "displayName": "Rider Broncs",
+        "shortDisplayName": "Rider",
+        "isActive": true,
+        "venue": {
+         "id": "1944"
+        },
+        "conferenceId": "13"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 4:00 PM EST",
+       "shortDetail": "11/8 - 4:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T21:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 4:00 PM EST",
+     "shortDetail": "11/8 - 4:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401911453",
+   "date": "2026-11-08T21:30Z",
+   "name": "Saint Mary's Gaels at Nevada Wolf Pack",
+   "shortName": "SMC VS NEV",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401911453",
+     "date": "2026-11-08T21:30Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": true,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "11030",
+      "fullName": "Tahoe Blue Event Center",
+      "address": {
+       "city": "Stateline",
+       "state": "NV"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2440",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2440",
+        "location": "Nevada",
+        "name": "Wolf Pack",
+        "abbreviation": "NEV",
+        "displayName": "Nevada Wolf Pack",
+        "shortDisplayName": "Nevada",
+        "isActive": true,
+        "venue": {
+         "id": "461"
+        },
+        "conferenceId": "44"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2608",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2608",
+        "location": "Saint Mary's",
+        "name": "Gaels",
+        "abbreviation": "SMC",
+        "displayName": "Saint Mary's Gaels",
+        "shortDisplayName": "Saint Mary's",
+        "isActive": true,
+        "venue": {
+         "id": "488"
+        },
+        "conferenceId": "29"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 4:30 PM EST",
+       "shortDetail": "11/8 - 4:30 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "MW+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T21:30Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 4:30 PM EST",
+     "shortDetail": "11/8 - 4:30 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401922262",
+   "date": "2026-11-08T22:00Z",
+   "name": "Lincoln (CA) Oaklanders at Idaho Vandals",
+   "shortName": "LNCA @ IDHO",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401922262",
+     "date": "2026-11-08T22:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "7264",
+      "fullName": "ICCU Arena",
+      "address": {
+       "city": "Moscow",
+       "state": "ID"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "70",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "70",
+        "location": "Idaho",
+        "name": "Vandals",
+        "abbreviation": "IDHO",
+        "displayName": "Idaho Vandals",
+        "shortDisplayName": "Idaho",
+        "isActive": true,
+        "venue": {
+         "id": "7264"
+        },
+        "conferenceId": "5"
+       },
+       "score": "0"
+      },
+      {
+       "id": "124946",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "124946",
+        "location": "Lincoln (CA)",
+        "name": "Oaklanders",
+        "abbreviation": "LNCA",
+        "displayName": "Lincoln (CA) Oaklanders",
+        "shortDisplayName": "Lincoln (CA)",
+        "isActive": false
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 5:00 PM EST",
+       "shortDetail": "11/8 - 5:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T22:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 5:00 PM EST",
+     "shortDetail": "11/8 - 5:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401911238",
+   "date": "2026-11-08T22:00Z",
+   "name": "Richmond Spiders at Temple Owls",
+   "shortName": "RICH VS TEM",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401911238",
+     "date": "2026-11-08T22:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": true,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "1899",
+      "fullName": "The Palestra",
+      "address": {
+       "city": "Philadelphia",
+       "state": "PA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "218",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "218",
+        "location": "Temple",
+        "name": "Owls",
+        "abbreviation": "TEM",
+        "displayName": "Temple Owls",
+        "shortDisplayName": "Temple",
+        "isActive": true,
+        "venue": {
+         "id": "2011"
+        },
+        "conferenceId": "62"
+       },
+       "score": "0"
+      },
+      {
+       "id": "257",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "257",
+        "location": "Richmond",
+        "name": "Spiders",
+        "abbreviation": "RICH",
+        "displayName": "Richmond Spiders",
+        "shortDisplayName": "Richmond",
+        "isActive": true,
+        "venue": {
+         "id": "4486"
+        },
+        "conferenceId": "3"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 5:00 PM EST",
+       "shortDetail": "11/8 - 5:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN2"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T22:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 5:00 PM EST",
+     "shortDetail": "11/8 - 5:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401929352",
+   "date": "2026-11-08T23:00Z",
+   "name": "Incarnate Word Cardinals at UTEP Miners",
+   "shortName": "UIW @ UTEP",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401929352",
+     "date": "2026-11-08T23:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "2117",
+      "fullName": "Don Haskins Center",
+      "address": {
+       "city": "El Paso",
+       "state": "TX"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2638",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2638",
+        "location": "UTEP",
+        "name": "Miners",
+        "abbreviation": "UTEP",
+        "displayName": "UTEP Miners",
+        "shortDisplayName": "UTEP",
+        "isActive": true,
+        "venue": {
+         "id": "2117"
+        },
+        "conferenceId": "44"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2916",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2916",
+        "location": "Incarnate Word",
+        "name": "Cardinals",
+        "abbreviation": "UIW",
+        "displayName": "Incarnate Word Cardinals",
+        "shortDisplayName": "Incarnate Word",
+        "isActive": true,
+        "venue": {
+         "id": "4532"
+        },
+        "conferenceId": "25"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 6:00 PM EST",
+       "shortDetail": "11/8 - 6:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "MW+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T23:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 6:00 PM EST",
+     "shortDetail": "11/8 - 6:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401925894",
+   "date": "2026-11-08T23:00Z",
+   "name": "Norfolk State Spartans at William & Mary Tribe",
+   "shortName": "NORF @ W&M",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401925894",
+     "date": "2026-11-08T23:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "2200",
+      "fullName": "Kaplan Arena",
+      "address": {
+       "city": "Williamsburg",
+       "state": "VA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2729",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2729",
+        "location": "William & Mary",
+        "name": "Tribe",
+        "abbreviation": "W&M",
+        "displayName": "William & Mary Tribe",
+        "shortDisplayName": "William & Mary",
+        "isActive": true,
+        "venue": {
+         "id": "2200"
+        },
+        "conferenceId": "10"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2450",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2450",
+        "location": "Norfolk State",
+        "name": "Spartans",
+        "abbreviation": "NORF",
+        "displayName": "Norfolk State Spartans",
+        "shortDisplayName": "Norfolk St",
+        "isActive": true,
+        "venue": {
+         "id": "1989"
+        },
+        "conferenceId": "16"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 6:00 PM EST",
+       "shortDetail": "11/8 - 6:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "home",
+       "names": [
+        "FloSports"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T23:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 6:00 PM EST",
+     "shortDetail": "11/8 - 6:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401920134",
+   "date": "2026-11-08T23:00Z",
+   "name": "North Dakota State Bison at Cal State Bakersfield Roadrunners",
+   "shortName": "NDSU @ CSUB",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401920134",
+     "date": "2026-11-08T23:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "2112",
+      "fullName": "Icardo Center",
+      "address": {
+       "city": "Bakersfield",
+       "state": "CA"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2934",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2934",
+        "location": "Cal State Bakersfield",
+        "name": "Roadrunners",
+        "abbreviation": "CSUB",
+        "displayName": "Cal State Bakersfield Roadrunners",
+        "shortDisplayName": "Bakersfield",
+        "isActive": true,
+        "venue": {
+         "id": "2112"
+        },
+        "conferenceId": "9"
+       },
+       "score": "0"
+      },
+      {
+       "id": "2449",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2449",
+        "location": "North Dakota State",
+        "name": "Bison",
+        "abbreviation": "NDSU",
+        "displayName": "North Dakota State Bison",
+        "shortDisplayName": "N Dakota St",
+        "isActive": true,
+        "venue": {
+         "id": "5433"
+        },
+        "conferenceId": "49"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 6:00 PM EST",
+       "shortDetail": "11/8 - 6:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "ESPN+"
+       ]
+      }
+     ],
+     "startDate": "2026-11-08T23:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 6:00 PM EST",
+     "shortDetail": "11/8 - 6:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401930195",
+   "date": "2026-11-09T00:30Z",
+   "name": "Portland Pilots at Bethesda Flames",
+   "shortName": "PORT VS BTHS",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401930195",
+     "date": "2026-11-09T00:30Z",
+     "attendance": 0,
+     "type": {
+      "id": "6",
+      "abbreviation": "TRNMNT"
+     },
+     "timeValid": true,
+     "neutralSite": true,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "540",
+      "fullName": "Stan Sheriff Center",
+      "address": {
+       "city": "Honolulu",
+       "state": "HI"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "3246",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "3246",
+        "location": "Bethesda",
+        "name": "Flames",
+        "abbreviation": "BTHS",
+        "displayName": "Bethesda Flames",
+        "shortDisplayName": "Bethesda",
+        "isActive": false
+       },
+       "score": "0"
+      },
+      {
+       "id": "2501",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "2501",
+        "location": "Portland",
+        "name": "Pilots",
+        "abbreviation": "PORT",
+        "displayName": "Portland Pilots",
+        "shortDisplayName": "Portland",
+        "isActive": true,
+        "venue": {
+         "id": "2136"
+        },
+        "conferenceId": "29"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 7:30 PM EST",
+       "shortDetail": "11/8 - 7:30 PM EST"
+      }
+     },
+     "broadcasts": [],
+     "tournamentId": 51,
+     "startDate": "2026-11-09T00:30Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 7:30 PM EST",
+     "shortDetail": "11/8 - 7:30 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401918053",
+   "date": "2026-11-09T01:30Z",
+   "name": "Houston Cougars at California Golden Bears",
+   "shortName": "HOU VS CAL",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401918053",
+     "date": "2026-11-09T01:30Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": true,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "11030",
+      "fullName": "Tahoe Blue Event Center",
+      "address": {
+       "city": "Stateline",
+       "state": "NV"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "25",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "25",
+        "location": "California",
+        "name": "Golden Bears",
+        "abbreviation": "CAL",
+        "displayName": "California Golden Bears",
+        "shortDisplayName": "California",
+        "isActive": true,
+        "venue": {
+         "id": "496"
+        },
+        "conferenceId": "2"
+       },
+       "score": "0"
+      },
+      {
+       "id": "248",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "248",
+        "location": "Houston",
+        "name": "Cougars",
+        "abbreviation": "HOU",
+        "displayName": "Houston Cougars",
+        "shortDisplayName": "Houston",
+        "isActive": true,
+        "venue": {
+         "id": "2126"
+        },
+        "conferenceId": "8"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 8:30 PM EST",
+       "shortDetail": "11/8 - 8:30 PM EST"
+      }
+     },
+     "broadcasts": [],
+     "startDate": "2026-11-09T01:30Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 8:30 PM EST",
+     "shortDetail": "11/8 - 8:30 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401919029",
+   "date": "2026-11-09T04:00Z",
+   "name": "USC Trojans at Wichita State Shockers",
+   "shortName": "USC VS WICH",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401919029",
+     "date": "2026-11-09T04:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "1",
+      "abbreviation": "STD"
+     },
+     "timeValid": true,
+     "neutralSite": true,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "11030",
+      "fullName": "Tahoe Blue Event Center",
+      "address": {
+       "city": "Stateline",
+       "state": "NV"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "2724",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "2724",
+        "location": "Wichita State",
+        "name": "Shockers",
+        "abbreviation": "WICH",
+        "displayName": "Wichita State Shockers",
+        "shortDisplayName": "Wichita St",
+        "isActive": true,
+        "venue": {
+         "id": "2086"
+        },
+        "conferenceId": "62"
+       },
+       "score": "0"
+      },
+      {
+       "id": "30",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "30",
+        "location": "USC",
+        "name": "Trojans",
+        "abbreviation": "USC",
+        "displayName": "USC Trojans",
+        "shortDisplayName": "USC",
+        "isActive": true,
+        "venue": {
+         "id": "1918"
+        },
+        "conferenceId": "7"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 11:00 PM EST",
+       "shortDetail": "11/8 - 11:00 PM EST"
+      }
+     },
+     "broadcasts": [],
+     "startDate": "2026-11-09T04:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 11:00 PM EST",
+     "shortDetail": "11/8 - 11:00 PM EST"
+    }
+   }
+  },
+  {
+   "id": "401929002",
+   "date": "2026-11-09T04:00Z",
+   "name": "UT Arlington Mavericks at Hawai'i Rainbow Warriors",
+   "shortName": "UTA @ HAW",
+   "season": {
+    "year": 2027,
+    "type": 2,
+    "slug": "regular-season"
+   },
+   "competitions": [
+    {
+     "id": "401929002",
+     "date": "2026-11-09T04:00Z",
+     "attendance": 0,
+     "type": {
+      "id": "6",
+      "abbreviation": "TRNMNT"
+     },
+     "timeValid": true,
+     "neutralSite": false,
+     "conferenceCompetition": false,
+     "recent": false,
+     "venue": {
+      "id": "540",
+      "fullName": "Stan Sheriff Center",
+      "address": {
+       "city": "Honolulu",
+       "state": "HI"
+      },
+      "indoor": true
+     },
+     "competitors": [
+      {
+       "id": "62",
+       "type": "team",
+       "order": 0,
+       "homeAway": "home",
+       "team": {
+        "id": "62",
+        "location": "Hawai'i",
+        "name": "Rainbow Warriors",
+        "abbreviation": "HAW",
+        "displayName": "Hawai'i Rainbow Warriors",
+        "shortDisplayName": "Hawai'i",
+        "isActive": true,
+        "venue": {
+         "id": "540"
+        },
+        "conferenceId": "44"
+       },
+       "score": "0"
+      },
+      {
+       "id": "250",
+       "type": "team",
+       "order": 1,
+       "homeAway": "away",
+       "team": {
+        "id": "250",
+        "location": "UT Arlington",
+        "name": "Mavericks",
+        "abbreviation": "UTA",
+        "displayName": "UT Arlington Mavericks",
+        "shortDisplayName": "UT Arlington",
+        "isActive": true,
+        "venue": {
+         "id": "3416"
+        },
+        "conferenceId": "30"
+       },
+       "score": "0"
+      }
+     ],
+     "status": {
+      "clock": 0.0,
+      "displayClock": "0:00",
+      "period": 0,
+      "type": {
+       "id": "1",
+       "name": "STATUS_SCHEDULED",
+       "state": "pre",
+       "completed": false,
+       "description": "Scheduled",
+       "detail": "Sun, November 8th at 11:00 PM EST",
+       "shortDetail": "11/8 - 11:00 PM EST"
+      }
+     },
+     "broadcasts": [
+      {
+       "market": "national",
+       "names": [
+        "MW+"
+       ]
+      }
+     ],
+     "tournamentId": 51,
+     "startDate": "2026-11-09T04:00Z"
+    }
+   ],
+   "status": {
+    "clock": 0.0,
+    "displayClock": "0:00",
+    "period": 0,
+    "type": {
+     "id": "1",
+     "name": "STATUS_SCHEDULED",
+     "state": "pre",
+     "completed": false,
+     "description": "Scheduled",
+     "detail": "Sun, November 8th at 11:00 PM EST",
+     "shortDetail": "11/8 - 11:00 PM EST"
+    }
+   }
+  }
+ ],
+ "provider": {
+  "id": "100",
+  "name": "Draft Kings",
+  "displayName": "Draft Kings",
+  "priority": 1
+ },
+ "eventsDate": {
+  "date": "2026-11-08T17:00Z",
+  "seasonType": 2
+ }
+}

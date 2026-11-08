@@ -139,6 +139,8 @@ to act on only those, e.g. `tools/launchd/install.sh install com.deepsports.odds
   Privacy & Security → Files and Folders → python3.12 / uv / bash). Until it's granted, access to the drive
   *hangs* instead of failing. The server copes (live data is cached internally, warehouse opens time out
   to 503), but the scheduled sync needs the permission. The prompt only appears on the Mac's screen, not over SSH.
+  Only uv's Python has it today: under launchd, bash globs, `cp`, `ls` and `/usr/bin/python3` get `Operation not
+  permitted` on the drive, so scripts must go through `uv run python` (DECISIONS 2026-11-07).
 - Claude agents can't install these themselves: Claude Code's auto mode blocks creating login items. The owner runs the installer.
 
 ## Troubleshooting

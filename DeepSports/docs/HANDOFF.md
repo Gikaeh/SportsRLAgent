@@ -1,4 +1,4 @@
-# Handoff: state of DeepSports (updated 2026-11-06)
+# Handoff: state of DeepSports (updated 2026-11-07)
 
 Read this first in a new session, then CLAUDE.md → AGENTS.md → docs/ROADMAP.md.
 
@@ -51,7 +51,8 @@ Rebuild clients: `(cd web && npm run build)`, `(cd glasses && npm run build)`; E
   no-prior v1 model; split the early record there.
 - Historical ESPN injury lists are fetch-time, so they **leak**. Only pre-tip snapshots are valid model inputs.
 - One DuckDB writer at a time. The API returns 503 `warehouse_busy` during jobs; live scores keep working.
-- launchd processes needed the macOS "Removable Volumes" permission (granted 2026-11-03).
+- launchd processes needed the macOS "Removable Volumes" permission (granted 2026-11-03). Only uv's Python has it:
+  launchd scripts must use `uv run python`, not shell tools or system `python3`, for files on the drive.
 - The packaged glasses build has `http://172.16.0.61:8787` built in; repack if the Mac's IP changes.
 - `collab/` (DeepSeek's notes on the friend's SportsRLAgent) is local and git-ignored; our summary is
   `docs/research/sportsrlagent-review.md`. The friend granted permission to use their data/methods.

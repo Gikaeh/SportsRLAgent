@@ -134,7 +134,7 @@ class ModelRetrainer:
             training_data = self.prepareTrainingData()
         
         if training_data is None or training_data.empty:
-            return {'success': False, 'error': 'No training data available'}
+            return False, {'reason': 'No training data available'}
         
         train_data, test_data = train_test_split(training_data, test_size=self.retrain_config['test_split'], random_state=42)
         val_data, test_data = train_test_split(test_data, test_size=self.retrain_config['validation_split'], random_state=42)

@@ -19,12 +19,16 @@ class BasketballData(BaseDataFetcher):
             'Portland Trail Blazers', 'Sacramento Kings', 'San Antonio Spurs', 'Oklahoma City Thunder', 'Toronto Raptors', 'Utah Jazz', 'Memphis Grizzlies', 'Washington Wizards', 'Detroit Pistons', 'Charlotte Hornets',
             'New Jersey Nets', 'Charlotte Bobcats', 'Vancouver Grizzlies', 'New Orleans Hornets', ' Seattle SuperSonics', 'New Orleans/Oklahoma City Hornets', 'Los Angeles Clippers'
         ]
-        self.end_year = datetime.date.today().year if datetime.date.today().month >= 7 else datetime.date.today().year - 1
+        self.end_year = datetime.date.today().year if datetime.date.today().month >= 10 else datetime.date.today().year - 1
     
     def getAllSeasonData(self, season=None):
         if season == None:
-            seasons = [f'{i}-0{i-1999}' if (i < 2009) else f'{i}-{i-1899}' if (i < 1999) else f'{i}-{i-1999}' for i in range(2000, self.end_year)]
-        
+            seasons = []
+            for i in range(2000, self.end_year):
+                start_year = i
+                end_year = str(i + 1)[-2:]
+                seasons.append(f"{start_year}-{end_year}")
+
             for season in tqdm(seasons, desc="Overall Progress"):
                 if season not in self.game_files:
                     self.getSeasonGames(season)
@@ -39,7 +43,6 @@ class BasketballData(BaseDataFetcher):
 
                     
     def getCurrentSeason(self):
-        """Get the current NBA season string."""
         today = datetime.date.today()
         year = today.year
         month = today.month

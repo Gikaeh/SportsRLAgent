@@ -1,7 +1,9 @@
+import pandas as pd
+
 from data_pipeline.basketball_data import BasketballData
 from data_pipeline.prepare_data import NBATrainingDataPreparer
 from model.model_spread import BasketballSpreadModel
-from sklearn.model_selection import train_test_split
+from shared.splitting import chronologicalSplit
 
 basketball_data = BasketballData()
 basketball_data.getAllSeasonData()
@@ -13,15 +15,20 @@ training_data = preparer.prepareAllSeasons()
 
 basketball_model = BasketballSpreadModel()
 
-train_data, test_data = train_test_split(training_data, test_size=0.4, random_state=42)
-val_data, test_data = train_test_split(test_data, test_size=0.5, random_state=42)
+# Chronological split (NOTES.md A2): earliest games train, then validation,
+# latest games test. Random shuffling leaks future games into training.
+training_data['date'] = pd.to_datetime(training_data['date'], utc=True).dt.tz_localize(None)
+train_data, val_data, test_data = chronologicalSplit(
+    training_data, date_col='date', test_frac=0.2, val_frac_of_test=0.5
+)
+
+print(f"Train: {train_data['date'].min().date()} -> {train_data['date'].max().date()}")
+print(f"Val:   {val_data['date'].min().date()} -> {val_data['date'].max().date()}")
+print(f"Test:  {test_data['date'].min().date()} -> {test_data['date'].max().date()}")
 
 # Drop leakage columns (post-game data, identifiers, and season)
 # Season is dropped to prevent data leakage - model should learn patterns, not season-specific trends
-leakage_cols = [
-    'game_id', 'date', 'home_score', 'away_score', 'total_score',
-    'season', 'home_team', 'away_team', 'home_won',
-] + basketball_model.getLeakageColumns()
+leakage_cols = basketball_model.getLeakageColumns()
 
 train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
 val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
@@ -49,9 +56,10 @@ print("\n" + "="*60)
 print("TRAINING MODEL")
 print("="*60)
 basketball_model.trainWithBestParams(X_train, y_train, X_val, y_val, verbose=50)  # Show eval every 100 rounds
+# basketball_model.train(X_train, y_train, X_val, y_val)
 
 # Evaluate on validation set
-val_mae, val_rmse, val_r2, val_within_3, val_within_5, val_within_7 = basketball_model.evaluate(X_val, y_val)
+val_mae, val_rmse, val_r2, val_within_3, val_within_5, val_within_7, removals = basketball_model.evaluate(X_val, y_val, X_train)
 
 # Evaluate on test set
 test_mae, test_rmse, test_r2, test_within_3, test_within_5, test_within_7 = basketball_model.evaluate(X_test, y_test)
@@ -65,8 +73,7 @@ basketball_model.plotDiagnostics(X_val, y_val, X_test, y_test, save_dir='./plots
 print("\n" + "="*60)
 print("LOW IMPORTANCE FEATURES ANALYSIS")
 print("="*60)
-threshold = 0.01  # Adjust this threshold as needed
-low_importance_features = basketball_model.printLowImportanceFeatures(threshold)
+print(f"Features to Remove: {removals}")
 
 # Print prediction summary
 basketball_model.printPredictionSummary(X_test, y_test)

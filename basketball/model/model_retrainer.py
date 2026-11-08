@@ -2,27 +2,28 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
-from sklearn.model_selection import train_test_split
 from model.model_h2h import BasketballH2HModel
 from model.model_spread import BasketballSpreadModel
 from model.model_total import BasketballTotalModel
 from data_pipeline.prepare_data import NBATrainingDataPreparer
 from data_pipeline.basketball_data import BasketballData
+from shared.splitting import chronologicalSplit
 import json
 
 class ModelRetrainer:
-    def __init__(self, model_path='./models/basketball_h2h_model.json', data_dir='./data/basketball', metadata_path='./models/metadata/retraining_h2h_metadata.json'):
+    def __init__(self, model_type=None, model_path=None, data_dir='./data/basketball', metadata_path=None):
+        self.model_type = model_type
         self.model_path = Path(model_path)
         self.data_dir = Path(data_dir)
-        self.training_data_dir = Path('./data/training_data/basketball/phase1')
+        self.training_data_dir = Path('./data/training_data/basketball')
         self.preparer = NBATrainingDataPreparer(data_dir=str(data_dir))
         self.basketball_data = BasketballData()
 
-        if str(model_path).split('_')[1] == 'h2h':
+        if self.model_type == 'h2h':
             self.model = BasketballH2HModel()
-        elif str(model_path).split('_')[1] == 'spread':
+        elif self.model_type == 'spread':
             self.model = BasketballSpreadModel()
-        elif str(model_path).split('_')[1] == 'total':
+        elif self.model_type == 'total':
             self.model = BasketballTotalModel()
 
         if self.model_path.exists():
@@ -40,6 +41,7 @@ class ModelRetrainer:
         }
         
         self.metadata_path = Path(metadata_path)
+        self.metadata_path.parent.mkdir(parents=True, exist_ok=True)
         self.metadata = self.loadMetadata()
     
     def loadMetadata(self):
@@ -117,6 +119,30 @@ class ModelRetrainer:
         print(f"Total games in training data: {len(training_data)}")
         
         return training_data
+
+    def splitFeaturesAndTarget(self, train_data, val_data, test_data):
+        """Drop non-predictive columns and separate features from the target.
+
+        Mirrors tools/pipeline_smoke_test.py: the leakage/low-importance list and
+        the target column come from the model class, so the training and live
+        prediction paths cannot drift apart.
+        """
+        target_col = {
+            'h2h': 'home_won',
+            'spread': 'point_diff',
+            'total': 'total_score',
+        }[self.model.getModelType()]
+        leakage_cols = self.model.getLeakageColumns()
+
+        def splitXY(df):
+            df = df.drop(columns=[col for col in leakage_cols if col in df.columns])
+            return df.drop(target_col, axis=1), df[target_col]
+
+        return (
+            splitXY(train_data),
+            splitXY(val_data),
+            splitXY(test_data),
+        )
     
     def retrainModel(self, training_data=None, tune_hyperparameters=True, n_trials=100):
         print("\n" + "="*80)
@@ -127,51 +153,29 @@ class ModelRetrainer:
             training_data = self.prepareTrainingData()
         
         if training_data is None or training_data.empty:
-            return {'success': False, 'error': 'No training data available'}
+            return False, {'reason': 'No training data available'}
         
-        train_data, test_data = train_test_split(training_data, test_size=self.retrain_config['test_split'], random_state=42)
-        val_data, test_data = train_test_split(test_data, test_size=self.retrain_config['validation_split'], random_state=42)
+        # Normalize the date dtype before splitting: prepareAllSeasons mixes
+        # freshly-built datetime columns with cached CSV string columns, and a
+        # chronological order is the whole point of this split.
+        training_data = training_data.copy()
+        training_data['date'] = pd.to_datetime(training_data['date'], utc=True).dt.tz_localize(None)
+
+        # Time-based split (NOTES.md A2): earliest games train, latest games test.
+        # Never shuffle across seasons — that leaks the future into training.
+        train_data, val_data, test_data = chronologicalSplit(
+            training_data,
+            date_col='date',
+            test_frac=self.retrain_config['test_split'],
+            val_frac_of_test=self.retrain_config['validation_split'],
+        )
+        print(f"Train: {train_data['date'].min()} -> {train_data['date'].max()}")
+        print(f"Val:   {val_data['date'].min()} -> {val_data['date'].max()}")
+        print(f"Test:  {test_data['date'].min()} -> {test_data['date'].max()}")
         
-        if self.model.getModelType() == 'h2h':
-            leakage_cols = [
-                'game_id', 'date', 'home_score', 'away_score', 'total_score',
-                'season', 'home_team', 'away_team', 'point_diff', 
-            ] + self.model.getLeakageColumns()
-
-            train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
-            val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
-            test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
-            
-            X_train, y_train = train_data.drop('home_won', axis=1), train_data['home_won']
-            X_val, y_val = val_data.drop('home_won', axis=1), val_data['home_won']
-            X_test, y_test = test_data.drop('home_won', axis=1), test_data['home_won']
-        elif self.model.getModelType() == 'spread':
-            leakage_cols = [
-                'game_id', 'date', 'home_score', 'away_score', 'total_score',
-                'season', 'home_team', 'away_team', 'home_won',
-            ] + self.model.getLeakageColumns()
-
-            train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
-            val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
-            test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
-            
-            X_train, y_train = train_data.drop('point_diff', axis=1), train_data['point_diff']
-            X_val, y_val = val_data.drop('point_diff', axis=1), val_data['point_diff']
-            X_test, y_test = test_data.drop('point_diff', axis=1), test_data['point_diff']
-        elif self.model.getModelType() == 'total':
-            leakage_cols = [
-                'game_id', 'date', 'home_score', 'away_score', 'point_diff',
-                'season', 'home_team', 'away_team', 'home_won',
-            ] + self.model.getLeakageColumns()
-
-            train_data = train_data.drop(columns=[col for col in leakage_cols if col in train_data.columns])
-            val_data = val_data.drop(columns=[col for col in leakage_cols if col in val_data.columns])
-            test_data = test_data.drop(columns=[col for col in leakage_cols if col in test_data.columns])
-
-            # Separate features and target
-            X_train, y_train = train_data.drop('total_score', axis=1), train_data['total_score']
-            X_val, y_val = val_data.drop('total_score', axis=1), val_data['total_score']
-            X_test, y_test = test_data.drop('total_score', axis=1), test_data['total_score']
+        (X_train, y_train), (X_val, y_val), (X_test, y_test) = self.splitFeaturesAndTarget(
+            train_data, val_data, test_data
+        )
         
         
         print(f"\nTraining set: {len(X_train)} games")
@@ -213,6 +217,11 @@ class ModelRetrainer:
         elif self.model.getModelType() == 'spread':
            val_mae, val_rmse, val_r2, val_within_3, val_within_5, val_within_7 = self.model.evaluate(X_val, y_val)
            test_mae, test_rmse, test_r2, test_within_3, test_within_5, test_within_7 = self.model.evaluate(X_test, y_test)
+           # NOTES.md C1: publish validation residual std so the recommender's
+           # normal-approx cover probabilities use a measured sigma.
+           val_residual_std = float(np.std(y_val - self.model.predict(X_val)))
+           test_residual_std = float(np.std(y_test - self.model.predict(X_test)))
+           self.metadata['residual_std'] = val_residual_std
            self.metadata['retrain_history'].append({
                 'date': datetime.now().isoformat(),
                 'games_trained': len(training_data),
@@ -222,17 +231,22 @@ class ModelRetrainer:
                 'val_within_3': val_within_3,
                 'val_within_5': val_within_5,
                 'val_within_7': val_within_7,
+                'val_residual_std': val_residual_std,
                 'test_mae': test_mae,
                 'test_rmse': test_rmse,
                 'test_r2': test_r2,
                 'test_within_3': test_within_3,
                 'test_within_5': test_within_5,
                 'test_within_7': test_within_7,
+                'test_residual_std': test_residual_std,
                 'hyperparameter_tuning': tune_hyperparameters
             })
         elif self.model.getModelType() == 'total':
             val_mae, val_rmse, val_r2, val_within_3, val_within_5, val_within_10 = self.model.evaluate(X_val, y_val)
             test_mae, test_rmse, test_r2, test_within_3, test_within_5, test_within_10 = self.model.evaluate(X_test, y_test)
+            val_residual_std = float(np.std(y_val - self.model.predict(X_val)))
+            test_residual_std = float(np.std(y_test - self.model.predict(X_test)))
+            self.metadata['residual_std'] = val_residual_std
             self.metadata['retrain_history'].append({
                 'date': datetime.now().isoformat(),
                 'games_trained': len(training_data),
@@ -242,12 +256,14 @@ class ModelRetrainer:
                 'val_within_3': val_within_3,
                 'val_within_5': val_within_5,
                 'val_within_10': val_within_10,
+                'val_residual_std': val_residual_std,
                 'test_mae': test_mae,
                 'test_rmse': test_rmse,
                 'test_r2': test_r2,
                 'test_within_3': test_within_3,
                 'test_within_5': test_within_5,
                 'test_within_10': test_within_10,
+                'test_residual_std': test_residual_std,
                 'hyperparameter_tuning': tune_hyperparameters
             })
 

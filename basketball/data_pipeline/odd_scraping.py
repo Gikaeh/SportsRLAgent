@@ -4,6 +4,14 @@ from datetime import datetime, timedelta
 import pytz
 from pathlib import Path
 
+
+def upcomingGamesWindow(df, now, window_days=1):
+    """NOTES.md B1: keep only games not yet started AND within the window.
+    The old code's second assignment discarded the >now filter entirely."""
+    window_end = now + timedelta(days=window_days)
+    return df[(df['commence_time'] > now) & (df['commence_time'] < window_end)]
+
+
 class BasketballOddScraping:
     def __init__(self, data_dir='././data/basketball/odds_data'):
         self.team_mapping = {
@@ -78,11 +86,7 @@ class BasketballOddScraping:
                     df.at[i, 'name'] = self.team_mapping.get(bet_team)
 
             df_sorted = df.sort_values(['commence_time', 'home_team', 'bookmakers_key'])
-            
-            data_not_to_drop = df_sorted['commence_time'] > self.time_now
-            cleaned_data = df_sorted[data_not_to_drop]
-            data_not_to_drop = df_sorted['commence_time'] < self.time_now + timedelta(days=1)
-            cleaned_data = df_sorted[data_not_to_drop]
+            cleaned_data = upcomingGamesWindow(df_sorted, self.time_now)
             
             cleaned_data.to_csv(f'{self.data_dir}/h2h_{self.time_now_string}.csv', index=False)
 
@@ -145,11 +149,7 @@ class BasketballOddScraping:
                     df.at[i, 'name'] = self.team_mapping.get(bet_team)
 
             df_sorted = df.sort_values(['commence_time', 'home_team', 'bookmakers_key'])
-            
-            data_not_to_drop = df_sorted['commence_time'] > self.time_now
-            cleaned_data = df_sorted[data_not_to_drop]
-            data_not_to_drop = df_sorted['commence_time'] < self.time_now + timedelta(days=1)
-            cleaned_data = df_sorted[data_not_to_drop]
+            cleaned_data = upcomingGamesWindow(df_sorted, self.time_now)
             
             cleaned_data.to_csv(f'{self.data_dir}/spread_{self.time_now_string}.csv', index=False)
 
@@ -212,11 +212,7 @@ class BasketballOddScraping:
                     df.at[i, 'name'] = self.team_mapping.get(bet_team)
 
             df_sorted = df.sort_values(['commence_time', 'home_team', 'bookmakers_key'])
-            
-            data_not_to_drop = df_sorted['commence_time'] > self.time_now
-            cleaned_data = df_sorted[data_not_to_drop]
-            data_not_to_drop = df_sorted['commence_time'] < self.time_now + timedelta(days=1)
-            cleaned_data = df_sorted[data_not_to_drop]
+            cleaned_data = upcomingGamesWindow(df_sorted, self.time_now)
             
             cleaned_data.to_csv(f'{self.data_dir}/total_{self.time_now_string}.csv', index=False)
 

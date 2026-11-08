@@ -5,8 +5,6 @@ from datetime import datetime
 from abc import ABC, abstractmethod
 
 class BaseTrainingDataPreparer(ABC):
-    """Base class for training data preparation with shared methods."""
-    
     def __init__(self, data_dir, sport_name):
         self.data_dir = Path(data_dir)
         self.sport_name = sport_name
@@ -17,7 +15,6 @@ class BaseTrainingDataPreparer(ABC):
         self.cache_dir.mkdir(parents=True, exist_ok=True)
     
     def calculateRestDays(self, df):
-        """Calculate rest days between games for each team."""
         df = df.sort_values(['TEAM_ABBREVIATION', 'GAME_DATE'])
         df['prev_game_date'] = df.groupby('TEAM_ABBREVIATION')['GAME_DATE'].shift(1)
         df['rest_days'] = (df['GAME_DATE'] - df['prev_game_date']).dt.days - 1
@@ -25,19 +22,6 @@ class BaseTrainingDataPreparer(ABC):
         return df
     
     def computeRollingStatsVectorized(self, df, group_col, stat_cols, window=None, min_periods=1):
-        """
-        Compute rolling/expanding stats in a vectorized manner.
-        
-        Args:
-            df: DataFrame sorted by group_col and date
-            group_col: Column to group by (e.g., 'PLAYER_ID', 'TEAM_ABBREVIATION')
-            stat_cols: Dict mapping source columns to new column names
-            window: Rolling window size. If None, uses expanding window.
-            min_periods: Minimum periods for rolling calculation
-        
-        Returns:
-            DataFrame with new rolling stat columns added
-        """
         df = df.copy()
         
         for source_col, new_col in stat_cols.items():
@@ -58,7 +42,6 @@ class BaseTrainingDataPreparer(ABC):
         return df
     
     def computeRollingStdVectorized(self, df, group_col, stat_cols, window=10, min_periods=2):
-        """Compute rolling standard deviation in a vectorized manner."""
         df = df.copy()
         
         for source_col, new_col in stat_cols.items():
@@ -72,18 +55,6 @@ class BaseTrainingDataPreparer(ABC):
         return df
     
     def aggregatePlayerStats(self, df, prefix, stat, top_n_list):
-        """
-        Aggregate player stats for different top-N groupings.
-        
-        Args:
-            df: DataFrame with player columns like {prefix}_p1_{stat}, {prefix}_p2_{stat}, etc.
-            prefix: 'home' or 'away'
-            stat: stat name like 'ppg', 'apg', etc.
-            top_n_list: List of top-N values to aggregate, e.g., [3, 5, 6]
-        
-        Returns:
-            Dict of aggregated columns
-        """
         result = {}
         
         for top_n in top_n_list:
@@ -96,7 +67,6 @@ class BaseTrainingDataPreparer(ABC):
         return result
     
     def aggregatePlayerStatsSum(self, df, prefix, stat, top_n):
-        """Aggregate player stats using sum instead of mean."""
         cols = [f'{prefix}_p{i}_{stat}' for i in range(1, top_n + 1)]
         existing_cols = [c for c in cols if c in df.columns]
         
@@ -105,7 +75,6 @@ class BaseTrainingDataPreparer(ABC):
         return pd.Series(0, index=df.index)
     
     def aggregatePlayerStatsStd(self, df, prefix, stat, top_n):
-        """Aggregate player stats using standard deviation (for depth variance)."""
         cols = [f'{prefix}_p{i}_{stat}' for i in range(1, top_n + 1)]
         existing_cols = [c for c in cols if c in df.columns]
         
@@ -114,7 +83,6 @@ class BaseTrainingDataPreparer(ABC):
         return pd.Series(0, index=df.index)
     
     def getCachedData(self, cache_name, season, source_file=None):
-        """Load cached data if it exists and is fresher than source file."""
         cache_file = self.cache_dir / f'{season}_{cache_name}.parquet'
         
         if cache_file.exists():
@@ -134,7 +102,6 @@ class BaseTrainingDataPreparer(ABC):
         return None
     
     def saveCachedData(self, df, cache_name, season):
-        """Save data to cache."""
         cache_file = self.cache_dir / f'{season}_{cache_name}.parquet'
         try:
             df.to_parquet(cache_file, index=False)
@@ -142,7 +109,6 @@ class BaseTrainingDataPreparer(ABC):
             print(f"Warning: Could not save cache: {e}")
     
     def clearCache(self, season=None):
-        """Clear cached data for a season or all seasons."""
         if season:
             for f in self.cache_dir.glob(f'{season}_*.parquet'):
                 f.unlink()

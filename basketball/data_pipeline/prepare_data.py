@@ -65,8 +65,6 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
             team_df[f'off_rating_l{window}'] = team_df['OFF_RATING'].rolling(window=window, min_periods=1).mean().shift(1)
             team_df[f'def_rating_l{window}'] = team_df['DEF_RATING'].rolling(window=window, min_periods=1).mean().shift(1)
             team_df[f'net_rating_l{window}'] = team_df['NET_RATING'].rolling(window=window, min_periods=1).mean().shift(1)
-            team_df[f'pts_rank_l{window}'] = team_df['PTS_RANK'].rolling(window=window, min_periods=1).mean().shift(1)
-            team_df[f'plus_minus_rank_l{window}'] = team_df['PLUS_MINUS_RANK'].rolling(window=window, min_periods=1).mean().shift(1)
             
             # After shift(1), game 11 will have stats from games 1-10
             team_df = team_df.iloc[window:].copy()
@@ -76,7 +74,7 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
                 f'ppg_l{window}', f'opp_ppg_l{window}', f'efg_pct_l{window}', f'fg3_pct_l{window}', f'reb_l{window}', 
                 f'ast_l{window}', f'tov_l{window}', f'blk_l{window}', f'stl_l{window}', f'plus_minus_l{window}', 
                 f'pace_l{window}', f'off_rating_l{window}', f'def_rating_l{window}', f'net_rating_l{window}', 
-                f'total_l{window}', f'pts_rank_l{window}', f'plus_minus_rank_l{window}'
+                f'total_l{window}'
             ]].copy()
             
             window_stats.append(team_window)
@@ -576,10 +574,6 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
                 f'def_rating_l{game_window}_away': away_stats[f'def_rating_l{game_window}'],
                 f'net_rating_l{game_window}_home': home_stats[f'net_rating_l{game_window}'],
                 f'net_rating_l{game_window}_away': away_stats[f'net_rating_l{game_window}'],
-                f'pts_rank_l{game_window}_home': home_stats[f'pts_rank_l{game_window}'],
-                f'pts_rank_l{game_window}_away': away_stats[f'pts_rank_l{game_window}'],
-                f'plus_minus_rank_l{game_window}_home': home_stats[f'plus_minus_rank_l{game_window}'],
-                f'plus_minus_rank_l{game_window}_away': away_stats[f'plus_minus_rank_l{game_window}'],
                 
                 'rest_days_home': home_rest,
                 'rest_days_away': away_rest,
@@ -647,8 +641,10 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
         current_season = self.getCurrentSeason()
 
         files = [f.stem.replace('_training_data', '') for f in output_path.glob('separated_seasons/*_training_data.csv')]
-        seasons = [f.stem.replace('_game_stats', '') for f in self.game_data_dir.glob('*_game_stats.csv')]
-        seasons.sort()
+        # Include cached seasons: raw files may exist for only some, and a season missing
+        # here would silently vanish from the training data.
+        seasons = {f.stem.replace('_game_stats', '') for f in self.game_data_dir.glob('*_game_stats.csv')}
+        seasons = sorted(seasons | set(files))
         
         all_training_data = []
         

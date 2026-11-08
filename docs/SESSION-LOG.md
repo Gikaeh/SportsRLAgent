@@ -14,7 +14,8 @@ When a session ends, move the old entry verbatim into `docs/SESSION-LOG-ARCHIVE.
 - Results and the 5-game gate: `docs/DECISIONS.md`. It trails DeepSports and the closing line.
 - $50 bankroll from 2026-11-08 (NBA start date; old logs untouched) and Kelly sizing on college via
   `shared/bankroll.py`. Simulated, it fell to about $9 a season: see `docs/DECISIONS.md`.
-- Found NBA rank-feature look-ahead: `basketball/NOTES.md` A6. Not fixed.
+- Found and fixed NBA rank-feature look-ahead (`basketball/NOTES.md` A6) on `fix/nba-rank-leak`; all three NBA
+  models retrained on 27 seasons, and saved spread and total models match live features again.
 - Compared with DeepSports: `DeepSports/docs/results/2026-11-07-srla-comparison.md`.
 
 **Verify**
@@ -22,8 +23,8 @@ When a session ends, move the old entry verbatim into `docs/SESSION-LOG-ARCHIVE.
 - This is a Mac now: use `.venv/bin/python`. The `.venv\Scripts` commands above don't apply here.
 
 **Next**
-1. OWNER: remove the NBA rank features before retraining (A6). Saved NBA spread and total models fail
-   with `feature_names mismatch`, so the live NBA recommender probably fails too.
+1. OWNER: review and merge `fix/deepsports-ensemble-launchd`, `feature/srla-college` and `fix/nba-rank-leak`.
+   Scheduled DeepSports jobs need the launchd fix in the working tree.
 2. OWNER: decide whether college bets should be logged.
 3. Grade the Nov 8-10 forward freeze:
    `/Volumes/ExFATStorag/DeepSports/reports/srla-comparison-2026-11-07/forward_freeze.csv`.

@@ -5,6 +5,7 @@ basketball modules are imported in isolated interpreters via PYTHONPATH,
 mirroring how `.venv/bin/python basketball/main.py` runs.
 """
 
+import importlib.util
 import os
 import subprocess
 import sys
@@ -255,3 +256,35 @@ print('ok')
 def test_retrainer_splits_features_and_target_consistently(sport):
     result = run_in_basketball(SPLIT_FEATURES_CHECK)
     assert result.returncode == 0, f"splitFeaturesAndTarget regression failed:\n{result.stderr}"
+
+
+def test_rank_features_are_not_built_or_trained_on():
+    """NOTES.md A6: PTS_RANK and PLUS_MINUS_RANK change as later games are played."""
+    root = Path(__file__).resolve().parent.parent
+    source = (root / 'basketball/data_pipeline/prepare_data.py').read_text(encoding='utf-8')
+    assert 'PTS_RANK' not in source and 'PLUS_MINUS_RANK' not in source and 'rank_l' not in source
+    ranks = {'home_pts_rank_l10', 'away_pts_rank_l10', 'home_plus_minus_rank_l10', 'away_plus_minus_rank_l10'}
+    for model_name in ('h2h', 'spread', 'total'):
+        text = (root / f'basketball/model/model_{model_name}.py').read_text(encoding='utf-8')
+        assert all(f"'{rank}'" in text for rank in ranks), model_name
+
+
+def test_prepare_all_seasons_keeps_cached_seasons_without_raw_files(tmp_path):
+    """Raw files existed for one season only, and retraining silently used only that season."""
+    # Load by path: hockey has a module with the same name on sys.path.
+    root = Path(__file__).resolve().parent.parent
+    sys.path.insert(0, str(root))
+    spec = importlib.util.spec_from_file_location('nba_prepare_data', root / 'basketball/data_pipeline/prepare_data.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    NBATrainingDataPreparer = module.NBATrainingDataPreparer
+    data_dir, output_dir = tmp_path / 'data', tmp_path / 'training'
+    (output_dir / 'separated_seasons').mkdir(parents=True)
+    for season, games in (('2019-20', [1, 2]), ('2020-21', [3])):
+        pd.DataFrame({'game_id': games, 'season': season}).to_csv(
+            output_dir / f'separated_seasons/{season}_training_data.csv', index=False)
+    (data_dir / 'game_data').mkdir(parents=True)
+    preparer = NBATrainingDataPreparer(data_dir=str(data_dir))
+    preparer.getCurrentSeason = lambda: '2026-27'
+    combined = preparer.prepareAllSeasons(output_dir=str(output_dir))
+    assert sorted(combined['game_id']) == [1, 2, 3]

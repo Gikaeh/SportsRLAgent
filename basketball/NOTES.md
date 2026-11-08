@@ -240,7 +240,7 @@ A2/A1 leakage; that is the point. (Reference: main's logged h2h test_acc of
 
 ---
 
-## A6 — Rank features look ahead (found 2026-11-07) — NOT FIXED, owner decision
+## A6 — Rank features look ahead (found 2026-11-07) — ✅ FIXED 2026-11-08
 
 `prepare_data.py:68-69` builds `pts_rank_l*` and `plus_minus_rank_l*` from the team log's `PTS_RANK` and `PLUS_MINUS_RANK`.
 Those rank each game among the team's games in the season **as of the fetch date**, so past values encode later games. `shift(1)`
@@ -248,6 +248,9 @@ and chronological splits don't catch this. Between the Nov 3 and Nov 7 2026 fetc
 in 203 rows and `PLUS_MINUS_RANK` in 224, while `PTS` changed in 2.
 
 Walk-forward effect on 3,328 games: Brier .2095 with ranks, .2203 without; margin MAE 11.45 vs 11.92. Live values also don't match
-training (`home_pts_rank_l10` mean about 45 historically, about 7 this season). Remove these features **before** the pending
-retrain. Saved spread and total models also fail with `feature_names mismatch` on the current table.
+training (`home_pts_rank_l10` mean about 45 historically, about 7 this season). **Fix:** the features are no longer built, and all three models drop them because older cached seasons
+still carry the columns. All three models were retrained on 27 seasons, which also cleared the saved spread and
+total `feature_names mismatch`. Test split: Brier .2198, margin MAE 11.87, total MAE 15.04.
+`prepareAllSeasons` also now keeps cached seasons without raw files; before, it would have trained on one season.
+Open: the retrain menu's `countAvailableGames` calls `getAllSeasonData`, which fetches every season missing raw files.
 Full comparison: `DeepSports/docs/results/2026-11-07-srla-comparison.md`.

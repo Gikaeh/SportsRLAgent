@@ -1,7 +1,7 @@
 {
-  "last_retrain_date": "2026-08-25T22:13:22.562219",
-  "total_games_trained": 30502,
-  "model_version": 4,
+  "last_retrain_date": "2026-11-08T01:17:42.284768",
+  "total_games_trained": 29308,
+  "model_version": 5,
   "retrain_history": [
     {
       "date": "2026-01-07T02:31:51.202061",
@@ -40,6 +40,19 @@
       "test_brier_score": 0.21245452761650085,
       "test_log_loss": 0.6132943630218506,
       "test_auc_roc": 0.7235615398792294,
+      "hyperparameter_tuning": true
+    },
+    {
+      "date": "2026-11-08T01:17:40.665044",
+      "games_trained": 29308,
+      "val_accuracy": 0.6298191743432275,
+      "val_brier_score": 0.22448746860027313,
+      "val_log_loss": 0.6394917368888855,
+      "val_auc_roc": 0.6697359663797127,
+      "test_accuracy": 0.6509723643807575,
+      "test_brier_score": 0.2198454886674881,
+      "test_log_loss": 0.6295266151428223,
+      "test_auc_roc": 0.7001049962266982,
       "hyperparameter_tuning": true
     }
   ]

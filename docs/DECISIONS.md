@@ -187,3 +187,13 @@ sizing fell to about $9 in all three full NBA seasons and in college 2025-26, th
 about $10 rounds below $1. Kelly assumes accurate probabilities, and these cover probabilities are overstated:
 without a proven edge, correct Kelly size is $0. Scripts and inputs:
 `/Volumes/ExFATStorag/DeepSports/reports/srla-comparison-2026-11-07/college-model/`.
+
+## 2026-11-08 — NBA rank features removed; all three models retrained
+
+`PTS_RANK` and `PLUS_MINUS_RANK` change as later games are played (NOTES A6), which breaks non-negotiable #4, so the
+owner approved removing them. Cached seasons keep the columns because older raw files are absent; the models drop
+them by name. Retrained with the normal Optuna path on 29,308 games across 27 seasons, without a keep-if-better
+gate, because honest metrics are expected to look worse than the leaked ones.
+
+Test split, previous metadata to now: Brier .2125 to .2198, margin MAE 11.50 to 11.87, total MAE 14.45 to 15.04.
+The previous figures carried look-ahead, and the old total figure also predates the chronological split.

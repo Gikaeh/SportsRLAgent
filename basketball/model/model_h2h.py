@@ -25,6 +25,8 @@ class BasketballH2HModel:
         self.leakage_cols = [
             'game_id', 'date', 'home_score', 'away_score', 'total_score',
             'season', 'home_team', 'away_team', 'point_diff',
+            # NOTES.md A6: fetch-time ranks look ahead. Older cached seasons still carry them.
+            'home_pts_rank_l10', 'away_pts_rank_l10', 'home_plus_minus_rank_l10', 'away_plus_minus_rank_l10',
         ]
         self.low_importance_cols = [
             'away_apg_l10', 'away_fg_pct_l10', 'away_opp_ppg_l10', 'away_ppg_l10', 'away_top3_avg_rpg', 

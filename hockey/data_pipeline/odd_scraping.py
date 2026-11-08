@@ -4,6 +4,22 @@ from datetime import datetime, timedelta
 import pytz
 from pathlib import Path
 
+
+def toPacificTime(series, timezone):
+    """ISO-8601 UTC strings -> tz-aware Pacific datetimes.
+
+    pandas 3 stores json_normalize's text columns as the arrow-backed 'str'
+    dtype, which raises TypeError when a datetime object is assigned row by row
+    (the old `df.iat[i,0] = ...` loops). Converting the whole column at once
+    also gives a real datetime dtype, which the commence_time filters need."""
+    return pd.to_datetime(series, utc=True, format='ISO8601').dt.tz_convert(timezone)
+
+
+def mapTeamCodes(series, team_mapping):
+    """Full team names -> repo abbreviations; names not in the map pass through."""
+    return series.map(lambda name: team_mapping.get(name, name))
+
+
 class HockeyOddScraping:
     def __init__(self, data_dir='././data/hockey/odds_data'):
         self.team_mapping = {
@@ -54,29 +70,12 @@ class HockeyOddScraping:
 
             df = df[['commence_time','home_team','away_team','bookmakers_key','bookmakers_markets_key','bookmakers_markets_last_update','name','price']]
 
-            for i in range(len(df)):
-                utc_date = df.iat[i,0]
-                utc_datetime = datetime.fromisoformat(utc_date.replace('Z', '+00:00'))
-                pst_datetime = utc_datetime.astimezone(self.pst_timezone)
-                df.iat[i,0] = pst_datetime
+            df['commence_time'] = toPacificTime(df['commence_time'], self.pst_timezone)
+            df['bookmakers_markets_last_update'] = toPacificTime(
+                df['bookmakers_markets_last_update'], self.pst_timezone)
 
-                utc_last_update = df.iat[i,5]
-                utc_last_update_datetime = datetime.fromisoformat(utc_last_update.replace('Z', '+00:00'))
-                pst_last_update_datetime = utc_last_update_datetime.astimezone(self.pst_timezone)
-                df.iat[i,5] = pst_last_update_datetime
-
-                home_team = df.at[i,'home_team']
-                away_team = df.at[i, 'away_team']
-                bet_team = df.at[i, 'name']
-
-                if home_team in self.team_mapping:
-                    df.at[i, 'home_team'] = self.team_mapping.get(home_team)
-
-                if away_team in self.team_mapping:
-                    df.at[i, 'away_team'] = self.team_mapping.get(away_team)
-
-                if bet_team in self.team_mapping:
-                    df.at[i, 'name'] = self.team_mapping.get(bet_team)
+            for column in ('home_team', 'away_team', 'name'):
+                df[column] = mapTeamCodes(df[column], self.team_mapping)
 
             df_sorted = df.sort_values(['commence_time', 'home_team', 'bookmakers_key'])
             
@@ -121,29 +120,12 @@ class HockeyOddScraping:
 
             df = df[['commence_time','home_team','away_team','bookmakers_key','bookmakers_markets_key','bookmakers_markets_last_update','name','price','point']]
 
-            for i in range(len(df)):
-                utc_date = df.iat[i,0]
-                utc_datetime = datetime.fromisoformat(utc_date.replace('Z', '+00:00'))
-                pst_datetime = utc_datetime.astimezone(self.pst_timezone)
-                df.iat[i,0] = pst_datetime
+            df['commence_time'] = toPacificTime(df['commence_time'], self.pst_timezone)
+            df['bookmakers_markets_last_update'] = toPacificTime(
+                df['bookmakers_markets_last_update'], self.pst_timezone)
 
-                utc_last_update = df.iat[i,5]
-                utc_last_update_datetime = datetime.fromisoformat(utc_last_update.replace('Z', '+00:00'))
-                pst_last_update_datetime = utc_last_update_datetime.astimezone(self.pst_timezone)
-                df.iat[i,5] = pst_last_update_datetime
-
-                home_team = df.at[i,'home_team']
-                away_team = df.at[i, 'away_team']
-                bet_team = df.at[i, 'name']
-
-                if home_team in self.team_mapping:
-                    df.at[i, 'home_team'] = self.team_mapping.get(home_team)
-
-                if away_team in self.team_mapping:
-                    df.at[i, 'away_team'] = self.team_mapping.get(away_team)
-
-                if bet_team in self.team_mapping:
-                    df.at[i, 'name'] = self.team_mapping.get(bet_team)
+            for column in ('home_team', 'away_team', 'name'):
+                df[column] = mapTeamCodes(df[column], self.team_mapping)
 
             df_sorted = df.sort_values(['commence_time', 'home_team', 'bookmakers_key'])
             
@@ -188,29 +170,12 @@ class HockeyOddScraping:
 
             df = df[['commence_time','home_team','away_team','bookmakers_key','bookmakers_markets_key','bookmakers_markets_last_update','name','price','point']]
 
-            for i in range(len(df)):
-                utc_date = df.iat[i,0]
-                utc_datetime = datetime.fromisoformat(utc_date.replace('Z', '+00:00'))
-                pst_datetime = utc_datetime.astimezone(self.pst_timezone)
-                df.iat[i,0] = pst_datetime
+            df['commence_time'] = toPacificTime(df['commence_time'], self.pst_timezone)
+            df['bookmakers_markets_last_update'] = toPacificTime(
+                df['bookmakers_markets_last_update'], self.pst_timezone)
 
-                utc_last_update = df.iat[i,5]
-                utc_last_update_datetime = datetime.fromisoformat(utc_last_update.replace('Z', '+00:00'))
-                pst_last_update_datetime = utc_last_update_datetime.astimezone(self.pst_timezone)
-                df.iat[i,5] = pst_last_update_datetime
-
-                home_team = df.at[i,'home_team']
-                away_team = df.at[i, 'away_team']
-                bet_team = df.at[i, 'name']
-
-                if home_team in self.team_mapping:
-                    df.at[i, 'home_team'] = self.team_mapping.get(home_team)
-
-                if away_team in self.team_mapping:
-                    df.at[i, 'away_team'] = self.team_mapping.get(away_team)
-
-                if bet_team in self.team_mapping:
-                    df.at[i, 'name'] = self.team_mapping.get(bet_team)
+            for column in ('home_team', 'away_team', 'name'):
+                df[column] = mapTeamCodes(df[column], self.team_mapping)
 
             df_sorted = df.sort_values(['commence_time', 'home_team', 'bookmakers_key'])
             

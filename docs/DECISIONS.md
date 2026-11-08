@@ -149,3 +149,41 @@ split rule across every training entry point removes the cross-season leak and
 keeps "initial model" vs "retrained model" metrics on the same kind of holdout.
 Cost: initial-model metrics will drop vs the old leak-inflated numbers; that is
 the expected correction, not a regression.
+
+## 2026-11-08 — College basketball added, reading the DeepSports warehouse
+
+`college_basketball/` trains h2h, spread and total XGBoost models on men's D1 games from
+DeepSports' warehouse, read-only. Why: that data already exists (about 17,000 D1 games), so a
+second fetcher would only duplicate it. Cost: college here depends on the DeepSports warehouse
+and the external drive, and duckdb is pinned below 2 to match DeepSports. One feature builder serves
+training and prediction, with no betting lines and no rank features (NOTES A6).
+
+Settings were picked on the 2024-25 walk-forward only (log loss .5570, margin MAE 9.36, total MAE
+13.14). Scored once on DeepSports' holdout, 3,417 games, Nov 2025 to Jan 2026, paired:
+- This model: Brier .1850, log loss .5481, margin MAE 9.60, total MAE 13.98.
+- DeepSports prior model: .1798, .5325, 9.39, 13.89. Better on Brier, log loss and margin (CIs exclude 0).
+- Closing line: .1696, .5067, 8.94, 13.46. Better than both.
+- A 50/50 blend with DeepSports is no better than DeepSports alone.
+
+Betting thresholds copy the NBA recommender. `MIN_GAMES_PLAYED = 5` is new: with one game played,
+season margin can be one blowout over a non-D1 team, and in the holdout, spread gaps with under 3
+games played won less as they grew (gap >= 3: 49.5%, >= 12: 44.8%). 5 matches DeepSports' gate.
+This gate was chosen after seeing the holdout. Known limit, left alone so the holdout stays clean:
+non-D1 blowouts still feed early-season form. The recommender writes no bet log; add logging only with
+the owner's approval, since the logs are immutable records.
+
+## 2026-11-08 — $50 bankroll with a start date; Kelly sizing on college
+
+Owner is starting with $50. NBA `STARTING_BANKROLL` is 50 and new `BANKROLL_START_DATE` is 2026-11-08.
+Why a date: `setBankroll` adds every graded log row, so the January rows (net -$3.40) would make $50 read
+$46.60, and the logs are immutable. Older rows stay in the files and still count in archive views.
+
+College uses the same sizing through `shared/bankroll.py`: 20% Kelly, 5% cap, 50% daily risk, whole dollars.
+`MIN_BET_AMOUNT = 1` drops smaller stakes, which also fixes a divide-by-zero in `calculateBetPriority` when an
+NBA stake rounded to $0. College bets aren't logged, so its menu asks for the current balance.
+
+Warning: simulated from $50 at closing prices (leak-free NBA predictions; college with the 5-game gate), this
+sizing fell to about $9 in all three full NBA seasons and in college 2025-26, then stalled because 5% of under
+about $10 rounds below $1. Kelly assumes accurate probabilities, and these cover probabilities are overstated:
+without a proven edge, correct Kelly size is $0. Scripts and inputs:
+`/Volumes/ExFATStorag/DeepSports/reports/srla-comparison-2026-11-07/college-model/`.

@@ -1,0 +1,128 @@
+---
+title: DeepSports architecture (NBA + college basketball; planned parts dashed)
+---
+flowchart TB
+  USER(["Owner<br/>phone · G2 glasses · calendar"])
+
+  subgraph AGENT["Agent layer: Claude Code (AGENTS.md)"]
+    direction LR
+    ORCH["Orchestrator<br/>main session"]
+    subgraph SUBS["Subagents .claude/agents"]
+      direction TB
+      DE[data-engineer]
+      DA[data-analyst]
+      FE[frontend-dev]
+      CA[calendar-agent]
+      AR[architect]
+      BETTOR["bettor ×N<br/>Read-only, independent"]
+    end
+    SYNC["/sync-game-calendar<br/>skill"]
+    EBSKILL["/ensemble-betting<br/>skill: N bettors vote"]
+    ORCH --> EBSKILL -->|"one context file each<br/>launched in parallel"| BETTOR
+    CFG["config/calendar.toml<br/>NBA: LAL · LAC · GS · BOS<br/>NCAAB: NEV"]
+    ORCH --> SUBS
+    CA --> SYNC
+    CFG --> SYNC
+    SCHED["tools/scheduled-sync.sh<br/>launchd 08:00 · 14:00"]
+    SYNCF[".sync/upcoming*.json"]
+    SCHED -->|"headless claude -p<br/>/sync-game-calendar prefetched"| SYNC
+    EBDAILY["tools/ensemble-daily.sh<br/>14:00 run only · 10 bettors<br/>majority → Discord"]
+    SCHED --> EBDAILY -->|"headless claude -p<br/>/ensemble-betting prefetched"| EBSKILL
+    ODDSJOB["tools/odds-snapshot.sh<br/>launchd every 30 min (:15 · :45)<br/>skips if the writer lock is held"]
+    SYNCF -->|read| SYNC
+  end
+
+  subgraph PIPE["Data collection: src/deepsports"]
+    direction LR
+    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|grade · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
+    PIPELINE --> SRC["sources/espn.py<br/>EspnBasketball(league)<br/>site + core endpoints"] --> HTTP["http.py PoliteClient<br/>1 req/s · retry/backoff"]
+    PIPELINE --> PARSE["parse_espn.py<br/>pure raw → rows"] --> STORE["store.py<br/>schema + upserts"]
+    QUAL["quality.py<br/>data checks"]
+    PBP["parse_pbp.py<br/>pure play-by-play parser<br/>(on demand, no table)"]
+  end
+
+  subgraph DATA["data/ → /Volumes/ExFATStorag/DeepSports/data"]
+    direction LR
+    RAW[("raw/espn/{nba,ncaab}/**.json.gz<br/>raw landing zone<br/>+ summary_pregame snapshots")]
+    DB[("deepsports.duckdb (league-aware keys)<br/>games · box scores · odds + prices · injuries<br/>team_game_context · predictions · paper_bets<br/>NBA 2021-22 → today · NCAAB 2026-27")]
+  end
+
+  subgraph APPS["Apps: deepsports serve :8787"]
+    direction LR
+    API["api/ FastAPI (nba + ncaab)<br/>live: ESPN + 30s cache<br/>warehouse: standings · predictions · record"]
+    WEB["web/ mobile PWA<br/>Vite · React · TS"]
+    GLASS["glasses/ Even Hub<br/>G2 plugin"]
+    API --> WEB
+    API -->|"/api/scoreboard"| GLASS
+  end
+
+  subgraph NEXT["Analysis & models: src/deepsports/analysis"]
+    direction LR
+    ANALYSIS["market.py · elo.py<br/>home court · market accuracy · Elo"]
+    FEAT["features.py · players.py<br/>pre-tip features (no odds)<br/>+ player availability (v1.1)"]
+    MODEL["model.py · backtest.py · compare.py · record.py<br/>v1.0 + v1.1: win prob · margin · total<br/>walk-forward + daily grading"]
+    ENS["ensemble.py<br/>v2: Elo + v1.1 + trees<br/>locked holdout · not shipped"]
+    ANALYSIS --> FEAT --> MODEL
+    FEAT --> ENS
+    NCAAB["ncaab.py<br/>college v1 (ncaab-v1): Elo + ridge ratings<br/>predict --league ncaab · ≥5-game gate"]
+    NPRIOR["ncaab_prior.py<br/>prior model: Elo carry 0.75 + last-season ridge prior<br/>one fit → ncaab-v1p (≥5, graded, hidden)<br/>+ ncaab-v1-early (≥1, opt-in)"]
+    FEAT --> NCAAB
+    NCAAB --> NPRIOR
+    BET["betting/ grading · audit · loaders<br/>ROI + day bootstrap CI · CLV · 3x-move audit"]
+    FTEST["feature_test.py<br/>feature-injection walk-forward"]
+    PAPER["paper.py + fatigue.py<br/>3 frozen watch-only rules<br/>ncaab-total-t7 · nba-total-t4 · nba-load-under"]
+    CALIB["calibration.py<br/>win-prob calibration study (locked holdout)<br/>v1.1c / ncaab-v1c: stronger L2 · not displayed"]
+    MODEL --> FTEST
+    NCAAB --> FTEST
+    MODEL --> CALIB
+    NCAAB --> CALIB
+    BET --> PAPER
+    EBETS["ensemble_bets.py<br/>slate · agent contexts · majority tally · grading<br/>watch-only; runs in reports/ensemble-bets/"]
+    BET --> EBETS
+  end
+
+  subgraph EXT[External services]
+    direction LR
+    ESPN[(ESPN site API)]
+    CORE[(ESPN core API<br/>historical odds)]
+    GCAL[[Google Calendar]]
+    DISCORD[[Discord webhook]]
+  end
+
+  DE -.-> PIPE
+  DA -.-> NEXT
+  FE -.-> APPS
+  SYNC -->|"interactive: update · upcoming --json"| CLI
+  SCHED -->|"update · predict · paper log · upcoming --json"| CLI
+  SCHED -->|export| SYNCF
+  ODDSJOB -->|"odds-snapshot: today + tomorrow<br/>pregame lines + prices only"| CLI
+  SYNC -->|"create/update events<br/>key deepsports:nba:id"| GCAL
+  ORCH -.->|"Stop hook summary"| DISCORD
+  HTTP -->|GET| ESPN
+  HTTP -->|GET| CORE
+  HTTP -->|"save every response"| RAW
+  STORE --> DB
+  QUAL --> DB
+  API -->|live| HTTP
+  DB --> API
+  DB --> ANALYSIS
+  RAW -.->|"conference flags"| NCAAB
+  NCAAB -->|"predictions ncaab-v1"| DB
+  NPRIOR -->|"predictions ncaab-v1p / -early"| DB
+  MODEL -->|"predictions table"| DB
+  PREDV["prediction_results view<br/>graded pre-tip predictions"]
+  DB --> PREDV --> API
+  DB -->|"predictions · pregame lines · box scores"| PAPER
+  PAPER -->|"paper_bets (insert-only)"| DB
+  DB -->|"read-only: lines · predictions · form · injuries"| EBETS
+  EBSKILL -->|"ensemble-bets context · tally"| CLI
+  PAPERV["paper_results view<br/>graded paper bets + CLV"]
+  DB --> PAPERV --> PAPER
+  RAW -.->|"cached summaries"| PBP
+  GCAL --> USER
+  WEB --> USER
+  GLASS --> USER
+  DISCORD --> USER
+
+  classDef planned stroke-dasharray: 5 5
+  class NONE planned

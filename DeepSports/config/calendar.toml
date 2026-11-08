@@ -1,0 +1,20 @@
+# Calendar sync settings, read by `deepsports upcoming` and the /sync-game-calendar skill.
+
+# Team abbreviations to follow (ESPN style, e.g. "GS", "LAL", "NY", "SA").
+# Empty list = no filter: every NBA game (~7-15 per day), which is a lot of calendar events.
+teams = ["LAL", "LAC", "GS", "BOS"]
+
+# How many days ahead to put on the calendar.
+days_ahead = 7
+
+# Google Calendar to write to. "primary" = your main calendar.
+calendar_id = "primary"
+
+# Popup reminder before tip-off, in minutes.
+reminder_minutes = 30
+
+# Per-league follow lists. The top-level `teams` above is the NBA list (an `[nba]` section with
+# `teams = [...]` works too and takes precedence). For college, an empty list means none.
+[ncaab]
+# NCAA men's D1, ESPN abbreviations (NEV = Nevada Wolf Pack, ESPN team 2440).
+teams = ["NEV"]

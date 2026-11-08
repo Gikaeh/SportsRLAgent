@@ -1,0 +1,45 @@
+[project]
+name = "deepsports"
+version = "0.1.0"
+description = "Agent-driven sports data collection, analysis, and prediction (NBA first)."
+authors = [
+    { name = "Jaemin", email = "contact.jaemin@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.5.6",
+    "fastapi>=0.150.0",
+    "httpx>=0.28.1",
+    "numpy>=2.5.4",
+    "pytz>=2026.5",
+    "scikit-learn>=1.9.1",
+    "uvicorn>=0.54.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"
+
+[project.scripts]
+deepsports = "deepsports.cli:main"
+
+[tool.uv]
+# Only resolve package versions published at least ~2 weeks ago.
+exclude-newer = "2026-10-20T00:00:00Z"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]

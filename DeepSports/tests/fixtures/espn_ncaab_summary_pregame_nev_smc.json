@@ -1,0 +1,386 @@
+{
+ "boxscore": {
+  "teams": [
+   {
+    "team": {
+     "id": "2608",
+     "uid": "s:40~l:41~t:2608",
+     "slug": "saint-marys-gaels",
+     "location": "Saint Mary's",
+     "name": "Gaels",
+     "abbreviation": "SMC",
+     "displayName": "Saint Mary's Gaels",
+     "shortDisplayName": "Saint Mary's",
+     "color": "d80024",
+     "alternateColor": "003057"
+    },
+    "statistics": [
+     {
+      "name": "streak",
+      "displayValue": "W1",
+      "abbreviation": "STRK",
+      "label": "Streak"
+     },
+     {
+      "name": "avgPointsAgainst",
+      "displayValue": "85.0",
+      "abbreviation": "OPP PPG",
+      "label": "Points Against"
+     },
+     {
+      "name": "avgPoints",
+      "displayValue": "90.0",
+      "abbreviation": "PTS",
+      "label": "Points Per Game"
+     },
+     {
+      "name": "fieldGoalPct",
+      "displayValue": "50",
+      "abbreviation": "FG%",
+      "label": "Field Goal %"
+     },
+     {
+      "name": "threePointFieldGoalPct",
+      "displayValue": "24",
+      "abbreviation": "3P%",
+      "label": "Three Point %"
+     },
+     {
+      "name": "avgRebounds",
+      "displayValue": "41.0",
+      "abbreviation": "REB",
+      "label": "Rebounds Per Game"
+     },
+     {
+      "name": "avgAssists",
+      "displayValue": "18.0",
+      "abbreviation": "AST",
+      "label": "Assists Per Game"
+     },
+     {
+      "name": "avgBlocks",
+      "displayValue": "2.0",
+      "abbreviation": "BLK",
+      "label": "Blocks Per Game"
+     },
+     {
+      "name": "avgSteals",
+      "displayValue": "12.0",
+      "abbreviation": "STL",
+      "label": "Steals Per Game"
+     },
+     {
+      "name": "avgTeamTurnovers",
+      "displayValue": "0.0",
+      "abbreviation": "TTO",
+      "label": "Team Turnovers Per Game"
+     },
+     {
+      "name": "avgTotalTurnovers",
+      "displayValue": "11.0",
+      "abbreviation": "ToTO",
+      "label": "Total Turnovers Per Game"
+     },
+     {
+      "name": "avgPointsAgainst",
+      "displayValue": "85.0",
+      "abbreviation": "PA",
+      "label": "Points Against"
+     }
+    ],
+    "displayOrder": 1,
+    "homeAway": "away"
+   },
+   {
+    "team": {
+     "id": "2440",
+     "uid": "s:40~l:41~t:2440",
+     "slug": "nevada-wolf-pack",
+     "location": "Nevada",
+     "name": "Wolf Pack",
+     "abbreviation": "NEV",
+     "displayName": "Nevada Wolf Pack",
+     "shortDisplayName": "Nevada",
+     "color": "041e42",
+     "alternateColor": "8a8d8f"
+    },
+    "statistics": [
+     {
+      "name": "streak",
+      "displayValue": "W1",
+      "abbreviation": "STRK",
+      "label": "Streak"
+     },
+     {
+      "name": "avgPointsAgainst",
+      "displayValue": "49.0",
+      "abbreviation": "OPP PPG",
+      "label": "Points Against"
+     },
+     {
+      "name": "avgPoints",
+      "displayValue": "86.0",
+      "abbreviation": "PTS",
+      "label": "Points Per Game"
+     },
+     {
+      "name": "fieldGoalPct",
+      "displayValue": "47",
+      "abbreviation": "FG%",
+      "label": "Field Goal %"
+     },
+     {
+      "name": "threePointFieldGoalPct",
+      "displayValue": "31",
+      "abbreviation": "3P%",
+      "label": "Three Point %"
+     },
+     {
+      "name": "avgRebounds",
+      "displayValue": "47.0",
+      "abbreviation": "REB",
+      "label": "Rebounds Per Game"
+     },
+     {
+      "name": "avgAssists",
+      "displayValue": "22.0",
+      "abbreviation": "AST",
+      "label": "Assists Per Game"
+     },
+     {
+      "name": "avgBlocks",
+      "displayValue": "2.0",
+      "abbreviation": "BLK",
+      "label": "Blocks Per Game"
+     },
+     {
+      "name": "avgSteals",
+      "displayValue": "8.0",
+      "abbreviation": "STL",
+      "label": "Steals Per Game"
+     },
+     {
+      "name": "avgTeamTurnovers",
+      "displayValue": "0.0",
+      "abbreviation": "TTO",
+      "label": "Team Turnovers Per Game"
+     },
+     {
+      "name": "avgTotalTurnovers",
+      "displayValue": "8.0",
+      "abbreviation": "ToTO",
+      "label": "Total Turnovers Per Game"
+     },
+     {
+      "name": "avgPointsAgainst",
+      "displayValue": "49.0",
+      "abbreviation": "PA",
+      "label": "Points Against"
+     }
+    ],
+    "displayOrder": 2,
+    "homeAway": "home"
+   }
+  ]
+ },
+ "format": {
+  "regulation": {
+   "periods": 2,
+   "displayName": "Half",
+   "slug": "half",
+   "clock": 1200.0
+  },
+  "overtime": {
+   "displayName": "Half",
+   "slug": "half",
+   "clock": 300.0
+  }
+ },
+ "gameInfo": {
+  "venue": {
+   "id": "11030",
+   "guid": "169574c8-c2f9-3900-987c-2fc18a94f56c",
+   "fullName": "Tahoe Blue Event Center",
+   "address": {
+    "city": "Stateline",
+    "state": "NV",
+    "zipCode": "89449"
+   },
+   "grass": false,
+   "images": []
+  }
+ },
+ "broadcasts": [
+  {
+   "type": {
+    "id": "4",
+    "shortName": "Streaming",
+    "longName": "Streaming",
+    "slug": "streaming"
+   },
+   "station": "MW+",
+   "market": {
+    "id": "1",
+    "type": "National"
+   },
+   "media": {
+    "callLetters": "MW+",
+    "name": "Mountain West Plus",
+    "shortName": "MW+"
+   },
+   "lang": "en",
+   "region": "us",
+   "isNational": true
+  }
+ ],
+ "pickcenter": [],
+ "odds": [],
+ "header": {
+  "id": "401911453",
+  "uid": "s:40~l:41~e:401911453",
+  "season": {
+   "year": 2027,
+   "current": true,
+   "type": 2
+  },
+  "timeValid": true,
+  "competitions": [
+   {
+    "id": "401911453",
+    "uid": "s:40~l:41~e:401911453~c:401911453",
+    "date": "2026-11-08T21:30Z",
+    "neutralSite": true,
+    "conferenceCompetition": false,
+    "boxscoreAvailable": false,
+    "commentaryAvailable": false,
+    "liveAvailable": false,
+    "onWatchESPN": false,
+    "recent": false,
+    "boxscoreSource": "none",
+    "playByPlaySource": "none",
+    "competitors": [
+     {
+      "id": "2440",
+      "uid": "s:40~l:41~t:2440",
+      "order": 0,
+      "homeAway": "home",
+      "team": {
+       "id": "2440",
+       "guid": "38a3a703-7955-d45a-51a9-ede18b259a79",
+       "uid": "s:40~l:41~t:2440",
+       "location": "Nevada",
+       "name": "Wolf Pack",
+       "nickname": "Nevada",
+       "abbreviation": "NEV",
+       "displayName": "Nevada Wolf Pack",
+       "color": "041e42",
+       "alternateColor": "8a8d8f",
+       "groups": {
+        "id": "44"
+       }
+      },
+      "record": [
+       {
+        "type": "total",
+        "summary": "1-0",
+        "displayValue": "1-0"
+       },
+       {
+        "type": "home",
+        "summary": "1-0",
+        "displayValue": "1-0"
+       },
+       {
+        "type": "vsconf",
+        "summary": "0-0",
+        "displayValue": "0-0"
+       }
+      ],
+      "possession": false
+     },
+     {
+      "id": "2608",
+      "uid": "s:40~l:41~t:2608",
+      "order": 1,
+      "homeAway": "away",
+      "team": {
+       "id": "2608",
+       "guid": "af2b1d33-92bc-1b0c-49b0-d300a8664769",
+       "uid": "s:40~l:41~t:2608",
+       "location": "Saint Mary's",
+       "name": "Gaels",
+       "nickname": "Saint Mary's",
+       "abbreviation": "SMC",
+       "displayName": "Saint Mary's Gaels",
+       "color": "d80024",
+       "alternateColor": "003057",
+       "groups": {
+        "id": "29"
+       }
+      },
+      "record": [
+       {
+        "type": "total",
+        "summary": "1-0",
+        "displayValue": "1-0"
+       },
+       {
+        "type": "road",
+        "summary": "0-0",
+        "displayValue": "0-0"
+       },
+       {
+        "type": "vsconf",
+        "summary": "0-0",
+        "displayValue": "0-0"
+       }
+      ],
+      "possession": false
+     }
+    ],
+    "status": {
+     "type": {
+      "id": "1",
+      "name": "STATUS_SCHEDULED",
+      "state": "pre",
+      "completed": false,
+      "description": "Scheduled",
+      "detail": "Sun, November 8th at 4:30 PM EST",
+      "shortDetail": "11/8 - 4:30 PM EST"
+     }
+    },
+    "broadcasts": [
+     {
+      "type": {
+       "id": "4",
+       "shortName": "Streaming"
+      },
+      "market": {
+       "id": "1",
+       "type": "National"
+      },
+      "media": {
+       "shortName": "MW+"
+      },
+      "lang": "en",
+      "region": "us",
+      "isNational": true
+     }
+    ],
+    "boxscoreMinutes": false
+   }
+  ],
+  "week": 1,
+  "league": {
+   "id": "41",
+   "uid": "s:40~l:41",
+   "name": "NCAA Men's Basketball",
+   "abbreviation": "NCAAM",
+   "shortName": "NCAAM",
+   "midsizeName": "NCAAM Basketball",
+   "slug": "mens-college-basketball",
+   "isTournament": false
+  },
+  "gameNote": "Lake Tahoe Classic"
+ }
+}

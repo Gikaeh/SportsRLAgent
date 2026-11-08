@@ -1,0 +1,1180 @@
+{
+ "count": 14,
+ "pageIndex": 1,
+ "pageSize": 100,
+ "pageCount": 1,
+ "items": [
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/31?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/31?lang=en&region=us",
+    "id": "31",
+    "name": "Caesars Sportsbook",
+    "priority": 0
+   },
+   "details": "MIL -1.5",
+   "overUnder": 233.5,
+   "spread": -1.5,
+   "overOdds": -110.0,
+   "underOdds": -110.0,
+   "awayTeamOdds": {
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": -110,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+1.5",
+      "american": "+1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -110,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-1.5",
+      "american": "-1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "under": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "total": {
+     "alternateDisplayValue": "233.5",
+     "american": "233.5"
+    }
+   }
+  },
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/52?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/52?lang=en&region=us",
+    "id": "52",
+    "name": "Caesars Sportsbook (Colorado)",
+    "priority": 0
+   },
+   "details": "MIL -1.5",
+   "overUnder": 233.5,
+   "spread": -1.5,
+   "overOdds": -110.0,
+   "underOdds": -110.0,
+   "awayTeamOdds": {
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": 105,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+1.5",
+      "american": "+1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "+105",
+      "american": "+105"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -125,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-1.5",
+      "american": "-1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-125",
+      "american": "-125"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "under": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "total": {
+     "alternateDisplayValue": "233.5",
+     "american": "233.5"
+    }
+   }
+  },
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/45?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/45?lang=en&region=us",
+    "id": "45",
+    "name": "Caesars Sportsbook (New Jersey)",
+    "priority": 0
+   },
+   "details": "MIL -1.5",
+   "overUnder": 233.5,
+   "spread": -1.5,
+   "overOdds": -110.0,
+   "underOdds": -110.0,
+   "awayTeamOdds": {
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": 105,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+1.5",
+      "american": "+1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "+105",
+      "american": "+105"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -125,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-1.5",
+      "american": "-1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-125",
+      "american": "-125"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "under": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "total": {
+     "alternateDisplayValue": "233.5",
+     "american": "233.5"
+    }
+   }
+  },
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/46?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/46?lang=en&region=us",
+    "id": "46",
+    "name": "Caesars Sportsbook (New Jersey) - Live Odds",
+    "priority": 0
+   },
+   "details": "MIL -12.5",
+   "overUnder": 231.5,
+   "spread": -12.5,
+   "overOdds": -125.0,
+   "underOdds": -105.0,
+   "awayTeamOdds": {
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": 3000,
+    "spreadOdds": -130.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+12.5",
+      "american": "+12.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-130",
+      "american": "-130"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "+3000",
+      "american": "+3000"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -20000,
+    "spreadOdds": 100.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-12.5",
+      "american": "-12.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "+100",
+      "american": "+100"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-20000",
+      "american": "-20000"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-125",
+     "american": "-125"
+    },
+    "under": {
+     "alternateDisplayValue": "-105",
+     "american": "-105"
+    },
+    "total": {
+     "alternateDisplayValue": "231.5",
+     "american": "231.5"
+    }
+   }
+  },
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/43?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/43?lang=en&region=us",
+    "id": "43",
+    "name": "Caesars Sportsbook (Pennsylvania)",
+    "priority": 0
+   },
+   "details": "MIL -1.5",
+   "overUnder": 233.5,
+   "spread": -1.5,
+   "overOdds": -110.0,
+   "underOdds": -110.0,
+   "awayTeamOdds": {
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": 105,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+1.5",
+      "american": "+1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "+105",
+      "american": "+105"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -125,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-1.5",
+      "american": "-1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-125",
+      "american": "-125"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "under": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "total": {
+     "alternateDisplayValue": "233.5",
+     "american": "233.5"
+    }
+   }
+  },
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/40?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/40?lang=en&region=us",
+    "id": "40",
+    "name": "DraftKings",
+    "priority": 0
+   },
+   "details": "MIL -1.5",
+   "overUnder": 234.0,
+   "spread": -1.5,
+   "overOdds": -110.0,
+   "underOdds": -110.0,
+   "awayTeamOdds": {
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": 105,
+    "spreadOdds": -105.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+1.5",
+      "american": "+1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-105",
+      "american": "-105"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "+105",
+      "american": "+105"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -125,
+    "spreadOdds": -115.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-1.5",
+      "american": "-1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-115",
+      "american": "-115"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-125",
+      "american": "-125"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "under": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "total": {
+     "alternateDisplayValue": "234",
+     "american": "234"
+    }
+   }
+  },
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/55?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/55?lang=en&region=us",
+    "id": "55",
+    "name": "Holland Casino",
+    "priority": 0
+   },
+   "details": "MIL -1.5",
+   "overUnder": 234.0,
+   "spread": -1.5,
+   "overOdds": -110.0,
+   "underOdds": -110.0,
+   "awayTeamOdds": {
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": 105,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+1.5",
+      "american": "+1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "+105",
+      "american": "+105"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -125,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-1.5",
+      "american": "-1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-125",
+      "american": "-125"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "links": [
+    {
+     "language": "en-US",
+     "rel": [
+      "home",
+      "desktop",
+      "bets",
+      "holland-casino"
+     ],
+     "href": "https://www.hollandcasino.nl/sportsbook/add-selns?bet_ref=MzQwOTg2MzoxLzE6OjA",
+     "text": "Home Bet",
+     "shortText": "Home Bet",
+     "isExternal": true,
+     "isPremium": false
+    },
+    {
+     "language": "en-US",
+     "rel": [
+      "away",
+      "desktop",
+      "bets",
+      "holland-casino"
+     ],
+     "href": "https://www.hollandcasino.nl/sportsbook/add-selns?bet_ref=MzQwOTg2NTo1LzY6OjA",
+     "text": "Away Bet",
+     "shortText": "Away Bet",
+     "isExternal": true,
+     "isPremium": false
+    }
+   ],
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "under": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "total": {
+     "alternateDisplayValue": "234",
+     "american": "234"
+    }
+   }
+  },
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/47?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/47?lang=en&region=us",
+    "id": "47",
+    "name": "MGM",
+    "priority": 0
+   },
+   "details": "MIL -2",
+   "overUnder": 234.0,
+   "spread": -2.0,
+   "overOdds": -110.0,
+   "underOdds": -110.0,
+   "awayTeamOdds": {
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": 110,
+    "spreadOdds": -115.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+2",
+      "american": "+2"
+     },
+     "spread": {
+      "alternateDisplayValue": "-115",
+      "american": "-115"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "+110",
+      "american": "+110"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -110,
+    "spreadOdds": -105.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-2",
+      "american": "-2"
+     },
+     "spread": {
+      "alternateDisplayValue": "-105",
+      "american": "-105"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "links": [
+    {
+     "language": "en-US",
+     "rel": [
+      "home",
+      "desktop",
+      "bets",
+      "mgm"
+     ],
+     "href": "https://sports.nj.betmgm.com/en/sports/events/11941273?options=1958654877",
+     "text": "Home Bet",
+     "shortText": "Home Bet",
+     "isExternal": true,
+     "isPremium": false
+    },
+    {
+     "language": "en-US",
+     "rel": [
+      "away",
+      "desktop",
+      "bets",
+      "mgm"
+     ],
+     "href": "https://sports.nj.betmgm.com/en/sports/events/11941273?options=1958654875",
+     "text": "Away Bet",
+     "shortText": "Away Bet",
+     "isExternal": true,
+     "isPremium": false
+    },
+    {
+     "language": "en-US",
+     "rel": [
+      "draw",
+      "desktop",
+      "bets",
+      "mgm"
+     ],
+     "href": "https://sports.nj.betmgm.com/en/sports/events/11941273?options=1958654876",
+     "text": "Draw Bet",
+     "shortText": "Draw Bet",
+     "isExternal": true,
+     "isPremium": false
+    }
+   ],
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "under": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "total": {
+     "alternateDisplayValue": "234",
+     "american": "234"
+    }
+   }
+  },
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/41?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/41?lang=en&region=us",
+    "id": "41",
+    "name": "SugarHouse",
+    "priority": 0
+   },
+   "details": "MIL -1.5",
+   "overUnder": 233.5,
+   "spread": -1.5,
+   "overOdds": -112.0,
+   "underOdds": -108.0,
+   "awayTeamOdds": {
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": 105,
+    "spreadOdds": -106.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+1.5",
+      "american": "+1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-106",
+      "american": "-106"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "+105",
+      "american": "+105"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -125,
+    "spreadOdds": -115.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-1.5",
+      "american": "-1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-115",
+      "american": "-115"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-125",
+      "american": "-125"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-112",
+     "american": "-112"
+    },
+    "under": {
+     "alternateDisplayValue": "-108",
+     "american": "-108"
+    },
+    "total": {
+     "alternateDisplayValue": "233.5",
+     "american": "233.5"
+    }
+   }
+  },
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/53?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/53?lang=en&region=us",
+    "id": "53",
+    "name": "Titanbets",
+    "priority": 0
+   },
+   "details": "MIL -1.5",
+   "overUnder": 234.0,
+   "spread": -1.5,
+   "overOdds": -110.0,
+   "underOdds": -110.0,
+   "awayTeamOdds": {
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": 105,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+1.5",
+      "american": "+1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "+105",
+      "american": "+105"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -125,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-1.5",
+      "american": "-1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-125",
+      "american": "-125"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "under": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "total": {
+     "alternateDisplayValue": "234",
+     "american": "234"
+    }
+   }
+  },
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/36?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/36?lang=en&region=us",
+    "id": "36",
+    "name": "Unibet",
+    "priority": 0
+   },
+   "details": "MIL -1.5",
+   "overUnder": 233.5,
+   "spread": -1.5,
+   "overOdds": -113.0,
+   "underOdds": -108.0,
+   "awayTeamOdds": {
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": 105,
+    "spreadOdds": -107.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+1.5",
+      "american": "+1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-107",
+      "american": "-107"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "+105",
+      "american": "+105"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -125,
+    "spreadOdds": -115.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-1.5",
+      "american": "-1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-115",
+      "american": "-115"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-125",
+      "american": "-125"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-113",
+     "american": "-113"
+    },
+    "under": {
+     "alternateDisplayValue": "-108",
+     "american": "-108"
+    },
+    "total": {
+     "alternateDisplayValue": "233.5",
+     "american": "233.5"
+    }
+   }
+  },
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/1001?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/1001?lang=en&region=us",
+    "id": "1001",
+    "name": "accuscore",
+    "priority": 0
+   },
+   "details": "MIL -1.5",
+   "overUnder": 234.0,
+   "spread": -1.5,
+   "overOdds": -110.0,
+   "underOdds": -110.0,
+   "awayTeamOdds": {
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": 105,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+1.5",
+      "american": "+1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "+105",
+      "american": "+105"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -125,
+    "spreadOdds": -110.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-1.5",
+      "american": "-1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-125",
+      "american": "-125"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "under": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "total": {
+     "alternateDisplayValue": "234",
+     "american": "234"
+    }
+   }
+  },
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/1004?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/1004?lang=en&region=us",
+    "id": "1004",
+    "name": "consensus",
+    "priority": 0
+   },
+   "details": "MIL -1.5",
+   "overUnder": 234.0,
+   "spread": -1.5,
+   "overOdds": -110.0,
+   "underOdds": -110.0,
+   "awayTeamOdds": {
+    "winPercentage": 53.0,
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": 104,
+    "spreadOdds": -108.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+1.5",
+      "american": "+1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-108",
+      "american": "-108"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "+104",
+      "american": "+104"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "winPercentage": 47.0,
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -124,
+    "spreadOdds": -112.0,
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-1.5",
+      "american": "-1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-112",
+      "american": "-112"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-124",
+      "american": "-124"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "under": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "total": {
+     "alternateDisplayValue": "234",
+     "american": "234"
+    }
+   }
+  },
+  {
+   "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/1002?lang=en&region=us",
+   "provider": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/providers/1002?lang=en&region=us",
+    "id": "1002",
+    "name": "teamrankings",
+    "priority": 0
+   },
+   "details": "MIL -1.5",
+   "overUnder": 234.0,
+   "spread": -1.5,
+   "overOdds": -110.0,
+   "underOdds": -110.0,
+   "awayTeamOdds": {
+    "averageScore": 116.2,
+    "favorite": false,
+    "underdog": true,
+    "moneyLine": 102,
+    "spreadRecord": {
+     "wins": 42,
+     "losses": 42,
+     "pushes": 2,
+     "summary": "42-42-2"
+    },
+    "spreadOdds": -110.0,
+    "pastPerformances": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/teams/17/odds/1002/past-performances?lang=en&region=us"
+    },
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "+1.5",
+      "american": "+1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "+102",
+      "american": "+102"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/17?lang=en&region=us"
+    }
+   },
+   "homeTeamOdds": {
+    "averageScore": 117.8,
+    "favorite": true,
+    "underdog": false,
+    "moneyLine": -122,
+    "spreadRecord": {
+     "wins": 44,
+     "losses": 36,
+     "pushes": 6,
+     "summary": "44-36-6"
+    },
+    "spreadOdds": -110.0,
+    "pastPerformances": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/teams/15/odds/1002/past-performances?lang=en&region=us"
+    },
+    "current": {
+     "pointSpread": {
+      "alternateDisplayValue": "-1.5",
+      "american": "-1.5"
+     },
+     "spread": {
+      "alternateDisplayValue": "-110",
+      "american": "-110"
+     },
+     "moneyLine": {
+      "alternateDisplayValue": "-122",
+      "american": "-122"
+     }
+    },
+    "team": {
+     "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/seasons/2022/teams/15?lang=en&region=us"
+    }
+   },
+   "moneyLineHistory": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/1002/history/0?lang=en&region=us"
+   },
+   "spreadHistory": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/1002/history/1?lang=en&region=us"
+   },
+   "totalHistory": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/1002/history/2?lang=en&region=us"
+   },
+   "headToHeads": {
+    "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/events/401358773/competitions/401358773/odds/1002/head-to-heads?lang=en&region=us"
+   },
+   "moneylineWinner": false,
+   "spreadWinner": false,
+   "current": {
+    "over": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "under": {
+     "alternateDisplayValue": "-110",
+     "american": "-110"
+    },
+    "total": {
+     "alternateDisplayValue": "234",
+     "american": "234"
+    }
+   }
+  }
+ ]
+}

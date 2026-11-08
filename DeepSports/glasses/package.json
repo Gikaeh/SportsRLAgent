@@ -1,0 +1,32 @@
+{
+  "name": "deepsports-glasses",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:mock": "VITE_MOCK=1 vite",
+    "build": "tsc --noEmit && vite build",
+    "build:mock": "tsc --noEmit && VITE_MOCK=1 vite build --outDir dist-mock",
+    "preview": "vite preview",
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test test/*.test.ts",
+    "simulate": "node node_modules/@evenrealities/evenhub-simulator/bin/index.js http://localhost:5173/glasses/",
+    "simulate:auto": "node node_modules/@evenrealities/evenhub-simulator/bin/index.js http://localhost:5173/glasses/ --automation-port 9898",
+    "qr": "evenhub qr --url http://172.16.0.61:8787/glasses/",
+    "pack": "npm run build && evenhub pack app.json dist",
+    "pack:lan": "tsc --noEmit && VITE_API_BASE=http://172.16.0.61:8787 vite build --base ./ --outDir dist-pack && evenhub pack app.json dist-pack --sdk-ver 0.0.16 -o deepsports-glasses.ehpk"
+  },
+  "dependencies": {
+    "@evenrealities/even_hub_sdk": "0.0.16"
+  },
+  "devDependencies": {
+    "@evenrealities/evenhub-cli": "0.2.0",
+    "@evenrealities/evenhub-simulator": "0.9.5",
+    "@evenrealities/pretext": "0.1.4",
+    "typescript": "7.0.2",
+    "vite": "8.3.4"
+  },
+  "engines": {
+    "node": ">=22.6"
+  }
+}

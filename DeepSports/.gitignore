@@ -1,0 +1,40 @@
+# data (raw landing zone + DuckDB warehouse) is reproducible from the pipeline.
+# `data` is a symlink to the external drive, so match it without a trailing slash.
+data
+*.duckdb
+*.duckdb.wal
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# node / build output (rebuild with `npm run build` in web/ and glasses/)
+node_modules/
+dist/
+dist-mock/
+dist-pack/
+*.tsbuildinfo
+
+# glasses packaging output
+*.ehpk
+
+# os / editor / local
+.DS_Store
+._*
+*.log
+.env
+.env.*
+
+# serena: per-machine settings and symbol cache
+.serena/project.local.yml
+.serena/cache/
+.serena/logs/
+
+# local research working notes from other agents (summaries live in docs/research/)
+collab/
+
+# scheduled-sync handoff files (upcoming games exported for headless Claude)
+.sync/

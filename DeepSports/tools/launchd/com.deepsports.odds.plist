@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.deepsports.odds</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/bash</string><string>__REPO__/tools/odds-snapshot.sh</string></array>
+  <key>WorkingDirectory</key><string>__REPO__</string>
+  <!-- Every 30 minutes at :15 and :45, so it never starts together with the 08:00/14:00 sync
+       (com.deepsports.sync). If the sync (or any writer) holds the warehouse, it skips. -->
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Minute</key><integer>15</integer></dict>
+    <dict><key>Minute</key><integer>45</integer></dict>
+  </array>
+  <key>LowPriorityIO</key><true/>
+  <key>Nice</key><integer>10</integer>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/DeepSports/odds.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/DeepSports/odds.log</string>
+</dict>
+</plist>

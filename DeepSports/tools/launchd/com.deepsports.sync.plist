@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.deepsports.sync</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/bash</string><string>__REPO__/tools/scheduled-sync.sh</string></array>
+  <key>WorkingDirectory</key><string>__REPO__</string>
+  <!-- 8:00 and 14:00 local: morning refresh + a pre-tip-off pass (earliest tips ~16:00 PT). -->
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Hour</key><integer>8</integer><key>Minute</key><integer>0</integer></dict>
+    <dict><key>Hour</key><integer>14</integer><key>Minute</key><integer>0</integer></dict>
+  </array>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/DeepSports/sync.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/DeepSports/sync.log</string>
+</dict>
+</plist>

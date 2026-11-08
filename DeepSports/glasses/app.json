@@ -1,0 +1,17 @@
+{
+  "package_id": "com.deepsports.glasses",
+  "edition": "202601",
+  "name": "DeepSports",
+  "version": "0.2.0",
+  "min_app_version": "2.2.10",
+  "min_sdk_version": "0.0.16",
+  "entrypoint": "index.html",
+  "permissions": [
+    {
+      "name": "network",
+      "desc": "Reads NBA and college basketball scores from the owner's DeepSports server on the home network.",
+      "whitelist": ["http://172.16.0.61:8787"]
+    }
+  ],
+  "supported_languages": ["en"]
+}

@@ -1,0 +1,1167 @@
+{
+ "boxscore": {
+  "teams": [
+   {
+    "team": {
+     "id": "15",
+     "uid": "s:40~l:46~t:15",
+     "slug": "milwaukee-bucks",
+     "location": "Milwaukee",
+     "name": "Bucks",
+     "abbreviation": "MIL",
+     "displayName": "Milwaukee Bucks",
+     "shortDisplayName": "Bucks",
+     "color": "00471b",
+     "alternateColor": "eee1c6",
+     "logo": "https://a.espncdn.com/i/teamlogos/nba/500/mil.png"
+    },
+    "statistics": [
+     {
+      "name": "streak",
+      "displayValue": "L3",
+      "abbreviation": "STRK",
+      "label": "Streak"
+     },
+     {
+      "name": "avgPointsAgainst",
+      "displayValue": "124.1",
+      "abbreviation": "OPP PPG",
+      "label": "Points Against"
+     },
+     {
+      "name": "Last Ten Games",
+      "displayValue": "1-6",
+      "abbreviation": "L10",
+      "label": "Last Ten Games"
+     },
+     {
+      "name": "avgPoints",
+      "displayValue": "111.1",
+      "abbreviation": "PTS",
+      "label": "Points Per Game"
+     },
+     {
+      "name": "fieldGoalPct",
+      "displayValue": "43",
+      "abbreviation": "FG%",
+      "label": "Field Goal %"
+     },
+     {
+      "name": "threePointFieldGoalPct",
+      "displayValue": "33",
+      "abbreviation": "3P%",
+      "label": "Three Point %"
+     },
+     {
+      "name": "avgRebounds",
+      "displayValue": "49.6",
+      "abbreviation": "REB",
+      "label": "Rebounds Per Game"
+     },
+     {
+      "name": "avgAssists",
+      "displayValue": "25.7",
+      "abbreviation": "AST",
+      "label": "Assists Per Game"
+     },
+     {
+      "name": "avgBlocks",
+      "displayValue": "4.6",
+      "abbreviation": "BLK",
+      "label": "Blocks Per Game"
+     },
+     {
+      "name": "avgSteals",
+      "displayValue": "5.6",
+      "abbreviation": "STL",
+      "label": "Steals Per Game"
+     },
+     {
+      "name": "avgTeamTurnovers",
+      "displayValue": "0.6",
+      "abbreviation": "TTO",
+      "label": "Team Turnovers Per Game"
+     },
+     {
+      "name": "avgTotalTurnovers",
+      "displayValue": "16.7",
+      "abbreviation": "ToTO",
+      "label": "Total Turnovers Per Game"
+     }
+    ],
+    "displayOrder": 1,
+    "homeAway": "away"
+   },
+   {
+    "team": {
+     "id": "2",
+     "uid": "s:40~l:46~t:2",
+     "slug": "boston-celtics",
+     "location": "Boston",
+     "name": "Celtics",
+     "abbreviation": "BOS",
+     "displayName": "Boston Celtics",
+     "shortDisplayName": "Celtics",
+     "color": "008348",
+     "alternateColor": "ffffff",
+     "logo": "https://a.espncdn.com/i/teamlogos/nba/500/bos.png"
+    },
+    "statistics": [
+     {
+      "name": "streak",
+      "displayValue": "L1",
+      "abbreviation": "STRK",
+      "label": "Streak"
+     },
+     {
+      "name": "avgPointsAgainst",
+      "displayValue": "109.1",
+      "abbreviation": "OPP PPG",
+      "label": "Points Against"
+     },
+     {
+      "name": "Last Ten Games",
+      "displayValue": "5-2",
+      "abbreviation": "L10",
+      "label": "Last Ten Games"
+     },
+     {
+      "name": "avgPoints",
+      "displayValue": "115.0",
+      "abbreviation": "PTS",
+      "label": "Points Per Game"
+     },
+     {
+      "name": "fieldGoalPct",
+      "displayValue": "46",
+      "abbreviation": "FG%",
+      "label": "Field Goal %"
+     },
+     {
+      "name": "threePointFieldGoalPct",
+      "displayValue": "35",
+      "abbreviation": "3P%",
+      "label": "Three Point %"
+     },
+     {
+      "name": "avgRebounds",
+      "displayValue": "42.4",
+      "abbreviation": "REB",
+      "label": "Rebounds Per Game"
+     },
+     {
+      "name": "avgAssists",
+      "displayValue": "26.9",
+      "abbreviation": "AST",
+      "label": "Assists Per Game"
+     },
+     {
+      "name": "avgBlocks",
+      "displayValue": "3.7",
+      "abbreviation": "BLK",
+      "label": "Blocks Per Game"
+     },
+     {
+      "name": "avgSteals",
+      "displayValue": "8.7",
+      "abbreviation": "STL",
+      "label": "Steals Per Game"
+     },
+     {
+      "name": "avgTeamTurnovers",
+      "displayValue": "0.7",
+      "abbreviation": "TTO",
+      "label": "Team Turnovers Per Game"
+     },
+     {
+      "name": "avgTotalTurnovers",
+      "displayValue": "15.4",
+      "abbreviation": "ToTO",
+      "label": "Total Turnovers Per Game"
+     }
+    ],
+    "displayOrder": 2,
+    "homeAway": "home"
+   }
+  ]
+ },
+ "gameInfo": {
+  "venue": {
+   "id": "1824",
+   "guid": "58cac4d0-a208-3028-b2a6-ff7aba657bc3",
+   "fullName": "TD Garden",
+   "shortName": "TD Banknorth Garden",
+   "address": {
+    "city": "Boston",
+    "state": "MA"
+   },
+   "grass": false,
+   "images": [
+    {
+     "href": "https://a.espncdn.com/i/venues/nba/day/1824.jpg",
+     "width": 2000,
+     "height": 1125,
+     "alt": "",
+     "rel": [
+      "full",
+      "day"
+     ]
+    }
+   ]
+  }
+ },
+ "injuries": [
+  {
+   "team": {
+    "id": "2",
+    "uid": "s:40~l:46~t:2",
+    "displayName": "Boston Celtics",
+    "abbreviation": "BOS",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/bos.png"
+   },
+   "injuries": [
+    {
+     "status": "Day-To-Day",
+     "date": "2026-11-03T21:12Z",
+     "athlete": {
+      "id": "4066354",
+      "lastName": "Pritchard",
+      "fullName": "Payton Pritchard",
+      "displayName": "Payton Pritchard",
+      "shortName": "P. Pritchard",
+      "jersey": "11",
+      "position": {
+       "name": "Guard",
+       "displayName": "Guard",
+       "abbreviation": "G"
+      },
+      "status": {
+       "id": "1",
+       "name": "Active",
+       "type": "active",
+       "abbreviation": "Active"
+      }
+     },
+     "type": {
+      "id": "6",
+      "name": "INJURY_STATUS_DAYTODAY",
+      "description": "day-to-day",
+      "abbreviation": "DD"
+     },
+     "details": {
+      "fantasyStatus": {
+       "description": "GTD",
+       "abbreviation": "GTD",
+       "displayDescription": "GTD"
+      },
+      "type": "Shoulder",
+      "location": "Arm",
+      "side": "Right",
+      "returnDate": "2026-11-04"
+     }
+    },
+    {
+     "status": "Day-To-Day",
+     "date": "2026-11-03T21:10Z",
+     "athlete": {
+      "id": "4065648",
+      "lastName": "Tatum",
+      "fullName": "Jayson Tatum",
+      "displayName": "Jayson Tatum",
+      "shortName": "J. Tatum",
+      "jersey": "0",
+      "position": {
+       "name": "Forward",
+       "displayName": "Forward",
+       "abbreviation": "F"
+      },
+      "status": {
+       "id": "1",
+       "name": "Active",
+       "type": "active",
+       "abbreviation": "Active"
+      }
+     },
+     "type": {
+      "id": "6",
+      "name": "INJURY_STATUS_DAYTODAY",
+      "description": "day-to-day",
+      "abbreviation": "DD"
+     },
+     "details": {
+      "fantasyStatus": {
+       "description": "GTD",
+       "abbreviation": "GTD",
+       "displayDescription": "GTD"
+      },
+      "type": "Rest",
+      "location": "Other",
+      "returnDate": "2026-11-04"
+     }
+    },
+    {
+     "status": "Out",
+     "date": "2026-10-18T14:49Z",
+     "athlete": {
+      "id": "4433188",
+      "lastName": "Carter",
+      "fullName": "Devin Carter",
+      "displayName": "Devin Carter",
+      "shortName": "D. Carter",
+      "jersey": "99",
+      "position": {
+       "name": "Guard",
+       "displayName": "Guard",
+       "abbreviation": "G"
+      },
+      "status": {
+       "id": "1",
+       "name": "Active",
+       "type": "active",
+       "abbreviation": "Active"
+      }
+     },
+     "type": {
+      "id": "4",
+      "name": "INJURY_STATUS_OUT",
+      "description": "out",
+      "abbreviation": "O"
+     },
+     "details": {
+      "fantasyStatus": {
+       "description": "OUT",
+       "abbreviation": "OUT",
+       "displayDescription": "Out"
+      },
+      "type": "Illness",
+      "location": "Other",
+      "returnDate": "2026-11-08"
+     }
+    }
+   ]
+  },
+  {
+   "team": {
+    "id": "15",
+    "uid": "s:40~l:46~t:15",
+    "displayName": "Milwaukee Bucks",
+    "abbreviation": "MIL",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/mil.png"
+   },
+   "injuries": []
+  }
+ ],
+ "header": {
+  "id": "401909924",
+  "uid": "s:40~l:46~e:401909924",
+  "season": {
+   "year": 2027,
+   "current": true,
+   "type": 2
+  },
+  "timeValid": true,
+  "competitions": [
+   {
+    "id": "401909924",
+    "uid": "s:40~l:46~e:401909924~c:401909924",
+    "date": "2026-11-05T00:30Z",
+    "neutralSite": false,
+    "conferenceCompetition": false,
+    "boxscoreAvailable": false,
+    "commentaryAvailable": false,
+    "liveAvailable": false,
+    "onWatchESPN": false,
+    "recent": false,
+    "wallclockAvailable": false,
+    "boxscoreSource": "none",
+    "playByPlaySource": "none",
+    "competitors": [
+     {
+      "id": "2",
+      "uid": "s:40~l:46~t:2",
+      "order": 0,
+      "homeAway": "home",
+      "team": {
+       "id": "2",
+       "guid": "2ca761df-5f60-b2e9-22ed-e099c46d889b",
+       "uid": "s:40~l:46~t:2",
+       "location": "Boston",
+       "name": "Celtics",
+       "abbreviation": "BOS",
+       "displayName": "Boston Celtics",
+       "color": "008348",
+       "alternateColor": "ffffff",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nba/500/bos.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2024-06-25T21:17Z"
+        },
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/bos.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "dark"
+         ],
+         "lastUpdated": "2024-06-25T21:13Z"
+        },
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/bos.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "scoreboard"
+         ],
+         "lastUpdated": "2024-06-25T21:18Z"
+        },
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/scoreboard/bos.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "scoreboard",
+          "dark"
+         ],
+         "lastUpdated": "2024-06-25T21:13Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/2ca761df-5f60-b2e9-22ed-e099c46d889b/logos/primary_logo_on_white_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "primary_logo_on_white_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/2ca761df-5f60-b2e9-22ed-e099c46d889b/logos/primary_logo_on_black_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "primary_logo_on_black_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/2ca761df-5f60-b2e9-22ed-e099c46d889b/logos/primary_logo_on_primary_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "primary_logo_on_primary_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/2ca761df-5f60-b2e9-22ed-e099c46d889b/logos/primary_logo_on_secondary_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "primary_logo_on_secondary_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/2ca761df-5f60-b2e9-22ed-e099c46d889b/logos/primary_logo_black.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "primary_logo_black"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/2ca761df-5f60-b2e9-22ed-e099c46d889b/logos/primary_logo_white.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "primary_logo_white"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/2ca761df-5f60-b2e9-22ed-e099c46d889b/logos/secondary_logo_on_white_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "secondary_logo_on_white_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/2ca761df-5f60-b2e9-22ed-e099c46d889b/logos/secondary_logo_on_black_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "secondary_logo_on_black_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/2ca761df-5f60-b2e9-22ed-e099c46d889b/logos/secondary_logo_on_primary_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "secondary_logo_on_primary_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/2ca761df-5f60-b2e9-22ed-e099c46d889b/logos/secondary_logo_on_secondary_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "secondary_logo_on_secondary_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/2ca761df-5f60-b2e9-22ed-e099c46d889b/logos/secondary_logo_black.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "secondary_logo_black"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/2ca761df-5f60-b2e9-22ed-e099c46d889b/logos/secondary_logo_white.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "secondary_logo_white"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        }
+       ],
+       "links": [
+        {
+         "rel": [
+          "clubhouse",
+          "desktop",
+          "team"
+         ],
+         "href": "https://www.espn.com/nba/team/_/name/bos/boston-celtics",
+         "text": "Clubhouse"
+        }
+       ]
+      },
+      "record": [
+       {
+        "type": "total",
+        "summary": "5-2",
+        "displayValue": "5-2"
+       },
+       {
+        "type": "home",
+        "summary": "4-0",
+        "displayValue": "4-0"
+       },
+       {
+        "type": "vsconf",
+        "summary": "5-1",
+        "displayValue": "5-1"
+       }
+      ],
+      "possession": false
+     },
+     {
+      "id": "15",
+      "uid": "s:40~l:46~t:15",
+      "order": 1,
+      "homeAway": "away",
+      "team": {
+       "id": "15",
+       "guid": "f59bbabc-eedb-9ad2-c5dd-9bcd9f450a2f",
+       "uid": "s:40~l:46~t:15",
+       "location": "Milwaukee",
+       "name": "Bucks",
+       "abbreviation": "MIL",
+       "displayName": "Milwaukee Bucks",
+       "color": "00471b",
+       "alternateColor": "eee1c6",
+       "logos": [
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nba/500/mil.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "default"
+         ],
+         "lastUpdated": "2024-06-25T21:17Z"
+        },
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/mil.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "dark"
+         ],
+         "lastUpdated": "2024-06-25T21:13Z"
+        },
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/mil.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "scoreboard"
+         ],
+         "lastUpdated": "2024-06-25T21:18Z"
+        },
+        {
+         "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/scoreboard/mil.png",
+         "width": 500,
+         "height": 500,
+         "alt": "",
+         "rel": [
+          "full",
+          "scoreboard",
+          "dark"
+         ],
+         "lastUpdated": "2024-06-25T21:14Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/f59bbabc-eedb-9ad2-c5dd-9bcd9f450a2f/logos/primary_logo_on_white_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "primary_logo_on_white_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/f59bbabc-eedb-9ad2-c5dd-9bcd9f450a2f/logos/primary_logo_on_black_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "primary_logo_on_black_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/f59bbabc-eedb-9ad2-c5dd-9bcd9f450a2f/logos/primary_logo_on_primary_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "primary_logo_on_primary_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/f59bbabc-eedb-9ad2-c5dd-9bcd9f450a2f/logos/primary_logo_on_secondary_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "primary_logo_on_secondary_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/f59bbabc-eedb-9ad2-c5dd-9bcd9f450a2f/logos/primary_logo_black.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "primary_logo_black"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/f59bbabc-eedb-9ad2-c5dd-9bcd9f450a2f/logos/primary_logo_white.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "primary_logo_white"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/f59bbabc-eedb-9ad2-c5dd-9bcd9f450a2f/logos/secondary_logo_on_white_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "secondary_logo_on_white_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/f59bbabc-eedb-9ad2-c5dd-9bcd9f450a2f/logos/secondary_logo_on_black_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "secondary_logo_on_black_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/f59bbabc-eedb-9ad2-c5dd-9bcd9f450a2f/logos/secondary_logo_on_primary_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "secondary_logo_on_primary_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/f59bbabc-eedb-9ad2-c5dd-9bcd9f450a2f/logos/secondary_logo_on_secondary_color.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "secondary_logo_on_secondary_color"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/f59bbabc-eedb-9ad2-c5dd-9bcd9f450a2f/logos/secondary_logo_black.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "secondary_logo_black"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        },
+        {
+         "href": "https://a.espncdn.com/guid/f59bbabc-eedb-9ad2-c5dd-9bcd9f450a2f/logos/secondary_logo_white.png",
+         "width": 4096,
+         "height": 4096,
+         "alt": "",
+         "rel": [
+          "full",
+          "secondary_logo_white"
+         ],
+         "lastUpdated": "2026-07-22T20:23Z"
+        }
+       ],
+       "links": [
+        {
+         "rel": [
+          "clubhouse",
+          "desktop",
+          "team"
+         ],
+         "href": "https://www.espn.com/nba/team/_/name/mil/milwaukee-bucks",
+         "text": "Clubhouse"
+        }
+       ]
+      },
+      "record": [
+       {
+        "type": "total",
+        "summary": "1-6",
+        "displayValue": "1-6"
+       },
+       {
+        "type": "road",
+        "summary": "0-3",
+        "displayValue": "0-3"
+       },
+       {
+        "type": "vsconf",
+        "summary": "1-4",
+        "displayValue": "1-4"
+       }
+      ],
+      "possession": false
+     }
+    ],
+    "status": {
+     "type": {
+      "id": "1",
+      "name": "STATUS_SCHEDULED",
+      "state": "pre",
+      "completed": false,
+      "description": "Scheduled",
+      "detail": "Wed, November 4th at 7:30 PM EST",
+      "shortDetail": "11/4 - 7:30 PM EST"
+     }
+    },
+    "broadcasts": [
+     {
+      "type": {
+       "id": "1",
+       "shortName": "TV"
+      },
+      "market": {
+       "id": "3",
+       "type": "Away"
+      },
+      "media": {
+       "shortName": "MyMi"
+      },
+      "lang": "en",
+      "region": "us",
+      "isNational": false
+     },
+     {
+      "type": {
+       "id": "4",
+       "shortName": "Streaming"
+      },
+      "market": {
+       "id": "3",
+       "type": "Away"
+      },
+      "media": {
+       "shortName": "Bucks App"
+      },
+      "lang": "en",
+      "region": "us",
+      "isNational": false
+     }
+    ],
+    "series": [
+     {
+      "type": "season",
+      "title": "Regular Season Series",
+      "description": "Regular Season Series",
+      "summary": "Series starts 11/4",
+      "completed": false,
+      "totalCompetitions": 3,
+      "competitors": [
+       {
+        "id": "2",
+        "uid": "s:40~l:46~t:2",
+        "wins": 0,
+        "ties": 0,
+        "team": {
+         "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/nba/seasons/2027/teams/2?lang=en&region=us"
+        }
+       },
+       {
+        "id": "15",
+        "uid": "s:40~l:46~t:15",
+        "wins": 0,
+        "ties": 0,
+        "team": {
+         "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/nba/seasons/2027/teams/15?lang=en&region=us"
+        }
+       }
+      ],
+      "events": [
+       {
+        "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/nba/events/401909924?lang=en&region=us",
+        "id": "401909924"
+       },
+       {
+        "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/nba/events/401909949?lang=en&region=us",
+        "id": "401909949"
+       },
+       {
+        "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/nba/events/401910937?lang=en&region=us",
+        "id": "401910937"
+       }
+      ],
+      "startDate": "2026-11-05T00:30Z"
+     }
+    ],
+    "boxscoreMinutes": false
+   }
+  ],
+  "links": [
+   {
+    "rel": [
+     "summary",
+     "desktop",
+     "event"
+    ],
+    "href": "https://www.espn.com/nba/game/_/gameId/401909924/bucks-celtics",
+    "text": "Gamecast",
+    "shortText": "Summary",
+    "isExternal": false,
+    "isPremium": false
+   },
+   {
+    "rel": [
+     "preview",
+     "desktop",
+     "event"
+    ],
+    "href": "https://www.espn.com/nba/preview/_/gameId/401909924",
+    "text": "Preview",
+    "shortText": "Preview",
+    "isExternal": false,
+    "isPremium": false
+   },
+   {
+    "rel": [
+     "tickets",
+     "desktop"
+    ],
+    "href": "https://www.vividseats.com/boston-celtics-tickets-td-garden-11-4-2026/production/7432889?wsUser=717",
+    "text": "Tickets",
+    "shortText": "Tickets",
+    "isExternal": true,
+    "isPremium": false
+   }
+  ],
+  "league": {
+   "id": "46",
+   "uid": "s:40~l:46",
+   "name": "National Basketball Association",
+   "abbreviation": "NBA",
+   "shortName": "NBA",
+   "slug": "nba",
+   "isTournament": false,
+   "links": [
+    {
+     "rel": [
+      "index",
+      "desktop",
+      "league"
+     ],
+     "href": "https://www.espn.com/nba/",
+     "text": "Index"
+    },
+    {
+     "rel": [
+      "index",
+      "sportscenter",
+      "app",
+      "league"
+     ],
+     "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46",
+     "text": "Index"
+    },
+    {
+     "rel": [
+      "schedule",
+      "desktop",
+      "league"
+     ],
+     "href": "https://www.espn.com/nba/schedule",
+     "text": "Schedule"
+    },
+    {
+     "rel": [
+      "schedule",
+      "sportscenter",
+      "app",
+      "league"
+     ],
+     "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46&section=scores",
+     "text": "Schedule"
+    },
+    {
+     "rel": [
+      "standings",
+      "desktop",
+      "league"
+     ],
+     "href": "https://www.espn.com/nba/standings",
+     "text": "Standings"
+    },
+    {
+     "rel": [
+      "standings",
+      "sportscenter",
+      "app",
+      "league"
+     ],
+     "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46&section=standings",
+     "text": "Standings"
+    },
+    {
+     "rel": [
+      "rankings",
+      "desktop",
+      "league"
+     ],
+     "href": "https://www.espn.com/nba/rankings",
+     "text": "Rankings"
+    },
+    {
+     "rel": [
+      "rankings",
+      "sportscenter",
+      "app",
+      "league"
+     ],
+     "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46&section=rankings",
+     "text": "Rankings"
+    },
+    {
+     "rel": [
+      "scores",
+      "desktop",
+      "league"
+     ],
+     "href": "https://www.espn.com/nba/scoreboard",
+     "text": "Scores"
+    },
+    {
+     "rel": [
+      "scores",
+      "sportscenter",
+      "app",
+      "league"
+     ],
+     "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46&section=scores",
+     "text": "Scores"
+    },
+    {
+     "rel": [
+      "stats",
+      "desktop",
+      "league"
+     ],
+     "href": "https://www.espn.com/nba/stats",
+     "text": "Stats"
+    },
+    {
+     "rel": [
+      "stats",
+      "sportscenter",
+      "app",
+      "league"
+     ],
+     "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46&section=stats",
+     "text": "Stats"
+    },
+    {
+     "rel": [
+      "teams",
+      "desktop",
+      "league"
+     ],
+     "href": "https://www.espn.com/nba/teams",
+     "text": "Teams"
+    },
+    {
+     "rel": [
+      "athletes",
+      "desktop",
+      "league"
+     ],
+     "href": "https://www.espn.com/nba/players",
+     "text": "Players"
+    },
+    {
+     "rel": [
+      "injuries",
+      "desktop",
+      "league"
+     ],
+     "href": "https://www.espn.com/nba/injuries",
+     "text": "Injuries"
+    },
+    {
+     "rel": [
+      "odds",
+      "desktop",
+      "league"
+     ],
+     "href": "https://www.espn.com/nba/odds",
+     "text": "Odds"
+    },
+    {
+     "rel": [
+      "odds",
+      "sportscenter",
+      "app",
+      "league"
+     ],
+     "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46&section=odds",
+     "text": "Odds"
+    },
+    {
+     "rel": [
+      "playoff-bracket",
+      "desktop",
+      "league"
+     ],
+     "href": "https://www.espn.com/nba/playoff-bracket",
+     "text": "Bracket"
+    },
+    {
+     "rel": [
+      "playoff-bracket",
+      "sportscenter",
+      "app",
+      "league"
+     ],
+     "href": "sportscenter://x-callback-url/showClubhouse?uid=s:40~l:46&section=bracket",
+     "text": "Bracket"
+    }
+   ],
+   "logos": [
+    {
+     "href": "https://a.espncdn.com/i/teamlogos/leagues/500/nba.png",
+     "rel": [
+      "full",
+      "default"
+     ]
+    },
+    {
+     "href": "https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500-dark/nba.png&w=500&h=500&transparent=true",
+     "rel": [
+      "full",
+      "dark"
+     ]
+    }
+   ]
+  }
+ }
+}

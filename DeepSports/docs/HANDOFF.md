@@ -41,6 +41,10 @@ Rebuild clients: `(cd web && npm run build)`, `(cd glasses && npm run build)`; E
   prices (`docs/results/2026-11-06-sim-v1.1-prices.md`): closing → still $0 everywhere; opening totals $172 → $111
   (v1.0) / $137 (v1.1), 53.7% vs 53.2% break-even, CI includes it. The model's opening picks sit on the pricier side.
 
+- SportsRLAgent comparison (`docs/results/2026-11-07-srla-comparison.md`): on 3,328 shared games, v1.1 beats its honest
+  version (Brier .2070 vs .2203); its default features leak future games. Neither beats the closing line (.1967). Forward
+  freeze of 21 Nov 8-10 games, ungraded: `/Volumes/ExFATStorag/DeepSports/reports/srla-comparison-2026-11-07/forward_freeze.csv`.
+
 ## Known gaps / gotchas
 - ESPN gaps (warnings in `deepsports check`): 8 NBA playoff summaries 404; 29 NBA team-games and ~430 college
   team-games (mostly 2023-24 player boxes, plus 7 listed D1-vs-non-D1 boxes >2 pts off; ids in

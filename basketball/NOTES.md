@@ -237,3 +237,17 @@ A2/A1 leakage; that is the point. (Reference: main's logged h2h test_acc of
    min_periods=1)` plus the `player_rolling` parquet cache. Semantics unchanged
    (verified old-loop == vectorized on synthetic data); no retrain required on
    semantic grounds, and no data backfill needed.
+
+---
+
+## A6 — Rank features look ahead (found 2026-11-07) — NOT FIXED, owner decision
+
+`prepare_data.py:68-69` builds `pts_rank_l*` and `plus_minus_rank_l*` from the team log's `PTS_RANK` and `PLUS_MINUS_RANK`.
+Those rank each game among the team's games in the season **as of the fetch date**, so past values encode later games. `shift(1)`
+and chronological splits don't catch this. Between the Nov 3 and Nov 7 2026 fetches of the same 347 team-games, `PTS_RANK` changed
+in 203 rows and `PLUS_MINUS_RANK` in 224, while `PTS` changed in 2.
+
+Walk-forward effect on 3,328 games: Brier .2095 with ranks, .2203 without; margin MAE 11.45 vs 11.92. Live values also don't match
+training (`home_pts_rank_l10` mean about 45 historically, about 7 this season). Remove these features **before** the pending
+retrain. Saved spread and total models also fail with `feature_names mismatch` on the current table.
+Full comparison: `DeepSports/docs/results/2026-11-07-srla-comparison.md`.

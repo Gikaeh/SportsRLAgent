@@ -5,11 +5,13 @@ from pathlib import Path
 
 class BettingConfig:
     # Bankroll - now uses unified bankroll across all sports
-    STARTING_BANKROLL = 40 #UnifiedBankroll.STARTING_BANKROLL
+    STARTING_BANKROLL = 50 #UnifiedBankroll.STARTING_BANKROLL
+    BANKROLL_START_DATE = '2026-11-08'  # Older log rows stay as history but don't count
+    MIN_BET_AMOUNT = 1        # Bets under this are dropped; stakes are whole dollars
     USE_UNIFIED_BANKROLL = True  # Set to False to use sport-specific bankroll
-    MAX_BET_SIZE_PCT = 0.05   # Maximum 2% of bankroll per bet
-    KELLY_FRACTION = 0.20      # Use 10% Kelly for conservative sizing
-    MAX_RISK_PCT = 0.5        # Maximum 15% total daily exposure
+    MAX_BET_SIZE_PCT = 0.05   # Maximum 5% of bankroll per bet
+    KELLY_FRACTION = 0.20      # Use 20% Kelly for conservative sizing
+    MAX_RISK_PCT = 0.5        # Maximum 50% total daily exposure
     
     # Edge
     MIN_EDGE_H2H = 0.02 # Minimum 2% devigged edge to place bet (model_prob - fair_market_prob)

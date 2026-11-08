@@ -11,6 +11,7 @@ from model.model_total import BasketballTotalModel
 from betting.betting_config import BettingConfig
 from data_pipeline.odd_scraping import BasketballOddScraping
 from data_pipeline.prepare_data import NBATrainingDataPreparer
+from shared.bankroll import bankrollFromLogs
 import glob
 
 class BettingRecommender:
@@ -161,11 +162,13 @@ class BettingRecommender:
     
     def makeBettingRecommendations(self, predictions):
         if self.model.getModelType() == 'h2h':
-            return self.makeH2HRecommendations(predictions)
+            recommendations = self.makeH2HRecommendations(predictions)
         elif self.model.getModelType() == 'spread':
-            return self.makeSpreadRecommendations(predictions)
+            recommendations = self.makeSpreadRecommendations(predictions)
         elif self.model.getModelType() == 'total':
-            return self.makeTotalRecommendations(predictions)
+            recommendations = self.makeTotalRecommendations(predictions)
+        # A stake that rounds below the minimum isn't a bet (and $0 breaks calculateBetPriority).
+        return [r for r in recommendations if r['bet_amount'] >= self.config.MIN_BET_AMOUNT]
         
     
     def makeH2HRecommendations(self, predictions):
@@ -734,19 +737,9 @@ class BettingRecommender:
             total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
         
         files = [h2h_log_file, spread_log_file, total_log_file]
-        bankroll = self.config.STARTING_BANKROLL
-         
-        for file in files:
-            if file.exists():
-                df = pd.read_csv(file)
-                
-                for _, row in df.iterrows():
-                    if row['result'] == 'W':
-                        bankroll += row['potential_profit']
-                    elif row['result'] == 'L':
-                        bankroll -= row['bet_amount']
-
-        return bankroll
+        frames = [pd.read_csv(file) for file in files if file.exists()]
+        return bankrollFromLogs(self.config.STARTING_BANKROLL, frames,
+                                None if archive else self.config.BANKROLL_START_DATE)
 
     def getCurrentBankroll(self):
         return self.current_bankroll

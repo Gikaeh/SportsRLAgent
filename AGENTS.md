@@ -42,6 +42,8 @@ Windows machine — use `.venv\Scripts\python.exe` (not `.venv/bin/python`).
 | NBA daily menu | `.venv\Scripts\python.exe basketball/main.py` |
 | Home/away calibration of graded bets (tools/) | `.venv\Scripts\python.exe tools\calibration_diagnostic.py` |
 | Pipeline smoke test: train fresh in-memory + predict upcoming_games.csv (tools/) | `.venv\Scripts\python.exe tools\pipeline_smoke_test.py` |
+| College basketball menu (needs DeepSports warehouse; prints recommendations, logs nothing) | `.venv/bin/python college_basketball/main.py` |
+| College walk-forward test (tools/) | `.venv/bin/python tools/college_walkforward.py --start 2025-11-01 --end 2026-02-01 --out preds.csv` |
 | Add a dependency | append to `requirements.txt`, then `uv pip install -r requirements.txt` |
 
 Interactive CLIs: choose a menu number; entering one number above the highest
@@ -53,6 +55,7 @@ APIs.
 
 ```
 basketball/  hockey/  baseball/   One dir per sport, identical internal structure:
+                               (college_basketball/ reads DeepSports' warehouse; no fetcher, no initial_*_setup.py)
   ├─ main.py                   interactive CLI entry point
   ├─ data_pipeline/            fetching + feature prep (incl. odd_scraping.py)
   ├─ model/                    training/retraining per bet type

@@ -136,6 +136,50 @@ def test_odds_window_excludes_started_games(sport):
     assert result.returncode == 0, f"B1 regression failed:\n{result.stderr}"
 
 
+BANKROLL_CHECK = """
+import tempfile
+from pathlib import Path
+import pandas as pd
+from betting.betting_recommender import BettingRecommender
+
+def bet(result, profit, stake, timestamp='2026-11-09 00:00:00'):
+    return {'result': result, 'potential_profit': profit, 'bet_amount': stake, 'timestamp': timestamp}
+
+with tempfile.TemporaryDirectory() as tmp:
+    tmp = Path(tmp)
+    (tmp / 'archive').mkdir()
+    pd.DataFrame([bet('W', 9, 10), bet('L', 9, 10, '2026-01-01 00:00:00')]).to_csv(tmp / 'spread.csv', index=False)
+    pd.DataFrame([bet('W', 9, 10)]).to_csv(tmp / 'archive' / 'spread.csv', index=False)
+    college = tmp / 'college.csv'
+    pd.DataFrame([bet('W', 5, 6), bet('L', 5, 6), bet('P', 5, 6), bet(None, 5, 6)]).to_csv(college, index=False)
+
+    class Config:
+        STARTING_BANKROLL = 50
+        BANKROLL_START_DATE = '2026-11-08'
+        LOG_DIR = str(tmp)
+        H2H_BETS_LOG = 'missing.csv'
+        SPREAD_BETS_LOG = 'spread.csv'
+        TOTAL_BETS_LOG = 'missing.csv'
+        COLLEGE_BETS_LOG = str(college)
+
+    rec = BettingRecommender.__new__(BettingRecommender)
+    rec.config = Config
+    rec.updateBetResults = lambda archive=False: None
+    # NBA +9; the January loss is before the start date; college +5 -6, push and open don't count.
+    assert rec.setBankroll() == 58, rec.setBankroll()
+    # The archive is NBA history: it stays out of the college log.
+    assert rec.setBankroll(archive=True) == 59, rec.setBankroll(archive=True)
+    Config.COLLEGE_BETS_LOG = str(tmp / 'no-college-log.csv')
+    assert rec.setBankroll() == 59, rec.setBankroll()
+print('OK')
+"""
+
+
+def test_bankroll_counts_college_results():
+    result = run_in_basketball(BANKROLL_CHECK)
+    assert result.returncode == 0, f"Bankroll check failed:\n{result.stderr}"
+
+
 COVER_PROB_CHECK = """
 import json
 from pathlib import Path

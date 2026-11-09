@@ -50,6 +50,7 @@ class BettingConfig:
     H2H_BETS_LOG = 'h2h_bets.csv'
     SPREAD_BETS_LOG = 'spread_bets.csv'
     TOTAL_BETS_LOG = 'total_bets.csv'
+    COLLEGE_BETS_LOG = '././logs/college_basketball/betting/bets.csv'  # Counted in the bankroll (docs/DECISIONS.md)
     
     # Alerts
     ALERT_ON_HIGH_EDGE = 0.10  # Alert if edge exceeds 10% (potential data issue)

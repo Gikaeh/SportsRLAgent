@@ -197,3 +197,24 @@ gate, because honest metrics are expected to look worse than the leaked ones.
 
 Test split, previous metadata to now: Brier .2125 to .2198, margin MAE 11.50 to 11.87, total MAE 14.45 to 15.04.
 The previous figures carried look-ahead, and the old total figure also predates the chronological split.
+
+## 2026-11-09 — Owner-placed bets are logged; college gets its own log
+
+The owner approved logging their real bets from the $50 bankroll, starting with the Nov 8 results and Nov 9 slip.
+College bets go in `logs/college_basketball/betting/bets.csv`, a simpler schema than the NBA logs, because they include
+markets the NBA columns can't hold (first-half spreads). Same immutability rule as every bet log.
+
+Known limits:
+- The NBA rows use ESPN game ids, because `stats.nba.com` timed out and `cdn.nba.com` returned 403. The NBA grader matches
+  on NBA ids, so it skips them and leaves their results alone. They're graded by hand from final scores.
+- The NBA grader never reads `total_bets.csv`, so totals need hand grading whatever their id.
+- ~~The NBA menu's bankroll adds up the NBA logs only, so it omits college results: $77.27 when the owner's balance was
+  $86.36. Sizing code wasn't changed, because that's the owner's call.~~ Reversed the same day, below.
+- The opposite-side price and book weren't recorded. Opposite-side odds are placeholders and `book` is `unrecorded`,
+  since blank odds would break the menu's integer formatting. Each row's `reason` says so.
+
+## 2026-11-09 — NBA bankroll counts college results
+
+The owner approved this: it's one bankroll, and leaving out college undersized NBA stakes. `setBankroll` now also reads
+`COLLEGE_BETS_LOG`, so NBA stakes follow the real balance, up or down. The archive view stays NBA-only. The college menu
+still asks for the balance by hand.

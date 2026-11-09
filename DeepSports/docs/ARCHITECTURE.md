@@ -49,7 +49,7 @@ diagram in the same change (see CLAUDE.md).
 ### 4. Apps (`deepsports serve`, port 8787)
 - **API** (`src/deepsports/api/`, contract in [API.md](API.md) incl. v2): live endpoints take `league=nba|ncaab`; game cards
   carry the latest *pre-tip* prediction (read with a 1.5s warehouse timeout, so it's null rather than slow).
-  - `live.py` fetches the scoreboard and summaries from ESPN with an in-memory TTL (30s live / 5 min idle).
+  - `live.py` fetches the scoreboard and summaries from ESPN with an in-memory TTL (scoreboard 30s live, a live game's summary 10s, 5 min idle).
     It never touches DuckDB, so live scores keep working while data jobs run.
   - `warehouse.py` serves standings and team pages through short read-only DuckDB connections, and returns 503
     `warehouse_busy` while a job holds the lock.

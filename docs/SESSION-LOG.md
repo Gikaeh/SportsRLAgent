@@ -10,7 +10,7 @@ When a session ends, move the old entry verbatim into `docs/SESSION-LOG-ARCHIVE.
 **Done** (PR #6 merged into `main`)
 - DeepSports game screen: play-by-play, possession, last-shot court, score animations, about 10s refresh for live games.
   iOS tab bar fix, confirmed by the owner on an iPhone.
-- Owner's real bets logged, plus a new `logs/college_basketball/betting/bets.csv`. Balance $86.36 with $16 open.
+- Owner's real bets logged, plus a new `logs/college_basketball/betting/bets.csv`. Balance $86.36 with $21 open (TOR -2.5 added Nov 9 at 4:40 PM PST, see Next 1).
 - NBA bankroll now includes college results. Why, and the logging limits: `docs/DECISIONS.md`.
 - Warehouse refreshed by hand on 2026-11-08 at about 20:50 PT (update and predict only).
 
@@ -20,7 +20,8 @@ When a session ends, move the old entry verbatim into `docs/SESSION-LOG-ARCHIVE.
 - This is a Mac now: use `.venv/bin/python`. The `.venv\Scripts` commands in AGENTS.md don't apply here.
 
 **Next**
-1. Grade the 4 open Nov 9 bets by hand from final scores: Hawks +2 ($3), DEN @ HOU Over 216.5 ($5), NO @ GS Over 231.5
+1. Grade the 5 open Nov 9 bets by hand from final scores: Hawks +2 ($3), MEM @ TOR: TOR -2.5 at -110 ($5, placed
+   after the 10-agent ensemble run), DEN @ HOU Over 216.5 ($5), NO @ GS Over 231.5
    ($5), Illinois St @ Purdue Over 145 ($3). They're in `logs/basketball/betting/spread_bets.csv` and `total_bets.csv`,
    and `logs/college_basketball/betting/bets.csv`.
 2. Watch the live screen during a real game: possession has only run on finished games, mocks and a replay. Known gap:

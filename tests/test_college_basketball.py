@@ -229,4 +229,8 @@ def test_nba_config_and_real_logs_start_from_fifty_dollars():
     NbaConfig = module.BettingConfig
     logs = [pd.read_csv(ROOT / 'logs/basketball/betting' / f) for f in ('h2h_bets.csv', 'spread_bets.csv', 'total_bets.csv')]
     assert NbaConfig.STARTING_BANKROLL == 50
-    assert bankrollFromLogs(NbaConfig.STARTING_BANKROLL, logs, NbaConfig.BANKROLL_START_DATE) == 50
+    # Rows from before the start date stay as history and must not move the $50. Real bets since then do count.
+    start = pd.Timestamp(NbaConfig.BANKROLL_START_DATE)
+    history = [log[pd.to_datetime(log['timestamp'], errors='coerce') < start] for log in logs]
+    assert sum(log['result'].isin(['W', 'L']).sum() for log in history) > 0
+    assert bankrollFromLogs(NbaConfig.STARTING_BANKROLL, history, NbaConfig.BANKROLL_START_DATE) == 50

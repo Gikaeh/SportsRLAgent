@@ -208,7 +208,13 @@ Known limits:
 - The NBA rows use ESPN game ids, because `stats.nba.com` timed out and `cdn.nba.com` returned 403. The NBA grader matches
   on NBA ids, so it skips them and leaves their results alone. They're graded by hand from final scores.
 - The NBA grader never reads `total_bets.csv`, so totals need hand grading whatever their id.
-- The NBA menu's bankroll adds up the NBA logs only, so it omits college results: $77.27 when the owner's balance was
-  $86.36. Sizing code wasn't changed, because that's the owner's call.
+- ~~The NBA menu's bankroll adds up the NBA logs only, so it omits college results: $77.27 when the owner's balance was
+  $86.36. Sizing code wasn't changed, because that's the owner's call.~~ Reversed the same day, below.
 - The opposite-side price and book weren't recorded. Opposite-side odds are placeholders and `book` is `unrecorded`,
   since blank odds would break the menu's integer formatting. Each row's `reason` says so.
+
+## 2026-11-09 — NBA bankroll counts college results
+
+The owner approved this: it's one bankroll, and leaving out college undersized NBA stakes. `setBankroll` now also reads
+`COLLEGE_BETS_LOG`, so NBA stakes follow the real balance, up or down. The archive view stays NBA-only. The college menu
+still asks for the balance by hand.

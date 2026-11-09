@@ -737,6 +737,8 @@ class BettingRecommender:
             total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
         
         files = [h2h_log_file, spread_log_file, total_log_file]
+        if not archive:
+            files.append(Path(self.config.COLLEGE_BETS_LOG))  # one bankroll across NBA and college
         frames = [pd.read_csv(file) for file in files if file.exists()]
         return bankrollFromLogs(self.config.STARTING_BANKROLL, frames,
                                 None if archive else self.config.BANKROLL_START_DATE)

@@ -25,7 +25,7 @@ When a session ends, move the old entry verbatim into `docs/SESSION-LOG-ARCHIVE.
 **Next**
 1. OWNER: review and merge `feature/live-game-screen` (local, not pushed).
 2. Grade the 4 open Nov 9 bets by hand from final scores: `logs/basketball/betting/spread_bets.csv` and `total_bets.csv`,
-   `logs/college_basketball/betting/bets.csv`. Why by hand, and why the NBA menu reads a lower balance: `docs/DECISIONS.md`.
+   `logs/college_basketball/betting/bets.csv`. Why by hand: `docs/DECISIONS.md`. The NBA menu's bankroll now includes college.
 3. Grade the Nov 8-10 forward freeze:
    `/Volumes/ExFATStorag/DeepSports/reports/srla-comparison-2026-11-07/forward_freeze.csv`.
 4. Previous items still open: NBA Batch 4 hardening (NOTES); hockey's random splits.

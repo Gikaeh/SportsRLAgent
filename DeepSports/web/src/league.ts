@@ -54,3 +54,19 @@ export function periodLabel(i: number, league: League = "nba"): string {
   if (i < reg) return league === "ncaab" ? `H${i + 1}` : String(i + 1);
   return i === reg ? "OT" : `${i - reg + 1}OT`;
 }
+
+/** A play's 1-based period, compactly: "Q3", "H2", "OT", "2OT". */
+export function periodShort(period: number, league: League = "nba"): string {
+  if (period <= regulationPeriods(league)) return `${league === "ncaab" ? "H" : "Q"}${period}`;
+  return periodLabel(period - 1, league);
+}
+
+const ORDINALS = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
+
+/** A play's 1-based period in words: "3rd quarter", "2nd half", "Overtime", "2nd overtime". */
+export function periodName(period: number, league: League = "nba"): string {
+  const reg = regulationPeriods(league);
+  const nth = (n: number) => ORDINALS[n - 1] ?? `${n}th`;
+  if (period <= reg) return `${nth(period)} ${league === "ncaab" ? "half" : "quarter"}`;
+  return period === reg + 1 ? "Overtime" : `${nth(period - reg)} overtime`;
+}

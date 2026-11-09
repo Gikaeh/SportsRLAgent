@@ -158,7 +158,7 @@ def create_app(
             raise HTTPException(404, "unknown game") from e
         detail = views.game_detail(raw, followed_teams(league), league)
         attach_predictions([detail["game"]])
-        detail["refresh_seconds"] = live.refresh_seconds(detail["game"]["state"] == "in")
+        detail["refresh_seconds"] = live.game_refresh_seconds(detail["game"]["state"] == "in")
         return detail
 
     @app.get("/api/glance")

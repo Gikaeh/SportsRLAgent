@@ -106,11 +106,48 @@ export type PlayerLine = {
   plus_minus: number | null;
 };
 
+export type PlayKind =
+  | "shot_made"
+  | "shot_missed"
+  | "free_throw_made"
+  | "free_throw_missed"
+  | "rebound"
+  | "turnover"
+  | "foul"
+  | "timeout"
+  | "substitution"
+  | "period_end"
+  | "other";
+
+/** v3: one play-by-play event. */
+export type Play = {
+  id: string;
+  seq: number; // ascending = chronological; plays arrive sorted, oldest first
+  period: number; // 1-4, 5+ OT for NBA; 1-2, 3+ OT for college
+  clock: string | null; // "4:12" time remaining
+  text: string; // ESPN's description
+  team_id: string | null; // matches game.away.id / game.home.id
+  away_score: number; // cumulative after this play
+  home_score: number;
+  scoring: boolean;
+  points: number; // 0 if not scoring
+  kind: PlayKind;
+  /** Feet: x 0-50 across the court, y from the baseline (hoop x=25, y=0). null for free throws/non-shots. */
+  coord: { x: number; y: number } | null;
+};
+
+/** v3: who has the ball. "inferred" = worked out from the last play, so it can lag. */
+export type Possession = { team_id: string; source: "espn" | "inferred" };
+
 export type GameDetailResponse = {
   game: GameCard;
   teams: TeamBox[];
   players: { [team_id: string]: PlayerLine[] };
-  refresh_seconds: number;
+  refresh_seconds: number; // 10 during a live game (v3)
+  /** v3. Whole game so far, [] before tip-off. Absent on an older server: treat as []. */
+  plays?: Play[];
+  /** v3. null when unknown or not in progress. Absent on an older server. */
+  possession?: Possession | null;
 };
 
 export type StandingRow = {

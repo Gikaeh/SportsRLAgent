@@ -22,7 +22,7 @@
 | `deepsports migrate` | Bring the warehouse schema up to date and print rows before/after per rebuilt table; a no-op when current (docs/DATA_MODEL.md, Migrations) | none |
 | `deepsports status` | Row counts + last 5 runs | none |
 | `deepsports check` | Data-quality checks; exit 1 on hard failures (box scores, points add up, scores present); warnings for odds coverage per season | none |
-| `deepsports serve [--port 8787]` | Read API + web app (docs/API.md) | live ESPN, cached 30s–5min |
+| `deepsports serve [--port 8787]` | Read API + web app (docs/API.md) | live ESPN, cached 10s–5min |
 | `deepsports teams` | Refresh team list | 1 |
 
 Every collection command (`teams`, `schedule`, `boxscores`, `update`, `backfill`, `odds-history`,

@@ -1,7 +1,9 @@
 """Live data from ESPN with a short in-memory TTL. Never writes to DuckDB.
 
-TTL is 30s while any game on the day is in progress, 5 minutes otherwise, so polling from
-any number of phones/glasses costs at most ~2 ESPN requests a minute per day viewed.
+Scoreboard TTL is 30s while any game on the day is in progress, 5 minutes otherwise. A game's
+summary is 10s while it's in progress (the live play-by-play screen), 5 minutes otherwise. So
+polling from any number of phones/glasses costs at most ~2 ESPN requests a minute per day viewed
+and ~6 a minute per live game viewed; nothing is fetched while nobody is viewing.
 One PoliteClient is shared by all leagues, so the 1 req/s limit holds across them.
 """
 
@@ -16,6 +18,7 @@ from deepsports.http import PoliteClient
 from deepsports.sources.espn import EspnBasketball
 
 LIVE_TTL = 30
+GAME_LIVE_TTL = 10
 IDLE_TTL = 300
 LEAGUES = ("nba", "ncaab")
 
@@ -81,11 +84,16 @@ class LiveService:
         def ttl(raw: dict) -> int:
             comp = (raw.get("header", {}).get("competitions") or [{}])[0]
             state = comp.get("status", {}).get("type", {}).get("state")
-            return LIVE_TTL if state == "in" else IDLE_TTL
+            return GAME_LIVE_TTL if state == "in" else IDLE_TTL
 
-        # completed games come from the on-disk raw cache (src.summary's cache rule)
+        # completed games come from the on-disk raw cache (src.summary's cache rule); a game in
+        # progress is written there too but never read back, so only this TTL can delay it
         return self._get(f"sum:{league}:{game_id}", lambda: src.summary(game_id), ttl)
 
     @staticmethod
     def refresh_seconds(live: bool) -> int:
         return LIVE_TTL if live else IDLE_TTL
+
+    @staticmethod
+    def game_refresh_seconds(live: bool) -> int:
+        return GAME_LIVE_TTL if live else IDLE_TTL

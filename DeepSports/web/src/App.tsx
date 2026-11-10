@@ -2,6 +2,7 @@ import { TabBar } from "./components/Layout";
 import { Empty } from "./components/States";
 import { useEffect } from "react";
 import { setLeague, useLeague } from "./league";
+import { Bets } from "./screens/Bets";
 import { Game } from "./screens/Game";
 import { ModelRecord } from "./screens/ModelRecord";
 import { Standings } from "./screens/Standings";
@@ -20,7 +21,9 @@ export function App() {
   const tab =
     route.name === "today" || route.name === "game"
       ? "today"
-      : route.name === "standings" || route.name === "team"
+      : route.name === "bets"
+        ? "bets"
+        : route.name === "standings" || route.name === "team"
         ? "standings"
         : route.name === "model"
           ? "model"
@@ -30,6 +33,7 @@ export function App() {
       {import.meta.env.VITE_MOCK === "1" && <div className="mock-flag">Mock data</div>}
       {route.name === "today" && <Today key={route.date ?? "today"} date={route.date} league={linked ?? league} />}
       {route.name === "game" && <Game key={`${route.league}:${route.id}`} id={route.id} league={route.league} />}
+      {route.name === "bets" && <Bets />}
       {route.name === "standings" && <Standings />}
       {route.name === "model" && <ModelRecord />}
       {route.name === "team" && <Team key={route.abbr} abbr={route.abbr} />}

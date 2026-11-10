@@ -71,7 +71,7 @@ delete archived entries.
 
 ---
 
->>>>>>> 34315d47a92db7ba3abde3a934f2b5135cfb6eea
+---
 ## 2026-11-07 — NBA initial setup scripts now split chronologically (A2 complete)
 
 **Done**
@@ -117,7 +117,6 @@ delete archived entries.
    still use random splits — mirror this change when hockey comes back.
 
 ---
-
 ## 2026-09-07 — NBA prepare_data.py de-duplicated; shrunk 996 → 712 lines
 
 **Done**

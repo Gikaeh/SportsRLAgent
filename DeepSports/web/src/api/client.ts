@@ -1,4 +1,4 @@
-import type { GameDetailResponse, League, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse } from "./types";
+import type { BetsResponse, GameDetailResponse, League, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse } from "./types";
 
 export class ApiError extends Error {
   status: number;
@@ -55,8 +55,9 @@ export const api = {
   game: (id: string, league: League = "nba") => `/api/games/${encodeURIComponent(id)}${qs({ league })}`,
   predictionRecord: (league: League = "nba", days = 30) =>
     `/api/predictions/record${qs({ league, days: String(days) })}`,
+  bets: () => `/api/bets`,
   standings: () => `/api/standings`,
   team: (abbr: string) => `/api/teams/${encodeURIComponent(abbr)}`,
 };
 
-export type { GameDetailResponse, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse };
+export type { BetsResponse, GameDetailResponse, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse };

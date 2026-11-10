@@ -1,4 +1,4 @@
-# Handoff: state of DeepSports (updated 2026-11-06)
+# Handoff: state of DeepSports (updated 2026-11-07)
 
 Read this first in a new session, then CLAUDE.md → AGENTS.md → docs/ROADMAP.md.
 
@@ -41,6 +41,10 @@ Rebuild clients: `(cd web && npm run build)`, `(cd glasses && npm run build)`; E
   prices (`docs/results/2026-11-06-sim-v1.1-prices.md`): closing → still $0 everywhere; opening totals $172 → $111
   (v1.0) / $137 (v1.1), 53.7% vs 53.2% break-even, CI includes it. The model's opening picks sit on the pricier side.
 
+- SportsRLAgent comparison (`docs/results/2026-11-07-srla-comparison.md`): on 3,328 shared games, v1.1 beats its honest
+  version (Brier .2070 vs .2203); its default features leak future games. Neither beats the closing line (.1967). Forward
+  freeze of 21 Nov 8-10 games, ungraded: `/Volumes/ExFATStorag/DeepSports/reports/srla-comparison-2026-11-07/forward_freeze.csv`.
+
 ## Known gaps / gotchas
 - ESPN gaps (warnings in `deepsports check`): 8 NBA playoff summaries 404; 29 NBA team-games and ~430 college
   team-games (mostly 2023-24 player boxes, plus 7 listed D1-vs-non-D1 boxes >2 pts off; ids in
@@ -51,7 +55,8 @@ Rebuild clients: `(cd web && npm run build)`, `(cd glasses && npm run build)`; E
   no-prior v1 model; split the early record there.
 - Historical ESPN injury lists are fetch-time, so they **leak**. Only pre-tip snapshots are valid model inputs.
 - One DuckDB writer at a time. The API returns 503 `warehouse_busy` during jobs; live scores keep working.
-- launchd processes needed the macOS "Removable Volumes" permission (granted 2026-11-03).
+- launchd processes needed the macOS "Removable Volumes" permission (granted 2026-11-03). Only uv's Python has it:
+  launchd scripts must use `uv run python`, not shell tools or system `python3`, for files on the drive.
 - The packaged glasses build has `http://172.16.0.61:8787` built in; repack if the Mac's IP changes.
 - `collab/` (DeepSeek's notes on the friend's SportsRLAgent) is local and git-ignored; our summary is
   `docs/research/sportsrlagent-review.md`. The friend granted permission to use their data/methods.

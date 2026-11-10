@@ -1,7 +1,11 @@
 import { useState } from "react";
+import { LiveCourt } from "../components/live/LiveCourt";
+import { PlayFeed } from "../components/live/PlayFeed";
+import { PossessionLine, PossessionMarker, ScoreFloats } from "../components/live/LiveHeader";
+import { useLiveFx, type LiveFx } from "../components/live/useLiveFx";
 import { api, type GameDetailResponse } from "../api/client";
-import type { GameCard, GameTeam, League, PlayerLine, TeamBox } from "../api/types";
-import { formatOdds, LeagueBadge, StatusPill } from "../components/GameCard";
+import type { GameCard, GameTeam, League, PlayerLine, Possession, TeamBox } from "../api/types";
+import { BetBadge, formatOdds, LeagueBadge, StatusPill } from "../components/GameCard";
 import { PredictionPanel } from "../components/Prediction";
 import { GLOSSARY, Help } from "../components/Help";
 import { PageHeader, UpdatedAt } from "../components/Layout";
@@ -17,6 +21,8 @@ export function Game({ id, league }: { id: string; league: League }) {
     refreshSeconds: (d) => (d.game.state === "post" ? null : d.refresh_seconds),
   });
   const g = q.data?.game;
+  const fx = useLiveFx(q.data, q.error);
+  const plays = q.data?.plays ?? []; // an older server sends no plays
   return (
     <>
       <PageHeader
@@ -24,7 +30,7 @@ export function Game({ id, league }: { id: string; league: League }) {
         title={g ? `${g.away.abbr} ${g.neutral_site ? "vs" : "@"} ${g.home.abbr}` : "Game"}
         subtitle={g ? shortDate(g.start_time) : undefined}
       />
-      <main className="content">
+      <main className={`content${g?.state === "in" ? " content-live" : ""}`}>
         {q.data && q.error != null && <StaleBanner error={q.error} onRetry={q.refresh} />}
         {q.loading && !q.data ? (
           <Skeleton rows={3} height={140} />
@@ -32,10 +38,13 @@ export function Game({ id, league }: { id: string; league: League }) {
           <ErrorState error={q.error} onRetry={q.refresh} />
         ) : (
           <>
-            <ScoreHeader game={g} />
+            <p className="sr-only" role="status" aria-live="polite">{fx.announcement}</p>
+            <ScoreHeader game={g} fx={fx} possession={q.data.possession ?? null} updatedAt={q.updatedAt} />
+            {g.state === "in" && <LiveCourt game={g} plays={plays} freshIds={fx.freshIds} />}
+            <PlayFeed game={g} plays={plays} freshIds={fx.freshIds} updatedAt={q.updatedAt} stale={q.error != null} />
             <PredictionPanel game={g} />
             <BoxScore data={q.data} />
-            <UpdatedAt at={q.updatedAt} refreshing={q.refreshing} live={g.state === "in"} />
+            {g.state !== "in" && <UpdatedAt at={q.updatedAt} refreshing={q.refreshing} />}
           </>
         )}
       </main>
@@ -67,29 +76,34 @@ function HeaderTeam({ team, game, side }: { team: GameTeam; game: GameCard; side
   );
 }
 
-function ScoreHeader({ game }: { game: GameCard }) {
+function ScoreHeader({ game, fx, possession, updatedAt }: { game: GameCard; fx: LiveFx; possession: Possession | null; updatedAt: number | null }) {
   const showScore = game.state !== "pre" && game.away.score != null && game.home.score != null;
   const league = gameLeague(game);
   const periods = Math.max(regulationPeriods(league), game.away.linescores.length, game.home.linescores.length);
   return (
     <section className={`card score-header${game.state === "in" ? " is-live" : ""}`} aria-label="Score">
       <div className="hdr-row">
+        <PossessionMarker game={game} possession={possession} />
+        <ScoreFloats floats={fx.floats} />
         <HeaderTeam team={game.away} game={game} side="away" />
         <div className="hdr-center">
           {showScore ? (
             <p className="hdr-score" aria-label={`${game.away.abbr} ${game.away.score}, ${game.home.abbr} ${game.home.score}`}>
-              <span>{game.away.score}</span>
+              <span key={fx.floats.away?.n ?? "away"} className={fx.floats.away ? "score-pop" : undefined}>{game.away.score}</span>
               <span className="hdr-dash" aria-hidden="true">–</span>
-              <span>{game.home.score}</span>
+              <span key={fx.floats.home?.n ?? "home"} className={fx.floats.home ? "score-pop" : undefined}>{game.home.score}</span>
             </p>
           ) : (
             <p className="hdr-vs" aria-hidden="true">{game.neutral_site ? "vs" : "@"}</p>
           )}
           <StatusPill game={game} />
           <LeagueBadge game={game} />
+          <BetBadge game={game} />
         </div>
         <HeaderTeam team={game.home} game={game} side="home" />
       </div>
+
+      {game.state === "in" && <PossessionLine game={game} possession={possession} updatedAt={updatedAt} />}
 
       {showScore && (
         <div className="scroll-x">

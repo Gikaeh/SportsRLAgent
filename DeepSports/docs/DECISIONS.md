@@ -486,3 +486,22 @@ anonymized 2025-26 college days, v1 and v2 arms on identical games, 5 bettors ea
 Underpowered (MDE ~0.5-1.2 units/pick), so v2 goes live only if its CI excludes 0, or after ≥200 live picks show it
 isn't worse. Live flag: `ensemble-bets context --context v1|v2` (default v1). Known non-point-in-time bits: today's
 D1 list; prior-model config tuned on 2024-25.
+
+### 2026-11-07: Scheduled jobs touch the external drive only through uv's Python
+**Why:** the first scheduled ensemble vote (2026-11-07 14:02) saved 0 of 10 replies. Under launchd, macOS refuses
+`/bin/bash` globs, `ls`, `cp` and `/usr/bin/python3` on the drive (`Operation not permitted`; a plain `-e` test still
+passes), while uv's Python 3.12 can read and write it. A throwaway launchd job confirmed this. **Change:**
+`tools/ensemble-daily.sh` does its drive file work through `uv run python` and skips the vote (with a Discord alert) if
+the context files didn't all copy. Also fixed an f-string that is a SyntaxError on the system Python 3.9. Chosen over
+granting more macOS permissions: it needs no owner action on the Mac's screen and doesn't widen access. **Rule:** new
+launchd scripts must not read or write the drive with shell tools or the system `python3`.
+
+### 2026-11-08: Live game detail polls ESPN every 10s and infers possession conservatively
+**Why:** the Gamecast-style live screen needs play-by-play soon after it happens. 10s is compliant: requests still go
+through `PoliteClient` (1 req/s), it costs ~6 requests a minute per live game someone is viewing and nothing otherwise,
+and `src.summary` only reuses a completed game from disk, so the TTL is the only delay. **Possession:** whether ESPN sends a live
+value for basketball is unverified (finished summaries say `false` for both teams; a saved live scoreboard has none), so
+the API uses ESPN's value if present, else infers from the latest play, labels it `"inferred"`, and returns `null` rather
+than guess (timeouts, ordinary fouls, tips, period ends). Plays' scores use a
+running max without parse_pbp's anchor to the header's final, because a live header can run ahead of the plays.
+Parsing lives in `api/views.py` and reuses parse_pbp's helpers; parse_pbp itself is unchanged because models depend on it.

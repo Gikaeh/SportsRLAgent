@@ -22,7 +22,7 @@
 | `deepsports migrate` | Bring the warehouse schema up to date and print rows before/after per rebuilt table; a no-op when current (docs/DATA_MODEL.md, Migrations) | none |
 | `deepsports status` | Row counts + last 5 runs | none |
 | `deepsports check` | Data-quality checks; exit 1 on hard failures (box scores, points add up, scores present); warnings for odds coverage per season | none |
-| `deepsports serve [--port 8787]` | Read API + web app (docs/API.md) | live ESPN, cached 30s–5min |
+| `deepsports serve [--port 8787]` | Read API + web app (docs/API.md) | live ESPN, cached 10s–5min |
 | `deepsports teams` | Refresh team list | 1 |
 
 Every collection command (`teams`, `schedule`, `boxscores`, `update`, `backfill`, `odds-history`,
@@ -139,6 +139,8 @@ to act on only those, e.g. `tools/launchd/install.sh install com.deepsports.odds
   Privacy & Security → Files and Folders → python3.12 / uv / bash). Until it's granted, access to the drive
   *hangs* instead of failing. The server copes (live data is cached internally, warehouse opens time out
   to 503), but the scheduled sync needs the permission. The prompt only appears on the Mac's screen, not over SSH.
+  Only uv's Python has it today: under launchd, bash globs, `cp`, `ls` and `/usr/bin/python3` get `Operation not
+  permitted` on the drive, so scripts must go through `uv run python` (DECISIONS 2026-11-07).
 - Claude agents can't install these themselves: Claude Code's auto mode blocks creating login items. The owner runs the installer.
 
 ## Troubleshooting

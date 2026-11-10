@@ -6,8 +6,11 @@
 // v2: `?mock=busy` also makes /api/predictions/record 503 and every `prediction` null (as the server does).
 // `?mock=record0` returns a model record with 0 graded games. `?mock=v1` mimics a pre-v2 server
 // (ignores league=, no league/prediction fields, no /api/predictions/record).
+// v3: `?mock=noplays` mimics a pre-v3 server: game detail has no `plays`/`possession` fields.
+// `?mock=flaky` makes every 4th game-detail poll fail with a 404, as the server does when an ESPN fetch fails.
 import type { GameCard, League, ScoreboardResponse, StandingsResponse } from "../api/types";
 import { gameDetail } from "./boxscore";
+import { advanceLive, playsFor, possessionFor } from "./plays";
 import { predictionRecord } from "./record";
 import { allKnownCards, etToday, nextFollowedGame, slateFor } from "./scoreboard";
 import { extraGames, followedAbbrs, teamPage } from "./teamPage";
@@ -21,6 +24,8 @@ function shape(card: GameCard, mode: string | null): GameCard {
   }
   return mode === "busy" ? { ...card, prediction: null } : card;
 }
+
+let detailPolls = 0;
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
@@ -64,10 +69,19 @@ export async function mockFetch(path: string, signal?: AbortSignal): Promise<Res
     return json(predictionRecord(days, mode === "record0"));
   }
 
+  if (p === "/api/bets") {
+    const games = slateFor(etToday(), "nba")
+      .filter((g) => g.bets?.length)
+      .map((g) => shape(advanceLive(g), mode));
+    games.sort((a, b) => ({ in: 0, pre: 1, post: 2 }[a.state] ?? 3) - ({ in: 0, pre: 1, post: 2 }[b.state] ?? 3));
+    const live = games.some((g) => g.state === "in");
+    return json({ games, live, refresh_seconds: live ? 5 : 300 });
+  }
+
   if (p === "/api/scoreboard") {
     const date = url.searchParams.get("date") ?? etToday();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return json({ error: "bad_date" }, 400);
-    const games = slateFor(date, league).map((g) => shape(g, mode));
+    const games = slateFor(date, league).map((g) => shape(advanceLive(g), mode));
     const live = games.some((g) => g.state === "in");
     const body: ScoreboardResponse = { date, games, live, refresh_seconds: live ? 30 : 300 };
     if (mode !== "v1" && date === etToday()) {
@@ -79,6 +93,7 @@ export async function mockFetch(path: string, signal?: AbortSignal): Promise<Res
 
   const gm = p.match(/^\/api\/games\/([^/]+)$/);
   if (gm) {
+    if (mode === "flaky" && ++detailPolls % 4 === 0) return json({ detail: "Game not found" }, 404);
     const id = decodeURIComponent(gm[1]);
     let card = allKnownCards().find((g) => g.id === id) ?? extraGames.get(id);
     if (!card) {
@@ -87,7 +102,13 @@ export async function mockFetch(path: string, signal?: AbortSignal): Promise<Res
       card = extraGames.get(id);
     }
     if (card && mode !== "v1" && (card.league ?? "nba") !== league) card = undefined; // wrong league => 404
-    return card ? json(gameDetail(shape(card, mode))) : json({ detail: "Game not found" }, 404);
+    if (!card) return json({ detail: "Game not found" }, 404);
+    const now = advanceLive(card);
+    const body = gameDetail(shape(now, mode));
+    if (mode === "v1" || mode === "noplays") return json(body);
+    // Short refresh so the live screen visibly moves (the real server sends 10 during a live game).
+    const refresh_seconds = now.state === "in" ? 5 : body.refresh_seconds;
+    return json({ ...body, refresh_seconds, plays: playsFor(now), possession: possessionFor(now) });
   }
 
   if (p === "/api/standings") {

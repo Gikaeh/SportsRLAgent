@@ -5,6 +5,54 @@ delete archived entries.
 
 ---
 
+## 2026-11-09 — Repo split: `ManualBets/` + `DeepSports/`, shared root
+
+**Done**
+- Moved every betting artifact into `ManualBets/`: `baseball/`, `basketball/`,
+  `college_basketball/`, `docs/`, `hockey/`, `models/`, `plots/`, `shared/`, `tests/`,
+  `tools/`, `data/`, plus `AGENTS.md`, `pyproject.toml`, `requirements.txt`, `uv.lock`
+  and `blah.py`. History preserved with `git mv`.
+- Root is now only: `.gitignore`, `README.md` (master), `logs/`, `DeepSports/`,
+  `ManualBets/`.
+- `logs/` deliberately stays at the repo root: it is the one thing both projects touch
+  (DeepSports reads open rows read-only). Betting `LOG_DIR`/`COLLEGE_BETS_LOG` now point
+  at `../logs/...`; the college warehouse path is `ROOT.parent/DeepSports/...`.
+- Each project has its own `pyproject.toml` + `.venv` (`ManualBets` renamed to
+  `manualbets`, `uv sync` run in both). One shared root `.gitignore`; `DeepSports/.gitignore`
+  removed after merging its rules (anchored `/DeepSports/data`).
+- Added `tzdata` to DeepSports: Windows has no IANA time-zone database, so `zoneinfo`
+  could not load `America/Los_Angeles`.
+- Resolved pre-existing merge-conflict markers in `docs/SESSION-LOG.md` and
+  `docs/SESSION-LOG-ARCHIVE.md` (kept both sides; no entry lost).
+
+**Verify**
+- ManualBets: `.venv\Scripts\python.exe -m pytest tests/ -q` → 37 passed, 2 failed. The
+  2 are the documented pre-existing `test_opp_avg_win_pct` failures (missing method).
+- DeepSports: `.venv\Scripts\python.exe -m pytest -q` → 386 passed, 36 failed. All 36
+  are pre-existing Windows portability issues, not caused by the move: 35 × Unix-only
+  `strftime` directives (`%-m`, `%-d`, `%-I`) and 1 × symlink test. Fixing them is a
+  separate DeepSports task.
+
+**Next**
+1. DeepSports on Windows: replace the `%-` `strftime` directives with portable
+   formatting, and skip/adjust the symlink test. Then its suite should be green here.
+2. Review the older stash `stash@{0}` ("pre-pull: separation + 2026-11-08 bet grading
+   fix"): it contains a per-bet-season grading fix that is NOT in this tree.
+3. Then back to the prior Next list (grade open bets, retrain NBA models, Batch 4).
+
+**Follow-up (2026-11-09) — stash `stash@{0}` reviewed and harvested**
+- Applied the per-bet-season grading fix from the stash to both recommenders
+  (`getBetSeason` + cached `loadSeasonGameData`; skip bets dated today; write a log only
+  when a `result` changed) and the `main.py` current-season fix. The stash's restructure
+  was NOT applied — the committed layout differs (`logs/` stays at the repo root).
+- Repaired the archive logs: the stash had truncated them, so its 13 archived basketball
+  rows (6 h2h + 7 spread, 2026-11-08/09) were appended to the current
+  `logs/basketball/betting/archive/*_bets.csv` (158→164 and 221→228 lines, additions
+  only). Rationale in `docs/DECISIONS.md` (2026-11-08 entry).
+- Verify: `ManualBets/.venv\Scripts\python.exe -m pytest tests/ -q` → 37 passed, 2
+  pre-existing `test_opp_avg_win_pct` failures (missing `calculateOpponentStrengthL10`).
+
+
 ## 2026-11-09 — Live game screen, owner bets logged, one bankroll
 
 **Done** (PR #6 merged into `main`)

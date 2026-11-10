@@ -250,3 +250,11 @@ and `college_basketball/` uses `ROOT.parent/DeepSports/...`; both are the only c
 Rejected: a `logs/` symlink into `ManualBets/` (Windows symlinks need elevation) and duplicating the journals
 (violates the single append-only record).
 
+
+## 2026-11-10 - Upcoming games = the next single slate, not today + tomorrow together
+
+The NBA/NHL menus now show the earliest date (US Eastern game date, today or tomorrow) that still has games
+which haven't tipped. At 10 PM PT that is tomorrow; at noon it is today. Returning both dates at once was rejected:
+a team playing tonight and tomorrow would get stale features for tomorrow's game (rest days, L10 stats without
+tonight's result), and odds are matched to games by team names only, not by date. Cost: tomorrow's games appear
+only after today's last game tips (about 7:30 PM PT).

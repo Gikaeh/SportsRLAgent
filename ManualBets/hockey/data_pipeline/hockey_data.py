@@ -5,7 +5,7 @@ import time
 from datetime import datetime, timedelta
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from shared.base_data_fetcher import BaseDataFetcher
+from shared.base_data_fetcher import BaseDataFetcher, EASTERN, nextSlate
 
 class HockeyData(BaseDataFetcher):
     def __init__(self, data_dir='././data/hockey', max_retries=3, base_delay=2):
@@ -458,13 +458,17 @@ class HockeyData(BaseDataFetcher):
                 traceback.print_exc()
                 continue
     
-    def getUpcomingGames(self):
-        today = pd.Timestamp.now().normalize()
+    def getUpcomingGames(self, now=None):
+        # Next slate of not-yet-started games: today's or tomorrow's by the
+        # schedule's own (US Eastern) game date, tip time from startTimeUTC.
+        # The old code asked for the machine's local date only, so late
+        # evening PT it only saw today's finished games.
+        now = pd.Timestamp.now(tz='UTC') if now is None else pd.Timestamp(now)
+        today_et = now.tz_convert(EASTERN).strftime('%Y-%m-%d')
         
         try:
-            url = f"{self.base_api}/schedule/{today.strftime('%Y-%m-%d')}"
+            url = f"{self.base_api}/schedule/{today_et}"
             data = self.makeRequest(url)
-            games_day = data.get('gameWeek', [])[0]
             
             if not data:
                 print("No schedule data available")
@@ -472,32 +476,36 @@ class HockeyData(BaseDataFetcher):
             
             games = []
             
-            for game in games_day.get('games', []):
-                if game.get('gameType') == 2:
-                    home_team = game.get('homeTeam', {})
-                    away_team = game.get('awayTeam', {})
-                    
-                    games.append({
-                        'GAME_ID': game.get('id'),
-                        'GAME_DATE': games_day.get('date'),
-                        'HOME_TEAM': home_team.get('placeName', {}).get('default', '') + ' ' + home_team.get('commonName', {}).get('default', ''),
-                        'HOME_TEAM_ABBR': home_team.get('abbrev'),
-                        'AWAY_TEAM': away_team.get('placeName', {}).get('default', '') + ' ' + away_team.get('commonName', {}).get('default', ''),
-                        'AWAY_TEAM_ABBR': away_team.get('abbrev'),
-                    })
+            # gameWeek starts at the requested date; nextSlate keeps only
+            # today/tomorrow (ET) and picks the earliest with games left.
+            for games_day in data.get('gameWeek', []):
+                for game in games_day.get('games', []):
+                    if game.get('gameType') == 2:
+                        home_team = game.get('homeTeam', {})
+                        away_team = game.get('awayTeam', {})
+                        
+                        games.append({
+                            'GAME_ID': game.get('id'),
+                            'GAME_DATE': games_day.get('date'),
+                            'TIP_TIME_UTC': game.get('startTimeUTC'),
+                            'HOME_TEAM': home_team.get('placeName', {}).get('default', '') + ' ' + home_team.get('commonName', {}).get('default', ''),
+                            'HOME_TEAM_ABBR': home_team.get('abbrev'),
+                            'AWAY_TEAM': away_team.get('placeName', {}).get('default', '') + ' ' + away_team.get('commonName', {}).get('default', ''),
+                            'AWAY_TEAM_ABBR': away_team.get('abbrev'),
+                        })
             
             if games:
-                df = pd.DataFrame(games)
+                df = nextSlate(pd.DataFrame(games), now).drop(columns=['TIP_TIME_UTC'])
                                 
                 if df.empty:
-                    print("No games scheduled for today")
+                    print("No upcoming games today or tomorrow")
                     return pd.DataFrame()
                 
                 df.to_csv(f'{self.data_dir}/upcoming_games.csv', index=False)
-                print(f"Found {len(df)} games for today")
+                print(f"Found {len(df)} upcoming games for {df['GAME_DATE'].iloc[0]}")
                 return df
             else:
-                print("No games scheduled for today")
+                print("No games scheduled today or tomorrow")
                 return pd.DataFrame()
                 
         except Exception as e:

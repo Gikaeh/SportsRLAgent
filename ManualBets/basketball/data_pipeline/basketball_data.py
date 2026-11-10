@@ -7,7 +7,7 @@ from pathlib import Path
 import datetime
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from shared.base_data_fetcher import BaseDataFetcher
+from shared.base_data_fetcher import BaseDataFetcher, nextSlate
 
 class BasketballData(BaseDataFetcher):
     def __init__(self, data_dir='././data/basketball', max_retries=3, base_delay=2):
@@ -110,10 +110,13 @@ class BasketballData(BaseDataFetcher):
             team_yearly_data = team_yearly_stats.get_data_frames()[0]
             team_yearly_data.to_csv(f'{self.data_dir}/season_data/{team_abbreviation}_season_stats.csv', index=False)
 
-    def getUpcomingGames(self):
-        today = pd.Timestamp.now().normalize()
-        tomorrow = today + pd.Timedelta(days=1)
-        columns = ['gameId', 'gameDateEst', 'homeTeam_teamName', 'homeTeam_teamTricode', 'awayTeam_teamName', 'awayTeam_teamTricode']
+    def getUpcomingGames(self, now=None):
+        # Next slate of not-yet-started games: today's or tomorrow's by the
+        # schedule's US Eastern game date (gameDateEst, 'YYYY-MM-DDT00:00:00Z'),
+        # tip time from gameDateTimeUTC. The old filter compared the machine's
+        # local date, so late evening PT it only saw today's finished games.
+        now = pd.Timestamp.now(tz='UTC') if now is None else now
+        columns = ['gameId', 'gameDateEst', 'gameDateTimeUTC', 'homeTeam_teamName', 'homeTeam_teamTricode', 'awayTeam_teamName', 'awayTeam_teamTricode']
         
         def fetch_schedule():
             gamefinder = scheduleleaguev2.ScheduleLeagueV2()
@@ -121,8 +124,8 @@ class BasketballData(BaseDataFetcher):
         
         games = self.retryApiCall(fetch_schedule)
         games = games[columns]
-        games.rename(columns={'gameId': 'GAME_ID', 'gameDateEst': 'GAME_DATE', 'homeTeam_teamName': 'HOME_TEAM', 'awayTeam_teamName': 'AWAY_TEAM', 'homeTeam_teamTricode': 'TEAM_ABB_HOME', 'awayTeam_teamTricode': 'TEAM_ABB_AWAY'}, inplace=True)
-        games = games[(games['GAME_DATE'] < tomorrow.strftime('%Y-%m-%dT00:00:00Z')) & (games['GAME_DATE'] >= today.strftime('%Y-%m-%dT00:00:00Z'))]
+        games = games.rename(columns={'gameId': 'GAME_ID', 'gameDateEst': 'GAME_DATE', 'gameDateTimeUTC': 'TIP_TIME_UTC', 'homeTeam_teamName': 'HOME_TEAM', 'awayTeam_teamName': 'AWAY_TEAM', 'homeTeam_teamTricode': 'TEAM_ABB_HOME', 'awayTeam_teamTricode': 'TEAM_ABB_AWAY'})
+        games = nextSlate(games, now).drop(columns=['TIP_TIME_UTC']).copy()
         games['HOME_TEAM'] = games['HOME_TEAM'].apply(self.matchTeamName)
         games['AWAY_TEAM'] = games['AWAY_TEAM'].apply(self.matchTeamName)
         games.to_csv(f'{self.data_dir}/upcoming_games.csv', index=False)

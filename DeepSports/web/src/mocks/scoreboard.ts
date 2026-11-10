@@ -20,6 +20,8 @@ type Spec = {
   venue?: string | null;
   /** false = no pre-tip prediction exists for this game (common in college: both teams need >= 5 games). */
   predicted?: boolean;
+  /** the owner's open bets on this game */
+  bets?: string[];
   /** college: an early-season prediction (`ncaab-v1-early`), hidden unless the toggle is on */
   early?: boolean;
 };
@@ -113,6 +115,7 @@ export function makeCard(date: string, s: Spec, league: League = "nba"): GameCar
     followed: followed.includes(s.away) || followed.includes(s.home),
     league,
     prediction: null,
+    ...(s.bets ? { bets: s.bets } : {}),
   };
   if (s.predicted !== false) card.prediction = predictionFor(card);
   if (s.early && card.prediction) card.prediction = { ...card.prediction, model_version: "ncaab-v1-early", early: true };
@@ -158,7 +161,7 @@ function todaySpecs(): Spec[] {
     liveSpec(),
     {
       id: "401810104", away: "DEN", home: "LAC", time: "19:30", state: "pre",
-      status: "STATUS_SCHEDULED", broadcasts: ["FDSN SoCal", "Altitude"], odds: "LAC -1.5, O/U 229.5",
+      status: "STATUS_SCHEDULED", broadcasts: ["FDSN SoCal", "Altitude"], odds: "LAC -1.5, O/U 229.5", bets: ["LAC -1.5"],
     },
     {
       id: "401810105", away: "CHI", home: "ORL", time: "16:00", state: "post",

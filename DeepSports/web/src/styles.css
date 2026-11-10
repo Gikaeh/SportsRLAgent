@@ -1315,6 +1315,25 @@ button {
   color: var(--accent);
 }
 
+.bet-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.hdr-center .bet-badge {
+  margin-top: 6px;
+}
+
 .hdr-center .league-badge {
   margin-top: 6px;
 }

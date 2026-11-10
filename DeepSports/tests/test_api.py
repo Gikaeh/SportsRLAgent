@@ -451,3 +451,20 @@ def test_hidden_versions_never_reach_cards_but_have_a_record(db_path, monkeypatc
         "/api/predictions/record", params={"league": "ncaab", "model_version": "ncaab-v1p"}
     ).json()
     assert rec["model_version"] == "ncaab-v1p" and rec["games"] == 0
+
+
+def test_scoreboard_tags_open_bets(client, monkeypatch):
+    c, _ = client
+    import deepsports.api.bets as bets_module
+
+    first = c.get("/api/scoreboard").json()["games"]
+    target = next(g for g in first if g["state"] != "post")
+    final = next((g for g in first if g["state"] == "post"), None)
+    open_map = {target["id"]: ["TOR -2.5"]}
+    if final:
+        open_map[final["id"]] = ["LAL -4.5"]
+    monkeypatch.setattr(bets_module, "open_bets", lambda: open_map)
+    games = {g["id"]: g for g in c.get("/api/scoreboard").json()["games"]}
+    assert games[target["id"]]["bets"] == ["TOR -2.5"]
+    if final:
+        assert "bets" not in games[final["id"]]

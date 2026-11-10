@@ -173,8 +173,8 @@ model; the calendar leaves out `*-early` and `config.HIDDEN_MODEL_VERSIONS`).
 Model versions in use: `model = 'v1'` with `model_version` `v1.0` / `v1.1` / `v1.1i` (NBA; v1.1i =
 v1.1 + pre-tip injury reports, only for games with a captured report, rewritten by `deepsports pretip`
 shortly before tip) and `ncaab-v1`
-(college v1, `analysis/ncaab.py`; only D1-vs-D1 games where both teams have >= 5 completed games
-this season). `ncaab-v1p` is the college prior model (`analysis/ncaab_prior.py`, frozen
+(college v1, `src/deepsports/analysis/ncaab.py`; only D1-vs-D1 games where both teams have >= 5 completed games
+this season). `ncaab-v1p` is the college prior model (`src/deepsports/analysis/ncaab_prior.py`, frozen
 `models/ncaab_prior/config.json`) on the same gate: graded, never displayed (`HIDDEN_MODEL_VERSIONS`).
 `ncaab-v1-early` covers D1 games where each team has >= 1 game (opt-in in the web app; never on the
 calendar); since 2026-11-06 09:00 UTC it comes from the prior model (before: college v1).
@@ -184,7 +184,7 @@ are ever written, so the stored row is the latest pre-tip prediction. A new mode
 own rows.
 
 ### `paper_bets`
-Forward paper-trade log (watch-only, no money; `analysis/paper.py`, docs/DECISIONS.md
+Forward paper-trade log (watch-only, no money; `src/deepsports/analysis/paper.py`, docs/DECISIONS.md
 2026-11-04). PK (`rule`, `game_id`, `market`). **Insert-only:** `Store.add_paper_bets(rows)` does
 `INSERT OR IGNORE`, so the first logged bet for a key is frozen and never updated (within one
 batch the first row wins); it returns the number of new rows. Written by `deepsports paper log`

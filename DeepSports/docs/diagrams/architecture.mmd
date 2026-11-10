@@ -4,23 +4,28 @@ title: DeepSports architecture (NBA + college basketball; planned parts dashed)
 flowchart TB
   USER(["Owner<br/>phone · G2 glasses · calendar"])
 
-  subgraph AGENT["Agent layer: Claude Code (AGENTS.md)"]
+  subgraph AGENT["Agent layer: Claude Code (../AGENTS.md · AGENTS.md)"]
     direction LR
     ORCH["Orchestrator<br/>main session"]
-    subgraph SUBS["Subagents .claude/agents"]
+    subgraph SUBS["Dev agents: repo-root .claude/agents"]
       direction TB
       DE[data-engineer]
       DA[data-analyst]
       FE[frontend-dev]
-      CA[calendar-agent]
       AR[architect]
-      BETTOR["bettor ×N<br/>Read-only, independent"]
+      RV[reviewer]
     end
-    SYNC["/sync-game-calendar<br/>skill"]
-    EBSKILL["/ensemble-betting<br/>skill: N bettors vote"]
+    subgraph RUNTIME["Runtime: DeepSports/.claude (agents + skills)"]
+      direction TB
+      CA[calendar-agent]
+      BETTOR["bettor ×N<br/>Read-only, independent"]
+      SYNC["/sync-game-calendar<br/>skill"]
+      EBSKILL["/ensemble-betting<br/>skill: N bettors vote"]
+    end
     ORCH --> EBSKILL -->|"one context file each<br/>launched in parallel"| BETTOR
     CFG["config/calendar.toml<br/>NBA: LAL · LAC · GS · BOS<br/>NCAAB: NEV"]
     ORCH --> SUBS
+    ORCH --> CA
     CA --> SYNC
     CFG --> SYNC
     SCHED["tools/scheduled-sync.sh<br/>launchd 08:00 · 14:00"]
@@ -45,7 +50,7 @@ flowchart TB
   subgraph DATA["data/ → /Volumes/ExFATStorag/DeepSports/data"]
     direction LR
     RAW[("raw/espn/{nba,ncaab}/**.json.gz<br/>raw landing zone<br/>+ summary_pregame snapshots")]
-    DB[("deepsports.duckdb (league-aware keys)<br/>games · box scores · odds + prices · injuries<br/>team_game_context · predictions · paper_bets<br/>NBA 2021-22 → today · NCAAB 2026-27")]
+    DB[("deepsports.duckdb (league-aware keys)<br/>games · box scores · odds + prices · injuries<br/>team_game_context · predictions · paper_bets<br/>NBA 2021-22 → today · NCAAB 2023-24 → today")]
   end
 
   subgraph APPS["Apps: deepsports serve :8787"]

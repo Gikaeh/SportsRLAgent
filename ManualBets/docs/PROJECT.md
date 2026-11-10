@@ -1,42 +1,47 @@
-# PROJECT.md
+# PROJECT.md: goal, milestone, scope
 
 ## Goal
 
-A personal sports-betting recommendation system: XGBoost models predict NHL/NBA
-game outcomes (moneyline/h2h, spread, total); a Kelly-criterion recommender converts
-predictions + live odds into bet suggestions sized against a small real bankroll;
-every suggestion and its outcome is graded in append-only CSV logs. The human places
-every bet manually. MLB is planned next, mirroring the existing per-sport layout.
+A personal basketball betting recommendation system for the NBA and NCAA men's D1: XGBoost
+models predict h2h, spread and total outcomes; a Kelly-criterion recommender turns predictions
+and live odds into stake suggestions for a small real bankroll; bets and outcomes are graded in
+append-only CSV logs. The owner places every bet by hand. ManualBets and DeepSports will be
+merged step by step (`../AGENTS.md`). The old long-term roadmaps are kept for history in
+`docs/archive/`.
 
-Long-term direction lives in `basketball/nba_betting_project_roadmap.md` (pure ML →
-market intelligence → live betting) and `baseball/mlb_betting_project_roadmap.md`
-(ML baseline first, RL injury-adaptation only after a profitable baseline).
+## Current milestones
 
-## Current milestone
+**M1: secrets cleanup (open since 2026-08-21, not done).** The Odds API key is still a literal
+in the `odd_scraping.py` files and in git history, and it travels in request URLs.
+Done when:
+- No API key or credential literal is left in tracked source.
+- Every `odd_scraping.py` reads the key from an environment variable, and `AGENTS.md` says how
+  to set it (never its value).
+- The NBA and college menus still run with the key from the environment.
+- `uv run pytest -q` shows no new failures.
+- Rotating the key is the owners' call (the key is shared).
 
-**M1 — Secrets cleanup** (see `docs/SESSION-LOG.md` Next item):
+**Batch 4 hardening** (`basketball/NOTES.md`): A3, A5, C-R3, C3/C4 and the pending B bugs.
 
-Success criteria:
-- No API key or credential literal anywhere in tracked source.
-- All three `odd_scraping.py` files read the Odds API key from an environment
-  variable (documented injection method in AGENTS.md).
-- Daily menus still run end-to-end with the key injected via env var.
-- pytest green.
+Day-to-day order of work: the live entry in `docs/SESSION-LOG.md`.
 
 ## Out of scope (until explicitly re-decided)
 
-- Automated or agent-driven bet placement of any kind (non-negotiable #1).
-- Production infrastructure from the roadmaps' Phase 5 (Postgres, Redis, Docker,
-  alerting) — the solo CSV/venv stack stays until volume demands otherwise.
-- RL injury-adaptation layer before each sport's ML baseline shows positive ROI.
-- New sports beyond baseball; new bet types beyond h2h/spread/total.
-- Refactoring camelCase method names to PEP-8 style repo-wide.
+- Automated or agent-driven bet placement of any kind.
+- Hockey and baseball: the code stays but is out of focus (`docs/DECISIONS.md` 2026-11-10).
+  Known hockey bug if that work restarts: `hockey/data_pipeline/odd_scraping.py` overwrites
+  the "not started yet" filter (see `docs/SESSION-LOG-ARCHIVE.md`).
+- Production infrastructure (Postgres, Redis, Docker, alerting): the CSV/uv stack stays until
+  volume demands otherwise.
+- An RL injury-adaptation layer before the ML baseline shows positive ROI.
+- New sports; new bet types beyond h2h/spread/total.
+- Renaming camelCase methods to PEP 8 style repo-wide.
 
 ## Constraints
 
-- Solo owner, part-time; daily-use tool during NBA/NHL season.
-- Free data sources preferred; The Odds API is the only paid/quota-limited service.
-- Real bankroll starts at $40 — sizing conservatism in `betting_config.py` is
-  intentional, not a bug to "fix".
-- Data sources are free/unofficial APIs that may break without notice; treat fetcher
-  failures as data-source changes and escalate (AGENTS.md escalation rules).
+- Owner-run, part-time; a daily tool during the basketball season.
+- Free data sources preferred. The Odds API is the only paid, quota-limited service.
+- Real bankroll: $50 from 2026-11-08 (`basketball/betting/betting_config.py`); college results
+  count toward it. Conservative sizing is intentional, not a bug to fix.
+- Data sources are free, unofficial APIs that can break without notice: treat a fetcher failure
+  as a data-source change and escalate.

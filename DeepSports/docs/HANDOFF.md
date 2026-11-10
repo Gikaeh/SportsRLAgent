@@ -1,6 +1,7 @@
-# Handoff: state of DeepSports (updated 2026-11-07)
+# Handoff: state of DeepSports (updated 2026-11-10)
 
-Read this first in a new session, then CLAUDE.md → AGENTS.md → docs/ROADMAP.md.
+Read this first in a new session, then the open items in docs/ROADMAP.md. Rules: CLAUDE.md;
+other docs on demand via the index in README.md.
 
 ## What's running on its own
 | Thing | How | Check |
@@ -8,7 +9,7 @@ Read this first in a new session, then CLAUDE.md → AGENTS.md → docs/ROADMAP.
 | App server: API + web app + glasses plugin on `:8787` | launchd `com.deepsports.serve` (restarts itself) | `curl -s localhost:8787/api/health` · logs `~/Library/Logs/DeepSports/serve.log` |
 | Scheduled sync at 08:00 and 14:00: update NBA + college → predict v1.0 + v1.1 + v1.1i → headless Claude `/sync-game-calendar` → Discord | launchd `com.deepsports.sync` → `tools/scheduled-sync.sh` | `~/Library/Logs/DeepSports/sync.log` |
 | Daily ensemble-betting vote (watch-only): 10 Sonnet bettors on games tipping in the next 24 h → majority picks to Discord | end of the 14:00 sync → `tools/ensemble-daily.sh` | runs in `/Volumes/ExFATStorag/DeepSports/reports/ensemble-bets/` · `deepsports ensemble-bets grade` |
-| Pre-tip injury refresh at :20 and :50: NBA games tipping in 5-100 min → fresh ESPN injury report → v1.1i predictions (added 2026-11-10; the owner installs it with `tools/launchd/install.sh install com.deepsports.pretip`) | launchd `com.deepsports.pretip` → `tools/pretip.sh` | `~/Library/Logs/DeepSports/pretip.log` (one line per run) · `deepsports status` (`pretip v1.1i` runs) |
+| Pre-tip injury refresh at :20 and :50: NBA games tipping in 5-100 min → fresh ESPN injury report → v1.1i predictions (installed 2026-11-10) | launchd `com.deepsports.pretip` → `tools/pretip.sh` | `~/Library/Logs/DeepSports/pretip.log` (one line per run) · `deepsports status` (`pretip v1.1i` runs) |
 | Discord turn notifications | global Stop/Notification hooks → `~/.claude/tools/notify.py` | |
 
 Restart the server after code changes: `launchctl kickstart -k gui/$(id -u)/com.deepsports.serve`.
@@ -25,29 +26,13 @@ Rebuild clients: `(cd web && npm run build)`, `(cd glasses && npm run build)`; E
   20+ point spreads; see DATA_SOURCES.md); pre-tip injury snapshots from 2026-11-03 on; predictions for the
   next 14 days (NBA v1.0 + v1.1, + v1.1i for games with an injury report; college `ncaab-v1`, `ncaab-v1p`, opt-in `ncaab-v1-early`).
 - **Followed:** NBA LAL, LAC, GS, BOS; college Nevada (NEV). See `config/calendar.toml`.
-- **Code on GitHub:** private `JaeminBBQ/DeepSports`. Commit or push only when asked.
+- **Code:** the `DeepSports/` folder of `Gikaeh/SportsRLAgent`; feature branch + PR to `main` (git rules in `../AGENTS.md`).
 
-## Results so far (docs/results/)
-- Analysis: home court 54–58% / +2 pts; the closing-line favorite wins ~68%; spread MAE ~10.7.
-- Model v1.0: beats Elo and home-always, **not** the closing line (Brier 0.211 vs 0.199; margin MAE 11.2 vs 10.8).
-- Model v1.1 (+ player availability): margin MAE 11.22→11.20 (real), Brier within noise.
-- Model v1.1i (2026-11-10): v1.1 using the pre-tip injury report (`Out` players) instead of "played last game".
-  No backtest possible (snapshots start 2026-11-03); graded live, compare paired with v1.1 on the same games.
-  The app prefers v1.1i, then v1.1 (labelled); calendar, paper log and ensemble stay on v1.1.
-- $100 simulation of v1 (`docs/results/2026-11-04-sim-v1-100usd.md`, chart `docs/diagrams/sim-v1-bankroll.svg`):
-  closing line → $0 on spreads/totals/moneyline (the −110 cut eats ~$0.09 per $2 bet); opening-line totals
-  → $172 (53.4%, CI overlaps break-even; openings have no posting time, so treat it as a best case).
-  The model is overconfident on its moneyline picks, so Kelly isn't justified.
-- Calibration (`docs/results/2026-11-06-calibration.md`): displayed NBA v1.1 and college ncaab-v1 win % are
-  calibrated (app says ~75% → won ~73%). The pick overconfidence is the winner's curse, not fixable by rescaling.
-  `v1.1c` / `ncaab-v1c` built but **not wired** (gains are noise-sized); display unchanged.
-- Spread/total prices backfilled from cache (`deepsports prices-backfill`; closing ~100%). $100 sim re-run at real
-  prices (`docs/results/2026-11-06-sim-v1.1-prices.md`): closing → still $0 everywhere; opening totals $172 → $111
-  (v1.0) / $137 (v1.1), 53.7% vs 53.2% break-even, CI includes it. The model's opening picks sit on the pricier side.
-
-- SportsRLAgent comparison (`docs/results/2026-11-07-srla-comparison.md`): on 3,328 shared games, v1.1 beats its honest
-  version (Brier .2070 vs .2203); its default features leak future games. Neither beats the closing line (.1967). Forward
-  freeze of 21 Nov 8-10 games, ungraded: `/Volumes/ExFATStorag/DeepSports/reports/srla-comparison-2026-11-07/forward_freeze.csv`.
+## Results
+In short: the displayed win probabilities are calibrated, but no model or rule so far beats the closing
+line (no betting edge). Details: the done summary in docs/ROADMAP.md and the dated
+reports in `docs/results/`. Model v1.1i (pre-tip injury reports) has no backtest (snapshots start
+2026-11-03) and is graded live, paired with v1.1 on the same games.
 
 ## Known gaps / gotchas
 - ESPN gaps (warnings in `deepsports check`): 8 NBA playoff summaries 404; 29 NBA team-games and ~430 college
@@ -58,7 +43,7 @@ Rebuild clients: `(cd web && npm run build)`, `(cd glasses && npm run build)`; E
   `ncaab-v1-early` (opt-in) share one fit. Early predictions made before 2026-11-06 09:00 UTC came from the
   no-prior v1 model; split the early record there.
 - Historical ESPN injury lists are fetch-time, so they **leak**. Only pre-tip snapshots are valid model inputs.
-- One DuckDB writer at a time. The API returns 503 `warehouse_busy` during jobs; live scores keep working.
+- The API returns 503 `warehouse_busy` while a job holds the writer lock; live scores keep working.
 - launchd processes needed the macOS "Removable Volumes" permission (granted 2026-11-03). Only uv's Python has it:
   launchd scripts must use `uv run python`, not shell tools or system `python3`, for files on the drive.
 - The packaged glasses build has `http://172.16.0.61:8787` built in; repack if the Mac's IP changes.
@@ -66,9 +51,15 @@ Rebuild clients: `(cd web && npm run build)`, `(cd glasses && npm run build)`; E
   `docs/research/sportsrlagent-review.md`. The friend granted permission to use their data/methods.
 
 ## Next steps
-1. **NHL** (season under way; keyless `api-web.nhle.com`): capture OT/SO/period/empty-net at ingest.
-2. Waiting on data: `ncaab-v1p` vs `ncaab-v1` record (a few hundred gated games; early-gate re-test after
+1. Waiting on data: `ncaab-v1p` vs `ncaab-v1` record (a few hundred gated games; early-gate re-test after
    2027-01-31); injury-impact model once pre-tip snapshots accumulate; paper-trade review at season end.
-3. Opening-line timing: 30-min pregame captures (since 2026-11-06) will give real posting times; re-test opening
+2. Opening-line timing: 30-min pregame captures (since 2026-11-06) will give real posting times; re-test opening
    totals forward once a few hundred bets exist.
-4. Owner: DHCP reservation for 172.16.0.61; glasses background-update test; paid odds API decision.
+3. v1.1i vs v1.1 paired review once a few hundred NBA games with a pre-tip report are graded.
+4. Step-by-step integration with ManualBets (one data source, one app); each step is decided in
+   `../docs/DECISIONS.md` first.
+5. Owner: DHCP reservation for 172.16.0.61; glasses background-update test; paid odds API decision.
+6. Carried over from 2026-11-09: confirm the Bets tab shows on the owner's phone; watch the live screen during a
+   real game (a brief ESPN failure on `/api/games/{id}` returns 404 with no stale fallback); grade the Nov 8-10
+   forward freeze (`/Volumes/ExFATStorag/DeepSports/reports/srla-comparison-2026-11-07/forward_freeze.csv`);
+   `%-` strftime codes fail on Windows (matters for a Windows collaborator).

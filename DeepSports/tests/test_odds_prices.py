@@ -253,3 +253,35 @@ def test_cli_odds_snapshot_skips_quietly_when_writer_lock_is_held(tmp_path, monk
         holder.wait()
     out = capsys.readouterr().out.strip().splitlines()
     assert len(out) == 1 and "skipped, warehouse busy" in out[0]
+
+
+def _deny_open(monkeypatch, calls: list | None = None):
+    """Make every duckdb.connect fail like macOS did on 2026-11-08 (drive access denied)."""
+
+    def denied(*a, **k):
+        if calls is not None:
+            calls.append(1)
+        raise duckdb.IOException('IO Error: Cannot open file "w.duckdb": Operation not permitted')
+
+    monkeypatch.setattr(duckdb, "connect", denied)
+
+
+def test_store_fails_fast_on_access_errors(tmp_path, monkeypatch):
+    path = tmp_path / "w.duckdb"
+    Store(path).close()
+    calls: list = []
+    _deny_open(monkeypatch, calls)
+    with pytest.raises(duckdb.IOException, match="Operation not permitted"):
+        Store(path, read_only=True, lock_wait=30)
+    assert len(calls) == 1  # not retried for 30 s like a lock conflict
+
+
+def test_cli_odds_snapshot_reports_access_error_instead_of_busy(tmp_path, monkeypatch, capsys):
+    def handler(request):
+        raise AssertionError("must not fetch when the warehouse can't be opened")
+
+    _patch_cli(monkeypatch, tmp_path, handler)
+    _deny_open(monkeypatch)
+    assert cli.main(["odds-snapshot"]) == 1
+    out = capsys.readouterr().out
+    assert "FAILED, cannot open the warehouse" in out and "busy" not in out

@@ -491,3 +491,19 @@ def test_bets_endpoint_lists_only_games_with_open_bets(client, monkeypatch):
     assert states == sorted(states, key={"in": 0, "pre": 1, "post": 2}.get)
     monkeypatch.setattr(bets_module, "open_bets", lambda: {})
     assert c.get("/api/bets").json()["games"] == []
+
+
+def test_warehouse_access_error_is_unavailable_not_busy(monkeypatch, tmp_path):
+    import duckdb
+
+    from deepsports.api import warehouse
+
+    def denied(path):
+        raise duckdb.IOException('IO Error: Cannot open file "x": Operation not permitted')
+
+    monkeypatch.setattr(warehouse, "_open", denied)
+    with (
+        pytest.raises(warehouse.WarehouseUnavailable, match="Operation not permitted"),
+        warehouse.connect(tmp_path / "x.duckdb"),
+    ):
+        pass

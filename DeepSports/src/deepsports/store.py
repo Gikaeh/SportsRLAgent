@@ -494,6 +494,16 @@ ODDS_VALUE_COLS = (
 ODDS_COLS = ("game_id", "source", "captured_at", "details", *ODDS_VALUE_COLS)
 
 
+def is_lock_conflict(exc: BaseException) -> bool:
+    """True if a DuckDB open failed because another process holds the file lock.
+
+    Other IOErrors (e.g. macOS "Operation not permitted" on the external drive, seen while a
+    macOS update was pending on 2026-11-08) are not transient lock waits and must not be
+    reported as "busy"."""
+    msg = str(exc)
+    return "Could not set lock" in msg or "Conflicting lock" in msg
+
+
 class Store:
     def __init__(
         self, path: Path | str = config.DB_PATH, read_only: bool = False, lock_wait: float = 15.0
@@ -506,8 +516,9 @@ class Store:
             try:
                 self.con = duckdb.connect(str(path), read_only=read_only)
                 break
-            except duckdb.IOException:
-                if time.monotonic() > deadline:
+            except duckdb.IOException as e:
+                # Only a lock conflict is worth waiting out; access errors fail at once.
+                if not is_lock_conflict(e) or time.monotonic() > deadline:
                     raise
                 time.sleep(0.5)
         self._types: dict[str, dict[str, str]] = {}

@@ -12,7 +12,7 @@ import duckdb
 from deepsports import config, pipeline
 from deepsports.http import PoliteClient
 from deepsports.sources.espn import LEAGUES, EspnBasketball
-from deepsports.store import Store
+from deepsports.store import Store, is_lock_conflict
 
 CALENDAR_CONFIG = config.ROOT / "config" / "calendar.toml"
 
@@ -266,13 +266,16 @@ def _collect_commands(args: argparse.Namespace, db: Store) -> int:
 
 
 def _warehouse_busy(lock_wait: float = 0.0) -> bool:
-    """True if another process holds the DuckDB writer lock (a read-only open fails then)."""
+    """True if another process holds the DuckDB writer lock (a read-only open fails then).
+    Any other open error (e.g. macOS "Operation not permitted") is raised, not called busy."""
     if not config.DB_PATH.exists():
         return False
     try:
         Store(config.DB_PATH, read_only=True, lock_wait=lock_wait).close()
-    except duckdb.IOException:
-        return True
+    except duckdb.IOException as e:
+        if is_lock_conflict(e):
+            return True
+        raise
     return False
 
 
@@ -282,7 +285,12 @@ def _odds_snapshot(args: argparse.Namespace) -> int:
     price moved). It yields to every other job: if the warehouse writer lock is held before
     fetching or when writing, it prints one line and exits 0 without writing."""
     skip = "odds-snapshot: skipped, warehouse busy (another deepsports writer holds the lock)"
-    if _warehouse_busy():
+    try:
+        busy = _warehouse_busy()
+    except duckdb.IOException as e:
+        print(f"odds-snapshot: FAILED, cannot open the warehouse: {e}")
+        return 1
+    if busy:
         print(skip)
         return 0
     leagues = list(LEAGUES) if args.league == "all" else [args.league]
@@ -297,7 +305,10 @@ def _odds_snapshot(args: argparse.Namespace) -> int:
     try:
         # brief API-server reads are waited out; a real writer (sync, backfill) wins
         db = Store(config.DB_PATH, lock_wait=10.0)
-    except duckdb.IOException:
+    except duckdb.IOException as e:
+        if not is_lock_conflict(e):
+            print(f"odds-snapshot: FAILED, cannot open the warehouse to write: {e}")
+            return 1
         print(skip.replace("busy", "busy at write time"))
         return 0
     try:

@@ -198,7 +198,18 @@ gate, because honest metrics are expected to look worse than the leaked ones.
 Test split, previous metadata to now: Brier .2125 to .2198, margin MAE 11.50 to 11.87, total MAE 14.45 to 15.04.
 The previous figures carried look-ahead, and the old total figure also predates the chronological split.
 
-## 2026-11-09 — Owner-placed bets are logged; college gets its own log
+## 2026-11-08 - Bet grading is keyed on each bet's own season, not the current one
+
+`updateBetResults` used to read only `{getCurrentSeason()}_game_stats.csv`, so any
+bet left ungraded when the season rolled over (July) could never be graded again -
+the ID simply is not in the new season's file, and the loop failed silently.
+Grading now derives the season from the bet's date (`getBetSeason`) and loads that
+season's CSV through a per-instance cache; a missing season file warns and skips.
+Why: bet logs are append-only history and must be gradeable forever, and a silent
+no-op looked like "the update works" for months. Side effect: logs are written
+only when a `result` actually changes, so repeat runs leave the CSVs untouched.
+
+## 2026-11-09 - Owner-placed bets are logged; college gets its own log
 
 The owner approved logging their real bets from the $50 bankroll, starting with the Nov 8 results and Nov 9 slip.
 College bets go in `logs/college_basketball/betting/bets.csv`, a simpler schema than the NBA logs, because they include

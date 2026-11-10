@@ -40,6 +40,18 @@ When a session ends, move the old entry verbatim into `docs/SESSION-LOG-ARCHIVE.
    fix"): it contains a per-bet-season grading fix that is NOT in this tree.
 3. Then back to the prior Next list (grade open bets, retrain NBA models, Batch 4).
 
+**Follow-up (2026-11-09) — stash `stash@{0}` reviewed and harvested**
+- Applied the per-bet-season grading fix from the stash to both recommenders
+  (`getBetSeason` + cached `loadSeasonGameData`; skip bets dated today; write a log only
+  when a `result` changed) and the `main.py` current-season fix. The stash's restructure
+  was NOT applied — the committed layout differs (`logs/` stays at the repo root).
+- Repaired the archive logs: the stash had truncated them, so its 13 archived basketball
+  rows (6 h2h + 7 spread, 2026-11-08/09) were appended to the current
+  `logs/basketball/betting/archive/*_bets.csv` (158→164 and 221→228 lines, additions
+  only). Rationale in `docs/DECISIONS.md` (2026-11-08 entry).
+- Verify: `ManualBets/.venv\Scripts\python.exe -m pytest tests/ -q` → 37 passed, 2
+  pre-existing `test_opp_avg_win_pct` failures (missing `calculateOpponentStrengthL10`).
+
 ---
 
 ## 2026-11-08 — Odds scraping works again on pandas 3.1 (arrow 'str' dtype)

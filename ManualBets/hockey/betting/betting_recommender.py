@@ -20,6 +20,9 @@ class BettingRecommender:
         self.config = config or BettingConfig()
         self.odd_scraping = HockeyOddScraping()
         self.preparer = NHLTrainingDataPreparer()
+        # Cache of season -> game stats. Grading must be able to read seasons
+        # other than the current one (see updateBetResults).
+        self.game_data_cache = {}
         # self.injury_data = HockeyInjuryData()
 
         if model_path.split('_')[1] == 'h2h':
@@ -599,6 +602,38 @@ class BettingRecommender:
         elif model_type == 'total':
             return self.odd_scraping.getTotalOdds()
 
+    def getBetSeason(self, bet_date):
+        """Season label a bet belongs to, derived from its own date. Uses the
+        same July boundary as the data preparers' getCurrentSeason()."""
+        try:
+            ts = pd.Timestamp(bet_date)
+        except (TypeError, ValueError):
+            return self.preparer.getCurrentSeason()
+        if pd.isna(ts):
+            return self.preparer.getCurrentSeason()
+        if ts.month < 7:
+            return f"{ts.year - 1}-{str(ts.year)[-2:]}"
+        return f"{ts.year}-{str(ts.year + 1)[-2:]}"
+
+    def loadSeasonGameData(self, season):
+        """Cached read of one season's game results. Returns None when the
+        season was never fetched, so grading skips instead of crashing."""
+        if season in self.game_data_cache:
+            return self.game_data_cache[season]
+
+        file = Path('././data/hockey/game_data') / f'{season}_game_stats.csv'
+        game_data = None
+        if file.exists():
+            try:
+                game_data = pd.read_csv(file)
+            except pd.errors.EmptyDataError:
+                game_data = None
+        if game_data is None:
+            print(f"WARNING: no game data for season {season} ({file}) — "
+                  f"bets from that season stay ungraded")
+        self.game_data_cache[season] = game_data
+        return game_data
+
     def updateBetResults(self, archive = False):
         if archive:
             h2h_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG
@@ -609,17 +644,28 @@ class BettingRecommender:
             spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
             total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
         files = [h2h_log_file, spread_log_file, total_log_file]
-        game_data = pd.read_csv(f'././data/hockey/game_data/{self.preparer.getCurrentSeason()}_game_stats.csv')
+        today = datetime.now().strftime('%Y-%m-%d')
 
         for file in files:
             if file.exists():
                 df = pd.read_csv(file)
+                results_before = df['result'].fillna('').astype(str)
 
                 for idx, row in df.iterrows():
-                    game_id = int(row['game_id'])
+                    bet_date = str(row['date']).split(' ')[0]
 
-                    if row['date'].split(' ')[0] == datetime.now().strftime('%Y-%m-%d'):
+                    # Games played today may not be final yet.
+                    if bet_date == today:
                         continue
+
+                    # Grade against the bet's OWN season: leftover bets from a
+                    # previous season can never appear in the current season's
+                    # game file (season rollover in July).
+                    game_data = self.loadSeasonGameData(self.getBetSeason(bet_date))
+                    if game_data is None or game_data.empty:
+                        continue
+
+                    game_id = int(row['game_id'])
 
                     if game_id in game_data['GAME_ID'].values.astype(int):
                         if row['type'] == 'h2h':
@@ -685,8 +731,10 @@ class BettingRecommender:
                                         df.at[idx, 'result'] = 'D'
                             else:
                                 df.at[idx, 'result'] = ''
-                                
-                df.to_csv(file, index=False)
+
+                results_after = df['result'].fillna('').astype(str)
+                if not results_before.equals(results_after):
+                    df.to_csv(file, index=False)
 
     def setBankroll(self, archive = False):
         try:

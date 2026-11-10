@@ -154,7 +154,9 @@ def bettingUpdate():
     print("\n" + "="*80)
     print("Betting Update")
     print("="*80)
-    BasketballData().getSeasonGames(season='2025-26')
+    basketball_data = BasketballData()
+    current_season = basketball_data.getCurrentSeason()
+    basketball_data.getSeasonGames(season=current_season)
     recommender = BettingRecommender(model_path = './models/basketball_h2h_model.json')
 
     archive = input("Archive? (y/n): ")

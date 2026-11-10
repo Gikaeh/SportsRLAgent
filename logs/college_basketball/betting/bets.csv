@@ -1,0 +1,4 @@
+game_id,date,matchup,market,bet,line,odds,bet_amount,potential_profit,book,result,reason,timestamp
+401911453,2026-11-08 00:00:00+00:00,SMC @ NEV,spread_1h,NEV,-0.5,-110,10,9.090909090909092,unrecorded,W,"Owner-placed; -110 inferred from the owner's balance. Halftime NEV 42, SMC 35.",2026-11-08 22:45:29.046585
+401911453,2026-11-08 00:00:00+00:00,SMC @ NEV,spread,NEV,-1,-110,10,9.090909090909092,unrecorded,P,"Owner-placed; -110 assumed, a push doesn't reveal the price. Final NEV 96, SMC 95 in OT.",2026-11-08 22:45:29.046585
+401926132,2026-11-09 00:00:00+00:00,ILST @ PUR,total,over,145,-110,3,2.727272727272727,unrecorded,,"Owner-placed; from the bet slip. Failed the 5-game gate; owner's optional pick. DeepSports 152.1, SportsRLAgent 151.1.",2026-11-08 22:45:29.046585

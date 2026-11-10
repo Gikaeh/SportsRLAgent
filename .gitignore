@@ -1,10 +1,57 @@
-idea_for_project.txt
-.venv
-__pycache__
-.pytest_cache
-basketball/*.md
+# Shared ignore rules for both projects in this repo.
+# Layout: ManualBets/ (handmade betting pipeline) + DeepSports/ (data warehouse)
+#         + logs/ (bet journals, the one thing both sides touch).
+# Project-specific rules are grouped at the bottom.
+
+# ── Python envs / caches (per-project: ManualBets/.venv, DeepSports/.venv) ──
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# ── Secrets: document where they live, never commit them ──
 .env
-/data/**
-!/data/**/
-!/data/**/odds_data/**
-!basketball/NOTES.md
+.env.*
+
+# ── Node / build output (DeepSports web + glasses) ──
+node_modules/
+dist/
+dist-mock/
+dist-pack/
+*.tsbuildinfo
+*.ehpk
+
+# ── OS / editor / logs ──
+.DS_Store
+._*
+*.log
+
+# ── Data warehouses / caches (regenerable, never in git) ──
+*.duckdb
+*.duckdb.wal
+
+# ── Tooling state ──
+.serena/project.local.yml
+.serena/cache/
+.serena/logs/
+collab/
+.sync/
+
+# ───────────────────────────── ManualBets ─────────────────────────────
+idea_for_project.txt
+
+# Keep per-sport data out of git, except the odds snapshots that are the
+# historical record of prices we actually saw.
+ManualBets/data/**
+!ManualBets/data/**/
+!ManualBets/data/**/odds_data/**
+
+# Personal basketball write-ups stay local; NOTES.md is the shared audit spec.
+ManualBets/basketball/*.md
+!ManualBets/basketball/NOTES.md
+
+# ───────────────────────────── DeepSports ─────────────────────────────
+# `data` is a symlink to the external drive on the owner's Mac, so match it
+# without a trailing slash. Anchored so it does not swallow ManualBets/data.
+/DeepSports/data

@@ -1,0 +1,795 @@
+from os import path
+import json
+import math
+import pandas as pd
+import numpy as np
+from pathlib import Path
+from datetime import datetime
+from model.model_h2h import BasketballH2HModel
+from model.model_spread import BasketballSpreadModel
+from model.model_total import BasketballTotalModel
+from betting.betting_config import BettingConfig
+from data_pipeline.odd_scraping import BasketballOddScraping
+from data_pipeline.prepare_data import NBATrainingDataPreparer
+from shared.bankroll import bankrollFromLogs
+import glob
+
+class BettingRecommender:
+    def __init__(self, model_path=None, config=None):
+        self.config = config or BettingConfig()
+        self.odd_scraping = BasketballOddScraping()
+        self.preparer = NBATrainingDataPreparer()
+
+        if model_path.split('_')[1] == 'h2h':
+            self.model = BasketballH2HModel()
+        elif model_path.split('_')[1] == 'spread':
+            self.model = BasketballSpreadModel()
+        elif model_path.split('_')[1] == 'total':
+            self.model = BasketballTotalModel()
+
+        model_path = model_path or self.config.MODEL_PATH
+        if Path(model_path).exists():
+            self.model.load(model_path)
+            print(f"Loaded model from {model_path}")
+        else:
+            raise FileNotFoundError(f"Model not found at {model_path}")
+
+        # NOTES.md C1: measured validation residual sigmas (fallback until retrain)
+        self.margin_residual_sigma = self.loadResidualSigma(
+            'spread', self.config.SPREAD_RESIDUAL_SIGMA_FALLBACK)
+        self.total_residual_sigma = self.loadResidualSigma(
+            'total', self.config.TOTAL_RESIDUAL_SIGMA_FALLBACK)
+
+        self.current_bankroll = self.setBankroll()
+        # self.current_bankroll = self.config.STARTING_BANKROLL
+
+        Path(self.config.LOG_DIR).mkdir(parents=True, exist_ok=True)
+
+    def loadResidualSigma(self, bet_type, fallback, metadata_dir='./models/metadata/basketball'):
+        """Read the validation residual std written by ModelRetrainer; fall back to
+        the league-typical placeholder in betting_config until first clean retrain."""
+        meta_file = Path(metadata_dir) / f'retraining_{bet_type}_metadata.json'
+        try:
+            if meta_file.exists():
+                with open(meta_file) as f:
+                    sigma = json.load(f).get('residual_std')
+                if sigma and float(sigma) > 0:
+                    print(f"{bet_type} residual sigma: {float(sigma):.2f} (measured)")
+                    return float(sigma)
+        except Exception as e:
+            print(f"Could not read residual sigma for {bet_type}: {e}")
+        print(f"{bet_type} residual sigma: {fallback} (config fallback — retrain to measure)")
+        return float(fallback)
+
+    def devigTwoWay(self, implied_a, implied_b):
+        """NOTES.md C2: remove vig by normalizing two-sided implied probabilities."""
+        total = implied_a + implied_b
+        if total <= 0:
+            return implied_a, implied_b
+        return implied_a / total, implied_b / total
+    def oddsToProbability(self, american_odds):
+        if american_odds > 0:
+            return 100 / (american_odds + 100)
+        else:
+            return abs(american_odds) / (abs(american_odds) + 100)
+    
+    def probabilityToOdds(self, probability):
+        if probability >= 0.5:
+            return -100 * probability / (1 - probability)
+        else:
+            return 100 * (1 - probability) / probability
+    
+    def kellyCriterion(self, win_prob, american_odds, confidence):
+        if american_odds > 0:
+            decimal_odds = (american_odds / 100) + 1
+        else:
+            decimal_odds = (100 / abs(american_odds)) + 1
+        
+        # breakeven__prob = 1 / decimal_odds
+        # edge = win_prob - breakeven__prob
+        # conf_adjusted_edge = edge * confidence
+        # adjusted_prob = np.clip(breakeven__prob + conf_adjusted_edge, 0.0, 0.99)
+        # print(f"Adjusted Probability: {adjusted_prob}")
+
+        # Kelly formula: (p * odds - 1) / (odds - 1)
+        kelly_fraction = (win_prob * decimal_odds - 1) / (decimal_odds - 1)
+
+        # kelly_fraction = kelly_fraction * confidence
+        
+        # Apply fractional Kelly for risk management
+        kelly_fraction = max(0, kelly_fraction * self.config.KELLY_FRACTION)
+        # print(f"Kelly Fraction: {kelly_fraction}")
+        
+        return min(kelly_fraction, self.config.MAX_BET_SIZE_PCT)
+    
+    def calculateEdge(self, model_prob, market_odds, opposite_odds=None):
+        """NOTES.md C2: edge vs the DEVIGGED fair probability when both sides'
+        best prices are supplied; falls back to raw implied prob otherwise."""
+        market_prob = self.oddsToProbability(market_odds)
+        if opposite_odds is not None:
+            fair_prob, _ = self.devigTwoWay(market_prob, self.oddsToProbability(opposite_odds))
+            return model_prob - fair_prob
+        return model_prob - market_prob
+
+    def bestOutcomeRow(self, outcome_df):
+        """NOTES.md B2: best-priced row for one outcome; its point and price
+        must come from the SAME book (books can post different lines)."""
+        return outcome_df.sort_values('price', ascending=False).iloc[0]
+    
+    def predictGames(self, game_features, game_info):
+        results = game_info.copy()
+
+        if self.model.getModelType() == 'h2h':
+            odds_data = self.getOdds('h2h')
+            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/h2h_*.csv'))[-1])
+
+            predictions = self.model.predictProb(game_features)
+            home_win_probs = predictions[:, 1]
+        
+            results['home_win_prob'] = home_win_probs
+            results['away_win_prob'] = 1 - home_win_probs
+            results['predicted_winner'] = results.apply(lambda row: row['home_team'] if row['home_win_prob'] > 0.5 else row['away_team'], axis=1)
+            results['confidence'] = np.abs(home_win_probs - 0.5) * 2 
+
+        if self.model.getModelType() == 'spread':
+            odds_data = self.getOdds('spread')
+            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/spread_*.csv'))[-1])            
+
+            predictions = self.model.predict(game_features)
+            results['predicted_margin'] = predictions
+            results['predicted_cover'] = results.apply(lambda row: row['home_team'] if row['predicted_margin'] > 0 else row['away_team'], axis=1)
+            results['confidence'] = np.minimum(np.abs(predictions) / 20, 1)
+
+        if self.model.getModelType() == 'total':
+            predictions = self.model.predict(game_features)
+            odds_data = self.getOdds('total')
+            # odds_data = pd.read_csv(sorted(glob.glob(f'./data/basketball/odds_data/total_*.csv'))[-1])
+            odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
+            odds_data.sort_values('price', inplace=True)
+
+            results['predicted_total'] = predictions
+            for idx, row in results.iterrows():
+                game_odds = odds_data[odds_data['home_team'] == row['home_team']]
+                if len(game_odds) == 0:
+                    continue
+                lines = game_odds['point'].dropna().unique()
+                if len(lines) == 0:
+                    continue
+                market_line = float((lines.min() + lines.max()) / 2)
+                total_distance = abs(row['predicted_total'] - market_line)
+                results.at[idx, 'confidence'] = np.minimum(total_distance / 20, 1)
+        return results
+    
+    def makeBettingRecommendations(self, predictions):
+        if self.model.getModelType() == 'h2h':
+            recommendations = self.makeH2HRecommendations(predictions)
+        elif self.model.getModelType() == 'spread':
+            recommendations = self.makeSpreadRecommendations(predictions)
+        elif self.model.getModelType() == 'total':
+            recommendations = self.makeTotalRecommendations(predictions)
+        # A stake that rounds below the minimum isn't a bet (and $0 breaks calculateBetPriority).
+        return [r for r in recommendations if r['bet_amount'] >= self.config.MIN_BET_AMOUNT]
+        
+    
+    def makeH2HRecommendations(self, predictions):
+        recommendations = []
+        data_file_path = sorted(glob.glob(f'./data/basketball/odds_data/h2h_*.csv'))[-1]
+        odds_data = pd.read_csv(data_file_path)
+        odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
+        
+        for idx, game in predictions.iterrows():
+            game_id = game['game_id']
+            home_team = game['home_team']
+            away_team = game['away_team']
+            home_prob = game['home_win_prob']
+            away_prob = game['away_win_prob']
+            game_odds = odds_data[(odds_data['home_team'] == home_team) & (odds_data['away_team'] == away_team)]
+            
+            if len(game_odds) > 0:
+                home_odds = game_odds[(game_odds['name'] == home_team)]['price'].max()
+                away_odds = game_odds[(game_odds['name'] == away_team)]['price'].max()
+                if home_prob > away_prob:
+                    book = game_odds[(game_odds['price'] == home_odds)]['bookmakers_key'].values[0]
+                else:
+                    book = game_odds[(game_odds['price'] == away_odds)]['bookmakers_key'].values[0]
+            
+                home_edge = self.calculateEdge(home_prob, home_odds, away_odds)
+                away_edge = self.calculateEdge(away_prob, away_odds, home_odds)
+                fair_home_prob, fair_away_prob = self.devigTwoWay(
+                    self.oddsToProbability(home_odds), self.oddsToProbability(away_odds))
+                
+                if home_prob >= self.config.MIN_PROBABILITY and home_edge >= self.config.MIN_EDGE_H2H:
+                # if home_edge >= self.config.MIN_EDGE_H2H:
+                    bet_size_fraction = self.kellyCriterion(home_prob, home_odds, game['confidence'])
+                    bet_amount = round(bet_size_fraction * self.current_bankroll)
+
+                    recommendations.append({
+                        'game_id': game_id,
+                        'date': game['date'],
+                        'matchup': f"{away_team} @ {home_team}",
+                        'bet_team': home_team,
+                        'bet_side': 'home',
+                        'home_model_prob': home_prob,
+                        'home_odds': home_odds,
+                        'away_model_prob': away_prob,
+                        'away_odds': away_odds,
+                        'market_prob': fair_home_prob,
+                        'edge': home_edge,
+                        'confidence': game['confidence'],
+                        'bet_size_fraction': bet_size_fraction,
+                        'bet_amount': bet_amount,
+                        'potential_profit': self.calculateProfit(bet_amount, home_odds),
+                        'book': book,
+                        'type': 'h2h',
+                        'result': '',
+                        'reason': f"Probability: {home_prob:.1%}, Edge: {home_edge:.1%}, Confidence: {game['confidence']:.1%}"
+                    })
+                
+                if away_prob >= self.config.MIN_PROBABILITY and away_edge >= self.config.MIN_EDGE_H2H:
+                # if away_edge >= self.config.MIN_EDGE_H2H:
+                    bet_size_fraction = self.kellyCriterion(away_prob, away_odds, game['confidence'])
+                    bet_amount = round(bet_size_fraction * self.current_bankroll)
+                    
+                    recommendations.append({
+                        'game_id': game_id,
+                        'date': game['date'],
+                        'matchup': f"{away_team} @ {home_team}",
+                        'bet_team': away_team,
+                        'bet_side': 'away',
+                        'home_model_prob': home_prob,
+                        'home_odds': home_odds,
+                        'away_model_prob': away_prob,
+                        'away_odds': away_odds,
+                        'market_prob': fair_away_prob,
+                        'edge': away_edge,
+                        'confidence': game['confidence'],
+                        'bet_size_fraction': bet_size_fraction,
+                        'bet_amount': bet_amount,
+                        'potential_profit': self.calculateProfit(bet_amount, away_odds),
+                        'book': book,
+                        'type': 'h2h',
+                        'result': '',
+                        'reason': f"Probability: {away_prob:.1%}, Edge: {away_edge:.1%}, Confidence: {game['confidence']:.1%}"
+                    })
+        
+        return recommendations
+
+    def makeSpreadRecommendations(self, predictions):
+        recommendations = []
+        data_file_path = sorted(glob.glob(f'./data/basketball/odds_data/spread_*.csv'))[-1]
+        odds_data = pd.read_csv(data_file_path)
+        odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
+        
+        for idx, game in predictions.iterrows():
+            game_id = game['game_id']
+            home_team = game['home_team']
+            away_team = game['away_team']
+            predicted_margin = game['predicted_margin']
+            game_odds = odds_data[(odds_data['home_team'] == home_team) & (odds_data['away_team'] == away_team)]
+            
+            if len(game_odds) == 0:
+                continue
+            
+            home_spread_odds = game_odds[game_odds['name'] == home_team]
+            away_spread_odds = game_odds[game_odds['name'] == away_team]
+
+            if len(home_spread_odds) == 0 or len(away_spread_odds) == 0:
+                continue
+            
+            best_home_row = self.bestOutcomeRow(home_spread_odds)
+            best_away_row = self.bestOutcomeRow(away_spread_odds)
+            home_spread = best_home_row['point']
+            home_odds = best_home_row['price']
+            away_spread = best_away_row['point']
+            away_odds = best_away_row['price']
+
+            is_home_favored = home_spread < 0
+            is_away_favored = away_spread < 0
+
+            if is_home_favored:
+                home_margin_advantage = predicted_margin - abs(home_spread)
+            else:
+                home_margin_advantage = predicted_margin + home_spread
+            if is_away_favored:
+                away_margin_advantage = (-predicted_margin) - abs(away_spread)
+            else:
+                away_margin_advantage = away_spread + (-predicted_margin)
+
+            if home_margin_advantage >= self.config.MIN_EDGE_SPREAD:
+                cover_prob = self.marginToProbability(home_margin_advantage)
+
+                if cover_prob >= self.config.MIN_PROBABILITY:
+                    bet_size_fraction = self.kellyCriterion(cover_prob, home_odds, game['confidence'])
+                    bet_amount = round(bet_size_fraction * self.current_bankroll)
+
+                    book = best_home_row['bookmakers_key']
+
+                    recommendations.append({
+                        'game_id': game_id,
+                        'date': game['date'],
+                        'matchup': f"{away_team} @ {home_team}",
+                        'bet_team': home_team,
+                        'bet_side': 'home',
+                        'home_spread': home_spread,
+                        'home_odds': home_odds,
+                        'away_spread': away_spread,
+                        'away_odds': away_odds,
+                        'predicted_margin': predicted_margin,
+                        'margin_advantage': home_margin_advantage,
+                        'cover_prob': cover_prob,
+                        'confidence': game['confidence'],
+                        'bet_size_fraction': bet_size_fraction,
+                        'bet_amount': bet_amount,
+                        'potential_profit': self.calculateProfit(bet_amount, home_odds),
+                        'book': book,
+                        'type': 'spread',
+                        'is_home_favored': is_home_favored,
+                        'is_away_favored': is_away_favored,
+                        'result': '',
+                        'reason': f"Predicted Margin: {predicted_margin:.1f}, Home Spread: {home_spread:.1f}, Home Odds: {home_odds}, Edge: {home_margin_advantage:.1f}, Cover Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
+                    })
+            
+            if away_margin_advantage >= self.config.MIN_EDGE_SPREAD:
+                cover_prob = self.marginToProbability(away_margin_advantage)
+
+                if cover_prob >= self.config.MIN_PROBABILITY:
+                    bet_size_fraction = self.kellyCriterion(cover_prob, away_odds, game['confidence'])
+                    bet_amount = round(bet_size_fraction * self.current_bankroll)
+                
+                    book = best_away_row['bookmakers_key']
+                    
+                    recommendations.append({
+                        'game_id': game_id,
+                        'date': game['date'],
+                        'matchup': f"{away_team} @ {home_team}",
+                        'bet_team': away_team,
+                        'bet_side': 'away',
+                        'home_spread': home_spread,
+                        'home_odds': home_odds,
+                        'away_spread': away_spread,
+                        'away_odds': away_odds,
+                        'predicted_margin': predicted_margin,
+                        'margin_advantage': away_margin_advantage,
+                        'cover_prob': cover_prob,
+                        'confidence': game['confidence'],
+                        'bet_size_fraction': bet_size_fraction,
+                        'bet_amount': bet_amount,
+                        'potential_profit': self.calculateProfit(bet_amount, away_odds),
+                        'book': book,
+                        'type': 'spread',
+                        'is_home_favored': is_home_favored,
+                        'is_away_favored': is_away_favored,
+                        'result': '',
+                        'reason': f"Predicted Margin: {predicted_margin:.1f}, Away Spread: {away_spread:.1f}, Away Odds: {away_odds}, Edge: {away_margin_advantage:.1f}, Cover Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
+                    })
+        
+        return recommendations
+
+    def makeTotalRecommendations(self, predictions):
+        recommendations = []
+        data_file_path = sorted(glob.glob(f'./data/basketball/odds_data/total_*.csv'))[-1]
+        odds_data = pd.read_csv(data_file_path)
+        odds_data = odds_data[odds_data['bookmakers_key'].isin(self.config.NEVADA_BOOKS)]
+        
+        for idx, game in predictions.iterrows():
+            game_id = game['game_id']
+            home_team = game['home_team']
+            away_team = game['away_team']
+            predicted_total = game['predicted_total']
+            game_odds = odds_data[(odds_data['home_team'] == home_team) & (odds_data['away_team'] == away_team)]
+            
+            if len(game_odds) == 0:
+                continue
+            
+            over_odds_data = game_odds[game_odds['name'] == 'Over']
+            under_odds_data = game_odds[game_odds['name'] == 'Under']
+
+            if len(over_odds_data) == 0 or len(under_odds_data) == 0:
+                continue
+            
+            best_over_row = self.bestOutcomeRow(over_odds_data)
+            total_line = best_over_row['point']
+            matching_under = under_odds_data[under_odds_data['point'] == total_line]
+            under_source = matching_under if len(matching_under) > 0 else under_odds_data
+            best_under_row = self.bestOutcomeRow(under_source)
+
+            over_odds = best_over_row['price']
+            under_odds = best_under_row['price']
+            
+            total_advantage = abs(predicted_total - total_line)
+            
+            MIN_TOTAL_EDGE = getattr(self.config, 'MIN_TOTAL_EDGE', 8.0)  
+            
+            if predicted_total > total_line and total_advantage >= MIN_TOTAL_EDGE:
+                cover_prob = self.totalToProbability(total_advantage)
+                
+                if cover_prob >= self.config.MIN_PROBABILITY:
+                    bet_size_fraction = self.kellyCriterion(cover_prob, over_odds, game['confidence'])
+                    bet_amount = round(bet_size_fraction * self.current_bankroll)
+                    
+                    book = best_over_row['bookmakers_key']
+                    
+                    recommendations.append({
+                        'game_id': game_id,
+                        'date': game['date'],
+                        'matchup': f"{away_team} @ {home_team}",
+                        'bet_side': 'Over',
+                        'total_line': total_line,
+                        'over_odds': over_odds,
+                        'under_odds': under_odds,
+                        'predicted_total': predicted_total,
+                        'total_advantage': total_advantage,
+                        'cover_prob': cover_prob,
+                        'confidence': game['confidence'],
+                        'bet_size_fraction': bet_size_fraction,
+                        'bet_amount': bet_amount,
+                        'potential_profit': self.calculateProfit(bet_amount, over_odds),
+                        'book': book,
+                        'type': 'total',
+                        'result': '',
+                        'reason': f"Predicted: {predicted_total:.1f}, Line: {total_line:.1f}, Edge: {total_advantage:.1f}pts, Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
+                    })
+            
+            elif predicted_total < total_line and total_advantage >= MIN_TOTAL_EDGE:
+                cover_prob = self.totalToProbability(total_advantage)
+                
+                if cover_prob >= self.config.MIN_PROBABILITY:
+                    bet_size_fraction = self.kellyCriterion(cover_prob, under_odds, game['confidence'])
+                    bet_amount = round(bet_size_fraction * self.current_bankroll)
+                    
+                    book = best_under_row['bookmakers_key']
+                    
+                    recommendations.append({
+                        'game_id': game_id,
+                        'date': game['date'],
+                        'matchup': f"{away_team} @ {home_team}",
+                        'bet_side': 'Under',
+                        'total_line': total_line,
+                        'over_odds': over_odds,
+                        'under_odds': under_odds,
+                        'predicted_total': predicted_total,
+                        'total_advantage': total_advantage,
+                        'cover_prob': cover_prob,
+                        'confidence': game['confidence'],
+                        'bet_size_fraction': bet_size_fraction,
+                        'bet_amount': bet_amount,
+                        'potential_profit': self.calculateProfit(bet_amount, under_odds),
+                        'book': book,
+                        'type': 'total',
+                        'result': '',
+                        'reason': f"Predicted: {predicted_total:.1f}, Line: {total_line:.1f}, Edge: {total_advantage:.1f}pts, Probability: {cover_prob:.1%}, Confidence: {game['confidence']:.1%}"
+                    })
+        
+        return recommendations
+
+    def normalCoverProbability(self, advantage, sigma):
+        """NOTES.md C1: P(cover) = Phi(advantage / sigma), sigma = measured
+        validation residual std. Replaces the old arbitrary logistics (which
+        returned >=0.5 for ANY positive edge and inflated Kelly stakes).
+        Push mass at integer lines is ignored — pushes grade 'P' and refund."""
+        if not sigma or sigma <= 0:
+            raise ValueError("residual sigma must be positive")
+        z = advantage / float(sigma)
+        prob = 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
+        return min(max(prob, 0.01), 0.99)
+
+    def totalToProbability(self, total_advantage):
+        return self.normalCoverProbability(total_advantage, self.total_residual_sigma)
+
+    def marginToProbability(self, margin):
+        return self.normalCoverProbability(margin, self.margin_residual_sigma)
+
+    def calculateBetPriority(self, bet):
+        weights = {'h2h': .3, 'spread': 1, 'total': .001}
+
+        if bet['type'] == 'h2h':
+            if bet['bet_side'] == 'home':
+                win_prob = bet.get('home_model_prob', 0.5)
+            else:
+                win_prob = bet.get('away_model_prob', 0.5)
+        elif bet['type'] in ['spread', 'total']:
+            win_prob = bet.get('cover_prob', 0.5)
+
+        loss_prob = 1 - win_prob
+        expected_value = (win_prob * bet['potential_profit']) - (loss_prob * bet['bet_amount'])
+        ev_per_dollar = expected_value / bet['bet_amount']
+        roi = bet['potential_profit'] / bet['bet_amount']
+        base_priority = bet['confidence'] * ev_per_dollar * (1+roi*.2)
+
+        return base_priority * weights[bet['type']]
+    
+    def calculateProfit(self, bet_amount, american_odds):
+        if american_odds > 0:
+            return bet_amount * (american_odds / 100)
+        else:
+            return bet_amount * (100 / abs(american_odds))
+    
+    def displayRecommendations(self, recommendations):
+        if not recommendations:
+            print("\n" + "="*80)
+            print("NO BETTING OPPORTUNITIES FOUND")
+            print("="*80)
+            print("No games meet the minimum edge and probability requirements.")
+            return
+        
+        recommendations.sort(key=self.calculateBetPriority, reverse=True)
+        
+        total_risk = sum(r['bet_amount'] for r in recommendations)
+        while total_risk > self.current_bankroll * self.config.MAX_RISK_PCT:
+            lowest_bet_priority = recommendations.pop()
+            total_risk -= lowest_bet_priority['bet_amount']
+
+        total_potential = sum(r['potential_profit'] for r in recommendations)
+
+        print("\n" + "="*80)
+        print(f"BETTING RECOMMENDATIONS - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print("="*80)
+        print(f"Current Bankroll: ${self.current_bankroll:,.2f}")
+        print("="*80)
+        
+        for i, rec in enumerate(recommendations, 1):
+            if rec['type'] == 'total':
+                continue
+            
+            print(f"\nRECOMMENDATION #{i} - {rec['type']}")
+            print(f"   Matchup: {rec['matchup']}")
+
+            if rec['type'] == 'h2h':
+                print(f"   Bet: {rec['bet_team']} ({rec['bet_side'].upper()})")
+                print(f"   Odds: Home {rec['home_odds']:+d}, Away {rec['away_odds']:+d} (Book: {rec['book']})")
+                print(f"   Model Probability: Home {rec['home_model_prob']:.1%}, Away {rec['away_model_prob']:.1%}")
+                print(f"   Market Probability: {rec['market_prob']:.1%}")
+                print(f"   Edge: {rec['edge']:.1%}")
+            elif rec['type'] == 'spread':
+                print(f"   Bet: {rec['bet_team']} ({rec['bet_side'].upper()})")
+                print(f"   Home Spread: {rec['home_spread']:+.1f} @ {rec['home_odds']:+d} (Book: {rec['book']})")
+                print(f"   Away Spread: {rec['away_spread']:+.1f} @ {rec['away_odds']:+d} (Book: {rec['book']})")
+                print(f"   Predicted Margin: {rec['predicted_margin']:+.1f} points")
+                print(f"   Margin Advantage: {rec['margin_advantage']:.1f} points")
+                print(f"   Cover Probability: {rec['cover_prob']:.1%}")
+            elif rec['type'] == 'total':
+                print(f"   Bet: {rec['total_line']} points ({rec['bet_side'].upper()})")
+                print(f"   Over Odds: {rec['over_odds']:+d}, Under Odds: {rec['under_odds']:+d} (Book: {rec['book']})")
+                print(f"   Predicted Total: {rec['predicted_total']:.1f} points")
+                print(f"   Total Advantage: {rec['total_advantage']:.1f} points")
+                print(f"   Cover Probability: {rec['cover_prob']:.1%}")
+
+            print(f"   Confidence: {rec['confidence']:.1%}")
+            print(f"   Recommended Bet: ${rec['bet_amount']:.2f} ({rec['bet_size_fraction']:.1%} of bankroll)")
+            print(f"   Potential Profit: ${rec['potential_profit']:.2f}")
+            print(f"   Reason: {rec['reason']}")
+        
+        print("\n" + "="*80)
+        print(f"TOTAL RISK: ${total_risk:.2f} ({total_risk/self.current_bankroll:.1%} of bankroll)")
+        print(f"TOTAL POTENTIAL PROFIT: ${total_potential:.2f}")
+        print("="*80)
+
+        save = input("Would you like to save any of these recommendations? (y/n)\n")
+        if save.lower() == 'y':
+            games_to_save = input("Which ones would you like to save? (comma separated list of numbers or 0 for all)\n")
+            games_to_save = [int(game) for game in games_to_save.split(",")] if games_to_save != '0' else None
+            
+            self.logRecommendations(recommendations, games_to_save)
+
+        files = [Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG, Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG, Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG]
+        self.logRecommendations(recommendations, files=files)
+        
+    
+    def logRecommendations(self, recommendations, numbers = None, files = None):
+        if not recommendations:
+            return
+        
+        if numbers is not None:
+            recommendations = [recommendations[i-1] for i in numbers]
+        
+        if files:
+            h2h_log_file = files[0]
+            spread_log_file = files[1]
+            # total_log_file = files[2]
+        else:
+            h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
+            # total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+        
+        df = pd.DataFrame(recommendations)
+        df['timestamp'] = datetime.now()
+        h2h = df[df['type'] == 'h2h']
+        spread = df[df['type'] == 'spread']
+        total = df[df['type'] == 'total']
+        
+        data_files = [
+            (h2h, h2h_log_file),
+            (spread, spread_log_file),
+            # (total, total_log_file)
+        ]
+        
+        for i, (data, file) in enumerate(data_files):
+            if not data.empty:
+                existing_data = pd.DataFrame()
+
+                if file.exists() and file.stat().st_size > 0:
+                    existing_data = pd.read_csv(file)
+                    with open(file, 'r') as f:
+                        first_line = f.readline().strip()
+                        existing_columns = first_line.split(',')
+
+                        cols_to_keep = [col for col in existing_columns if col in data.columns]
+                        data = data[cols_to_keep]
+
+                data = pd.concat([existing_data, data], ignore_index=True)
+                if i in [0, 1]:
+                    data.drop_duplicates(subset=['game_id', 'matchup', 'bet_side', 'home_odds', 'away_odds'], keep='last', inplace=True)
+                else:
+                    data.drop_duplicates(subset=['game_id', 'matchup', 'bet_side', 'total_line', 'over_odds', 'under_odds'], keep='last', inplace=True)
+                data.to_csv(file, mode='w', header=True, index=False)
+
+    def getOdds(self, model_type):
+        if model_type == 'h2h':
+            return self.odd_scraping.getH2hOdds()
+        elif model_type == 'spread':
+            return self.odd_scraping.getSpreadOdds()
+        elif model_type == 'total':
+            return self.odd_scraping.getTotalOdds()
+
+    def updateBetResults(self, archive = False):
+        if archive:
+            h2h_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG
+            # total_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG
+        else:
+            h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
+            # total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+        files = [h2h_log_file, spread_log_file] #, total_log_file]
+        game_data = pd.read_csv(f'././data/basketball/game_data/{self.preparer.getCurrentSeason()}_game_stats.csv')
+
+        for file in files:
+            if file.exists():
+                df = pd.read_csv(file)
+
+                for idx, row in df.iterrows():
+                    game_id = int(row['game_id'])
+
+                    if row['date'].split(' ')[0] == datetime.now().strftime('%Y-%m-%d'):
+                        continue
+
+                    if game_id in game_data['GAME_ID'].values.astype(int):
+                        if row['type'] == 'h2h':
+                            game_data_row = game_data[(game_data['GAME_ID'] == game_id) & (game_data['TEAM_ABBREVIATION'] == row['bet_team'])]
+
+                            if game_data_row['WL'].values[0] == 'W':
+                                df.at[idx, 'result'] = 'W'
+                            elif game_data_row['WL'].values[0] == 'L':
+                                df.at[idx, 'result'] = 'L'
+                        elif row['type'] == 'spread':
+                            home_data = game_data[(game_data['GAME_ID'] == game_id) & (game_data['TEAM_ABBREVIATION'] == row['matchup'].split(' ')[2])]
+                            away_data = game_data[(game_data['GAME_ID'] == game_id) & (game_data['TEAM_ABBREVIATION'] == row['matchup'].split(' ')[0])]
+
+                            if len(home_data) > 0 and len(away_data) > 0:
+                                home_score = home_data['PTS'].values[0]
+                                away_score = away_data['PTS'].values[0]
+
+                                if row['bet_side'] == 'home':
+                                    spread = row['home_spread']
+                                    adjusted = home_score + spread
+
+                                    if adjusted > away_score:
+                                        df.at[idx, 'result'] = 'W'
+                                    elif adjusted < away_score:
+                                        df.at[idx, 'result'] = 'L'
+                                    else:
+                                        df.at[idx, 'result'] = 'P'
+                                elif row['bet_side'] == 'away':
+                                    spread = row['away_spread']
+                                    adjusted = away_score + spread
+
+                                    if adjusted > home_score:
+                                        df.at[idx, 'result'] = 'W'
+                                    elif adjusted < home_score:
+                                        df.at[idx, 'result'] = 'L'
+                                    else:
+                                        df.at[idx, 'result'] = 'P'
+                            else:
+                                df.at[idx, 'result'] = ''
+
+                        elif row['type'] == 'total':
+                            home_data = game_data[(game_data['GAME_ID'] == game_id) & (game_data['TEAM_ABBREVIATION'] == row['matchup'].split(' ')[2])]
+                            away_data = game_data[(game_data['GAME_ID'] == game_id) & (game_data['TEAM_ABBREVIATION'] == row['matchup'].split(' ')[0])]
+
+                            if len(home_data) > 0 and len(away_data) > 0:
+                                home_score = home_data['PTS'].values[0]
+                                away_score = away_data['PTS'].values[0]
+                                total_score = home_score + away_score
+                                
+                                if row['bet_side'].lower() == 'over':
+                                    if total_score > row['total_line']:
+                                        df.at[idx, 'result'] = 'W'
+                                    elif total_score < row['total_line']:
+                                        df.at[idx, 'result'] = 'L'
+                                    else:
+                                        df.at[idx, 'result'] = 'P'
+                                elif row['bet_side'].lower() == 'under':
+                                    if total_score < row['total_line']:
+                                        df.at[idx, 'result'] = 'W'
+                                    elif total_score > row['total_line']:
+                                        df.at[idx, 'result'] = 'L'
+                                    else:
+                                        df.at[idx, 'result'] = 'P'
+                            else:
+                                df.at[idx, 'result'] = ''
+                                
+                df.to_csv(file, index=False)
+
+    def setBankroll(self, archive = False):
+        try:
+            self.updateBetResults(archive)
+        except Exception as e:
+            print(f"Error updating bet results: {e}")
+            return self.config.STARTING_BANKROLL
+        
+        if archive:
+            h2h_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG
+            total_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG
+        else:
+            h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
+            total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+        
+        files = [h2h_log_file, spread_log_file, total_log_file]
+        if not archive:
+            files.append(Path(self.config.COLLEGE_BETS_LOG))  # one bankroll across NBA and college
+        frames = [pd.read_csv(file) for file in files if file.exists()]
+        return bankrollFromLogs(self.config.STARTING_BANKROLL, frames,
+                                None if archive else self.config.BANKROLL_START_DATE)
+
+    def getCurrentBankroll(self):
+        return self.current_bankroll
+
+    def getActiveBets(self):
+        h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
+        spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
+        total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+        
+        files = [h2h_log_file, spread_log_file, total_log_file]
+        
+        for file in files:
+            if file.exists():
+                df = pd.read_csv(file)
+                
+                return df[df['result'].isnull()]
+
+    def displayModelWinRate(self, archive = False):
+        if archive:
+            h2h_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG
+            total_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG
+        else:
+            h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
+            spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
+            total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+        
+        files = [('h2h', h2h_log_file), ('spread', spread_log_file), ('total', total_log_file)]
+        
+        for model_type, file in files:
+            wins = 0
+            losses = 0
+            money_wins = 0
+            money_losses = 0
+            
+            if file.exists():
+                df = pd.read_csv(file)
+                if df.empty:
+                    continue
+                
+                for _, row in df.iterrows():
+                    if row['result'] == 'W':
+                        wins += 1
+                        money_wins += row['potential_profit']
+                    elif row['result'] == 'L':
+                        losses += 1
+                        money_losses += row['bet_amount']
+        
+            print("\nModel Win Rates:")
+            print(f"{model_type} Win Rate: {wins/(wins + losses)}% ({wins} - {losses})")
+            print(f"{model_type} Money Win: {money_wins} | {model_type} Money Loss: {money_losses}")

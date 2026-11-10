@@ -2,9 +2,49 @@ import requests
 import time
 import random
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from abc import ABC, abstractmethod
+import pandas as pd
+import pytz
 from requests.exceptions import ReadTimeout, ConnectionError, Timeout
+
+# NBA/NHL schedules date games by their US Eastern calendar day. pytz, not
+# zoneinfo: Windows has no IANA time-zone database for zoneinfo.
+EASTERN = pytz.timezone('America/New_York')
+
+
+def nextSlate(games, now, date_col='GAME_DATE', tip_col='TIP_TIME_UTC'):
+    """The next slate of games that have not tipped off yet.
+
+    Looks at games dated today or tomorrow in US Eastern (the schedule's own
+    game date, not the machine's local date), keeps those whose tip time is
+    after `now`, then returns only the earliest such date. So at noon PT you
+    get today's remaining games, and at 10 PM PT (already tomorrow in ET, or
+    with all of today's games tipped) you get tomorrow's.
+
+    Only one date is returned on purpose: a team playing tonight AND tomorrow
+    would get stale features (rest days, L10 stats) for tomorrow's game, and
+    odds matching joins on team names only.
+
+    `now` must be timezone-aware. `date_col` holds 'YYYY-MM-DD...' strings
+    (time part ignored); `tip_col` holds UTC ISO-8601 tip times."""
+    now = pd.Timestamp(now)
+    if now.tzinfo is None:
+        raise ValueError("nextSlate needs a timezone-aware 'now'")
+    if games is None or games.empty:
+        return games
+
+    today_et = now.tz_convert(EASTERN).date()
+    window = {today_et, today_et + timedelta(days=1)}
+
+    game_dates = pd.to_datetime(games[date_col].astype(str).str[:10]).dt.date
+    tips = pd.to_datetime(games[tip_col], utc=True, format='ISO8601', errors='coerce')
+    pending = game_dates.isin(window) & (tips > now)
+    if not pending.any():
+        return games.iloc[0:0]
+    first_date = game_dates[pending].min()
+    return games[pending & (game_dates == first_date)]
+
 
 class BaseDataFetcher(ABC):
     """Base class for sports data fetching with shared retry logic and file tracking."""
@@ -76,6 +116,8 @@ class BaseDataFetcher(ABC):
         pass
     
     @abstractmethod
-    def getUpcomingGames(self):
-        """Fetch upcoming games. Must be implemented by subclass."""
+    def getUpcomingGames(self, now=None):
+        """Fetch the next slate of not-yet-started games (see nextSlate).
+        `now` (tz-aware) is for tests; defaults to the current time.
+        Must be implemented by subclass."""
         pass

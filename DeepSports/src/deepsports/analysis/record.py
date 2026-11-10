@@ -20,7 +20,12 @@ from typing import Any
 import duckdb
 
 from deepsports import config
-from deepsports.analysis.model import DEFAULT_VERSION, MODEL_NAME, predict_upcoming
+from deepsports.analysis.model import (
+    DEFAULT_VERSION,
+    MODEL_NAME,
+    predict_upcoming,
+    uses_injury_override,
+)
 from deepsports.store import PREDICTION_RESULTS_SQL
 
 RECENT_LIMIT = 20
@@ -43,7 +48,10 @@ def pretip_predictions(
     scheduled games skipped because their tip time has already passed). `created_at` is `now`
     for every row.
 
-    NBA: model v1 (`model_version` v1.0 / v1.1). College (`league='ncaab'`): one of
+    NBA: model v1 (`model_version` v1.0 / v1.1 / v1.1i). `v1.1i` rows are written only for
+    games with a pre-tip injury capture for at least one team (gate reason
+    `no_injury_capture`); a team without one keeps the box-score "played last game" rule.
+    College (`league='ncaab'`): one of
     ncaab.VERSIONS (see ncaab.predict_upcoming_versions), only for D1-vs-D1 games past that
     version's games-played gate. Pass a dict as `gated` to get the in-horizon count of
     not-started games skipped per reason (`non_d1`, `few_games`)."""
@@ -68,6 +76,15 @@ def pretip_predictions_versions(
     now = now or datetime.now(UTC)
     if league == "nba":
         raw = {v: predict_upcoming(con, v) for v in versions}
+        captured = None
+        for v in versions:
+            if uses_injury_override(v):
+                if captured is None:
+                    captured = injury_capture_teams(con, [r["game_id"] for r in raw[v]])
+                raw[v] = [
+                    r if r["game_id"] in captured else {**r, "skip_reason": "no_injury_capture"}
+                    for r in raw[v]
+                ]
     elif league == "ncaab":
         from deepsports.analysis import ncaab
 
@@ -80,6 +97,24 @@ def pretip_predictions_versions(
         if gated is not None:
             g = gated.setdefault(v, {})
         out[v] = _pretip(con, raw[v], now, days, g)
+    return out
+
+
+def injury_capture_teams(
+    con: duckdb.DuckDBPyConnection, game_ids: list[str], league: str = "nba"
+) -> dict[str, set[str]]:
+    """game_id -> team_ids with at least one pre-tip injury capture (captured_before_tip).
+    Games without any capture are absent."""
+    if not game_ids or not _has(con, "injury_captures"):
+        return {}
+    out: dict[str, set[str]] = {}
+    for gid, team in con.execute(
+        f"""SELECT DISTINCT game_id, team_id FROM injury_captures
+            WHERE captured_before_tip AND league = ?
+              AND game_id IN ({", ".join("?" for _ in game_ids)})""",
+        [league, *game_ids],
+    ).fetchall():
+        out.setdefault(gid, set()).add(team)
     return out
 
 

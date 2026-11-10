@@ -514,3 +514,26 @@ the warehouse failed with `Operation not permitted`. The 14:00 sync ran all six 
 settings. **Change:** `store.is_lock_conflict()`; `Store` retries only lock conflicts; `odds-snapshot` exits 1 with
 `FAILED, cannot open the warehouse` on other errors; the API returns `warehouse_unavailable` for them; `scheduled-sync.sh`
 preflights a read-only open (3 tries, 60 s apart), then alerts on Discord and exits 4.
+
+### 2026-11-10: Injury-aware NBA model v1.1i as a separate graded version, refreshed by a pre-tip job
+**Why:** live NBA predictions ignored the injury report: v1.1 only knows who played the previous game. The pre-tip
+snapshots (`injury_captures`/`injury_reports`, since 2026-11-03) and the players.py `injury_override` hook already existed
+but were off everywhere. **Change:** `v1.1i` = v1.1's frozen model and features with the override on (a team's latest
+pre-tip snapshot: top-6 players listed `Out` count as missing, instead of "played last game"). A team without a capture
+keeps the box-score rule; a game where neither team has one gets no v1.1i row. The override is tied to the label
+(`model.INJURY_OVERRIDE_VERSIONS`; `predict_upcoming` no longer takes an `injury_override` flag), so a stored label and
+its behavior can't disagree. New `deepsports pretip` (launchd `com.deepsports.pretip` at :20 and :50, `Nice` 10, low-priority
+I/O): for NBA games tipping in 5-100 minutes it fetches one fresh summary each with no lock held, then in one short writer
+session stores the snapshots and writes v1.1i for exactly those games; it yields to every other writer like
+`odds-snapshot`. The 08:00/14:00 sync also predicts v1.1i (after v1.0 and v1.1) for games whose report `update` captured.
+**Why a separate version, not a replacement for v1.1:** snapshots only start 2026-11-03, so there's no history to
+backtest on (training rows are identical to v1.1: completed games never use snapshots). The live record is the test.
+**Where it shows:** the app prefers v1.1i, then v1.1 (labelled by `model_version`); `/api/predictions/record` stays on
+v1.1 by default (`?model_version=v1.1i` for its record). The calendar (`config.CALENDAR_EXCLUDED_VERSIONS`), the paper
+log and the ensemble vote stay on v1.1, so frozen rules and calendar text don't change underneath them.
+**How to judge it:** compare v1.1i with v1.1 **paired on the same games** (both versions exist for every v1.1i game).
+Their overall records cover different games (v1.1i only where a report was captured) and are not comparable.
+**Known limits:** only ESPN status `Out` counts, so Questionable/Day-To-Day players who are scratched late are missed
+(and a listed Day-To-Day player who sits is still "available"); the last run is 5-35 minutes before tip, so later news
+is missed; college has no injury source (ESPN lists none), so there is no college equivalent.
+

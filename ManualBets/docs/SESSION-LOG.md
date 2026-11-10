@@ -5,52 +5,31 @@ When a session ends, move the old entry verbatim into `docs/SESSION-LOG-ARCHIVE.
 
 ---
 
-## 2026-11-09 — Repo split: `ManualBets/` + `DeepSports/`, shared root
+## 2026-11-10 — NBA/NHL menus reach the next slate (tomorrow's games at night)
 
 **Done**
-- Moved every betting artifact into `ManualBets/`: `baseball/`, `basketball/`,
-  `college_basketball/`, `docs/`, `hockey/`, `models/`, `plots/`, `shared/`, `tests/`,
-  `tools/`, `data/`, plus `AGENTS.md`, `pyproject.toml`, `requirements.txt`, `uv.lock`
-  and `blah.py`. History preserved with `git mv`.
-- Root is now only: `.gitignore`, `README.md` (master), `logs/`, `DeepSports/`,
-  `ManualBets/`.
-- `logs/` deliberately stays at the repo root: it is the one thing both projects touch
-  (DeepSports reads open rows read-only). Betting `LOG_DIR`/`COLLEGE_BETS_LOG` now point
-  at `../logs/...`; the college warehouse path is `ROOT.parent/DeepSports/...`.
-- Each project has its own `pyproject.toml` + `.venv` (`ManualBets` renamed to
-  `manualbets`, `uv sync` run in both). One shared root `.gitignore`; `DeepSports/.gitignore`
-  removed after merging its rules (anchored `/DeepSports/data`).
-- Added `tzdata` to DeepSports: Windows has no IANA time-zone database, so `zoneinfo`
-  could not load `America/Los_Angeles`.
-- Resolved pre-existing merge-conflict markers in `docs/SESSION-LOG.md` and
-  `docs/SESSION-LOG-ARCHIVE.md` (kept both sides; no entry lost).
+- `shared/base_data_fetcher.py`: new `nextSlate(games, now)`. It looks at games dated today and tomorrow by the
+  schedule's own US Eastern date, keeps those whose UTC tip time is still ahead, and returns only the earliest such
+  date. `getUpcomingGames(now=None)` in basketball and hockey use it.
+- Cause: basketball compared the Mac's local (Pacific) date with `gameDateEst` and never looked at tip times, so at
+  10 PM PT it kept only today's finished games. Hockey asked the NHL API for the local date and used only
+  `gameWeek[0]`; it also indexed `gameWeek` before its empty-response check (fixed).
+- `upcoming_games.csv` keeps the same columns and date format (the tip-time column is dropped before saving).
+- One date, not two: see `docs/DECISIONS.md` 2026-11-10.
 
 **Verify**
-- ManualBets: `.venv\Scripts\python.exe -m pytest tests/ -q` → 37 passed, 2 failed. The
-  2 are the documented pre-existing `test_opp_avg_win_pct` failures (missing method).
-- DeepSports: `.venv\Scripts\python.exe -m pytest -q` → 386 passed, 36 failed. All 36
-  are pre-existing Windows portability issues, not caused by the move: 35 × Unix-only
-  `strftime` directives (`%-m`, `%-d`, `%-I`) and 1 × symlink test. Fixing them is a
-  separate DeepSports task.
+- `.venv/bin/python -m pytest tests/ -q` (macOS): 45 passed, 2 failed. The 2 are the known
+  `test_opp_avg_win_pct` failures (this Mac has no `data/basketball/team_data/2024-25_team_stats.csv`).
+- New `tests/test_upcoming_slate.py` (8 tests, no network): noon, 6 PM, 8 PM and 10 PM PT.
+- Not checked live: `stats.nba.com` and `cdn.nba.com` refuse this Mac (timeout / 403). Field names
+  (`gameDateEst`, `gameDateTimeUTC`) are confirmed against the installed `nba_api`. A game with an empty
+  `gameDateTimeUTC` (time TBD) is dropped.
 
 **Next**
-1. DeepSports on Windows: replace the `%-` `strftime` directives with portable
-   formatting, and skip/adjust the symlink test. Then its suite should be green here.
-2. Review the older stash `stash@{0}` ("pre-pull: separation + 2026-11-08 bet grading
-   fix"): it contains a per-bet-season grading fix that is NOT in this tree.
-3. Then back to the prior Next list (grade open bets, retrain NBA models, Batch 4).
-
-**Follow-up (2026-11-09) — stash `stash@{0}` reviewed and harvested**
-- Applied the per-bet-season grading fix from the stash to both recommenders
-  (`getBetSeason` + cached `loadSeasonGameData`; skip bets dated today; write a log only
-  when a `result` changed) and the `main.py` current-season fix. The stash's restructure
-  was NOT applied — the committed layout differs (`logs/` stays at the repo root).
-- Repaired the archive logs: the stash had truncated them, so its 13 archived basketball
-  rows (6 h2h + 7 spread, 2026-11-08/09) were appended to the current
-  `logs/basketball/betting/archive/*_bets.csv` (158→164 and 221→228 lines, additions
-  only). Rationale in `docs/DECISIONS.md` (2026-11-08 entry).
-- Verify: `ManualBets/.venv\Scripts\python.exe -m pytest tests/ -q` → 37 passed, 2
-  pre-existing `test_opp_avg_win_pct` failures (missing `calculateOpponentStrengthL10`).
+1. OWNER: run the NBA menu once late in the evening on Windows and confirm it lists tomorrow's games.
+2. Hockey odds: `hockey/data_pipeline/odd_scraping.py:82-84` still overwrites the "not started yet" filter
+   (the bug basketball fixed as NOTES B1).
+3. Previous items still open: DeepSports `%-` strftime on Windows, grade open bets, retrain NBA models, Batch 4.
 
 ---
 

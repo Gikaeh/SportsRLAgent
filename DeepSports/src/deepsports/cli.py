@@ -5,7 +5,7 @@ import json
 import logging
 import sys
 import tomllib
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 
 import duckdb
 
@@ -87,6 +87,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--days", type=int, default=2, help="US/Eastern game days from today (default 2)"
     )
 
+    pt = sub.add_parser(
+        "pretip",
+        help="light pre-tip job: fresh NBA injury reports + model v1.1i for games tipping soon",
+    )
+    pt.add_argument(
+        "--window-min", type=int, default=100, help="games tipping within N minutes (default 100)"
+    )
+    pt.add_argument(
+        "--min-lead", type=int, default=5, help="skip games tipping within N minutes (default 5)"
+    )
+
     ib = sub.add_parser(
         "injuries-backfill", help="offline: re-parse injury snapshots from cached raw summaries"
     )
@@ -106,7 +117,8 @@ def build_parser() -> argparse.ArgumentParser:
     league_arg(pr)
     pr.add_argument(
         "--model-version",
-        help="nba: v1.0 (default) or v1.1; ncaab: ncaab-v1 (default, >=5 games per team), "
+        help="nba: v1.0 (default), v1.1 or v1.1i (injury-aware); "
+        "ncaab: ncaab-v1 (default, >=5 games per team), "
         "ncaab-v1p (prior model, >=5 games) or ncaab-v1-early (prior model, >=1 game); "
         "comma-separated for several, ncaab: all",
     )
@@ -181,6 +193,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "odds-snapshot":  # opens the warehouse itself, only to write
         return _odds_snapshot(args)
+    if args.command == "pretip":  # reads briefly, fetches unlocked, then writes briefly
+        return _pretip(args)
     if args.command == "prices-backfill":  # reads, parses unlocked, then writes briefly
         return _prices_backfill(args)
     if args.command == "ensemble-bets" and args.ensemble_command == "tally":  # files only
@@ -339,6 +353,105 @@ def _odds_snapshot(args: argparse.Namespace) -> int:
     return 1 if stats.errors else 0
 
 
+PRETIP_VERSION = "v1.1i"
+
+
+def _pretip(args: argparse.Namespace) -> int:
+    """Light pre-tip job (launchd, :20 and :50): for NBA games tipping between now + min_lead
+    and now + window minutes, fetch a fresh summary per game (its injury report) without
+    holding the lock, then in one short writer session store the pre-tip snapshots and write
+    model v1.1i predictions for exactly those freshly captured games. A game whose summary
+    shows it already started (or moved before the fetch) gets no prediction. Yields like
+    odds-snapshot: a held writer lock prints one "skipped" line and exits 0."""
+    from deepsports.analysis.record import injury_capture_teams, pretip_predictions_versions
+
+    skip = "pretip: skipped, warehouse busy (another deepsports writer holds the lock)"
+    try:
+        busy = _warehouse_busy()
+    except duckdb.IOException as e:
+        print(f"pretip: FAILED, cannot open the warehouse: {e}")
+        return 1
+    if busy:
+        print(skip)
+        return 0
+    started = datetime.now(UTC)
+    lo = started + timedelta(minutes=args.min_lead)
+    hi = started + timedelta(minutes=args.window_min)
+    try:
+        db = Store(config.DB_PATH, read_only=True, lock_wait=2.0)
+    except duckdb.IOException as e:
+        if not is_lock_conflict(e):
+            print(f"pretip: FAILED, cannot open the warehouse: {e}")
+            return 1
+        print(skip)
+        return 0
+    try:
+        window = db.games_for_injury_snapshot(lo, hi, league="nba")
+    finally:
+        db.close()
+    game_ids = [g for g, _ in window]
+    if not game_ids:
+        print(
+            f"pretip: no NBA games tipping in {args.min_lead}-{args.window_min} min; nothing to do"
+        )
+        return 0
+
+    client = PoliteClient()
+    src = EspnBasketball(client, "nba")
+    reports, captures, stats = pipeline.fetch_injury_snapshots(src, game_ids, skip_started=True)
+    captured = sorted({c["game_id"] for c in captures})
+    try:
+        # brief API-server reads are waited out; a real writer (sync, backfill) wins
+        db = Store(config.DB_PATH, lock_wait=10.0)
+    except duckdb.IOException as e:
+        if not is_lock_conflict(e):
+            print(f"pretip: FAILED, cannot open the warehouse to write: {e}")
+            return 1
+        print(skip.replace("busy", "busy at write time"))
+        return 0
+    written = fallback = 0
+    try:
+        stats.injuries = db.add_injuries(reports, captures)
+        if captured:
+            now = datetime.now(UTC)
+            try:
+                rows, _ = pretip_predictions_versions(
+                    db.con, [PRETIP_VERSION], now=now, days=args.window_min / 1440 + 1, league="nba"
+                )[PRETIP_VERSION]
+            except ValueError as e:  # e.g. no completed games to train on
+                stats.errors.append(f"predict {PRETIP_VERSION}: {e}")
+                rows = []
+            rows = [r for r in rows if r["game_id"] in set(captured)]
+            written = db.add_predictions(rows) if rows else 0
+            teams = injury_capture_teams(db.con, [r["game_id"] for r in rows])
+            fallback = 2 * len(rows) - sum(len(teams.get(r["game_id"], ())) for r in rows)
+        summary = (
+            f"games={len(game_ids)} captured={len(captured)} predicted={written} "
+            f"fallback_teams={fallback} skipped_started={stats.skipped_started}"
+        )
+        db.log_run(
+            {
+                "started_at": started,
+                "finished_at": datetime.now(UTC),
+                "command": f"pretip {PRETIP_VERSION}",
+                "network_requests": client.network_requests,
+                "games_upserted": written,
+                "boxscores_upserted": 0,
+                "errors": len(stats.errors),
+                "notes": "; ".join([summary, *stats.errors[:20]]),
+            }
+        )
+    finally:
+        db.close()
+    print(
+        f"pretip: {summary} injuries={stats.injuries} requests={client.network_requests} "
+        f"errors={len(stats.errors)}"
+    )
+    for err in stats.errors[:10]:
+        print(f"  error: {err}", file=sys.stderr)
+    return 1 if stats.errors else 0
+
+
 def _prices_backfill(args: argparse.Namespace) -> int:
     """Offline price backfill (no network): list rows with NULL prices (read-only), re-parse
     their cached responses without holding the lock, then fill the prices in one short write.
@@ -485,7 +598,8 @@ def _attach_predictions(db: Store, rows: list[dict]) -> None:
     """Add `prediction` (API Prediction object or None) to each upcoming row, from the latest
     model-v1 prediction. Upcoming games haven't started, so any stored row is pre-tip. Early-season
     college predictions (`ncaab-v1-early`) and side-by-side versions (`ncaab-v1p`,
-    config.HIDDEN_MODEL_VERSIONS) are left out: the calendar only gets the gated display one."""
+    config.HIDDEN_MODEL_VERSIONS) and the injury-aware NBA `v1.1i` (all in
+    config.CALENDAR_EXCLUDED_VERSIONS) are left out: the calendar only gets the display one."""
     from deepsports.analysis.model import MODEL_NAME
     from deepsports.analysis.record import prediction_card
 
@@ -494,7 +608,7 @@ def _attach_predictions(db: Store, rows: list[dict]) -> None:
         for p in db.latest_predictions(
             (r["game_id"] for r in rows),
             include_early=False,
-            exclude_versions=config.HIDDEN_MODEL_VERSIONS,
+            exclude_versions=config.CALENDAR_EXCLUDED_VERSIONS,
         ):
             if p["model"] == MODEL_NAME:
                 preds[p["game_id"]] = p

@@ -53,7 +53,7 @@ WebView and draws text on the G2 (576×288, green, about 400–500 characters pe
 - [ ] `analysis/` notebooks (DuckDB → polars/pandas)
 - [ ] Derived tables: possessions, pace, offensive/defensive rating, four factors, rest days, back-to-backs, travel
 - [ ] Team strength ratings (Elo → adjusted net rating)
-- [ ] Parse injuries from summaries (who's out, by game)
+- [x] Parse injuries from summaries (who's out, by game): pre-tip snapshots since 2026-11-03 (`injury_captures`/`injury_reports`)
 
 ### Fundamental data (from [research/fundamental-data-sources.md](research/fundamental-data-sources.md), 2026-11-03)
 - [x] Rest/travel features (`team_game_context` view)
@@ -67,6 +67,10 @@ WebView and draws text on the G2 (576×288, green, about 400–500 characters pe
 ### From the SportsRLAgent review ([research/sportsrlagent-review.md](research/sportsrlagent-review.md))
 - [x] Availability features (`analysis/players.py`): top-3/6 by pre-game mpg missing recent games, missing-minutes share, games since played → model **v1.1**
 - [x] Top-N aggregates incl. top-6 plus-minus; ablation: plus-minus adds nothing beyond team form (r≈0.96), all v1.1 gain is from availability
+- [x] Live injury-aware predictions: model **v1.1i** (v1.1 with the pre-tip `Out` list replacing "played last game") + `deepsports pretip` (launchd `com.deepsports.pretip`, :20/:50) refreshing NBA injury reports and v1.1i 5-100 min before tip; app prefers v1.1i, calendar/paper/ensemble stay on v1.1 (DECISIONS 2026-11-10)
+- [ ] **Owner:** install the pre-tip job (`tools/launchd/install.sh install com.deepsports.pretip`) after a manual `tools/pretip.sh`
+- [ ] Review v1.1i vs v1.1 **paired on the same games** once a few hundred NBA games are graded (winner accuracy, margin MAE, log loss; day-clustered CI); promote or drop v1.1i then
+- [ ] Questionable / Day-To-Day late scratches: v1.1i counts only ESPN `Out`; consider a later capture or another source for game-time decisions
 - [ ] Injury-impact score over `pregame_injuries` (weights learned, not hand-set)
 - [ ] Rolling SRS/SOS beside Elo (with home-court term), measured incrementally
 - [x] Calibration check for v1 win probabilities ([results/2026-11-06-calibration.md](results/2026-11-06-calibration.md)): NBA v1.1 and ncaab-v1 are calibrated to within sampling noise (holdout ECE 0.031 / 0.034, slope 1.06 / 0.88); the moneyline pick gap is the winner's curse (model weight next to the close ≈ 0). The declared rule passed only via a negligible ECE drop, so `v1.1c` (L2 C 0.03) / `ncaab-v1c` (C 0.1) exist but aren't wired in

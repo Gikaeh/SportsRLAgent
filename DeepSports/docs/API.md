@@ -102,7 +102,7 @@ type Prediction = {
 };
 // GameCard gains:
 //   league: "nba" | "ncaab"
-//   prediction: Prediction | null   (null if no pre-tip prediction exists; NBA shows v1.1, college shows ncaab-v1 once both teams have ≥5 games, else ncaab-v1-early when a team has 1-4; ncaab-v1p is never shown on cards)
+//   prediction: Prediction | null   (null if no pre-tip prediction exists; NBA shows v1.1i if it exists, else v1.1, else the latest non-hidden one (see v4 below), college shows ncaab-v1 once both teams have ≥5 games, else ncaab-v1-early when a team has 1-4; ncaab-v1p is never shown on cards)
 //   prediction.early: boolean   (true for ncaab-v1-early; the web app hides these unless the owner turns on "Early-season predictions"; the glasses never show them)
 ```
 
@@ -110,7 +110,7 @@ type Prediction = {
 |---|---|
 | `GET /api/glance` | Now includes followed games from **both** leagues (college lines unchanged in format, e.g. `"SMC vs NEV  1:30 PM"`) |
 | `GET /api/followed` | `{teams: string[] /* NBA, unchanged */, by_league: {nba: string[], ncaab: string[]}}` |
-| `GET /api/predictions/record?league=nba\|ncaab&days=30&model_version=...` (model_version defaults to the league's display version, `v1.1` / `ncaab-v1`; also e.g. `v1.0`, `ncaab-v1p`, `ncaab-v1-early`; unknown league → 400 `unknown_league`) | `{model, model_version, window_days, games, winner_accuracy, margin_mae, total_mae, market: {games, winner_accuracy, margin_mae, total_mae} \| null, recent: GradedPrediction[] /* newest first, ≤20 */}` |
+| `GET /api/predictions/record?league=nba\|ncaab&days=30&model_version=...` (model_version defaults to `v1.1` / `ncaab-v1`, even though NBA cards prefer v1.1i; also e.g. `v1.1i`, `v1.0`, `ncaab-v1p`, `ncaab-v1-early`; unknown league → 400 `unknown_league`) | `{model, model_version, window_days, games, winner_accuracy, margin_mae, total_mae, market: {games, winner_accuracy, margin_mae, total_mae} \| null, recent: GradedPrediction[] /* newest first, ≤20 */}` |
 
 ```ts
 type GradedPrediction = { game_id: string; date: string; matchup: string /* "LAL @ SAC" */;
@@ -125,6 +125,17 @@ returns 503 like the other warehouse endpoints.
 - `GameCard.neutral_site: boolean`: show "vs" instead of "@" (common in college).
 - Before tip-off, `/api/games/{id}` returns `teams: []` and `players: {}`.
 - `/api/predictions/record` with 0 graded games: `games: 0`, metric fields are `null`, `market: null`.
+
+## v4 (2026-11-10): injury-aware NBA predictions (v1.1i)
+- NBA cards (`/api/scoreboard`, `/api/games/{id}`, `next_followed_game`) pick the prediction per game in this
+  order: `v1.1i` (v1.1 + the pre-tip ESPN injury report, written by `deepsports pretip` 5-100 min before tip and by
+  the scheduled sync), then `v1.1`, then the latest non-hidden pre-tip prediction. College is unchanged (`ncaab-v1`
+  first, then the latest non-hidden). Every choice is still made strictly before tip-off.
+- No new fields: clients tell the versions apart by `prediction.model_version` (`"v1.1i"`) and see when it was made
+  by `prediction.created_at` (ISO 8601, UTC). Show the label: a v1.1i number can differ from the v1.1 one.
+- `/api/predictions/record` still defaults to `v1.1` for the NBA; `?model_version=v1.1i` gives the v1.1i record.
+  Compare the two on the same games, not by their overall records (DECISIONS 2026-11-10).
+- The calendar (`deepsports upcoming --json`) never shows v1.1i.
 
 ## v3 additions (2026-11-08): play-by-play and possession
 `GET /api/games/{id}?league=nba|ncaab` gains `plays` and `possession`, and reports `refresh_seconds: 10`

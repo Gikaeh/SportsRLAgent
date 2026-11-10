@@ -6,8 +6,9 @@ Read this first in a new session, then CLAUDE.md → AGENTS.md → docs/ROADMAP.
 | Thing | How | Check |
 |---|---|---|
 | App server: API + web app + glasses plugin on `:8787` | launchd `com.deepsports.serve` (restarts itself) | `curl -s localhost:8787/api/health` · logs `~/Library/Logs/DeepSports/serve.log` |
-| Scheduled sync at 08:00 and 14:00: update NBA + college → predict v1.0 + v1.1 → headless Claude `/sync-game-calendar` → Discord | launchd `com.deepsports.sync` → `tools/scheduled-sync.sh` | `~/Library/Logs/DeepSports/sync.log` |
+| Scheduled sync at 08:00 and 14:00: update NBA + college → predict v1.0 + v1.1 + v1.1i → headless Claude `/sync-game-calendar` → Discord | launchd `com.deepsports.sync` → `tools/scheduled-sync.sh` | `~/Library/Logs/DeepSports/sync.log` |
 | Daily ensemble-betting vote (watch-only): 10 Sonnet bettors on games tipping in the next 24 h → majority picks to Discord | end of the 14:00 sync → `tools/ensemble-daily.sh` | runs in `/Volumes/ExFATStorag/DeepSports/reports/ensemble-bets/` · `deepsports ensemble-bets grade` |
+| Pre-tip injury refresh at :20 and :50: NBA games tipping in 5-100 min → fresh ESPN injury report → v1.1i predictions (added 2026-11-10; the owner installs it with `tools/launchd/install.sh install com.deepsports.pretip`) | launchd `com.deepsports.pretip` → `tools/pretip.sh` | `~/Library/Logs/DeepSports/pretip.log` (one line per run) · `deepsports status` (`pretip v1.1i` runs) |
 | Discord turn notifications | global Stop/Notification hooks → `~/.claude/tools/notify.py` | |
 
 Restart the server after code changes: `launchctl kickstart -k gui/$(id -u)/com.deepsports.serve`.
@@ -22,14 +23,17 @@ Rebuild clients: `(cd web && npm run build)`, `(cd glasses && npm run build)`; E
   (19,899 games; ~92% of all final games have a closing line, D1-vs-D1 ~100%, but per field D1-vs-D1 is
   spread 99-100%, total ~100%, moneyline 96-98%: ESPN/DraftKings shows the moneyline as "OFF", mostly on
   20+ point spreads; see DATA_SOURCES.md); pre-tip injury snapshots from 2026-11-03 on; predictions for the
-  next 14 days (NBA v1.0 + v1.1; college `ncaab-v1`, `ncaab-v1p`, opt-in `ncaab-v1-early`).
+  next 14 days (NBA v1.0 + v1.1, + v1.1i for games with an injury report; college `ncaab-v1`, `ncaab-v1p`, opt-in `ncaab-v1-early`).
 - **Followed:** NBA LAL, LAC, GS, BOS; college Nevada (NEV). See `config/calendar.toml`.
 - **Code on GitHub:** private `JaeminBBQ/DeepSports`. Commit or push only when asked.
 
 ## Results so far (docs/results/)
 - Analysis: home court 54–58% / +2 pts; the closing-line favorite wins ~68%; spread MAE ~10.7.
 - Model v1.0: beats Elo and home-always, **not** the closing line (Brier 0.211 vs 0.199; margin MAE 11.2 vs 10.8).
-- Model v1.1 (+ player availability): margin MAE 11.22→11.20 (real), Brier within noise. The apps show v1.1.
+- Model v1.1 (+ player availability): margin MAE 11.22→11.20 (real), Brier within noise.
+- Model v1.1i (2026-11-10): v1.1 using the pre-tip injury report (`Out` players) instead of "played last game".
+  No backtest possible (snapshots start 2026-11-03); graded live, compare paired with v1.1 on the same games.
+  The app prefers v1.1i, then v1.1 (labelled); calendar, paper log and ensemble stay on v1.1.
 - $100 simulation of v1 (`docs/results/2026-11-04-sim-v1-100usd.md`, chart `docs/diagrams/sim-v1-bankroll.svg`):
   closing line → $0 on spreads/totals/moneyline (the −110 cut eats ~$0.09 per $2 bet); opening-line totals
   → $172 (53.4%, CI overlaps break-even; openings have no posting time, so treat it as a best case).

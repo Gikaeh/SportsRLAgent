@@ -29,12 +29,13 @@ flowchart TB
     EBDAILY["tools/ensemble-daily.sh<br/>14:00 run only · 10 bettors<br/>majority → Discord"]
     SCHED --> EBDAILY -->|"headless claude -p<br/>/ensemble-betting prefetched"| EBSKILL
     ODDSJOB["tools/odds-snapshot.sh<br/>launchd every 30 min (:15 · :45)<br/>skips if the writer lock is held"]
+    PRETIPJOB["tools/pretip.sh<br/>launchd every 30 min (:20 · :50)<br/>NBA games tipping in 5-100 min<br/>skips if the writer lock is held"]
     SYNCF -->|read| SYNC
   end
 
   subgraph PIPE["Data collection: src/deepsports"]
     direction LR
-    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|grade · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
+    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|grade · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
     PIPELINE --> SRC["sources/espn.py<br/>EspnBasketball(league)<br/>site + core endpoints"] --> HTTP["http.py PoliteClient<br/>1 req/s · retry/backoff"]
     PIPELINE --> PARSE["parse_espn.py<br/>pure raw → rows"] --> STORE["store.py<br/>schema + upserts"]
     QUAL["quality.py<br/>data checks"]
@@ -60,7 +61,7 @@ flowchart TB
     direction LR
     ANALYSIS["market.py · elo.py<br/>home court · market accuracy · Elo"]
     FEAT["features.py · players.py<br/>pre-tip features (no odds)<br/>+ player availability (v1.1)"]
-    MODEL["model.py · backtest.py · compare.py · record.py<br/>v1.0 + v1.1: win prob · margin · total<br/>walk-forward + daily grading"]
+    MODEL["model.py · backtest.py · compare.py · record.py<br/>v1.0 + v1.1 + v1.1i (pre-tip injury reports):<br/>win prob · margin · total<br/>walk-forward + daily grading"]
     ENS["ensemble.py<br/>v2: Elo + v1.1 + trees<br/>locked holdout · not shipped"]
     ANALYSIS --> FEAT --> MODEL
     FEAT --> ENS
@@ -96,6 +97,7 @@ flowchart TB
   SCHED -->|"update · predict · paper log · upcoming --json"| CLI
   SCHED -->|export| SYNCF
   ODDSJOB -->|"odds-snapshot: today + tomorrow<br/>pregame lines + prices only"| CLI
+  PRETIPJOB -->|"pretip: fresh ESPN summary per game<br/>→ injury_captures · injury_reports<br/>→ predictions v1.1i"| CLI
   SYNC -->|"create/update events<br/>key deepsports:nba:id"| GCAL
   ORCH -.->|"Stop hook summary"| DISCORD
   HTTP -->|GET| ESPN

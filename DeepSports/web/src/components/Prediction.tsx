@@ -22,9 +22,20 @@ export function modelLabel(version: string | null | undefined): string | null {
   if (!version) return null;
   const college = /^ncaab[-_ ]?(v\d+(?:\.\d+)*)/i.exec(version);
   if (college) return `college ${college[1].toLowerCase()}`;
-  const nba = /^(?:nba[-_ ]?)?(v\d+(?:\.\d+)*)/i.exec(version);
-  if (nba) return `NBA ${nba[1].toLowerCase()}`;
+  // "v1.1i" = v1.1 re-predicted from the pre-tip injury report (DECISIONS 2026-11-10).
+  const nba = /^(?:nba[-_ ]?)?(v\d+(?:\.\d+)*)(i(?![a-z]))?/i.exec(version);
+  if (nba) return `NBA ${nba[1].toLowerCase()}${nba[2] ? " + injury report" : ""}`;
   return version;
+}
+
+/** ", made 6:50 PM" (or ", made Nov 9, 2:01 PM" if not today); "" if the time is missing or bad. */
+export function madeAt(createdAt: string | null | undefined): string {
+  if (!createdAt) return "";
+  const t = new Date(createdAt);
+  if (Number.isNaN(t.getTime())) return "";
+  const time = t.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const sameDay = t.toDateString() === new Date().toDateString();
+  return sameDay ? `, made ${time}` : `, made ${t.toLocaleDateString([], { month: "short", day: "numeric" })}, ${time}`;
 }
 
 export const EARLY_NOTE =
@@ -157,7 +168,7 @@ export function PredictionPanel({ game }: { game: GameCard }) {
       ) : null}
       <p className="fine">
         {MODEL_NOTE}
-        {label && <> Model: {label}.</>}
+        {label && <> Model: {label}{madeAt(p.created_at)}.</>}
         {college && <> {COLLEGE_PREDICTION_NOTE}</>}
       </p>
     </section>

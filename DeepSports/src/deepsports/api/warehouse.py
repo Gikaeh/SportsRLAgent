@@ -1,5 +1,6 @@
 """Read-only warehouse queries for the API: standings and team pages."""
 
+from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeout
 from contextlib import contextmanager
@@ -203,10 +204,15 @@ def team_page(con, abbr: str, followed: set[str]) -> dict[str, Any] | None:
 
 
 def pre_tip_predictions(
-    con, game_ids: list[str], model: str = "v1", prefer_version: str | None = None
+    con,
+    game_ids: list[str],
+    model: str = "v1",
+    prefer_versions: Sequence[str] | str | None = None,
 ) -> dict[str, dict[str, Any]]:
     """Latest prediction per game made strictly before tip-off (never one made after).
-    With `prefer_version`, that version wins when it exists for a game; else the latest.
+    `prefer_versions` is an ordered preference (a single label is allowed): per game, the
+    first of those versions that exists wins; a game with none of them gets its latest
+    pre-tip prediction.
     Versions in config.HIDDEN_MODEL_VERSIONS (graded side by side, e.g. `ncaab-v1p`) are
     never picked."""
     if not game_ids:
@@ -216,6 +222,9 @@ def pre_tip_predictions(
     ).fetchone()[0]
     if not has:
         return {}
+    if isinstance(prefer_versions, str):
+        prefer_versions = [prefer_versions]
+    prefs = list(prefer_versions or [])
     marks = ", ".join("?" for _ in game_ids)
     hidden = list(config.HIDDEN_MODEL_VERSIONS)
     not_hidden = f"AND p.model_version NOT IN ({', '.join('?' for _ in hidden)})" if hidden else ""
@@ -228,10 +237,11 @@ def pre_tip_predictions(
           {not_hidden}
         QUALIFY row_number() OVER (
             PARTITION BY p.game_id
-            ORDER BY (p.model_version = ?) DESC, p.created_at DESC
+            ORDER BY coalesce(list_position(?::VARCHAR[], p.model_version), 1000000),
+                     p.created_at DESC
         ) = 1
         """,
-        [*game_ids, model, *hidden, prefer_version or ""],
+        [*game_ids, model, *hidden, prefs],
     ).fetchall()
     cols = ["game_id", "model", "model_version", "created_at", "p_home_win",
             "pred_home_margin", "pred_total"]  # fmt: skip

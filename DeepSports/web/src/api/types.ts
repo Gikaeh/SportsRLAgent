@@ -56,6 +56,13 @@ export type GameCard = {
   bets?: string[];
 };
 
+/** Games with an open owner bet, live games first, finals last (until the bet is graded). */
+export type BetsResponse = {
+  games: GameCard[];
+  live: boolean;
+  refresh_seconds: number;
+};
+
 export type ScoreboardResponse = {
   date: string;
   games: GameCard[];

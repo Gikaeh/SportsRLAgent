@@ -78,6 +78,12 @@ type GameResult = { id: string; date: string; opponent: string; home: boolean;
 - `/api/standings` and `/api/teams/{abbr}` have no `refresh_seconds`; the web app refreshes them every 10 minutes.
 - CORS: any origin may `GET` (for the G2 glasses WebView).
 
+## Open bets (2026-11-09)
+`GET /api/bets` → `{games: GameCard[], live, refresh_seconds}`: every game (NBA and college, yesterday to
+tomorrow ET) that has an open owner bet in the SportsRLAgent bet logs, each with `bets: string[]` labels.
+Live first, then upcoming, then finals (a finished game stays until its bet is graded in the log).
+Labels only, never the stake. The web app's Bets tab polls it.
+
 ## v2 additions (2026-11-04): college basketball + predictions
 **League:** live endpoints take `league=nba|ncaab` (default `nba`): `/api/scoreboard?league=ncaab&date=...`,
 `/api/games/{id}?league=ncaab`. College scoreboards cover all D1 games for the day (~30–60), followed teams first.

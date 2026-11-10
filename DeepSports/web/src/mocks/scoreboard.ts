@@ -132,6 +132,7 @@ function liveSpec(): Spec {
   const clock = `${Math.floor(clockSecs / 60)}:${String(clockSecs % 60).padStart(2, "0")}`;
   return {
     id: "401810101",
+    bets: ["LAL -3.5"],
     away: "SAC",
     home: "LAL",
     time: "17:30",

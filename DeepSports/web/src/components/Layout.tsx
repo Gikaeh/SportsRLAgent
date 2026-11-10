@@ -30,7 +30,7 @@ export function UpdatedAt({ at, refreshing, live }: { at: number | null; refresh
   );
 }
 
-export function TabBar({ active }: { active: "today" | "standings" | "model" | null }) {
+export function TabBar({ active }: { active: "today" | "bets" | "standings" | "model" | null }) {
   return (
     <nav className="tabbar" aria-label="Main">
       <a href="#/" className="tab" aria-current={active === "today" ? "page" : undefined}>
@@ -39,6 +39,13 @@ export function TabBar({ active }: { active: "today" | "standings" | "model" | n
           <path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
         <span>Today</span>
+      </a>
+      <a href="#/bets" className="tab" aria-current={active === "bets" ? "page" : undefined}>
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="2" />
+          <path d="M12 7v10M14.8 9.4c-.5-.8-1.5-1.2-2.8-1.2-1.6 0-2.7.7-2.7 1.9 0 2.7 5.6 1.3 5.6 3.9 0 1.2-1.2 2-2.9 2-1.4 0-2.4-.5-3-1.4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+        <span>Bets</span>
       </a>
       <a href="#/standings" className="tab" aria-current={active === "standings" ? "page" : undefined}>
         <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">

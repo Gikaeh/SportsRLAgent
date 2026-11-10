@@ -218,3 +218,10 @@ Known limits:
 The owner approved this: it's one bankroll, and leaving out college undersized NBA stakes. `setBankroll` now also reads
 `COLLEGE_BETS_LOG`, so NBA stakes follow the real balance, up or down. The archive view stays NBA-only. The college menu
 still asks for the balance by hand.
+
+## 2026-11-09 — Bet labels in the app show the pick, never the stake
+
+The DeepSports API allows any origin to read it, so `/api/bets` and the card `bets` field carry only a short label
+("TOR -2.5") and no stake, odds or balance. The logs stay read-only: the app reads rows with no result and never writes them.
+A bet is matched to a game by its ESPN `game_id`, which is what the owner's rows use; older NBA-API ids never match a card.
+

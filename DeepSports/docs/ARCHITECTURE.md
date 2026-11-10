@@ -47,7 +47,7 @@ diagram in the same change (see CLAUDE.md).
 - Serena MCP (`.mcp.json`) is for code navigation; Mermaid (`tools/diagram.sh`) is for diagrams.
 
 ### 4. Apps (`deepsports serve`, port 8787)
-- **API** (`src/deepsports/api/`, contract in [API.md](API.md) incl. v2): live endpoints take `league=nba|ncaab`; game cards
+- **API** (`src/deepsports/api/`, contract in [API.md](API.md) incl. v2; `bets.py` reads the owner's open bets from the SportsRLAgent logs, read-only, for the `bets` card field and `/api/bets`): live endpoints take `league=nba|ncaab`; game cards
   carry the latest *pre-tip* prediction (read with a 1.5s warehouse timeout, so it's null rather than slow).
   - `live.py` fetches the scoreboard and summaries from ESPN with an in-memory TTL (scoreboard 30s live, a live game's summary 10s, 5 min idle).
     It never touches DuckDB, so live scores keep working while data jobs run.

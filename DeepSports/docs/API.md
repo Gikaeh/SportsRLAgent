@@ -36,6 +36,7 @@ type GameCard = {
   odds: string | null;     // "LAL -11.5, O/U 238.5" (pre-game only)
   venue: string | null;
   followed: boolean;       // either team followed
+  bets?: string[];         // labels of the owner's open bets ("TOR -2.5", "Over 216.5"); only when present and not final. Never the stake
 };
 ```
 
@@ -76,6 +77,12 @@ type GameResult = { id: string; date: string; opponent: string; home: boolean;
   without the external drive.
 - `/api/standings` and `/api/teams/{abbr}` have no `refresh_seconds`; the web app refreshes them every 10 minutes.
 - CORS: any origin may `GET` (for the G2 glasses WebView).
+
+## Open bets (2026-11-09)
+`GET /api/bets` → `{games: GameCard[], live, refresh_seconds}`: every game (NBA and college, yesterday to
+tomorrow ET) that has an open owner bet in the SportsRLAgent bet logs, each with `bets: string[]` labels.
+Live first, then upcoming, then finals (a finished game stays until its bet is graded in the log).
+Labels only, never the stake. The web app's Bets tab polls it.
 
 ## v2 additions (2026-11-04): college basketball + predictions
 **League:** live endpoints take `league=nba|ncaab` (default `nba`): `/api/scoreboard?league=ncaab&date=...`,

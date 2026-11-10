@@ -451,3 +451,43 @@ def test_hidden_versions_never_reach_cards_but_have_a_record(db_path, monkeypatc
         "/api/predictions/record", params={"league": "ncaab", "model_version": "ncaab-v1p"}
     ).json()
     assert rec["model_version"] == "ncaab-v1p" and rec["games"] == 0
+
+
+def test_scoreboard_tags_open_bets(client, monkeypatch):
+    c, _ = client
+    import deepsports.api.bets as bets_module
+
+    first = c.get("/api/scoreboard").json()["games"]
+    target = next(g for g in first if g["state"] != "post")
+    final = next((g for g in first if g["state"] == "post"), None)
+    open_map = {target["id"]: ["TOR -2.5"]}
+    if final:
+        open_map[final["id"]] = ["LAL -4.5"]
+    monkeypatch.setattr(bets_module, "open_bets", lambda: open_map)
+    games = {g["id"]: g for g in c.get("/api/scoreboard").json()["games"]}
+    assert games[target["id"]]["bets"] == ["TOR -2.5"]
+    if final:
+        assert "bets" not in games[final["id"]]
+
+
+def test_bets_endpoint_lists_only_games_with_open_bets(client, monkeypatch):
+    c, _ = client
+    import deepsports.api.bets as bets_module
+
+    games = c.get("/api/scoreboard").json()["games"]
+    pre = next(g for g in games if g["state"] == "pre")
+    final = next((g for g in games if g["state"] == "post"), None)
+    open_map = {pre["id"]: ["TOR -2.5"], "999": ["stale row"]}
+    if final:
+        open_map[final["id"]] = ["Over 200"]
+    monkeypatch.setattr(bets_module, "open_bets", lambda: open_map)
+    body = c.get("/api/bets").json()
+    got = {g["id"]: g for g in body["games"]}
+    assert got[pre["id"]]["bets"] == ["TOR -2.5"]
+    assert "999" not in got
+    if final:
+        assert got[final["id"]]["bets"] == ["Over 200"]  # finals stay until graded
+    states = [g["state"] for g in body["games"]]
+    assert states == sorted(states, key={"in": 0, "pre": 1, "post": 2}.get)
+    monkeypatch.setattr(bets_module, "open_bets", lambda: {})
+    assert c.get("/api/bets").json()["games"] == []

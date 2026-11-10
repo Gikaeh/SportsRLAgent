@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from deepsports import config
-from deepsports.api import views, warehouse
+from deepsports.api import bets, views, warehouse
 from deepsports.api.live import LEAGUES, LiveService, UnknownLeague
 from deepsports.http import FetchError
 from deepsports.pipeline import league_today
@@ -84,6 +84,16 @@ def create_app(
             if c["id"] in rows:
                 c["prediction"] = views.prediction_view(rows[c["id"]], c)
 
+    def attach_bets(cards: list[dict]) -> None:
+        """Fill `bets` (labels of the owner's open bets) on cards that haven't finished."""
+        try:
+            open_by_game = bets.open_bets()
+        except Exception:  # a bad log never breaks the scoreboard
+            return
+        for c in cards:
+            if c["state"] != "post" and c["id"] in open_by_game:
+                c["bets"] = open_by_game[c["id"]]
+
     @app.exception_handler(FetchError)
     async def _upstream(_req, exc):
         return JSONResponse({"error": "upstream_unavailable", "detail": str(exc)}, 502)
@@ -131,6 +141,7 @@ def create_app(
         followed = followed_teams(league)
         cards = views.scoreboard_cards(live.scoreboard(day, league), followed, league)
         attach_predictions(cards)
+        attach_bets(cards)
         is_live = any(c["state"] == "in" for c in cards)
         body = {
             "league": league,
@@ -144,6 +155,7 @@ def create_app(
                 body["next_followed_game"] = next_followed_game(today, followed, league)
                 if body["next_followed_game"]:
                     attach_predictions([body["next_followed_game"]])
+                    attach_bets([body["next_followed_game"]])
             except FetchError:
                 body["next_followed_game"] = None
         return body
@@ -158,8 +170,42 @@ def create_app(
             raise HTTPException(404, "unknown game") from e
         detail = views.game_detail(raw, followed_teams(league), league)
         attach_predictions([detail["game"]])
+        attach_bets([detail["game"]])
         detail["refresh_seconds"] = live.game_refresh_seconds(detail["game"]["state"] == "in")
         return detail
+
+    @app.get("/api/bets")
+    def open_bet_games():
+        """Games with an open (ungraded) owner bet, any league, with live scores. Finished games
+        stay until the bet is graded in the log. Looks from yesterday to tomorrow (ET)."""
+        try:
+            open_by_game = bets.open_bets()
+        except Exception:
+            open_by_game = {}
+        today = league_today()
+        cards: list[dict] = []
+        seen: set[str] = set()
+        if open_by_game:
+            for lg in LEAGUES:
+                for offset in (-1, 0, 1):
+                    try:
+                        raw = live.scoreboard(today + timedelta(days=offset), lg)
+                    except FetchError:
+                        continue
+                    for c in views.scoreboard_cards(raw, followed_teams(lg), lg):
+                        if c["id"] in open_by_game and c["id"] not in seen:
+                            seen.add(c["id"])
+                            c["bets"] = open_by_game[c["id"]]
+                            cards.append(c)
+        attach_predictions(cards)
+        order = {"in": 0, "pre": 1, "post": 2}
+        cards.sort(key=lambda c: (order.get(c["state"], 3), c["start_time"], c["id"]))
+        is_live = any(c["state"] == "in" for c in cards)
+        return {
+            "games": cards,
+            "live": is_live,
+            "refresh_seconds": live.refresh_seconds(is_live),
+        }
 
     @app.get("/api/glance")
     def glance():

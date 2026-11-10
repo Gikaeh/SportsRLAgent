@@ -1250,7 +1250,7 @@ button {
   bottom: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   height: calc(var(--tabbar-h) + var(--safe-b));
   padding-bottom: var(--safe-b);
   transform: translateZ(0); /* its own layer, so iOS doesn't repaint it with the page while scrolling */
@@ -1313,6 +1313,25 @@ button {
   white-space: nowrap;
   background: var(--accent-soft);
   color: var(--accent);
+}
+
+.bet-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.hdr-center .bet-badge {
+  margin-top: 6px;
 }
 
 .hdr-center .league-badge {

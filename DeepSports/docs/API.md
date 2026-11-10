@@ -36,6 +36,7 @@ type GameCard = {
   odds: string | null;     // "LAL -11.5, O/U 238.5" (pre-game only)
   venue: string | null;
   followed: boolean;       // either team followed
+  bets?: string[];         // labels of the owner's open bets ("TOR -2.5", "Over 216.5"); only when present and not final. Never the stake
 };
 ```
 

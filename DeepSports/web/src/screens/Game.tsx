@@ -5,7 +5,7 @@ import { PossessionLine, PossessionMarker, ScoreFloats } from "../components/liv
 import { useLiveFx, type LiveFx } from "../components/live/useLiveFx";
 import { api, type GameDetailResponse } from "../api/client";
 import type { GameCard, GameTeam, League, PlayerLine, Possession, TeamBox } from "../api/types";
-import { formatOdds, LeagueBadge, StatusPill } from "../components/GameCard";
+import { BetBadge, formatOdds, LeagueBadge, StatusPill } from "../components/GameCard";
 import { PredictionPanel } from "../components/Prediction";
 import { GLOSSARY, Help } from "../components/Help";
 import { PageHeader, UpdatedAt } from "../components/Layout";
@@ -98,6 +98,7 @@ function ScoreHeader({ game, fx, possession, updatedAt }: { game: GameCard; fx: 
           )}
           <StatusPill game={game} />
           <LeagueBadge game={game} />
+          <BetBadge game={game} />
         </div>
         <HeaderTeam team={game.home} game={game} side="home" />
       </div>

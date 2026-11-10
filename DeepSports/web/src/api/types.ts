@@ -52,6 +52,8 @@ export type GameCard = {
   league?: League;
   /** v2. null when no pre-tip prediction exists (all college games for now). */
   prediction?: Prediction | null;
+  /** Labels of the owner's open bets on this game ("TOR -2.5"). Absent when there are none. */
+  bets?: string[];
 };
 
 export type ScoreboardResponse = {

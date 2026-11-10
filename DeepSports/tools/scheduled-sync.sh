@@ -15,6 +15,27 @@ if [ ! -e data/deepsports.duckdb ]; then
   exit 2
 fi
 
+# Preflight: can this launchd job actually open the warehouse? On 2026-11-08 (macOS update pending)
+# the file existed but every open failed with "Operation not permitted", and the run went through
+# every step failing. Retry a few times (the drive may be waking), then alert and stop.
+# Uses uv's Python: under launchd only it may touch the drive (DECISIONS 2026-11-07).
+preflight() {
+  uv run python -c '
+from deepsports.store import Store
+Store(read_only=True, lock_wait=120).close()' 2>&1 | tail -1
+  return "${PIPESTATUS[0]}"
+}
+ok=0
+for attempt in 1 2 3; do
+  if err=$(preflight); then ok=1; break; fi
+  echo "$(ts) preflight $attempt/3: cannot open the warehouse: $err"
+  [ "$attempt" -lt 3 ] && sleep 60
+done
+if [ "$ok" -ne 1 ]; then
+  $NOTIFY "DeepSports scheduled sync stopped: can't open the warehouse ($err). If this persists, restart the Mac or check Privacy & Security > Files & Folders / Removable Volumes. See ~/Library/Logs/DeepSports/sync.log" || true
+  exit 4
+fi
+
 for league in nba ncaab; do
   if ! uv run deepsports update --league "$league"; then
     echo "$(ts) update --league $league reported errors (continuing)"

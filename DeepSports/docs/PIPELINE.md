@@ -147,6 +147,7 @@ to act on only those, e.g. `tools/launchd/install.sh install com.deepsports.odds
 | Symptom | Cause / fix |
 |---|---|
 | `Could not set lock on file ...duckdb` | Another deepsports process is running. Wait for it; don't run jobs in parallel |
+| `Cannot open file ...duckdb: Operation not permitted` (launchd jobs) | macOS refused drive access. Seen once, 2026-11-08 13:57 until the restart for the macOS 27.2 update; cleared on its own after the restart. The sync preflight retries 3× then alerts on Discord and stops; `odds-snapshot` prints `FAILED, cannot open the warehouse` (it used to call this "busy"). If it persists after a restart, check Privacy & Security for uv's Python |
 | `HTTP 400` on scoreboard | Bad date param (ranges are not supported) |
 | Many 429/503 retries | ESPN throttling: raise `DEEPSPORTS_MIN_INTERVAL` (e.g. 2.0) |
 | Parser test failures after a fixture refresh | ESPN changed its JSON shape; update `parse_espn.py` and the field maps |

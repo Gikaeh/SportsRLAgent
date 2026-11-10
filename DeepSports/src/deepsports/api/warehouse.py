@@ -10,6 +10,7 @@ import duckdb
 
 from deepsports import config
 from deepsports.api.views import conference, local_time
+from deepsports.store import is_lock_conflict
 
 
 class WarehouseBusy(RuntimeError):
@@ -40,6 +41,8 @@ def connect(path: Path | str = config.DB_PATH, timeout: float = OPEN_TIMEOUT):
     except FutureTimeout as e:
         raise WarehouseUnavailable(f"opening {path} timed out (drive permission?)") from e
     except duckdb.IOException as e:
+        if not is_lock_conflict(e):  # e.g. macOS "Operation not permitted" on the drive
+            raise WarehouseUnavailable(f"cannot open {path}: {e}") from e
         raise WarehouseBusy(str(e)) from e
     try:
         yield con

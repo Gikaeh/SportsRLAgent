@@ -505,3 +505,12 @@ the API uses ESPN's value if present, else infers from the latest play, labels i
 than guess (timeouts, ordinary fouls, tips, period ends). Plays' scores use a
 running max without parse_pbp's anchor to the header's final, because a live header can run ahead of the plays.
 Parsing lives in `api/views.py` and reuses parse_pbp's helpers; parse_pbp itself is unchanged because models depend on it.
+
+### 2026-11-10: Drive access errors fail fast and alert; only a real lock counts as "busy"
+**Why:** on 2026-11-08 from about 13:57 until the macOS 27.2 update restarted the Mac (15:37), every launchd open of
+the warehouse failed with `Operation not permitted`. The 14:00 sync ran all six update/predict steps anyway (each waited
+15 s, because `Store` retried every IOException) and sent no alert. The odds job and the API reported the same error as
+"warehouse busy". After the restart it worked again with no permission change, so the fix is in how jobs fail, not in macOS
+settings. **Change:** `store.is_lock_conflict()`; `Store` retries only lock conflicts; `odds-snapshot` exits 1 with
+`FAILED, cannot open the warehouse` on other errors; the API returns `warehouse_unavailable` for them; `scheduled-sync.sh`
+preflights a read-only open (3 tries, 60 s apart), then alerts on Discord and exits 4.

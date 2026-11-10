@@ -1,144 +1,90 @@
-# AGENTS.md — Operational Constitution (ManualBets)
+# AGENTS.md: ManualBets specifics
 
-Sports betting recommendation system (NHL + NBA, MLB planned; college basketball reads
-the DeepSports warehouse): XGBoost models predict h2h/spread/total outcomes; a
-Kelly-criterion recommender turns predictions into bet suggestions; results are graded in
-CSV logs. **The human places every real bet.**
+Handmade basketball betting pipeline (NBA + NCAA men's D1): XGBoost models per bet type
+(h2h, spread, total), Kelly-sized bet suggestions, graded CSV bet logs. A human runs the menus
+and places every bet. Repo-wide rules (non-negotiables, git, boundary edges, agents registry,
+context hygiene) are in `../AGENTS.md` and are not repeated here. `hockey/` and `baseball/` are
+out of focus (see `../AGENTS.md`).
 
-Read order at session start: this file → `docs/SESSION-LOG.md` → `docs/PROJECT.md` →
-`docs/DECISIONS.md`. That is everything you need. If you learn something a future session
-needs, write it into one of those files — not into chat.
+**Session read order:** this file, then the live entry in `docs/SESSION-LOG.md`. On demand:
+`docs/PROJECT.md` (goal, milestone, scope), `basketball/NOTES.md` (open audit items; read
+before touching basketball code), `docs/DECISIONS.md` (why things are the way they are).
 
-**Where this project lives:** this file is `ManualBets/AGENTS.md` in the `SportsRLAgent`
-git repo. Every path below is relative to `ManualBets/`; run commands from this folder.
-The repo root also holds `DeepSports/` (its own env, deps and `AGENTS.md`) and the shared
-`logs/` bet journals — don't mix changes between the two projects.
-
-Per-area deep-dive context: `basketball/NOTES.md` (audit findings + remediation spec,
-2026-08-22) — read before touching basketball code.
-
-## Non-negotiables (never break these)
-
-1. **Humans place all bets.** Never place, automate, or transmit wagers. Output is
-   recommendations only.
-2. **No secrets in code, logs, or commits.** Credentials live in environment
-   variables / `.env` (gitignored). Document only *where* a secret lives and how to
-   inject it — never its value. Known debt: the Odds API key is currently hardcoded in
-   three `odd_scraping.py` files and already in git history; removal is the current
-   deliverable (`docs/SESSION-LOG.md`). Recommend key rotation to the owner.
-3. **Bet logs are immutable history.** `../logs/**/*_bets.csv` are append-only records of
-   what was actually recommended/placed and how bets were graded. Fix errors by adding
-   a correcting row or an explanatory commit message — never silently edit or delete
-   past rows.
-4. **No silent data leakage.** Model features must be computable at prediction time
-   (no season-end stats for mid-season games, no post-game info). Time-based splits only.
-5. **Verify before "done".** Run `.venv\Scripts\python.exe -m pytest tests/ -v`. All green, or
-   you say explicitly why not.
-
-## Stack & commands
-
-Python 3.12, env managed by **uv** at `.venv/` inside `ManualBets/`, deps from
-`requirements.txt` / `pyproject.toml`. Windows machine — use `.venv\Scripts\python.exe`
-(not `.venv/bin/python`).
+## Commands
+Run from `ManualBets/`. Same commands on macOS and Windows. Python >=3.12 (the Mac venv is 3.13).
 
 | When | Command |
 |---|---|
-| Create env + install deps | `uv sync` (or `uv venv` + `uv pip install -r requirements.txt`) |
-| Verify changes | `.venv\Scripts\python.exe -m pytest tests/ -v` |
-| NHL daily menu (recommendations, grade bets, retrain) | `.venv\Scripts\python.exe hockey/main.py` |
-| NBA daily menu | `.venv\Scripts\python.exe basketball/main.py` |
-| College basketball menu (needs the DeepSports warehouse; prints recommendations, logs nothing) | `.venv\Scripts\python.exe college_basketball/main.py` |
-| Home/away calibration of graded bets (tools/) | `.venv\Scripts\python.exe tools\calibration_diagnostic.py` |
-| Pipeline smoke test: train fresh in-memory + predict upcoming_games.csv (tools/) | `.venv\Scripts\python.exe tools\pipeline_smoke_test.py` |
-| College walk-forward test (tools/) | `.venv\Scripts\python.exe tools\college_walkforward.py --start 2025-11-01 --end 2026-02-01 --out preds.csv` |
-| Add a dependency | append to `requirements.txt`, then `uv pip install -r requirements.txt` |
+| Create env / install deps | `uv sync` |
+| Add a dependency | `uv add <pkg>` (`pyproject.toml` + `uv.lock` are the source of truth, not `requirements.txt`) |
+| Verify | `uv run pytest -q`: expect 2 known failures in `tests/test_opp_avg_win_pct.py` (needs `data/basketball/team_data/2024-25_team_stats.csv`, absent on the Mac, and calls a nonexistent `calculateOpponentStrengthL10`). Anything else failing is yours. |
+| NBA menu | `uv run python basketball/main.py` |
+| College menu (reads the DeepSports warehouse) | `uv run python college_basketball/main.py` |
+| Home/away calibration of graded bets | `uv run python tools/calibration_diagnostic.py` |
+| Smoke test: train in memory + predict `upcoming_games.csv` | `uv run python tools/pipeline_smoke_test.py` |
+| College walk-forward | `uv run python tools/college_walkforward.py --start 2025-11-01 --end 2026-02-01 --out preds.csv` |
 
-Interactive CLIs: choose a menu number; entering one number above the highest
-listed option steps through every task in sequence ("run all"). Odds come from The
-Odds API (key required — see non-negotiable #2); game/injury data from free NBA/NHL
-APIs.
+Menus: pick a number; one above the highest option runs every task in order. The NBA menu is
+Betting Recommendations / Betting Update (grade + bankroll) / Active Bets / Model Retraining.
+The college menu is Retrain / Predictions / Recommendations (costs 3 Odds API credits).
+Odds API calls spend the shared quota (`../AGENTS.md` rule 2): don't run menus that fetch odds
+unless the task needs fresh odds.
 
-## Repo layout — where new files go
+## How it works and where things live
+Paths are relative to `ManualBets/`; the bet logs are at `../logs/`.
 
-Everything below is inside `ManualBets/` unless it says otherwise. There is one shared
-`.gitignore` at the repo root (it also covers `DeepSports/`).
+**NBA flow** (`basketball/`):
+`data_pipeline/basketball_data.py` (nba_api fetch) → `data_pipeline/prepare_data.py` (features)
+→ `data_pipeline/live_data_updater.py` (upcoming games via `nextSlate` in
+`shared/base_data_fetcher.py`) → `data_pipeline/odd_scraping.py` (The Odds API) →
+`model/model_{h2h,spread,total}.py` + `model/model_retrainer.py` →
+`betting/betting_recommender.py` (devig, normal cover probability, Kelly sizing via
+`shared/bankroll.py`) → appends and grades `../logs/basketball/betting/{h2h,spread,total}_bets.csv`.
+`initial_*_setup.py` are one-time historical backfills.
 
-```
-basketball/  hockey/  baseball/   One dir per sport, identical internal structure:
-                               (college_basketball/ reads DeepSports' warehouse; no fetcher,
-                                no initial_*_setup.py)
-  ├─ main.py                   interactive CLI entry point
-  ├─ data_pipeline/            fetching + feature prep (incl. odd_scraping.py)
-  ├─ model/                    training/retraining per bet type
-  ├─ betting/                  betting_config.py (thresholds) + betting_recommender.py
-  └─ initial_*_setup.py        one-time historical backfills
-shared/       BaseDataFetcher / BaseDataPreparer / splitting / bankroll —
-              sport-independent helpers; new shared logic goes here, sports inherit
-data/<sport>/ game_data, team_data, player_data, cache (parquet), odds_data,
-              injury_data, upcoming_games.csv — fetched/derived data lives here
-models/       trained XGBoost JSONs + metadata/ (retrain timestamps)
-plots/        generated diagnostics (regenerable, low value)
-tests/        pytest smoke tests
-tools/        standalone scripts (e.g. calibration_diagnostic.py); each MUST get an
-              AGENTS.md table row on creation
-docs/         PROJECT.md, DECISIONS.md, SESSION-LOG.md (+ -ARCHIVE.md)
-```
+**College flow** (`college_basketball/`):
+`data_pipeline/warehouse_loader.py` (DeepSports DuckDB, read-only; override the path with
+`COLLEGE_WAREHOUSE_DB`) → `data_pipeline/prepare_data.py` → `model/model_college.py` →
+`betting/betting_recommender.py`. It writes no log. Owner-placed college bets are logged by hand
+in `../logs/college_basketball/betting/bets.csv`, and the NBA bankroll counts them.
 
-Outside this folder (repo root):
+| What | Where |
+|---|---|
+| Trained models | `models/*.json`; retrain metadata (incl. `residual_std`) in `models/metadata/<sport>/` |
+| Fetched/derived data | `data/<sport>/` (untracked except `odds_data/`) |
+| Thresholds, bankroll ($50 from 2026-11-08) | `<sport>/betting/betting_config.py` |
+| Train/val/test split (80/10/10 by date) | `shared/splitting.py::chronologicalSplit` |
+| Shared base classes | `shared/base_data_fetcher.py`, `shared/base_data_preparer.py`, `shared/bankroll.py` |
+| Tests | `tests/`; `conftest.py` puts `basketball/` and `hockey/` on `sys.path`, so sport modules (which share package names like `model`) are imported in subprocesses |
+| Standalone scripts | `tools/` |
+| Old long-term roadmaps (history only) | `docs/archive/` |
 
-```
-logs/<sport>/betting/  *_bets.csv bet journals (IMMUTABLE — see rule #3).
-                       Kept at the repo root because DeepSports reads them read-only.
-DeepSports/            separate project; college_basketball/ reads its DuckDB warehouse.
-```
+## ManualBets rules
+- **Conventions:** modules `snake_case.py`, classes `PascalCase`, methods/functions `camelCase`
+  (existing style; don't rename piecemeal), constants `UPPER_SNAKE`.
+- **Mirror changes:** per-sport folders share structure. A fix to shared logic goes in `shared/`;
+  a basketball fix that applies to college should be checked there too.
+- **Odds API key:** still a literal in the `odd_scraping.py` files (`../AGENTS.md` rule 2); the
+  college scraper borrows basketball's. It also travels in request URLs, so a traceback or
+  logged URL can expose it: don't print exceptions or URLs from those calls verbatim.
+- **Escalate to the owner before** changing betting thresholds or bankroll settings, anything that
+  changes model outputs (features, drop lists, retrain settings), or anything in `../logs/`.
+  Also on missing credentials, exhausted quota, or a data source that changed shape.
 
-Conventions (match existing code): files/modules `snake_case.py`; classes `PascalCase`;
-methods/functions `camelCase` (existing style — do not "fix" it piecemeal); constants
-UPPER_SNAKE. Per-sport dirs mirror each other — a change to hockey's pipeline usually
-implies the same change to basketball's.
+**Every change updates its home:**
+- New `tools/` script → a row in the Commands table above.
+- Threshold/config change → that sport's `betting_config.py` + a `docs/DECISIONS.md` entry.
+- New or fixed audit item → `basketball/NOTES.md`.
+- End of session → replace the live `docs/SESSION-LOG.md` entry (move the old one verbatim to the
+  top of `docs/SESSION-LOG-ARCHIVE.md`).
 
-**Adding anything = update something else too:**
-- New tool script → add exact invocation to the table above.
-- New threshold/config → edit that sport's `betting_config.py`, note *why* in
-  `docs/DECISIONS.md`.
-- New sport → create `<sport>/` mirroring hockey/, plus `data/<sport>/`, and a
-  `logs/<sport>/betting/` directory at the repo root.
-- Changed behavior → update `docs/SESSION-LOG.md`; changed *why* → `docs/DECISIONS.md`.
-
-## Cross-project boundary
-
-`ManualBets/` and `DeepSports/` are separate projects with separate environments and no
-shared imports. Only two read-only edges cross the boundary:
-
-1. **DeepSports → `../logs/`**: `DeepSports/src/deepsports/api/bets.py` reads open bet rows
-   to label game cards. It never writes.
-2. **`college_basketball/` → `DeepSports/data/deepsports.duckdb`**: read-only warehouse
-   access via `college_basketball/data_pipeline/warehouse_loader.py`. It never writes.
-
-Anything else shared (`.gitignore`, this README's parent, git history) lives at the repo
-root. Don't add new cross-project imports without recording the decision.
-
-## Workflow
-
-1. Start: read SESSION-LOG → do Next item.
-2. Small commits with messages describing what + why, like existing history. Keep a
-   commit inside one project folder — the repo also holds `DeepSports/`.
-3. Before declaring done: pytest green (rule #5), then update `docs/SESSION-LOG.md`
-   (move old entry verbatim to `docs/SESSION-LOG-ARCHIVE.md`, newest on top).
-4. Made a decision with a *why* worth remembering? Append to `docs/DECISIONS.md`.
-   Reversed a decision? Strike it through, point to the reversal — never delete.
-
-## Escalation (ask the human)
-
-- Any change that alters model outputs or betting thresholds beyond tuning comments.
-- Anything touching bet-log CSV contents (rule #3).
-- Missing credentials, API quota exhausted, or data source breaking changes.
-- Ambiguity between profit and the non-negotiables: non-negotiables always win.
-
-## Agents: single agent by decision
-
-This project deliberately uses NO subagents — solo owner, small codebase, one context is
-faster and safer than role-splitting. Do not fabricate reviewer/builder roles. If the
-project grows a genuinely separable concern (e.g., a scraper fleet needing sandboxed
-execution), propose subagents then, with scoped permissions, and record it in
-`docs/DECISIONS.md`.
+## Where facts go
+| Fact | Home |
+|---|---|
+| Rules, commands, layout | this file |
+| Goal, milestone, scope, constraints | `docs/PROJECT.md` |
+| Current state and next steps | `docs/SESSION-LOG.md` (one live entry) |
+| History of sessions | `docs/SESSION-LOG-ARCHIVE.md` |
+| Why (append-only, strike through reversals) | `docs/DECISIONS.md` |
+| Basketball audit findings and open fixes | `basketball/NOTES.md` |
+| Repo-wide rules and agents | `../AGENTS.md`, `../docs/DECISIONS.md` |

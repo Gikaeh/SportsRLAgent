@@ -64,8 +64,8 @@ Phone-readable summary:
 
 ## Improving the context
 The context is the lever: bettors decide only from what their file says. When changing the brief or
-the facts (`analysis/ensemble_bets.py`), bump `CONTEXT_VERSION`, log the change in DECISIONS.md, and
-compare versions with `grade`'s `by_context_version`. Ideas are in ROADMAP Phase 4.
+the facts (`src/deepsports/analysis/ensemble_bets.py`), bump `CONTEXT_VERSION`, log the change in DECISIONS.md, and
+compare versions with `grade`'s `by_context_version`. Ideas are in ROADMAP (Betting research).
 
 ## Grading (any time later)
 ```bash

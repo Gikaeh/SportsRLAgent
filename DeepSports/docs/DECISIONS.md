@@ -1,6 +1,7 @@
 # Decision log
 
 Append-only. Newest at the bottom. Format: date, decision, why, alternatives.
+Find an entry: `grep -n '^### ' docs/DECISIONS.md` (one heading per decision, dated).
 
 ### 2026-11-03: Start with the NBA, data collection first
 **Why:** The NBA, NHL, and NFL are all in season; the NBA has the most games per team and the best free
@@ -537,3 +538,13 @@ Their overall records cover different games (v1.1i only where a report was captu
 (and a listed Day-To-Day player who sits is still "available"); the last run is 5-35 minutes before tip, so later news
 is missed; college has no injury source (ESPN lists none), so there is no college equivalent.
 
+### 2026-11-10: Dev agents move to the repo root; runtime agents and skills stay; basketball only
+**Change:** `architect`, `data-engineer`, `data-analyst` and `frontend-dev` moved from `DeepSports/.claude/agents/`
+to the repo root's `.claude/agents/` (registry and orchestrator rules in `../AGENTS.md`). `bettor`, `calendar-agent`,
+`/sync-game-calendar` and `/ensemble-betting` stay in `DeepSports/.claude/`. DeepSports' CLAUDE.md, AGENTS.md and
+docs now hold only DeepSports specifics and point to the root for repo-wide rules; README.md's Docs table is the one doc index.
+**Why:** a session started at the repo root can't see `DeepSports/.claude/`, while a session started in `DeepSports/`
+still sees the root agents (verified), so the root is the one place every dev session finds them. The runtime agents and
+skills are called by DeepSports' headless scheduled jobs, which run from `DeepSports/`.
+**Scope:** basketball only (NBA + NCAA men's D1). The other-sport plans were removed from PRODUCT, ROADMAP, HANDOFF and
+DATA_SOURCES; DeepSports and ManualBets will be integrated step by step, each step logged in `../docs/DECISIONS.md`.

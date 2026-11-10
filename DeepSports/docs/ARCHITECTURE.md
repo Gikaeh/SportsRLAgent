@@ -21,15 +21,18 @@ diagram in the same change (see CLAUDE.md).
 | `config.py` | Paths, timezones, rate limit. All of them can be overridden with `DEEPSPORTS_*` env vars. |
 
 ### 2. Storage (`data/` → `/Volumes/ExFATStorag/DeepSports/data`, git-ignored)
-- **Raw landing zone:** `data/raw/espn/nba/{scoreboard/YYYYMMDD, summary/<game_id>, teams}.json.gz`.
+- **Raw landing zone:** `data/raw/espn/<league>/{scoreboard/YYYYMMDD, summary/<game_id>, teams}.json.gz`
+  (`nba`, `ncaab`; plus `summary_pregame/` injury snapshots and `core_odds/`).
   It's an exact copy of what the source returned, so parsers can be fixed and re-run without refetching.
 - **Warehouse:** `data/deepsports.duckdb` (schema in DATA_MODEL.md). DuckDB is used because the
   workload is analytical (scans and aggregates over seasons), it's a single file, and it reads straight into pandas/polars.
 
 ### 3. Agent layer (Claude Code)
-- The main session is the **orchestrator**; specialist subagents (`data-engineer`, `data-analyst`,
-  `calendar-agent`, `architect`) live in `.claude/agents/`. Roles, workflows, and the rules
-  for creating new agents, skills, and tools are in [AGENTS.md](../AGENTS.md).
+- Dev agents (`architect`, `data-engineer`, `data-analyst`, `frontend-dev`, `reviewer`) live in the repo
+  root's `.claude/agents/` and are orchestrated by the main session ([../../AGENTS.md](../../AGENTS.md)).
+  Runtime agents (`bettor`, `calendar-agent`) and the skills `/sync-game-calendar` and `/ensemble-betting`
+  live in `DeepSports/.claude/`, because the scheduled jobs run headless Claude from `DeepSports/`.
+  Who owns which paths and the tools registry: [AGENTS.md](../AGENTS.md).
 - `/sync-game-calendar` skill (`.claude/skills/sync-game-calendar/SKILL.md`): refreshes data,
   reads `config/calendar.toml`, and reconciles Google Calendar events through the Google Calendar
   connector. Events are matched by the key `deepsports:nba:<game_id>` in their description, so a sync can
@@ -49,7 +52,7 @@ diagram in the same change (see CLAUDE.md).
   `v1.1i` predictions for exactly those games. Same yielding rules as the odds job. No Claude involved.
 - The global Claude Code Stop hook (`~/.claude/tools/notify.py`) posts each finished turn to
   Discord. That's how agent runs report back.
-- Serena MCP (`.mcp.json`) is for code navigation; Mermaid (`tools/diagram.sh`) is for diagrams.
+- Mermaid (`tools/diagram.sh`) renders the diagrams.
 
 ### 4. Apps (`deepsports serve`, port 8787)
 - **API** (`src/deepsports/api/`, contract in [API.md](API.md) incl. v2; `bets.py` reads the owner's open bets from the SportsRLAgent logs, read-only, for the `bets` card field and `/api/bets`): live endpoints take `league=nba|ncaab`; game cards

@@ -5,7 +5,9 @@ Append new entries at the bottom. If a decision is reversed, strike it through
 
 ---
 
-## 2026-08-21 — Single-agent workflow; no subagents
+## ~~2026-08-21 — Single-agent workflow; no subagents~~
+
+Reversed 2026-11-10: see "Development is agent-driven" below.
 
 Solo owner, small mirrored codebase, one context is faster and safer than
 role-splitting. Fabricating reviewer/builder subagents would add process without
@@ -120,18 +122,18 @@ no_injuries and fullstack-app have zero unique commits vs main; candidates for
 deletion (owner call).
 
 
-## 2026-08-25 � data/ untracked from git EXCEPT odds_data
+## 2026-08-25 — data/ untracked from git EXCEPT odds_data
 
 All of data/ is fetched/derived and regenerable, so it was untracked (593 files)
 to stop git bloat (~530 MB of blobs). Exception carved out via .gitignore
 negation: data/*/odds_data/** stays tracked. Why: odds snapshots are the only
-data the pipeline CANNOT regenerate � they are point-in-time market observations
+data the pipeline CANNOT regenerate — they are point-in-time market observations
 consumed at recommendation time; once a game passes, those prices are gone unless
 paid historical endpoints are used. They double as future training data for
 market-feature work (NOTES.md C3/C4) and CLV checks. Cost is trivial (~360
 files, 4.2 MB).
 
-## 2026-08-25 � models/metadata restructured to per-sport subfolders
+## 2026-08-25 — models/metadata restructured to per-sport subfolders
 
 models/metadata/basketball/ and models/metadata/hockey/ now hold each sport's
 retraining_*_metadata.json. Why: hockey's retrainer already auto-derived a
@@ -258,3 +260,17 @@ which haven't tipped. At 10 PM PT that is tomorrow; at noon it is today. Returni
 a team playing tonight and tomorrow would get stale features for tomorrow's game (rest days, L10 stats without
 tonight's result), and odds are matched to games by team names only, not by date. Cost: tomorrow's games appear
 only after today's last game tips (about 7:30 PM PT).
+
+## 2026-11-10 — Development is agent-driven; repo-wide agents at the root
+
+Reverses the 2026-08-21 single-agent entry. Development is now mostly done by AI agents, using the
+repo-wide dev agents in `../.claude/agents/` (registry and rules in `../AGENTS.md`). Why: the owner
+decided it, and ManualBets and DeepSports are being merged, so one set of agents and rules serves
+both. Full rationale: `../docs/DECISIONS.md` 2026-11-10. ManualBets' `AGENTS.md` now keeps only
+ManualBets specifics and points to the root for repo-wide rules; `CLAUDE.md` imports it.
+
+## 2026-11-10 — Basketball only; hockey and baseball out of focus
+
+Work covers the NBA and NCAA men's D1 only. `hockey/` and `baseball/` stay in the tree but get no
+new work, and docs leave them out. The old NBA and MLB roadmaps (`basketball/nba_betting_project_roadmap.md`,
+`baseball/mlb_betting_project_roadmap.md`) moved to `docs/archive/` as history. Repo-wide entry: `../docs/DECISIONS.md` 2026-11-10.

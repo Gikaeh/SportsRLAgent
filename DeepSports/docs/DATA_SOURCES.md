@@ -172,7 +172,5 @@ What differs from the NBA:
 | `cdn.nba.com` static schedule JSON | HTTP 403 | Not used yet; could be reached with browser automation if needed (allowed since 2026-11-03) |
 
 ## Candidates for later
-- **NHL:** ESPN `.../sports/hockey/nhl/...` (same shape) or the official `api-web.nhle.com`.
-- **NFL:** ESPN `.../sports/football/nfl/...`.
 - **Advanced NBA metrics** (pace, ratings): compute ourselves from box scores first. Add a
   licensed source only if needed.

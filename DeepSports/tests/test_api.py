@@ -468,3 +468,26 @@ def test_scoreboard_tags_open_bets(client, monkeypatch):
     assert games[target["id"]]["bets"] == ["TOR -2.5"]
     if final:
         assert "bets" not in games[final["id"]]
+
+
+def test_bets_endpoint_lists_only_games_with_open_bets(client, monkeypatch):
+    c, _ = client
+    import deepsports.api.bets as bets_module
+
+    games = c.get("/api/scoreboard").json()["games"]
+    pre = next(g for g in games if g["state"] == "pre")
+    final = next((g for g in games if g["state"] == "post"), None)
+    open_map = {pre["id"]: ["TOR -2.5"], "999": ["stale row"]}
+    if final:
+        open_map[final["id"]] = ["Over 200"]
+    monkeypatch.setattr(bets_module, "open_bets", lambda: open_map)
+    body = c.get("/api/bets").json()
+    got = {g["id"]: g for g in body["games"]}
+    assert got[pre["id"]]["bets"] == ["TOR -2.5"]
+    assert "999" not in got
+    if final:
+        assert got[final["id"]]["bets"] == ["Over 200"]  # finals stay until graded
+    states = [g["state"] for g in body["games"]]
+    assert states == sorted(states, key={"in": 0, "pre": 1, "post": 2}.get)
+    monkeypatch.setattr(bets_module, "open_bets", lambda: {})
+    assert c.get("/api/bets").json()["games"] == []

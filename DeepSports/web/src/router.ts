@@ -5,6 +5,7 @@ import { isLeague } from "./league";
 export type Route =
   | { name: "today"; date: string | null; league: League | null }
   | { name: "game"; id: string; league: League }
+  | { name: "bets" }
   | { name: "standings" }
   | { name: "model" }
   | { name: "team"; abbr: string }
@@ -24,6 +25,7 @@ export function parseHash(hash: string): Route {
   }
   // Game links carry the league so calendar/deep links open the right scoreboard; default nba.
   if (parts[0] === "game" && parts[1]) return { name: "game", id: parts[1], league: league ?? "nba" };
+  if (parts[0] === "bets") return { name: "bets" };
   if (parts[0] === "standings") return { name: "standings" };
   if (parts[0] === "model") return { name: "model" };
   if (parts[0] === "team" && parts[1]) return { name: "team", abbr: parts[1].toUpperCase() };
@@ -34,6 +36,7 @@ export const href = {
   today: (date?: string | null) => (date ? `#/?date=${date}` : "#/"),
   game: (id: string, league: League = "nba") =>
     `#/game/${encodeURIComponent(id)}?league=${league}`,
+  bets: () => "#/bets",
   standings: () => "#/standings",
   model: () => "#/model",
   team: (abbr: string) => `#/team/${encodeURIComponent(abbr)}`,

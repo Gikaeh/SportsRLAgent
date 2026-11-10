@@ -69,6 +69,15 @@ export async function mockFetch(path: string, signal?: AbortSignal): Promise<Res
     return json(predictionRecord(days, mode === "record0"));
   }
 
+  if (p === "/api/bets") {
+    const games = slateFor(etToday(), "nba")
+      .filter((g) => g.bets?.length)
+      .map((g) => shape(advanceLive(g), mode));
+    games.sort((a, b) => ({ in: 0, pre: 1, post: 2 }[a.state] ?? 3) - ({ in: 0, pre: 1, post: 2 }[b.state] ?? 3));
+    const live = games.some((g) => g.state === "in");
+    return json({ games, live, refresh_seconds: live ? 5 : 300 });
+  }
+
   if (p === "/api/scoreboard") {
     const date = url.searchParams.get("date") ?? etToday();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return json({ error: "bad_date" }, 400);

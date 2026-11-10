@@ -10,20 +10,23 @@ Keep each fact in one place and point to it from everywhere else (see "Context h
 |---|---|---|
 | `DeepSports/` | NBA + college data warehouse (DuckDB), frozen prediction models, read API + phone web app + glasses plugin, Google Calendar alerts, watch-only paper trading and ensemble betting vote. Runs on the owner's Mac via launchd. | `DeepSports/CLAUDE.md` |
 | `ManualBets/` | Handmade pipeline: XGBoost models per bet type, Kelly-sized bet suggestions, graded CSV bet logs. A human runs the menus and places bets. | `ManualBets/CLAUDE.md` |
-| `logs/` | Bet journals `logs/<sport>/betting/*_bets.csv`. Written by ManualBets, read by DeepSports. Append-only. | (rule 3 below) |
+| `BetDesk/` | Shared app for both owners on Cloudflare (Worker + D1 + PWA, behind Cloudflare Access). Phase 1: read-only mirror of DeepSports' read API, pushed from the owner's Mac. | `BetDesk/CLAUDE.md` |
+| `logs/` | Bet journals `logs/<sport>/betting/*_bets.csv`. Written by ManualBets, read by DeepSports. Append-only. Only open-bet labels (never stakes) leave the Mac, via edge 3. | (rule 3 below) |
 | `.claude/agents/` | Repo-wide dev agents (registry below). | |
 | `docs/DECISIONS.md` | Repo-wide decisions (structure, scope, integration). Projects keep their own logs. | |
 
 **Scope: basketball only.** `ManualBets/hockey/` and `ManualBets/baseball/` stay in the tree
 but get no new work, and plans, docs and summaries leave them out unless the owner asks.
 
-**Direction:** the two projects will be merged step by step (one data source, one app). Until
+**Direction:** the projects will be merged step by step (one data source, one app: `BetDesk/`). Until
 an integration step is decided in `docs/DECISIONS.md`, they stay separate: separate `uv`
 environments (run `uv` inside the project folder), no imports across the boundary, and only
 these read-only edges:
 1. DeepSports' API reads open rows from `logs/` (`DeepSports/src/deepsports/api/bets.py`).
 2. `ManualBets/college_basketball/` reads `DeepSports/data/deepsports.duckdb`
    (`college_basketball/data_pipeline/warehouse_loader.py`).
+3. BetDesk's pusher reads DeepSports' read API over HTTP on `localhost:8787` (`BetDesk/pusher/`;
+   contract `DeepSports/docs/API.md`) and pushes those responses to BetDesk's Cloudflare Worker.
 A new edge is an integration step: propose it, log it, then build it.
 
 ## Non-negotiables (every project, every agent)
@@ -72,7 +75,7 @@ project see them. Runtime agents and skills that DeepSports' headless jobs call 
 | `architect` | root | Docs, diagrams, this registry and context hygiene after structural changes |
 | `data-engineer` | root | Data sources, fetchers/parsers, storage schema, collection jobs, tests (both projects) |
 | `data-analyst` | root | Features, models, backtests, calibration, betting-rule research (both projects) |
-| `frontend-dev` | root | `DeepSports/web/` (the project's app) and `DeepSports/glasses/` |
+| `frontend-dev` | root | `BetDesk/web/` (the project's app), `DeepSports/glasses/`; `DeepSports/web/` is frozen (LAN + glasses build) |
 | `reviewer` | root | Read-only review of a diff against the non-negotiables and project rules |
 | `bettor` | DeepSports | One voter in `/ensemble-betting` (runtime, headless) |
 | `calendar-agent` | DeepSports | Runs `/sync-game-calendar` interactively |

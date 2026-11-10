@@ -1,0 +1,183 @@
+import requests
+import pandas as pd
+from datetime import datetime, timedelta
+import pytz
+from pathlib import Path
+
+
+def upcomingGamesWindow(df, now, window_days=1):
+    """NOTES.md B1: keep only games not yet started AND within the window.
+    The old code's second assignment discarded the >now filter entirely."""
+    window_end = now + timedelta(days=window_days)
+    return df[(df['commence_time'] > now) & (df['commence_time'] < window_end)]
+
+
+def toPacificTime(series, timezone):
+    """ISO-8601 UTC strings -> tz-aware Pacific datetimes.
+
+    pandas 3 stores json_normalize's text columns as the arrow-backed 'str'
+    dtype, which raises TypeError when a datetime object is assigned row by row
+    (the old `df.iat[i,0] = ...` loops). Converting the whole column at once
+    also gives a real datetime dtype, which upcomingGamesWindow needs."""
+    return pd.to_datetime(series, utc=True, format='ISO8601').dt.tz_convert(timezone)
+
+
+def mapTeamCodes(series, team_mapping):
+    """Full team names -> repo abbreviations; names not in the map pass through."""
+    return series.map(lambda name: team_mapping.get(name, name))
+
+
+class BasketballOddScraping:
+    def __init__(self, data_dir='././data/basketball/odds_data'):
+        self.team_mapping = {
+            'Atlanta Hawks': 'ATL', 'Boston Celtics': 'BOS', 'Cleveland Cavaliers': 'CLE', 'New Orleans Pelicans': 'NOP', 'Chicago Bulls': 'CHI', 'Dallas Mavericks': 'DAL', 'Denver Nuggets': 'DEN', 'Golden State Warriors': 'GSW', 'Houston Rockets': 'HOU', 'Los Angeles Clippers': 'LAC',
+            'Los Angeles Lakers': 'LAL', 'Miami Heat': 'MIA', 'Milwaukee Bucks': 'MIL', 'Minnesota Timberwolves': 'MIN', 'Brooklyn Nets': 'BKN', 'New York Knicks': 'NYK', 'Orlando Magic': 'ORL', 'Indiana Pacers': 'IND', 'Philadelphia 76ers': 'PHI', 'Phoenix Suns': 'PHX',
+            'Portland Trail Blazers': 'POR', 'Sacramento Kings': 'SAC', 'San Antonio Spurs': 'SAS', 'Oklahoma City Thunder': 'OKC', 'Toronto Raptors': 'TOR', 'Utah Jazz': 'UTA', 'Memphis Grizzlies': 'MEM', 'Washington Wizards': 'WAS', 'Detroit Pistons': 'DET', 'Charlotte Hornets': 'CHA',
+        }
+        self.api_key = '13a6a49f229ace0bb115d8f83f3bf63e'
+        self.sport = 'basketball_nba'
+        self.regions = 'us'
+        self.odds = 'american'
+        self.date = 'iso'
+        self.pst_timezone = pytz.timezone('America/Los_Angeles')
+        self.time_now = datetime.now(self.pst_timezone)
+        self.time_now_string = datetime.now(tz=self.pst_timezone).strftime("%Y-%m-%d_%H-%M")
+        self.data_dir = Path(data_dir)
+
+    def getH2hOdds(self):
+        odds_response = requests.get(
+            f'https://api.the-odds-api.com/v4/sports/{self.sport}/odds/?apiKey={self.api_key}&regions={self.regions}&markets=h2h',
+            params={
+                'api_key': self.api_key,
+                'regions': self.regions,
+                'markets': 'h2h',
+                'oddsFormat': self.odds,
+                'dateFormat': self.date,
+            }
+        )
+
+        if odds_response.status_code != 200:
+            print(f'Failed to get odds: status_code {odds_response.status_code}, response body {odds_response.text}')
+
+        else:
+            odds_json = odds_response.json()
+            print('Number of events:', len(odds_json))
+            # print(odds_json)
+
+            print('Remaining requests', odds_response.headers['x-requests-remaining'])
+            print('Used requests', odds_response.headers['x-requests-used'])
+
+            df = pd.json_normalize(
+                odds_json,
+                record_path=['bookmakers','markets','outcomes'],
+                meta=['commence_time', 'home_team', 'away_team', ['bookmakers','key'],['bookmakers', 'markets', 'key'], ['bookmakers', 'markets', 'last_update']],
+                sep='_'
+            )
+
+            df = df[['commence_time','home_team','away_team','bookmakers_key','bookmakers_markets_key','bookmakers_markets_last_update','name','price']]
+
+            df['commence_time'] = toPacificTime(df['commence_time'], self.pst_timezone)
+            df['bookmakers_markets_last_update'] = toPacificTime(
+                df['bookmakers_markets_last_update'], self.pst_timezone)
+
+            for column in ('home_team', 'away_team', 'name'):
+                df[column] = mapTeamCodes(df[column], self.team_mapping)
+
+            df_sorted = df.sort_values(['commence_time', 'home_team', 'bookmakers_key'])
+            cleaned_data = upcomingGamesWindow(df_sorted, self.time_now)
+            
+            cleaned_data.to_csv(f'{self.data_dir}/h2h_{self.time_now_string}.csv', index=False)
+
+            return cleaned_data
+
+    def getSpreadOdds(self):
+        odds_response = requests.get(
+            f'https://api.the-odds-api.com/v4/sports/{self.sport}/odds/?apiKey={self.api_key}&regions={self.regions}&markets=spreads',
+            params={
+                'api_key': self.api_key,
+                'regions': self.regions,
+                'markets': 'spreads',
+                'oddsFormat': self.odds,
+                'dateFormat': self.date,
+            }
+        )
+
+        if odds_response.status_code != 200:
+            print(f'Failed to get odds: status_code {odds_response.status_code}, response body {odds_response.text}')
+
+        else:
+            odds_json = odds_response.json()
+            print('Number of events:', len(odds_json))
+            # print(odds_json)
+
+            print('Remaining requests', odds_response.headers['x-requests-remaining'])
+            print('Used requests', odds_response.headers['x-requests-used'])
+
+            df = pd.json_normalize(
+                odds_json,
+                record_path=['bookmakers','markets','outcomes'],
+                meta=['commence_time', 'home_team', 'away_team', ['bookmakers','key'],['bookmakers', 'markets', 'key'], ['bookmakers', 'markets', 'last_update']],
+                sep='_'
+            )
+
+            df = df[['commence_time','home_team','away_team','bookmakers_key','bookmakers_markets_key','bookmakers_markets_last_update','name','price','point']]
+
+            df['commence_time'] = toPacificTime(df['commence_time'], self.pst_timezone)
+            df['bookmakers_markets_last_update'] = toPacificTime(
+                df['bookmakers_markets_last_update'], self.pst_timezone)
+
+            for column in ('home_team', 'away_team', 'name'):
+                df[column] = mapTeamCodes(df[column], self.team_mapping)
+
+            df_sorted = df.sort_values(['commence_time', 'home_team', 'bookmakers_key'])
+            cleaned_data = upcomingGamesWindow(df_sorted, self.time_now)
+            
+            cleaned_data.to_csv(f'{self.data_dir}/spread_{self.time_now_string}.csv', index=False)
+
+            return cleaned_data
+
+    def getTotalOdds(self):
+        odds_response = requests.get(
+            f'https://api.the-odds-api.com/v4/sports/{self.sport}/odds/?apiKey={self.api_key}&regions={self.regions}&markets=totals',
+            params={
+                'api_key': self.api_key,
+                'regions': self.regions,
+                'markets': 'totals',
+                'oddsFormat': self.odds,
+                'dateFormat': self.date,
+            }
+        )
+
+        if odds_response.status_code != 200:
+            print(f'Failed to get odds: status_code {odds_response.status_code}, response body {odds_response.text}')
+
+        else:
+            odds_json = odds_response.json()
+            print('Number of events:', len(odds_json))
+            # print(odds_json)
+
+            print('Remaining requests', odds_response.headers['x-requests-remaining'])
+            print('Used requests', odds_response.headers['x-requests-used'])
+
+            df = pd.json_normalize(
+                odds_json,
+                record_path=['bookmakers','markets','outcomes'],
+                meta=['commence_time', 'home_team', 'away_team', ['bookmakers','key'],['bookmakers', 'markets', 'key'], ['bookmakers', 'markets', 'last_update']],
+                sep='_'
+            )
+
+            df = df[['commence_time','home_team','away_team','bookmakers_key','bookmakers_markets_key','bookmakers_markets_last_update','name','price','point']]
+
+            df['commence_time'] = toPacificTime(df['commence_time'], self.pst_timezone)
+            df['bookmakers_markets_last_update'] = toPacificTime(
+                df['bookmakers_markets_last_update'], self.pst_timezone)
+
+            for column in ('home_team', 'away_team', 'name'):
+                df[column] = mapTeamCodes(df[column], self.team_mapping)
+
+            df_sorted = df.sort_values(['commence_time', 'home_team', 'bookmakers_key'])
+            cleaned_data = upcomingGamesWindow(df_sorted, self.time_now)
+            
+            cleaned_data.to_csv(f'{self.data_dir}/total_{self.time_now_string}.csv', index=False)
+
+            return cleaned_data

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.deepsports.pretip</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/bash</string><string>__REPO__/tools/pretip.sh</string></array>
+  <key>WorkingDirectory</key><string>__REPO__</string>
+  <!-- Every 30 minutes at :20 and :50: fresh injury reports + model v1.1i for NBA games tipping
+       in the next 5-100 minutes. Offset from the odds job (:15/:45) and the 08:00/14:00 sync
+       (com.deepsports.sync). If any writer holds the warehouse, it skips. -->
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Minute</key><integer>20</integer></dict>
+    <dict><key>Minute</key><integer>50</integer></dict>
+  </array>
+  <key>LowPriorityIO</key><true/>
+  <key>Nice</key><integer>10</integer>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/DeepSports/pretip.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/DeepSports/pretip.log</string>
+</dict>
+</plist>

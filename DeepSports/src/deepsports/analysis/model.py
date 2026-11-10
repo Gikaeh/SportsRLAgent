@@ -15,6 +15,13 @@ Versions (same model classes and fixed settings; only the feature lists differ):
   the declared calibration fix that passed its locked-holdout rule
   (docs/results/2026-11-06-calibration.md). Margin and total models are identical to v1.1.
   Not the display or default version.
+- `v1.1i`: v1.1's model and features, but scheduled games use the latest pre-tip ESPN injury
+  snapshot (players listed `Out`) instead of "played the previous game" for each team that has
+  one (players.py `injury_override`). Training rows are identical to v1.1 (completed games never
+  use snapshots), so only live predictions differ. Graded as its own version; there is no
+  backtest because snapshots only start 2026-11-03 (docs/DECISIONS.md 2026-11-10). The override
+  is tied to the label (INJURY_OVERRIDE_VERSIONS), so the stored label and the behavior can't
+  disagree.
 """
 
 import json
@@ -72,7 +79,10 @@ MODEL_VERSIONS: dict[str, tuple[bool, list[str], list[str]]] = {
     "v1.0": (False, WIN_FEATURES, TOTAL_FEATURES),
     "v1.1": (True, V11_WIN_FEATURES, V11_TOTAL_FEATURES),
     "v1.1c": (True, V11_WIN_FEATURES, V11_TOTAL_FEATURES),
+    "v1.1i": (True, V11_WIN_FEATURES, V11_TOTAL_FEATURES),
 }
+# Versions whose live predictions use pre-tip injury snapshots (players.py injury_override).
+INJURY_OVERRIDE_VERSIONS = frozenset({"v1.1i"})
 # Inverse L2 strength of the logistic win model per version (default ModelV1.win_c = 1.0).
 # v1.1c: C = 0.03, chosen on 2024-25 out-of-sample log loss (calibration study 2026-11-06).
 VERSION_WIN_C: dict[str, float] = {"v1.1c": 0.03}
@@ -80,14 +90,19 @@ VERSION_WIN_C: dict[str, float] = {"v1.1c": 0.03}
 
 def resolve_version(model_version: str) -> str:
     """The registered spec for a version label: a registered name, optionally with a
-    '-suffix' ('v1.1', 'v1.1-test' -> 'v1.1'; 'v1.1c' -> 'v1.1c'); everything else -> 'v1.0'
-    (labels like 'v1', 'v1.0' or 'v1.0-test')."""
+    '-suffix' ('v1.1', 'v1.1-test' -> 'v1.1'; 'v1.1c' -> 'v1.1c'; 'v1.1i-test' -> 'v1.1i');
+    everything else -> 'v1.0' (labels like 'v1', 'v1.0' or 'v1.0-test')."""
     head = model_version.split("-")[0]
     return head if head in MODEL_VERSIONS else "v1.0"
 
 
 def uses_players(model_version: str) -> bool:
     return MODEL_VERSIONS[resolve_version(model_version)][0]
+
+
+def uses_injury_override(model_version: str) -> bool:
+    """True for labels that resolve to a version in INJURY_OVERRIDE_VERSIONS."""
+    return resolve_version(model_version) in INJURY_OVERRIDE_VERSIONS
 
 
 def make_model(model_version: str = "v1.0") -> "ModelV1":
@@ -220,13 +235,14 @@ def predict_upcoming(
     model_version: str = DEFAULT_VERSION,
     include_injuries: bool = False,
     burn_in_seasons: int = 1,
-    injury_override: bool = False,
 ) -> list[dict[str, Any]]:
     """Train on all completed games, predict every scheduled (state='pre') game.
 
     `model_version` picks the feature set (see resolve_version) and is stored as the label.
-    `injury_override` (v1.1 only, off by default): scheduled games with a pre-tip injury
-    snapshot use it instead of "played the previous game" (players.py).
+    Versions in INJURY_OVERRIDE_VERSIONS (`v1.1i`) turn on the injury override: scheduled
+    games use each team's latest pre-tip injury snapshot, when it has one, instead of "played
+    the previous game" (players.py). The override follows the label only, so a row labelled
+    v1.1 never carries snapshot-based features.
 
     Returns rows shaped like the `predictions` table (keys in PREDICTION_KEYS). Does not write
     to the database; the caller passes the rows to Store.add_predictions.
@@ -235,7 +251,7 @@ def predict_upcoming(
         con,
         include_injuries=include_injuries,
         include_players=uses_players(model_version),
-        injury_override=injury_override,
+        injury_override=uses_injury_override(model_version),
     )
     model = make_model(model_version)
     if include_injuries:

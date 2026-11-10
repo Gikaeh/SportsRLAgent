@@ -35,6 +35,7 @@ class RunStats:
     boxscores: int = 0
     odds: int = 0
     injuries: int = 0
+    skipped_started: int = 0  # pre-tip fetches dropped: the game tipped off or moved earlier
     errors: list[str] = field(default_factory=list)
 
     def merge(self, other: "RunStats") -> "RunStats":
@@ -42,6 +43,7 @@ class RunStats:
         self.boxscores += other.boxscores
         self.odds += other.odds
         self.injuries += other.injuries
+        self.skipped_started += other.skipped_started
         self.errors += other.errors
         return self
 
@@ -162,6 +164,49 @@ def collect_core_odds(
     return stats
 
 
+def fetch_injury_snapshots(
+    src: EspnBasketball,
+    game_ids: list[str],
+    now: datetime | None = None,
+    skip_started: bool = False,
+) -> tuple[list[dict], list[dict], RunStats]:
+    """Fetch one fresh summary per game and parse its injury report. Touches no database, so
+    `deepsports pretip` can fetch without holding the DuckDB writer lock. Returns (reports,
+    captures, stats). Only pre-tip snapshots are kept: a game whose summary shows it tipped
+    off (or was moved earlier) is dropped. With `skip_started`, a game whose summary status is
+    no longer `pre` is also dropped (counted in stats.skipped_started). `stats.injuries` is
+    left 0: the caller sets it from Store.add_injuries."""
+    stats = RunStats()
+    reports: list[dict] = []
+    captures: list[dict] = []
+    for game_id in game_ids:
+        captured_at = now or datetime.now(UTC)
+        try:
+            raw = src.summary_snapshot(game_id, captured_at)
+        except FetchError as e:
+            log.error("injury summary %s: %s", game_id, e)
+            stats.errors.append(f"injury summary {game_id}: {e}")
+            continue
+        try:
+            rep, cap = parse_injuries(raw, captured_at, league=src.league)
+            if skip_started:
+                state = raw["header"]["competitions"][0]["status"]["type"].get("state")
+        except (KeyError, TypeError, ValueError, IndexError) as e:
+            stats.errors.append(f"parse injuries {game_id}: {e!r}")
+            continue
+        if skip_started and state != "pre":
+            stats.skipped_started += 1
+            continue
+        if not cap:
+            continue  # no injury report in the summary (college)
+        if not cap[0]["captured_before_tip"]:
+            stats.skipped_started += 1
+            continue  # tipped off (or rescheduled earlier) since the schedule was read
+        reports += rep
+        captures += cap
+    return reports, captures, stats
+
+
 def collect_injury_snapshots(
     src: EspnBasketball,
     db: Store,
@@ -172,28 +217,14 @@ def collect_injury_snapshots(
     """Pre-tip injury reports for games starting in the next `days_ahead` days (optionally only
     games involving `teams`, by abbreviation). Every run adds a new timestamped snapshot; a game
     that has already tipped off is skipped. ESPN's list is only trustworthy before tip-off
-    (docs/DATA_SOURCES.md), so this must run before games."""
-    stats = RunStats()
+    (docs/DATA_SOURCES.md), so this must run before games. Fetch (fetch_injury_snapshots),
+    then one write."""
     start = now or datetime.now(UTC)
     window = db.games_for_injury_snapshot(
         start, start + timedelta(days=days_ahead), league=src.league, team_abbrs=teams
     )
-    for game_id, _ in window:
-        captured_at = now or datetime.now(UTC)
-        try:
-            raw = src.summary_snapshot(game_id, captured_at)
-        except FetchError as e:
-            log.error("injury summary %s: %s", game_id, e)
-            stats.errors.append(f"injury summary {game_id}: {e}")
-            continue
-        try:
-            reports, captures = parse_injuries(raw, captured_at, league=src.league)
-        except (KeyError, TypeError, ValueError, IndexError) as e:
-            stats.errors.append(f"parse injuries {game_id}: {e!r}")
-            continue
-        if not captures or not captures[0]["captured_before_tip"]:
-            continue  # tipped off (or rescheduled earlier) since the schedule was read
-        stats.injuries += db.add_injuries(reports, captures)
+    reports, captures, stats = fetch_injury_snapshots(src, [g for g, _ in window], now)
+    stats.injuries += db.add_injuries(reports, captures)
     return stats
 
 

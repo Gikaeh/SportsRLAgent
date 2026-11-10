@@ -157,8 +157,9 @@ ESPN's summary `injuries` list is the team's injury report **at fetch time**, no
   `status` (`Out` / `Day-To-Day`), `injury_type` (body part or reason: `Ankle`, `Rest`, `Illness`),
   `detail` (`Sprain`), `side`, `return_date` (ESPN's estimate), `reported_at` (when ESPN last
   updated the status), `captured_at`, `captured_before_tip`.
-- Writers: `pipeline.collect_injury_snapshots` (pre-tip, from fresh summaries of upcoming games;
-  raw kept at `raw/espn/<league>/summary_pregame/<game>/<UTC timestamp>.json.gz`) and
+- Writers: `pipeline.collect_injury_snapshots` (in `update`: pre-tip, from fresh summaries of games in
+  the next 2 days) and `deepsports pretip` (NBA games tipping in 5-100 min, every 30 min); both fetch
+  through `pipeline.fetch_injury_snapshots`, raw kept at `raw/espn/<league>/summary_pregame/<game>/<UTC timestamp>.json.gz`) and
   `pipeline.backfill_injuries_from_raw` (offline; completed-game summaries are stored with
   `captured_before_tip = false` and `captured_at` = the raw file's mtime). Re-adding a snapshot
   with the same `captured_at` replaces it.
@@ -169,7 +170,9 @@ PK (`game_id`, `model`, `model_version`). `created_at`, `p_home_win`, `pred_home
 (upsert; a dict `features_json` is serialized, `created_at` defaults to now);
 read with `Store.latest_predictions(game_ids, include_early=, exclude_versions=)` (newest per game and
 model; the calendar leaves out `*-early` and `config.HIDDEN_MODEL_VERSIONS`).
-Model versions in use: `model = 'v1'` with `model_version` `v1.0` / `v1.1` (NBA) and `ncaab-v1`
+Model versions in use: `model = 'v1'` with `model_version` `v1.0` / `v1.1` / `v1.1i` (NBA; v1.1i =
+v1.1 + pre-tip injury reports, only for games with a captured report, rewritten by `deepsports pretip`
+shortly before tip) and `ncaab-v1`
 (college v1, `analysis/ncaab.py`; only D1-vs-D1 games where both teams have >= 5 completed games
 this season). `ncaab-v1p` is the college prior model (`analysis/ncaab_prior.py`, frozen
 `models/ncaab_prior/config.json`) on the same gate: graded, never displayed (`HIDDEN_MODEL_VERSIONS`).

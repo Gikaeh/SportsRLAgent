@@ -83,7 +83,8 @@ fetched 2026-11-03/04):
   of those in the box score. Only 2/664 injury-type DNPs in 2021-22 were on the list.
 So historical injuries would leak future information (and are mostly wrong anyway). They're stored
 with `captured_before_tip = false`. Models must use only snapshots taken before tip-off
-(`pipeline.collect_injury_snapshots`, `pregame_injuries` view). Pre-game summaries are about 17 KB
+(`pipeline.collect_injury_snapshots` in `update`, and `deepsports pretip` 5-100 min before NBA tips;
+`pregame_injuries` view). Model v1.1i reads only status `Out`. Pre-game summaries are about 17 KB
 gzipped; each snapshot is kept in the raw zone under its own timestamp. Fields: `status`
 (`Out` / `Day-To-Day`), `date`, `details.type/detail/side/returnDate`; no missing athlete ids seen.
 

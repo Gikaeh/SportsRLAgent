@@ -44,9 +44,12 @@ done
 
 # Model v1 predictions for upcoming NBA and college games (pre-tip only); the calendar skill reads them
 # through `deepsports upcoming --json`.
-# v1.0 and v1.1 are both kept and graded so their records can be compared; v1.1 runs last,
-# so it's the newest prediction for the calendar (the API prefers v1.1 explicitly).
-for version in v1.0 v1.1; do
+# v1.0, v1.1 and v1.1i are all kept and graded so their records can be compared. v1.1i (v1.1 +
+# pre-tip injury reports) only covers games with a captured report (update above takes them for
+# the next 2 days); `deepsports pretip` (launchd :20/:50) refreshes it shortly before tip. The
+# calendar never shows v1.1i (config.CALENDAR_EXCLUDED_VERSIONS), so it keeps v1.1 even though
+# v1.1i is written last; the API prefers v1.1i, then v1.1 (DECISIONS 2026-11-10).
+for version in v1.0 v1.1 v1.1i; do
   if ! uv run deepsports predict --model-version "$version"; then
     echo "$(ts) predict $version reported errors (continuing)"
   fi

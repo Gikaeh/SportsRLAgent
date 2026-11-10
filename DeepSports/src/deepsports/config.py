@@ -35,6 +35,10 @@ MIN_REQUEST_INTERVAL = float(os.environ.get("DEEPSPORTS_MIN_INTERVAL", "1.0"))
 # /api/predictions/record?model_version=...) but never shown on game cards, the glasses or the
 # calendar, which keep the league's display version.
 HIDDEN_MODEL_VERSIONS = ("ncaab-v1p",)
+# Versions never shown in the calendar export (`upcoming --json`): the hidden ones plus the
+# injury-aware NBA v1.1i, which the app shows labelled but the calendar keeps on v1.1
+# (docs/DECISIONS.md 2026-11-10).
+CALENDAR_EXCLUDED_VERSIONS = (*HIDDEN_MODEL_VERSIONS, "v1.1i")
 
 
 class DataDirUnavailable(RuntimeError):

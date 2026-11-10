@@ -32,8 +32,15 @@ PREDICTION_OPEN_TIMEOUT = 1.5  # live pages never wait long on the warehouse
 # Version shown in the apps/calendar, per league. NBA: v1.1 (v1 + player availability) is a
 # small, honest improvement over v1.0 (docs/results/2026-11-04-backtest-v1.1.md); both are
 # graded side by side. College: ncaab-v1 (docs/results/2026-11-04-ncaab-v1.md), the only one.
-# A game without the preferred version falls back to its latest pre-tip prediction.
-DISPLAY_MODEL_VERSIONS = {"nba": "v1.1", "ncaab": "ncaab-v1"}
+# NBA prefers v1.1i (v1.1 + pre-tip injury reports, written by `deepsports pretip` shortly
+# before tip; docs/DECISIONS.md 2026-11-10), then v1.1. Ordered preference per league; a game
+# with none of them falls back to its latest pre-tip prediction.
+DISPLAY_MODEL_VERSIONS: dict[str, tuple[str, ...]] = {
+    "nba": ("v1.1i", "v1.1"),
+    "ncaab": ("ncaab-v1",),
+}
+# Default version of /api/predictions/record per league (v1.1i is available by query).
+RECORD_MODEL_VERSIONS = {"nba": "v1.1", "ncaab": "ncaab-v1"}
 
 
 def create_app(
@@ -76,7 +83,7 @@ def create_app(
             with warehouse.connect(db_path, timeout=PREDICTION_OPEN_TIMEOUT) as con:
                 for lg, ids in by_league.items():
                     rows |= warehouse.pre_tip_predictions(
-                        con, ids, prefer_version=DISPLAY_MODEL_VERSIONS[lg]
+                        con, ids, prefer_versions=DISPLAY_MODEL_VERSIONS[lg]
                     )
         except (warehouse.WarehouseBusy, warehouse.WarehouseUnavailable):
             return
@@ -223,15 +230,15 @@ def create_app(
 
     @app.get("/api/predictions/record")
     def prediction_record(league: str = "nba", days: int = 30, model_version: str | None = None):
-        """One league's record, for one model version (default: the league's display
-        version). NBA and college are never mixed."""
+        """One league's record, for one model version (default: RECORD_MODEL_VERSIONS, e.g.
+        NBA v1.1; `?model_version=v1.1i` for the injury-aware one). Leagues are never mixed."""
         if league not in LEAGUES:
             raise UnknownLeague(league)
         try:
             from deepsports.analysis.record import prediction_record as record
         except ImportError:  # grading module not installed yet
             return JSONResponse({"error": "not_ready"}, status_code=503)
-        version = model_version or DISPLAY_MODEL_VERSIONS.get(league)
+        version = model_version or RECORD_MODEL_VERSIONS.get(league)
         with warehouse.connect(db_path) as con:
             return record(con, league=league, days=days, model_version=version)
 

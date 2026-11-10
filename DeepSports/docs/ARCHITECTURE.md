@@ -11,7 +11,7 @@ diagram in the same change (see CLAUDE.md).
 ### 1. Data collection (`src/deepsports`)
 | Module | Responsibility |
 |---|---|
-| `cli.py` | `deepsports` command: `update`, `backfill`, `schedule`, `boxscores`, `odds-snapshot`, `upcoming`, `status`, `teams`. Logs every collection run to `ingest_runs`. |
+| `cli.py` | `deepsports` command: `update`, `backfill`, `schedule`, `boxscores`, `odds-snapshot`, `pretip`, `upcoming`, `status`, `teams`. Logs every collection run to `ingest_runs`. |
 | `pipeline.py` | Jobs that orchestrate fetch → parse → store. All are idempotent and safe to re-run. |
 | `sources/espn.py` | `EspnBasketball(league)` for `nba` and `ncaab` (men's D1, `groups=50`): ESPN endpoint URLs and the rule for when a cached response can be reused (a "settled" response: every game on it is over). `sources/espn_nba.py` is a thin alias. |
 | `http.py` | `PoliteClient`: ≥1s between requests, retry with backoff on 429/5xx, honest User-Agent, and writes **every** response to the raw landing zone. |
@@ -42,6 +42,11 @@ diagram in the same change (see CLAUDE.md).
   `deepsports odds-snapshot` fetches today's and tomorrow's scoreboards (NBA + college) and writes
   only `pregame` odds rows. No Claude involved. It fetches before opening the warehouse and skips
   (exit 0) whenever another writer holds the lock, so the scheduled sync always wins.
+- Pre-tip injury refresh (`tools/pretip.sh`, launchd `com.deepsports.pretip` every 30 min at :20/:50):
+  `deepsports pretip` picks NBA games tipping in the next 5-100 minutes (short read-only open), fetches
+  one fresh ESPN summary per game with no lock held (`pipeline.fetch_injury_snapshots`), then in one
+  short writer session stores the pre-tip snapshots (`injury_captures`/`injury_reports`) and writes model
+  `v1.1i` predictions for exactly those games. Same yielding rules as the odds job. No Claude involved.
 - The global Claude Code Stop hook (`~/.claude/tools/notify.py`) posts each finished turn to
   Discord. That's how agent runs report back.
 - Serena MCP (`.mcp.json`) is for code navigation; Mermaid (`tools/diagram.sh`) is for diagrams.
@@ -71,6 +76,11 @@ diagram in the same change (see CLAUDE.md).
   allowed (historical ESPN injury lists are fetch-time, so they'd leak; see DATA_SOURCES.md).
 - `model.py` / `backtest.py`: logistic (win prob) and ridge (margin, total) models, a walk-forward
   backtest by season vs the closing line, and `predict_upcoming` rows for the `predictions` table.
+  `v1.1i` is v1.1 with the injury override (players.py): for scheduled games, a team's latest pre-tip
+  snapshot (`Out` players) replaces "played the previous game"; a team without one keeps the box-score
+  rule, and only games with at least one captured team get a v1.1i row. The override is tied to the label
+  (`INJURY_OVERRIDE_VERSIONS`). The API shows v1.1i first, then v1.1; the calendar
+  (`config.CALENDAR_EXCLUDED_VERSIONS`), paper log and ensemble stay on v1.1 (DECISIONS 2026-11-10).
 - `deepsports predict` runs in the twice-daily sync: it trains v1 on all completed NBA games and writes
   pre-tip predictions for the next 14 days. `prediction_results` (view) grades them after each game;
   `record.py` summarizes the record vs the closing line for `/api/predictions/record`.
@@ -125,6 +135,8 @@ diagram in the same change (see CLAUDE.md).
 2. Games are upserted. For games that haven't started, a pregame odds snapshot is stored
    if the line or a spread/total price changed. Between updates, `deepsports odds-snapshot`
    (every 30 min) adds the same kind of snapshot for today's and tomorrow's games.
+   Injury snapshots: `update` takes one per game in the next 2 days; `deepsports pretip` (every 30 min)
+   takes another for each NBA game tipping within ~100 minutes and re-predicts it with v1.1i.
 3. Final games without a box score get their `summary` fetched → team and player box
    scores + the closing line.
 4. Every run is recorded in `ingest_runs` (request count, rows, errors).

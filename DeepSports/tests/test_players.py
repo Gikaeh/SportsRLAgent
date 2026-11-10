@@ -13,11 +13,13 @@ from deepsports.analysis.backtest import run_backtest, walk_forward
 from deepsports.analysis.compare import compare, compare_report, paired_deltas
 from deepsports.analysis.features import FEATURES, build_features
 from deepsports.analysis.model import (
+    MODEL_VERSIONS,
     ModelV1,
     make_model,
     predict_upcoming,
     resolve_version,
     training_rows,
+    uses_injury_override,
 )
 from deepsports.analysis.players import PLAYER_FEATURES, PlayerHistory
 
@@ -238,7 +240,19 @@ def test_injury_override_only_for_scheduled_games():
         for g, r in on_rows.items():
             if r["state"] == "post":
                 assert _same(r["features"], off_rows[g]["features"], PLAYER_FEATURES)
-        assert predict_upcoming(con, "v1.1", injury_override=True)
+        # The override follows the label: v1.1i uses the snapshot, v1.1 never does.
+        by_label = {v: _by_id(predict_upcoming(con, v)) for v in ("v1.1", "v1.1i", "v1.1i-x")}
+        assert (
+            json.loads(by_label["v1.1i"][gid]["features_json"])["top6_out_last_diff"]
+            == (on["top6_out_last_diff"])
+        )
+        assert (
+            json.loads(by_label["v1.1"][gid]["features_json"])["top6_out_last_diff"]
+            == (off["top6_out_last_diff"])
+        )
+        assert by_label["v1.1i"][gid]["p_home_win"] < by_label["v1.1"][gid]["p_home_win"]
+        assert by_label["v1.1i-x"][gid]["model_version"] == "v1.1i-x"
+        assert by_label["v1.1i-x"][gid]["features_json"] == by_label["v1.1i"][gid]["features_json"]
     finally:
         st.close()
 
@@ -248,6 +262,10 @@ def test_injury_override_only_for_scheduled_games():
 
 def test_resolve_version():
     assert resolve_version("v1.1") == "v1.1" == resolve_version("v1.1-test")
+    assert resolve_version("v1.1i") == "v1.1i" == resolve_version("v1.1i-test")
+    assert uses_injury_override("v1.1i") and uses_injury_override("v1.1i-test")
+    assert not any(uses_injury_override(v) for v in ("v1.0", "v1.1", "v1.1c", "v1.1-test"))
+    assert MODEL_VERSIONS["v1.1i"][1:] == MODEL_VERSIONS["v1.1"][1:]
     for v in ("v1", "v1.0", "v1.0-test", "x", "v1.10"):
         assert resolve_version(v) == "v1.0"
 

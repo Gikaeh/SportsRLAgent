@@ -81,6 +81,7 @@ verifies and runs the checks.
 | Tool | read API + web server | `deepsports serve` (`src/deepsports/api/`) |
 | Tool | scheduled sync | `tools/scheduled-sync.sh` + `tools/launchd/` |
 | Tool | 30-min pregame line capture | `deepsports odds-snapshot` + `tools/odds-snapshot.sh` (launchd `com.deepsports.odds`) |
+| Tool | pre-tip injury refresh + v1.1i predictions | `deepsports pretip` + `tools/pretip.sh` (launchd `com.deepsports.pretip`, :20/:50) |
 | Tool | diagram renderer | `tools/diagram.sh` |
 | Tool | deepsports CLI | `src/deepsports/cli.py` |
 | Tool | paper-trade log (watch-only) | `deepsports paper log \| report` (`src/deepsports/analysis/paper.py`) |

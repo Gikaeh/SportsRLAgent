@@ -1,5 +1,9 @@
 # DeepSports web
 
+> **Frozen since 2026-11-10.** This stays the LAN build served on `:8787` (and next to the glasses
+> plugin). New UI work happens in `../../BetDesk/web`, a copy of this app hosted on Cloudflare.
+> Fixes only here.
+
 Mobile-first scoreboard PWA for the DeepSports read API (`docs/API.md`, including the v2
 additions: college basketball and model predictions). Vite + React + TypeScript, no UI framework,
 one plain stylesheet, hash routing.

@@ -548,3 +548,10 @@ still sees the root agents (verified), so the root is the one place every dev se
 skills are called by DeepSports' headless scheduled jobs, which run from `DeepSports/`.
 **Scope:** basketball only (NBA + NCAA men's D1). The other-sport plans were removed from PRODUCT, ROADMAP, HANDOFF and
 DATA_SOURCES; DeepSports and ManualBets will be integrated step by step, each step logged in `../docs/DECISIONS.md`.
+
+### 2026-11-10: web/ frozen; BetDesk mirrors the read API
+**Why:** both owners need the app away from the home Wi-Fi; the owner chose a separate Cloudflare-hosted
+project, `../BetDesk`, which copied `web/` and now gets all new UI work. `web/` stays as the LAN build
+(fixes only). BetDesk's pusher reads this API over HTTP every minute (`../AGENTS.md`, edge 3), so the
+API contract in `API.md` now has a second consumer: changes to it should be mirrored in BetDesk's
+pusher plan and Worker allowlist. Repo-wide entry: `../docs/DECISIONS.md`.

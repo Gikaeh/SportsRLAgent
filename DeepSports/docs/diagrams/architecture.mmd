@@ -56,9 +56,11 @@ flowchart TB
   subgraph APPS["Apps: deepsports serve :8787"]
     direction LR
     API["api/ FastAPI (nba + ncaab)<br/>live: ESPN + 30s cache<br/>warehouse: standings · predictions · record"]
-    WEB["web/ mobile PWA<br/>Vite · React · TS"]
+    WEB["web/ mobile PWA (LAN; frozen,<br/>new UI in ../BetDesk/web)"]
     GLASS["glasses/ Even Hub<br/>G2 plugin"]
     API --> WEB
+    BETDESK["../BetDesk pusher<br/>launchd 60 s · HTTP read-only<br/>→ Cloudflare mirror"]
+    API -->|"/api/* snapshots"| BETDESK
     API -->|"/api/scoreboard"| GLASS
   end
 

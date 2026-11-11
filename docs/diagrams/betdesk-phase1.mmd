@@ -1,0 +1,35 @@
+---
+title: BetDesk phase 1 (read-only mirror on Cloudflare workers.dev; phase 2 dashed)
+---
+flowchart TB
+  USERS(["Owner + Gikaeh<br/>phones, anywhere"])
+
+  subgraph CF["Cloudflare (free tier)"]
+    direction TB
+    ACCESS["Cloudflare Access<br/>2 allowed emails · 1-month session<br/>Google login or emailed PIN"]
+    PAGES["Static assets: BetDesk/web<br/>React PWA (same Worker)"]
+    WORKER["Worker: BetDesk/worker<br/>verifies Access JWT<br/>GET /api/* from D1<br/>POST /ingest (service token + bearer)"]
+    D1[("D1<br/>one row per API path<br/>+ generated_at")]
+    BANK[("D1 phase 2<br/>bets + per-person bankroll")]
+    ACCESS --> WORKER
+    ACCESS --> PAGES
+    WORKER --> D1
+    WORKER -.-> BANK
+  end
+
+  subgraph MAC["Owner's Mac"]
+    direction TB
+    PUSHER["BetDesk/pusher<br/>launchd · 1 min live / 15 min idle<br/>service token from Keychain"]
+    API["DeepSports read API :8787<br/>(contract: DeepSports/docs/API.md)"]
+    DUCK[("DeepSports DuckDB<br/>external drive")]
+    LOGS[("logs/**/*_bets.csv<br/>append-only")]
+    APPEND["phase 2: append pulled bets<br/>to logs/"]
+    API --> DUCK
+    API -->|labels only| LOGS
+    PUSHER -->|"HTTP GET (read-only)"| API
+    APPEND -.-> LOGS
+  end
+
+  USERS --> ACCESS
+  PUSHER -->|"HTTPS POST bundle"| ACCESS
+  BANK -.->|pull| APPEND

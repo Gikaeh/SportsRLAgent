@@ -31,9 +31,7 @@ A new edge is an integration step: propose it, log it, then build it.
    paper trades and the ensemble vote are recommendations or watch-only records.
 2. **No new secret values** in code, docs, logs, commits or chat. Known debt: the Odds API key is
    still a literal in ManualBets' `odd_scraping.py` files (and in git history); moving it to an
-   env var is open work. The key is shared by the owners and quota-limited: use it only when the
-   task needs fresh odds, request only the sports/markets/books needed, report
-   `x-requests-remaining`, never print it. The `logs/` CSVs hold real stakes: don't quote them
+   env var is open work. Never print the key. The `logs/` CSVs hold real stakes: don't quote them
    outside the repo.
 3. **Bet logs are append-only history.** Never edit or delete past rows in `logs/**`; correct by
    appending. Same for the projects' paper-trade and ensemble records.
@@ -51,6 +49,16 @@ A new edge is an integration step: propose it, log it, then build it.
   or a root-level file.
 - No AI attribution: no `Co-Authored-By` AI lines, session links or "Generated with" footers in
   commits or PRs.
+
+## ManualBets and the Odds API are NOT off limits
+Owner's standing instruction (2026-11-10): ManualBets (its models, predictions, Kelly
+recommendations, menus and scripts) and the Odds API it uses are normal tools, available to
+every session and agent. **Any betting analysis, pick or panel uses all of the repo's resources:
+DeepSports *and* ManualBets**, plus fresh Odds API lines when they help. Don't skip them to "save
+quota" or because a menu is interactive (drive it with piped input or call its code). Spend the
+shared quota sensibly: request only the sports/markets/books needed and report
+`x-requests-remaining`. The only limits are the non-negotiables above (humans place bets, never
+print the key, append-only logs) and DeepSports' one-writer rule.
 
 ## Working as the orchestrator
 The main session owns the plan and the outcome:

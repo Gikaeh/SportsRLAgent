@@ -23,3 +23,10 @@ Repo-wide rules (non-negotiables, git, boundary, context hygiene) live only in t
 Work focuses on NBA and NCAA men's D1 basketball. `ManualBets/hockey/` and
 `ManualBets/baseball/` stay in the tree but get no new work, and NHL/NFL plans were removed
 from the roadmaps. Revisit only when the owner asks.
+
+### 2026-11-10: ManualBets and the Odds API are normal tools, not off limits
+Owner instruction, repeated because sessions kept avoiding them: betting analysis and picks use
+all of the repo's resources, DeepSports and ManualBets (models, predictions, menus) plus fresh Odds
+API lines. The old "only when the task needs fresh odds" wording read as a ban and was replaced
+by an explicit section in `AGENTS.md`. Limits that stay: humans place bets, never print the key,
+append-only logs, one DuckDB writer.

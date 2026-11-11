@@ -555,3 +555,18 @@ project, `../BetDesk`, which copied `web/` and now gets all new UI work. `web/` 
 (fixes only). BetDesk's pusher reads this API over HTTP every minute (`../AGENTS.md`, edge 3), so the
 API contract in `API.md` now has a second consumer: changes to it should be mirrored in BetDesk's
 pusher plan and Worker allowlist. Repo-wide entry: `../docs/DECISIONS.md`.
+
+### 2026-11-11: Player impact ratings dropped; slate-clustered intervals govern correlation tests
+**What:** NBA player ratings (game-level ridge "RAPM-lite") and injury impact in points, tested as a v1.2
+candidate (v1.1 + `imp_avail_diff` + `imp_missing_diff`) under a pre-registration (docs/results/2026-11-11-player-impact.md).
+**Why dropped:** the pre-registered ship rule fails on the locked 2025-26 holdout (margin MAE -0.049, CI -0.159 to
++0.061); the train gain is team strength, not injury information; there is no edge vs opening or closing lines; and the
+star ratings fail face validity (a Jokic absence comes out at ~1.5-2 points), so the output isn't usable as an "injury
+impact in points" number either. The "ensemble context only" fallback needed the missing-impact vs open-to-close
+correlation to exclude 0 in both periods; it does with Fisher intervals but not with the slate-cluster bootstrap.
+**Rule from here on:** for this and future correlation (and other per-game) tests, the slate- or day-clustered
+interval governs over Fisher or other independence-assuming intervals: games on one slate share news and market moves,
+so they aren't independent. Report both when a pre-registration names Fisher, and say which one decided.
+**Scope:** analysis only. `player_impact.py` / `player_impact_eval.py` stay as research tooling with tests; nothing is
+wired into `predict`, `pretip`, the API or the ensemble context. Revisit only with better ratings (box-score prior or
+stint-level RAPM) that pass a face-validity check first (ROADMAP).

@@ -122,6 +122,12 @@ diagram in the same change (see CLAUDE.md).
   win C 0.03) and `ncaab-v1c` (`ncaab.predict_upcoming_calibrated`, win C 0.1) exist, but they aren't in
   `deepsports predict`, the sync or the API.
 - `fatigue.py`: top-8 accumulated player load in a time window (edge study B3), pure.
+- `player_impact.py` + `player_impact_eval.py` (research tooling, not wired into any model, job, the API
+  or the ensemble): as-of NBA player ratings (game-level ridge "RAPM-lite" on minute shares) and injury
+  impact in points (expected rotation x ratings, OUT players' minutes redistributed; OUT from an explicit
+  list, the "missed the previous game" proxy, or the leaked oracle for a ceiling), plus the walk-forward
+  backtest of the v1.2 candidate and its market tests. Result: no edge, star ratings not face-valid,
+  dropped (docs/results/2026-11-11-player-impact.md).
 - `ensemble_bets.py` + `/ensemble-betting` skill + `bettor` agent: a watch-only vote. `ensemble-bets
   context` builds a slate (games tipping 1 h to N days out with a pregame line: lines + prices, line
   movement, the display model's prediction, season form, rest/travel, NBA pre-tip injuries with mpg/ppg)

@@ -84,6 +84,8 @@ flowchart TB
     NCAAB --> FTEST
     MODEL --> CALIB
     NCAAB --> CALIB
+    PIMPACT["player_impact.py · player_impact_eval.py<br/>player ratings (RAPM-lite) + injury impact in points<br/>v1.2 candidate backtest · negative · not wired"]
+    MODEL --> PIMPACT
     BET --> PAPER
     EBETS["ensemble_bets.py<br/>slate · agent contexts · majority tally · grading<br/>watch-only; runs in reports/ensemble-bets/"]
     BET --> EBETS

@@ -32,6 +32,7 @@ Everything else on demand, through the doc index in `README.md`.
   every game unless asked. Use `/sync-game-calendar`.
 - **Finish line** for a code change:
   `uv run ruff format src tests && uv run ruff check src tests && uv run pytest -q`.
+  Until the `exclude-newer` vs `uv.lock` mismatch is settled (HANDOFF), use `uv run --frozen`.
 
 ## Key commands
 ```bash

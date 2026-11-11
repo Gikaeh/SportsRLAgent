@@ -1,4 +1,4 @@
-# Handoff: state of DeepSports (updated 2026-11-10)
+# Handoff: state of DeepSports (updated 2026-11-11)
 
 Read this first in a new session, then the open items in docs/ROADMAP.md. Rules: CLAUDE.md;
 other docs on demand via the index in README.md.
@@ -32,7 +32,8 @@ Rebuild clients: `(cd web && npm run build)`, `(cd glasses && npm run build)`; E
 In short: the displayed win probabilities are calibrated, but no model or rule so far beats the closing
 line (no betting edge). Details: the done summary in docs/ROADMAP.md and the dated
 reports in `docs/results/`. Model v1.1i (pre-tip injury reports) has no backtest (snapshots start
-2026-11-03) and is graded live, paired with v1.1 on the same games.
+2026-11-03) and is graded live, paired with v1.1 on the same games. Player impact ratings / injury impact in
+points (2026-11-11) were dropped: no edge, ratings not face-valid; the code stays as research tooling.
 
 ## Known gaps / gotchas
 - ESPN gaps (warnings in `deepsports check`): 8 NBA playoff summaries 404; 29 NBA team-games and ~430 college
@@ -63,3 +64,8 @@ reports in `docs/results/`. Model v1.1i (pre-tip injury reports) has no backtest
    real game (a brief ESPN failure on `/api/games/{id}` returns 404 with no stale fallback); grade the Nov 8-10
    forward freeze (`/Volumes/ExFATStorag/DeepSports/reports/srla-comparison-2026-11-07/forward_freeze.csv`);
    `%-` strftime codes fail on Windows (matters for a Windows collaborator).
+7. Owner decision: `pyproject.toml` has `exclude-newer = 2026-10-20`, but `uv.lock` was resolved at 2026-11-10, so a
+   plain `uv run` / `uv add` re-resolves and rewrites the lock (tzdata 2026.6 -> 2026.5). Pick one: set
+   `exclude-newer` to 2026-11-10, or re-lock at 2026-10-20. Until then use `uv run --frozen`.
+8. Player impact: better ratings (box-score prior or stint-level RAPM) gated on a face-validity check; only then a
+   possible `v1.2i` shadow with snapshot OUT lists (ROADMAP, Features and ratings).

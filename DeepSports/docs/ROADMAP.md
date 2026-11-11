@@ -15,10 +15,15 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
 - [ ] Derived tables: possessions, pace, offensive/defensive rating, four factors
 - [ ] Team strength ratings (Elo → adjusted net rating)
 - [ ] Re-test the "back-to-back after eastward travel" effect on recent seasons; add time zones
-- [ ] Team strength from **available players** (M, high value): player impact ratings from our box scores, adjusted for who's out
+- [x] Team strength from **available players**: tried 2026-11-11, negative (no edge vs v1.1 or the lines; the gain is
+      team strength, not injury info; star ratings not face-valid): [results/2026-11-11-player-impact.md](results/2026-11-11-player-impact.md)
+- [ ] Better player ratings (box-score prior or stint-level RAPM from play-by-play), gated on a face-validity check
+      (stars in the top tier; a Jokic absence worth 4-6 points) before re-running the player-impact backtest
 - [ ] Official NBA injury report ingestion (M, high value): point-in-time "who was listed before tip". Review NBA.com terms first (cdn.nba.com's 403 was caused by NordVPN's datacenter IP; it works with the VPN off, 2026-11-10)
 - [ ] Referee crews vs totals (S backtest, from cached summaries)
 - [ ] Injury-impact score over `pregame_injuries` (weights learned, not hand-set)
+- [ ] Maybe: a `v1.2i` shadow (v1.1 + impact features with the real pre-tip snapshot OUT lists, like v1.1i), graded
+      live; only after better ratings, and backtest once 2-3 months of snapshots exist
 - [ ] Rolling SRS/SOS beside Elo (with home-court term), measured incrementally
 - [ ] Store play-by-play events in the warehouse if a play-by-play feature is ever wanted (`parse_pbp.py` is ready)
 - Skip for now: news/social sentiment scoring, Reddit, NewsAPI, GDELT (no evidence of an edge over the closing
@@ -48,7 +53,9 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
   (`CONTEXT_VERSION` in `src/deepsports/analysis/ensemble_bets.py`, logged in DECISIONS), each with its own graded
   record (`ensemble-bets grade` → `by_context_version`); a version counts only if its record beats the previous
   one. Candidates:
-  - [ ] Injury impact in points (who's out × their on-court value), not just names and mpg
+  - [ ] Injury impact in points (who's out × their on-court value), not just names and mpg. Not shipped 2026-11-11:
+        the ratings aren't face-valid ([results](results/2026-11-11-player-impact.md)); prerequisite = box-score prior
+        or stint-level RAPM
   - [ ] Line-movement timing from the 30-min captures (when it moved, how far, against the public side?)
   - [ ] Opponent-adjusted ratings and recent efficiency (offense/defense, pace) beside raw margins
   - [ ] Each market's historical context (e.g. how often 30+ pt college spreads cover) from our warehouse
@@ -87,7 +94,9 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
 - **Experiments not shipped:** Ensemble v2 ([results/2026-11-04-ensemble-v2.md](results/2026-11-04-ensemble-v2.md));
   calibrated `v1.1c` / `ncaab-v1c` ([results/2026-11-06-calibration.md](results/2026-11-06-calibration.md): the
   displayed probabilities are already calibrated; the pick gap is the winner's curse); DeepSeek edge hunt (no
-  edge survives; its reusable code ported to `analysis/betting/`, `feature_test.py`, `fatigue.py`, `parse_pbp.py`).
+  edge survives; its reusable code ported to `analysis/betting/`, `feature_test.py`, `fatigue.py`, `parse_pbp.py`);
+  player impact ratings + injury impact in points as v1.2 ([results/2026-11-11-player-impact.md](results/2026-11-11-player-impact.md):
+  no edge vs v1.1 or the lines, dropped; kept as research tooling in `player_impact*.py`).
 - **Betting simulations:** $100 sim of v1 ([results/2026-11-04-sim-v1-100usd.md](results/2026-11-04-sim-v1-100usd.md))
   and at real prices ([results/2026-11-06-sim-v1.1-prices.md](results/2026-11-06-sim-v1.1-prices.md)): closing
   line → $0 on every market; opening totals positive but the CI includes break-even. Kelly not justified.

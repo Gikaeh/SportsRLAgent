@@ -83,6 +83,7 @@ dependencies = [
     { name = "numpy" },
     { name = "pytz" },
     { name = "scikit-learn" },
+    { name = "scipy" },
     { name = "tzdata" },
     { name = "uvicorn" },
 ]
@@ -101,6 +102,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.5.4" },
     { name = "pytz", specifier = ">=2026.5" },
     { name = "scikit-learn", specifier = ">=1.9.1" },
+    { name = "scipy", specifier = ">=1.18.1" },
     { name = "tzdata", specifier = ">=2024.1" },
     { name = "uvicorn", specifier = ">=0.54.0" },
 ]

@@ -6,6 +6,7 @@ import logging
 import sys
 import tomllib
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 
 import duckdb
 
@@ -146,6 +147,12 @@ def build_parser() -> argparse.ArgumentParser:
     ec.add_argument("--seed", type=int, default=0, help="shuffle seed for game order")
     ec.add_argument(
         "--context", choices=["v1", "v2"], default="v1", help="context version (ctx-v1 / ctx-v2)"
+    )
+    ec.add_argument(
+        "--manualbets",
+        metavar="JSON",
+        help="ManualBets export (ManualBets/tools/export_predictions.py) to add to every game;"
+        " 'none' records that it is unavailable",
     )
     et = ebsub.add_parser("tally", help="validate picks-<agent>.json files and count votes")
     et.add_argument("run", help="run directory (from `context`)")
@@ -629,6 +636,16 @@ def _ensemble_bets(args: argparse.Namespace, db: Store) -> int:
     now = datetime.now(UTC)
     leagues = list(LEAGUES) if args.league == "all" else [args.league]
     slate = eb.load_slate(db.con, now, days=args.days, leagues=leagues, context=args.context)
+    if args.manualbets:
+        from deepsports.analysis.manualbets_context import attach_manualbets, load_export
+
+        export = None
+        if args.manualbets != "none":
+            try:
+                export = load_export(Path(args.manualbets))
+            except (OSError, ValueError) as err:
+                print(f"warning: ManualBets export unreadable: {err}", file=sys.stderr)
+        attach_manualbets(slate, export)
     run = eb.new_run_dir(now)
     paths = eb.write_context(run, slate, args.agents, seed=args.seed)
     print(

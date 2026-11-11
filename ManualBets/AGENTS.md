@@ -22,6 +22,7 @@ Run from `ManualBets/`. Same commands on macOS and Windows. Python >=3.12 (the M
 | College menu (reads the DeepSports warehouse) | `uv run python college_basketball/main.py` |
 | Home/away calibration of graded bets | `uv run python tools/calibration_diagnostic.py` |
 | Smoke test: train in memory + predict `upcoming_games.csv` | `uv run python tools/pipeline_smoke_test.py` |
+| Export the slate as JSON for DeepSports' ensemble vote (models, Kelly fractions, best Odds API prices; 2-5 credits; no logging) | `uv run python tools/export_predictions.py --out <file>` |
 | College walk-forward | `uv run python tools/college_walkforward.py --start 2025-11-01 --end 2026-02-01 --out preds.csv` |
 
 Menus: pick a number; one above the highest option runs every task in order. The NBA menu is

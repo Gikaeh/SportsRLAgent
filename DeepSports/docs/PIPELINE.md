@@ -151,6 +151,19 @@ to act on only those, e.g. `tools/launchd/install.sh install com.deepsports.odds
   permitted` on the drive, so scripts must go through `uv run python` (DECISIONS 2026-11-07).
 - Claude agents can't install these themselves: Claude Code's auto mode blocks creating login items. The owner runs the installer.
 
+## Raspberry Pi helper (nba.com)
+nba.com blocks NordVPN, which this Mac runs (even a dedicated IP), so jobs that need stats.nba.com run
+on a Raspberry Pi on the same LAN: ssh host `rpi` (172.16.0.25, key `~/.ssh/id_ed25519_rpi`, entry in
+`~/.ssh/config`). Everything there lives in one folder, `~/SportsRLAgent` (a clone of this repo):
+uv, its cache and Python downloads are in `~/SportsRLAgent/.tools/` (`. .tools/env.sh` first; `.tools/`
+is in the clone's `.git/info/exclude`). Keep it that way: no installs outside that folder.
+- Daily use: `tools/manualbets-export.py` (called by `tools/ensemble-daily.sh`) runs the ManualBets
+  NBA export there (`git pull --ff-only` first), copies it back with scp, runs college here, merges.
+  If the Pi fails it tries the NBA half here (works with the VPN off).
+- Set up again: `git clone https://github.com/Gikaeh/SportsRLAgent.git ~/SportsRLAgent`, then install uv
+  into `.tools/bin` with `UV_INSTALL_DIR=… UV_NO_MODIFY_PATH=1` (the installer also drops a receipt in
+  `~/.config/uv/`; move it into `.tools/`), then `uv sync` in `ManualBets/`.
+
 ## Troubleshooting
 | Symptom | Cause / fix |
 |---|---|

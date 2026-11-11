@@ -43,3 +43,12 @@ all of the repo's resources, DeepSports and ManualBets (models, predictions, men
 API lines. The old "only when the task needs fresh odds" wording read as a ban and was replaced
 by an explicit section in `AGENTS.md`. Limits that stay: humans place bets, never print the key,
 append-only logs, one DuckDB writer.
+
+### 2026-11-11: Edge 4, DeepSports' ensemble reads a ManualBets export
+Owner instruction: the ensemble-betting agents must use all of the repo's tools, not only DeepSports.
+`ManualBets/tools/export_predictions.py` (ManualBets' own env, no logging, stakes as bankroll fractions,
+key never printed) writes a JSON of its NBA + college model numbers, Kelly picks and best Odds API
+prices; DeepSports reads only that file (`analysis/manualbets_context.py`), no imports either way.
+DeepSports' `tools/ensemble-daily.sh` launches the export as a subprocess before building the context.
+nba.com blocks the Mac's NordVPN, so the NBA half runs on a Raspberry Pi on the LAN (ssh `rpi`,
+everything inside `~/SportsRLAgent` there). Detail: `DeepSports/docs/DECISIONS.md` 2026-11-11.

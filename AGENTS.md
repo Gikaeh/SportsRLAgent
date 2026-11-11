@@ -27,6 +27,9 @@ these read-only edges:
    (`college_basketball/data_pipeline/warehouse_loader.py`).
 3. BetDesk's pusher reads DeepSports' read API over HTTP on `localhost:8787` (`BetDesk/pusher/`;
    contract `DeepSports/docs/API.md`) and pushes those responses to BetDesk's Cloudflare Worker.
+4. DeepSports' ensemble vote reads a JSON written by `ManualBets/tools/export_predictions.py`
+   (run by `DeepSports/tools/manualbets-export.py`, NBA half on the LAN Raspberry Pi;
+   `analysis/manualbets_context.py`).
 A new edge is an integration step: propose it, log it, then build it.
 
 ## Non-negotiables (every project, every agent)

@@ -28,7 +28,25 @@ print(len(files))' "$1" "$2"
 }
 
 echo "=== $(ts) ensemble vote start (agents $AGENTS, days $DAYS)"
-out=$(uv run deepsports ensemble-bets context --agents "$AGENTS" --days "$DAYS") || {
+
+# ManualBets' view of the slate (its XGBoost models, Kelly picks, best Odds API prices) goes into
+# every context file (root AGENTS.md: betting analysis uses all the repo's tools; edge 4). nba.com
+# blocks this Mac's NordVPN, so tools/manualbets-export.py runs the NBA half on the Pi (ssh `rpi`)
+# and college here. 2 Odds API credits (+3 for college once teams have 5 games). On failure the
+# vote still runs and the context says the ManualBets facts are missing.
+#   MANUALBETS_EXPORT=<file>  reuse an export made earlier instead
+#   MANUALBETS_NBA_HOST=<ssh host>  where the NBA half runs (default rpi; empty = this Mac)
+MB_JSON="$REPO/.sync/manualbets-export.json"
+mkdir -p "$REPO/.sync" && rm -f "$MB_JSON"
+if [ -n "${MANUALBETS_EXPORT:-}" ]; then
+  cp "$MANUALBETS_EXPORT" "$MB_JSON" && mb_out="reused $MANUALBETS_EXPORT" || mb_out="couldn't copy $MANUALBETS_EXPORT"
+else
+  mb_out=$($PY tools/manualbets-export.py --out "$MB_JSON" 2>&1 | tail -1)
+fi
+echo "$(ts) manualbets export: $mb_out"
+if [ -s "$MB_JSON" ]; then MB_ARG="$MB_JSON"; else MB_ARG="none"; fi
+
+out=$(uv run deepsports ensemble-bets context --agents "$AGENTS" --days "$DAYS" --manualbets "$MB_ARG") || {
   echo "$(ts) ensemble context failed"; exit 1; }
 RUN=$($PY -c 'import json,sys; print(json.load(sys.stdin)["run"])' <<<"$out")
 GAMES=$($PY -c 'import json,sys; print(json.load(sys.stdin)["games"])' <<<"$out")

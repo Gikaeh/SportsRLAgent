@@ -33,6 +33,10 @@ flowchart TB
     SCHED -->|"headless claude -p<br/>/sync-game-calendar prefetched"| SYNC
     EBDAILY["tools/ensemble-daily.sh<br/>14:00 run only · 10 bettors<br/>majority → Discord"]
     SCHED --> EBDAILY -->|"headless claude -p<br/>/ensemble-betting prefetched"| EBSKILL
+    MBEXPORT["tools/manualbets-export.py<br/>runs ../ManualBets/tools/export_predictions.py<br/>XGBoost + Kelly + Odds API → .sync/manualbets-export.json (edge 4)"]
+    RPI["Raspberry Pi (LAN, ssh rpi)<br/>~/SportsRLAgent clone · NBA half<br/>(nba.com blocks the Mac's VPN)"]
+    EBDAILY -->|"before context"| MBEXPORT
+    MBEXPORT -->|"ssh + scp: NBA"| RPI
     ODDSJOB["tools/odds-snapshot.sh<br/>launchd every 30 min (:15 · :45)<br/>skips if the writer lock is held"]
     PRETIPJOB["tools/pretip.sh<br/>launchd every 30 min (:20 · :50)<br/>NBA games tipping in 5-100 min<br/>skips if the writer lock is held"]
     SYNCF -->|read| SYNC
@@ -89,6 +93,8 @@ flowchart TB
     BET --> PAPER
     EBETS["ensemble_bets.py<br/>slate · agent contexts · majority tally · grading<br/>watch-only; runs in reports/ensemble-bets/"]
     BET --> EBETS
+    MBCTX["manualbets_context.py<br/>attach ManualBets export to slate (+mb1)"]
+    MBCTX --> EBETS
   end
 
   subgraph EXT[External services]

@@ -24,6 +24,19 @@ Work focuses on NBA and NCAA men's D1 basketball. `ManualBets/hockey/` and
 `ManualBets/baseball/` stay in the tree but get no new work, and NHL/NFL plans were removed
 from the roadmaps. Revisit only when the owner asks.
 
+### 2026-11-10: BetDesk, a shared app on Cloudflare (phase 1 = read-only mirror)
+**Status:** decided; phase 1 built (not yet deployed). Owner answers: start with the owner's email
+only (Gikaeh's later; emails stay out of the repo), name `BetDesk`, `DeepSports/web` frozen, free
+`workers.dev` address. Hosting detail and BetDesk-internal choices: `BetDesk/docs/DECISIONS.md`.
+Both owners need the app away from the home Wi-Fi, but DeepSports' app is LAN-only (DeepSports
+DECISIONS 2026-11-03). A new top-level project `BetDesk/` (not under `DeepSports/`, because it will
+use data and tools from both projects) hosts a PWA on a Cloudflare Worker (static assets) + D1, behind
+Cloudflare Access for the two owners' emails. Phase 1: a pusher on the Mac reads DeepSports' read
+API on `localhost:8787` and pushes snapshots; no stakes leave the Mac. Phase 2 (separate decision):
+shared bet logging with a bankroll per person (owner decision), appended back to `logs/`. This adds
+one boundary edge (BetDesk pusher → DeepSports read API, HTTP, read-only; edge 3 in `AGENTS.md`).
+Details, alternatives and open questions: `docs/proposals/2026-11-10-betdesk-cloudflare.md`.
+
 ### 2026-11-10: ManualBets and the Odds API are normal tools, not off limits
 Owner instruction, repeated because sessions kept avoiding them: betting analysis and picks use
 all of the repo's resources, DeepSports and ManualBets (models, predictions, menus) plus fresh Odds

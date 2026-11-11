@@ -721,6 +721,10 @@ def render_game(g: Mapping[str, Any]) -> str:
         )
     else:
         lines.append("- model: no prediction for this game")
+    if g.get("manualbets"):
+        from deepsports.analysis.manualbets_context import render_game as render_mb
+
+        lines += render_mb(g)
     return "\n".join(lines)
 
 
@@ -745,6 +749,10 @@ def render_context(slate: Mapping[str, Any], seed: int, one_pick: bool = False) 
         from deepsports.analysis.ensemble_context_v2 import render_v2_brief
 
         head += render_v2_brief(slate)
+    if slate.get("manualbets"):  # +mb1
+        from deepsports.analysis.manualbets_context import render_brief as render_mb_brief
+
+        head += render_mb_brief(slate)
     return head + "\n" + "\n\n".join(render_game(g) for g in games) + "\n"
 
 

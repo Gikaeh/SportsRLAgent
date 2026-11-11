@@ -570,3 +570,15 @@ so they aren't independent. Report both when a pre-registration names Fisher, an
 **Scope:** analysis only. `player_impact.py` / `player_impact_eval.py` stay as research tooling with tests; nothing is
 wired into `predict`, `pretip`, the API or the ensemble context. Revisit only with better ratings (box-score prior or
 stint-level RAPM) that pass a face-validity check first (ROADMAP).
+
+### 2026-11-11: ensemble bettors see ManualBets and the Odds API (`+mb1`)
+**Why:** the owner found the daily vote used only DeepSports facts, against the standing rule that betting
+analysis uses all of the repo's tools (`../AGENTS.md`). The bettors stay Read-only on one context file (their
+independence is the experiment), so the tools reach them as facts: `tools/ensemble-daily.sh` runs
+`../ManualBets/tools/export_predictions.py` (2 Odds API credits/day, +3 for college once teams have 5 games)
+and `ensemble-bets context --manualbets` attaches it. Runs with it carry `context_version` `ctx-v1+mb1`, so
+`grade`'s `by_context_version` keeps their record apart. A failed export doesn't block the vote. Repo-wide
+entry (edge 4): `../docs/DECISIONS.md`.
+**Pi (same day):** nba.com blocks NordVPN even on a dedicated IP, so the NBA half runs on the owner's Raspberry Pi
+(`tools/manualbets-export.py`, PIPELINE.md). The owner asked that access there stay inside one folder,
+`~/SportsRLAgent`, uv included.

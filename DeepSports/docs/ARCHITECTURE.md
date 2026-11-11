@@ -135,6 +135,10 @@ diagram in the same change (see CLAUDE.md).
   (Read only) are launched in one message and each returns picks JSON; `tally` grades nothing, takes line
   and price from the slate, drops picks on games already tipped, and reports strict-majority picks;
   `grade` scores every run's majority and agent picks against finals. No warehouse writes.
+  `--manualbets <json>` (`manualbets_context.py`, pure) adds ManualBets' view to each game: its XGBoost
+  numbers, Kelly recommendations (bankroll fractions) and best Odds API prices, from the file
+  `../ManualBets/tools/export_predictions.py` writes (boundary edge 4; `tools/manualbets-export.py` runs
+  the NBA half on the LAN Raspberry Pi, since nba.com blocks this Mac's VPN, and college here). Context version gets `+mb1`; `none` tells the bettors the facts are missing.
 - `paper.py`: forward paper-trade log (watch-only). Three frozen rules (`ncaab-total-t7`,
   `nba-total-t4`, `nba-load-under`) log bets before tip-off into `paper_bets` (insert-only) via
   `deepsports paper log` in the scheduled sync; `paper_results` (view) grades them and

@@ -22,10 +22,16 @@ majority (more than N/2) agree on. Nothing is bet for real. Every run is kept an
 Arguments (all optional): number of agents (default 5), days (default 3), league (`nba`, `ncaab`,
 default both), model (default sonnet; the user may ask for opus/haiku or a mix).
 
-## 1. Build the slate (read-only, no network)
+## 1. Build the slate (ManualBets + Odds API, then the warehouse read-only)
+Bettors decide from all of the repo's tools, so first export ManualBets' view (its models, Kelly picks,
+best Odds API prices; 2 credits, +3 for college once teams have 5 games). The NBA half runs on the
+Raspberry Pi (nba.com blocks this Mac's VPN):
 ```bash
-uv run deepsports ensemble-bets context --agents N --days D [--league nba|ncaab]
+uv run python tools/manualbets-export.py --out .sync/manualbets-export.json
+uv run deepsports ensemble-bets context --agents N --days D [--league nba|ncaab] \
+  --manualbets .sync/manualbets-export.json   # or --manualbets none if the export failed
 ```
+Report the export's `odds_api_remaining`.
 It prints JSON: the run directory, the number of bettable games, and one context file per agent
 (`context-a01.md` …, same facts, games shuffled differently). Games tipping within 60 minutes
 are left out. If `games` is 0, stop and tell the user (lines usually post about a day ahead).

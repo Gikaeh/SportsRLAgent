@@ -16,7 +16,7 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
 - [ ] Team strength ratings (Elo → adjusted net rating)
 - [ ] Re-test the "back-to-back after eastward travel" effect on recent seasons; add time zones
 - [ ] Team strength from **available players** (M, high value): player impact ratings from our box scores, adjusted for who's out
-- [ ] Official NBA injury report ingestion (M, high value): point-in-time "who was listed before tip". Review NBA.com terms first (cdn.nba.com returned 403 for us)
+- [ ] Official NBA injury report ingestion (M, high value): point-in-time "who was listed before tip". Review NBA.com terms first (cdn.nba.com's 403 was caused by NordVPN's datacenter IP; it works with the VPN off, 2026-11-10)
 - [ ] Referee crews vs totals (S backtest, from cached summaries)
 - [ ] Injury-impact score over `pregame_injuries` (weights learned, not hand-set)
 - [ ] Rolling SRS/SOS beside Elo (with home-court term), measured incrementally

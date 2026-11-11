@@ -43,5 +43,8 @@ DeepSports-side follow-ups from 2026-11-09 now live in `../DeepSports/docs/HANDO
   (`www.nba.com`/`cdn.nba.com` 403, `stats.nba.com` hangs). With the VPN paused, `nba_api` answered
   in 0.6 s and the NBA menu (Betting Recommendations → All) ran end to end on the Mac.
 - To run the NBA menu here: pause NordVPN (or exclude this traffic from it) first.
+- 2026-11-11: a NordVPN dedicated IP is blocked too (it exits via PacketHub, a datacenter network): www/cdn
+  403, stats.nba.com times out. NBA fetches now run on the LAN Raspberry Pi (ssh `rpi`, clone in
+  `~/SportsRLAgent`, uv inside `.tools/`): `../DeepSports/docs/PIPELINE.md`, "Raspberry Pi helper".
 - Note: Betting Recommendations always appends what it shows to `../logs/basketball/betting/archive/`
   (by design, even when you answer "n" to saving).

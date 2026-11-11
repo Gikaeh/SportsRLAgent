@@ -14,7 +14,8 @@ Scope:
 Rules (the project docs have the details):
 - Fetch politely and cache: DeepSports through `PoliteClient` (≥1 req/s). If a source blocks
   plain clients, report it and propose an approach; the owner decides.
-- The Odds API is paid and quota-limited (root rule 2): no calls unless the task needs them.
+- The Odds API is allowed (root `AGENTS.md`, "ManualBets and the Odds API are NOT off limits"); it is
+  quota-limited, so request only what's needed and report `x-requests-remaining`.
 - DeepSports parsers stay pure and are tested on real responses saved in `tests/fixtures/`
   (trim big unused sections such as plays and news before saving).
   Jobs are idempotent. Schema changes update `store.py`, `DATA_MODEL.md` and tests together.

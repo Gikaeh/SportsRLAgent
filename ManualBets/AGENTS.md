@@ -27,8 +27,9 @@ Run from `ManualBets/`. Same commands on macOS and Windows. Python >=3.12 (the M
 Menus: pick a number; one above the highest option runs every task in order. The NBA menu is
 Betting Recommendations / Betting Update (grade + bankroll) / Active Bets / Model Retraining.
 The college menu is Retrain / Predictions / Recommendations (costs 3 Odds API credits).
-Odds API calls spend the shared quota (`../AGENTS.md` rule 2): don't run menus that fetch odds
-unless the task needs fresh odds.
+Running the menus and the Odds API is allowed and expected whenever betting analysis needs
+ManualBets' picks or fresh odds (`../AGENTS.md`, "ManualBets and the Odds API are NOT off limits").
+Spend the shared quota sensibly and report `x-requests-remaining`.
 
 ## How it works and where things live
 Paths are relative to `ManualBets/`; the bet logs are at `../logs/`.
@@ -69,7 +70,8 @@ in `../logs/college_basketball/betting/bets.csv`, and the NBA bankroll counts th
   logged URL can expose it: don't print exceptions or URLs from those calls verbatim.
 - **Escalate to the owner before** changing betting thresholds or bankroll settings, anything that
   changes model outputs (features, drop lists, retrain settings), or anything in `../logs/`.
-  Also on missing credentials, exhausted quota, or a data source that changed shape.
+  Also on missing credentials, exhausted quota, or a data source that changed shape. (Running the
+  menus, predictions and Odds API calls needs no escalation.)
 
 **Every change updates its home:**
 - New `tools/` script → a row in the Commands table above.

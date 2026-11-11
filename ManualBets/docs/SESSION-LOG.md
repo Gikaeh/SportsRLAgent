@@ -37,3 +37,11 @@ Next item forward, so this entry's Next list is always the full open list.
 4. Batch 4 hardening (`basketball/NOTES.md`): A3, A5, C-R3, C3/C4, then the pending B bugs.
 
 DeepSports-side follow-ups from 2026-11-09 now live in `../DeepSports/docs/HANDOFF.md` (Next steps).
+
+## 2026-11-10 (later): why NBA.com "refused this Mac"
+- Cause: NordVPN. The Mac's traffic left through a datacenter IP (Datacamp), which NBA blocks
+  (`www.nba.com`/`cdn.nba.com` 403, `stats.nba.com` hangs). With the VPN paused, `nba_api` answered
+  in 0.6 s and the NBA menu (Betting Recommendations → All) ran end to end on the Mac.
+- To run the NBA menu here: pause NordVPN (or exclude this traffic from it) first.
+- Note: Betting Recommendations always appends what it shows to `../logs/basketball/betting/archive/`
+  (by design, even when you answer "n" to saving).

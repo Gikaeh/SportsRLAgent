@@ -132,8 +132,10 @@ diagram in the same change (see CLAUDE.md).
   context` builds a slate (games tipping 1 h to N days out with a pregame line: lines + prices, line
   movement, the display model's prediction, season form, rest/travel, NBA pre-tip injuries with mpg/ppg)
   and one shuffled context file per agent in `reports/ensemble-bets/<run>/`; N `bettor` subagents
-  (Read only) are launched in one message and each returns picks JSON; `tally` grades nothing, takes line
-  and price from the slate, drops picks on games already tipped, and reports strict-majority picks;
+  are launched in one message and each returns picks JSON (since `+tools1` they may research: files incl.
+  ManualBets, `curl -s` on the read API, the web; no other commands, and never other bettors' picks or
+  earlier runs); `tally` grades nothing, takes line
+  and price from the slate, drops picks on games already tipped, and reports strict-majority picks; `table` renders them for Discord;
   `grade` scores every run's majority and agent picks against finals. No warehouse writes.
   `--manualbets <json>` (`manualbets_context.py`, pure) adds ManualBets' view to each game: its XGBoost
   numbers, Kelly recommendations (bankroll fractions) and best Odds API prices, from the file

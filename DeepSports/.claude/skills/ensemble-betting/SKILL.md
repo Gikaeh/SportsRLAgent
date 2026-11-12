@@ -47,8 +47,10 @@ asked for one), all in the same message so none can see another's output. Prompt
 Do not add hints, opinions, or anything about other agents. Same prompt shape for every agent.
 If the `bettor` type isn't available (agent types load at session start), use
 `subagent_type: "general-purpose"`, `model: "sonnet"`, and paste the body of
-`.claude/agents/bettor.md` into the prompt (with the file path filled in, and "do not run commands or
-search the web"). Same text for every agent.
+`.claude/agents/bettor.md` into the prompt (with the file path filled in). Same text for every agent.
+Bettors may research (read API via `curl -s http://localhost:8787/...`, ManualBets files, the web) but
+never open other bettors' picks or earlier runs; the scheduled run enforces that with permission rules
+(`tools/ensemble-daily.sh`).
 
 ## 3. Save each reply, then tally
 When all bettors have finished, write each agent's final reply verbatim to

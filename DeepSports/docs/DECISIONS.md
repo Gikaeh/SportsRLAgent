@@ -582,3 +582,15 @@ entry (edge 4): `../docs/DECISIONS.md`.
 **Pi (same day):** nba.com blocks NordVPN even on a dedicated IP, so the NBA half runs on the owner's Raspberry Pi
 (`tools/manualbets-export.py`, PIPELINE.md). The owner asked that access there stay inside one folder,
 `~/SportsRLAgent`, uv included.
+
+### 2026-11-11: ensemble bettors may research (`+tools1`); Discord gets a table
+**Why:** the owner wants the 14:00 vote to use every tool of the repo (DeepSports and ManualBets) and to
+arrive on Discord as a table of what to bet. Bettors now have Read/Grep/Glob, `curl -s` on the read API
+(`localhost:8787`), WebSearch/WebFetch, and ManualBets' folder (`--add-dir`). Kept out on purpose: other
+shell commands (one DuckDB writer: the pretip/odds jobs write during the vote; the API handles the lock),
+per-bettor Odds API calls (20× the quota; the context already carries the 14:00 lines and ManualBets'
+best prices, and picks are graded at the slate's price anyway), and reading other bettors' picks or
+earlier runs (permission deny rules plus the bettor brief: independence is the experiment). Runs carry
+`context_version` `…+tools1` (`ensemble-bets context --tag`), so `grade` keeps their record apart.
+The Discord post is `ensemble-bets table`. Owner asked for 20 bettors on 2026-11-12 only:
+`.sync/ensemble-agents.<date>` is a one-day override read by `tools/ensemble-daily.sh`.

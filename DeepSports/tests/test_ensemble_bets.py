@@ -163,6 +163,26 @@ def test_run_dir_round_trip(tmp_path):
     assert "a03" in out["problems"] and "2/3 agree" in md
     # tallied once: a later call returns the saved tally even after tip-off
     assert eb.tally_run(run, now=TIP + timedelta(hours=1))[1] == out
+    table = eb.table_run(run)
+    assert "```" in table and "LAL -3.5" in table and "-112" in table and "2/3" in table
+
+
+def test_render_table_close_calls_and_empty():
+    slate = _slate()
+    g = slate["games"][0]
+    pick = {
+        "game_id": g["game_id"],
+        "market": "total",
+        "side": "over",
+        "line": 225.5,
+        "price": -110,
+    }
+    under = {**pick, "side": "under"}
+    out = {"n_agents": 10, "majority": [],
+           "picks": {"a01": [pick], "a02": [pick], "a03": [pick], "a04": [under]}}  # fmt: skip
+    t = eb.render_table(out, slate)
+    assert "No pick has a majority today." in t
+    assert "Over 225.5 (-110)" in t and "3/10, 1 on the other side" in t
 
 
 def test_grade_runs_by_context_version(tmp_path):

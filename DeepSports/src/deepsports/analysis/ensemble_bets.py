@@ -1092,6 +1092,64 @@ def tally_run(run: Path, now: datetime | None = None) -> tuple[str, dict[str, An
     return md, out
 
 
+def _short_tip(tip_local: str) -> str:
+    """'Wed Nov 11 4:00 PM PST' -> 'Wed 4:00p' (phone-width table)."""
+    parts = tip_local.split()
+    if len(parts) >= 5:
+        return f"{parts[0]} {parts[3]}{parts[4][0].lower()}"
+    return tip_local
+
+
+def render_table(tally_out: Mapping[str, Any], slate: Mapping[str, Any], near_max: int = 8) -> str:
+    """The tallied majority picks as a monospace table (for Discord), then close calls.
+
+    Pure: built from `tally.json` (as `tally_run` writes it) and the run's slate."""
+    games = {g["game_id"]: g for g in slate["games"]}
+    n = tally_out["n_agents"]
+    head = ("Bet", "Odds", "Game", "Tip (PT)", "Votes")
+    rows = []
+    for m in tally_out["majority"]:
+        g = games[m["game_id"]]
+        game = f"{g['away']['abbr']} @ {g['home']['abbr']}"
+        lg = "" if m.get("league", g["league"]) == "nba" else " (CBB)"
+        rows.append(
+            (m["label"], f"{m['price']:+d}", game + lg, _short_tip(g["tip_local"]),
+             f"{m['votes']}/{n}" + (f" ({m['against']} vs)" if m["against"] else ""))
+        )  # fmt: skip
+    out = [f"Majority picks: more than {n // 2} of {n} bettors"]
+    if rows:
+        widths = [max(len(r[i]) for r in [head, *rows]) for i in range(len(head))]
+        fmt = lambda r: "  ".join(c.ljust(w) for c, w in zip(r, widths, strict=True)).rstrip()  # noqa: E731
+        out += ["```", fmt(head), *(fmt(r) for r in rows), "```"]
+    else:
+        out.append("No pick has a majority today.")
+    near = [
+        c
+        for c in tally(tally_out["picks"], n)["all"]
+        if c.votes * 2 <= n and c.votes >= max(2, -(-n // 5))  # at least 20% of bettors
+    ]
+    if near:
+        out.append("Close calls (no majority):")
+        for c in near[:near_max]:
+            g = games[c.game_id]
+            p0 = next(
+                p for p in tally_out["picks"][c.agents[0]]
+                if (p["game_id"], p["market"], p["side"]) == (c.game_id, c.market, c.side)
+            )  # fmt: skip
+            out.append(
+                f"- {label(g, c.market, c.side, p0['line'])} ({p0['price']:+d}) "
+                f"{g['away']['abbr']} @ {g['home']['abbr']}: {c.votes}/{n}"
+                + (f", {c.against} on the other side" if c.against else "")
+            )
+    return "\n".join(out)
+
+
+def table_run(run: Path) -> str:
+    """`render_table` for a run that has been tallied (files only)."""
+    slate = json.loads((run / "slate.json").read_text())
+    return render_table(json.loads((run / "tally.json").read_text()), slate)
+
+
 def grade_runs(con: duckdb.DuckDBPyConnection, root: Path = RUNS_DIR) -> dict[str, Any]:
     """Grade every tallied run: the majority picks (1 unit each) and each agent's own picks,
     overall and per context version (runs from before versioning count as ctx-v1)."""

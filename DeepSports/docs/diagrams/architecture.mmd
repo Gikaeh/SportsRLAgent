@@ -63,8 +63,8 @@ flowchart TB
     WEB["web/ mobile PWA (LAN; frozen,<br/>new UI in ../BetDesk/web)"]
     GLASS["glasses/ Even Hub<br/>G2 plugin"]
     API --> WEB
-    BETDESK["../BetDesk pusher<br/>launchd 60 s · HTTP read-only<br/>→ Cloudflare mirror"]
-    API -->|"/api/* snapshots"| BETDESK
+    BETDESK["../BetDesk Worker (Cloudflare)<br/>via cloudflared tunnel · GET allowlist<br/>read-only, live"]
+    API -->|"/api/* via tunnel"| BETDESK
     API -->|"/api/scoreboard"| GLASS
   end
 

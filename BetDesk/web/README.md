@@ -2,12 +2,12 @@
 
 Mobile-first PWA for both owners, served by the BetDesk Worker on Cloudflare. Copied from
 `DeepSports/web` on 2026-11-10 (that copy is now frozen); it reads the same API contract
-(`../../DeepSports/docs/API.md`), served from snapshots by `../worker`. Vite + React + TypeScript,
+(`../../DeepSports/docs/API.md`), proxied live from the owner's Mac by `../worker`. Vite + React + TypeScript,
 no UI framework, one plain stylesheet, hash routing.
 
-BetDesk additions: the "Synced HH:MM" pill and stale banner (`src/components/MirrorStatus.tsx`, from
-`/api/health`), a page reload when the Cloudflare Access session has expired (`src/api/client.ts`), and
-the "Not synced yet" state for `404 not_mirrored`.
+BetDesk additions: a "Mac offline" banner and error state when the Worker answers `503 mac_offline`
+(`src/components/MacStatus.tsx`, polls `/api/health`), and a page reload when the Cloudflare Access
+session has expired (`src/api/client.ts`).
 
 ## Commands (from `BetDesk/`)
 ```bash

@@ -227,14 +227,9 @@ export type FollowedResponse = { teams: string[]; by_league?: { nba: string[]; n
 
 export type ApiErrorBody = { error: string };
 
-/** BetDesk only: `/api/health` from the Worker, describing the newest snapshot pushed from the Mac. */
-export type MirrorHealth = {
+/** `/api/health` from DeepSports (proxied as is). */
+export type HealthResponse = {
   ok: boolean;
-  /** DeepSports warehouse state at the last push ("busy" while a data job was writing). */
-  warehouse: "ok" | "busy";
+  warehouse: "ok" | "busy" | "unavailable";
   now: string;
-  /** When the newest snapshot was taken on the Mac; null before the first push. */
-  generated_at: string | null;
-  age_seconds: number | null;
-  stale: boolean;
 };

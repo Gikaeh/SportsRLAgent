@@ -1,2 +1,3 @@
 DEV_NO_ACCESS=1
-INGEST_TOKEN=dev-token
+# DeepSports on this Mac; no service token needed locally
+ORIGIN_URL=http://127.0.0.1:8787

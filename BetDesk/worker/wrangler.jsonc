@@ -1,5 +1,6 @@
 // BetDesk Worker. Setup and deploy steps: ../docs/SETUP.md. Secrets are never in this file:
-// INGEST_TOKEN, ACCESS_TEAM_DOMAIN, ACCESS_AUD, ALLOWED_EMAILS are set with `wrangler secret put`.
+// ACCESS_TEAM_DOMAIN, ACCESS_AUD, ALLOWED_EMAILS, ORIGIN_URL, ORIGIN_CLIENT_ID and ORIGIN_CLIENT_SECRET
+// are set with `wrangler secret put`.
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
   "name": "betdesk",
@@ -11,16 +12,7 @@
     "directory": "../web/dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/ingest"]
+    "run_worker_first": ["/api/*"]
   },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "betdesk",
-      // Replace with the id printed by `npx wrangler d1 create betdesk` (not a secret).
-      "database_id": "00000000-0000-0000-0000-000000000000",
-      "migrations_dir": "migrations"
-    }
-  ],
   "observability": { "enabled": true }
 }

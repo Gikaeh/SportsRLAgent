@@ -24,7 +24,7 @@ Work focuses on NBA and NCAA men's D1 basketball. `ManualBets/hockey/` and
 `ManualBets/baseball/` stay in the tree but get no new work, and NHL/NFL plans were removed
 from the roadmaps. Revisit only when the owner asks.
 
-### 2026-11-10: BetDesk, a shared app on Cloudflare (phase 1 = read-only mirror)
+### 2026-11-10: BetDesk, a shared app on Cloudflare (phase 1 = read-only mirror) (mirror replaced by a live tunnel 2026-11-11, below)
 **Status:** decided; phase 1 built (not yet deployed). Owner answers: start with the owner's email
 only (Gikaeh's later; emails stay out of the repo), name `BetDesk`, `DeepSports/web` frozen, free
 `workers.dev` address. Hosting detail and BetDesk-internal choices: `BetDesk/docs/DECISIONS.md`.
@@ -61,3 +61,11 @@ read-only DuckDB open, path from `NBA_WAREHOUSE_DB` (pointed at a scratch copy f
 the scheduled writers are never blocked), no imports across the boundary. The NBA menu and its
 live recommendations don't read the warehouse. Result and method:
 `ManualBets/docs/results/2026-11-11-nba-totals-walkforward.md`.
+
+### 2026-11-11: BetDesk reads DeepSports live through a Cloudflare Tunnel (edge 3 changed)
+Owner decision, replacing the pusher + D1 mirror of 2026-11-10 (phase 1 otherwise unchanged): the
+Mac mini runs 24/7 and the owner's domain is on Cloudflare, so the BetDesk Worker forwards allowed
+GETs to DeepSports' API through a Cloudflare Tunnel (`cloudflared` on the Mac). The tunnel hostname
+accepts only the Worker's Access service token; people log in at the Worker as before. Edge 3 is now
+"BetDesk Worker → DeepSports read API over the tunnel" (still HTTP, read-only, allowlisted; no stakes).
+Details and trade-offs: `BetDesk/docs/DECISIONS.md` 2026-11-11.

@@ -37,8 +37,8 @@ function describe(error: unknown): { title: string; body: string } {
     };
   }
   if (error instanceof ApiError) {
-    if (error.status === 404 && error.code === "not_mirrored") {
-      return { title: "Not synced yet", body: "This page isn't mirrored yet. Live games, followed teams and games with bets sync first; others appear on the next full sync (about every 15 minutes)." };
+    if (error.code === "mac_offline") {
+      return { title: "Mac offline", body: "The owner's Mac isn't reachable right now. We'll retry automatically." };
     }
     if (error.status === 404) return { title: "Not found", body: "We couldn't find that. It may not exist yet." };
     if (error.status === 502 || error.status === 504) {

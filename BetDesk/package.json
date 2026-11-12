@@ -2,14 +2,12 @@
   "name": "betdesk",
   "private": true,
   "type": "module",
-  "workspaces": ["web", "worker", "pusher"],
+  "workspaces": ["web", "worker"],
   "scripts": {
-    "check": "npm run typecheck -w web && npm run typecheck -w worker && npm run typecheck -w pusher && npm test -w worker && npm test -w pusher && npm run build -w web && npm run check:deploy -w worker",
+    "check": "npm run typecheck -w web && npm run typecheck -w worker && npm test -w worker && npm run build -w web && npm run check:deploy -w worker",
     "build": "npm run build -w web",
     "dev": "npm run build -w web && npm run dev -w worker",
-    "deploy": "npm run build -w web && npm run deploy -w worker",
-    "push": "npm run push -w pusher",
-    "push:dry": "npm run push:dry -w pusher"
+    "deploy": "npm run build -w web && npm run deploy -w worker"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "5.20261026.1",

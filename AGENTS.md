@@ -23,8 +23,9 @@ an integration step is decided in `docs/DECISIONS.md`, they stay separate: separ
 environments (run `uv` inside the project folder), no imports across the boundary, and only
 these read-only edges:
 1. DeepSports' API reads open rows from `logs/` (`DeepSports/src/deepsports/api/bets.py`).
-2. `ManualBets/college_basketball/` reads `DeepSports/data/deepsports.duckdb`
-   (`college_basketball/data_pipeline/warehouse_loader.py`).
+2. ManualBets reads `DeepSports/data/deepsports.duckdb`, read-only: `college_basketball/`
+   (`college_basketball/data_pipeline/warehouse_loader.py`) and the NBA totals backtest's
+   closing lines (`tools/total_walkforward.py`, `NBA_WAREHOUSE_DB` points it at a copy).
 3. BetDesk's pusher reads DeepSports' read API over HTTP on `localhost:8787` (`BetDesk/pusher/`;
    contract `DeepSports/docs/API.md`) and pushes those responses to BetDesk's Cloudflare Worker.
 4. DeepSports' ensemble vote reads a JSON written by `ManualBets/tools/export_predictions.py`

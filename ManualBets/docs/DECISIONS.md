@@ -274,3 +274,19 @@ ManualBets specifics and points to the root for repo-wide rules; `CLAUDE.md` imp
 Work covers the NBA and NCAA men's D1 only. `hockey/` and `baseball/` stay in the tree but get no
 new work, and docs leave them out. The old NBA and MLB roadmaps (`basketball/nba_betting_project_roadmap.md`,
 `baseball/mlb_betting_project_roadmap.md`) moved to `docs/archive/` as history. Repo-wide entry: `../docs/DECISIONS.md` 2026-11-10.
+
+## 2026-11-11 — NBA totals stay disabled (walk-forward backtest fails the ship rule)
+
+Nobody had recorded why the NBA total model was commented out of the menu, logging and export. A pre-registered
+walk-forward backtest (`tools/total_walkforward.py`; method and numbers in
+`docs/results/2026-11-11-nba-totals-walkforward.md`) now gives the reason. It uses monthly refits and the
+recommender's own rule: bet when the prediction is 8+ points from the line (`MIN_TOTAL_EDGE` isn't in
+`betting_config.py`, so the code default of 8 applies, and the 0.55 probability gate never binds at sigma ~19).
+Closing lines and prices come from DeepSports. On the locked 2025-26 holdout the bets went 92-96 (48.9%,
+slate-clustered 95% CI 42.3% to 55.6%, break-even 52.3%, ROI -6.6%), and the model's total MAE was 0.83 pts worse
+than the closing total's. Both ship conditions fail, and 2021-22 to 2024-25 lose as well (892 bets, -8.3%). The line
+moved toward the model's side from open to close on only 11-26% of bets (mean CLV -2 to -3 pts), so its large
+disagreements mostly mean the market knows something the features don't.
+Totals stay disabled and thresholds are unchanged. Revisit only with new information (C3 market features, C4
+availability, injuries) and a fresh pre-registration with 2026-27 as the holdout. The tool reads the warehouse
+read-only (boundary edge 2, `../docs/DECISIONS.md` 2026-11-11).

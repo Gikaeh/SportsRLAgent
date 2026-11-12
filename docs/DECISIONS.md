@@ -52,3 +52,12 @@ prices; DeepSports reads only that file (`analysis/manualbets_context.py`), no i
 DeepSports' `tools/ensemble-daily.sh` launches the export as a subprocess before building the context.
 nba.com blocks the Mac's NordVPN, so the NBA half runs on a Raspberry Pi on the LAN (ssh `rpi`,
 everything inside `~/SportsRLAgent` there). Detail: `DeepSports/docs/DECISIONS.md` 2026-11-11.
+
+### 2026-11-11: Edge 2 widened, ManualBets' NBA side reads closing lines from the warehouse
+ManualBets keeps no long NBA odds history, so a backtest of its NBA totals model needs DeepSports'
+closing totals and prices (`odds_snapshots`, `source='closing'`, ~100% of games since 2021-22).
+Edge 2 (until now `college_basketball/` only) now also covers `ManualBets/tools/total_walkforward.py`:
+read-only DuckDB open, path from `NBA_WAREHOUSE_DB` (pointed at a scratch copy for long runs, so
+the scheduled writers are never blocked), no imports across the boundary. The NBA menu and its
+live recommendations don't read the warehouse. Result and method:
+`ManualBets/docs/results/2026-11-11-nba-totals-walkforward.md`.

@@ -39,6 +39,15 @@ history of the fixed items: `git log -p -- basketball/NOTES.md` and `docs/SESSIO
 - **A3** Validation metrics double-dip: after tuning and early stopping on X_val,
   `evaluate(X_val)` is logged as `val_accuracy` (`model_retrainer.py`). Fix: hold out a final
   untouched window.
+- **A7** (2026-11-11) Train/serve lag in team window stats: `createUpcomingMatchupData` takes each team's
+  `groupby(...).last()` row of `calculateTeamWindowStats`, whose L10 values are shifted to exclude *that* game,
+  so live features cover games N-11..N-2 while training covers N-10..N-1 (the latest result is left out).
+  Affects every NBA model. Fix (changes model outputs, escalate): roll the window once more for the live row.
+- **A8** (2026-11-11) Traded players: `getTopPlayersAsOf` (training) filters rows by team, so a traded
+  player's old-team rows keep him in the old team's top 5 for the rest of the season; live
+  (`use_game_date=False`) uses his latest row and puts him on the new team. Train/serve difference, not leakage.
+- **A9** (2026-11-11) Neutral-site games where both nba.com rows say "@" (e.g. the 2025-26 NBA Cup final,
+  0062500001) have no home row, so `createGameMatchupData` silently drops them from training and scoring.
 - **A5** Per-model drop lists ("leakage_cols", mostly low-importance pruning) exist twice:
   `model_retrainer.retrainModel` and `live_data_updater.getPredictionReadyData`, synced by hand.
   Fix: one source of truth, e.g. the saved feature list next to each model.

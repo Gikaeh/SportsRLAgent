@@ -629,3 +629,13 @@ with `--manualbets none`), and the `claude` cap is now 3000 s (more headroom for
 (6) The picks copy to the drive is counted: fewer files than replies → "blocked" alert and no tally, since a tally
 would freeze the run without them.
 (7) Bettors may not read `.sync/ensemble-sim/` or `~/Library/Logs/DeepSports/` (other runs' picks and the sync log).
+
+### 2026-11-12: ensemble replies are saved outside any deny rule
+**Why:** the 14:00 run (`20261112T220340Z`, 20 bettors) saved 0 of 20 replies. `cdd93d7` added the deny rule
+`Read(./.sync/ensemble/picks-*)` to keep bettors from reading each other's picks, but `--disallowedTools` covers
+the whole session, coordinator included, and a Read deny also blocks Write to that path. The coordinator now
+saves replies to `.sync/ensemble/replies/` with no deny rule, and only after all N bettors have finished, so no
+bettor can still be running to read them (the folder is emptied at the start of each run; earlier runs on the
+drive stay denied). The bettor brief still forbids opening it. The run was recovered by hand: the 20 replies,
+taken verbatim from the blocked writes recorded in `.sync/ensemble-claude.json`, were tallied at 14:31 PT,
+before any picked game tipped (the earliest at 16:00 PT).

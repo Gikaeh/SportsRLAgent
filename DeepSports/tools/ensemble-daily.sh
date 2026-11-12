@@ -11,6 +11,9 @@ set -uo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO"
 export PATH="/opt/homebrew/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
+# Long-lived token for headless `claude -p` (from `claude setup-token`), kept outside the repo.
+TOKEN_FILE="$HOME/.config/deepsports/claude-oauth-token"
+[ -r "$TOKEN_FILE" ] && export CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$TOKEN_FILE")"
 NOTIFY="python3 $HOME/.claude/tools/notify.py"
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 AGENTS_DEFAULT=10
@@ -92,7 +95,7 @@ fi
 
 # Headless Claude works on a copy inside the repo (its sandbox is unreliable on the external drive).
 WORK="$REPO/.sync/ensemble"
-rm -rf "$WORK" && mkdir -p "$WORK"
+rm -rf "$WORK" && mkdir -p "$WORK/replies"
 copied=$(copy_matching "$RUN/context-*.md" "$WORK")
 if [ "${copied:-0}" -ne "$AGENTS" ]; then
   # Don't launch bettors with nothing to read.
@@ -104,7 +107,9 @@ fi
 # Sonnet coordinates (it only launches bettors and saves replies); bettors are Sonnet too.
 # Bettors may research: read files (incl. ManualBets), the DeepSports read API via curl, and the web.
 # No other shell commands (one DuckDB writer; no Odds API calls per bettor), and no reading other
-# bettors' picks or earlier runs (independence).
+# bettors' picks or earlier runs (independence). Replies are saved to $WORK/replies/ only after every
+# bettor has finished, so that folder needs no deny rule. It must not have one: a Read deny on a path
+# also blocks Write there, which stopped the coordinator from saving any reply on 2026-11-12.
 # Hard limit so a hung bettor can't block the rest of the sync; JSON output gives cost and duration.
 CLAUDE_OUT="$REPO/.sync/ensemble-claude.json"
 rm -f "$CLAUDE_OUT"
@@ -114,10 +119,10 @@ claude -p "/ensemble-betting prefetched $WORK $AGENTS" --model sonnet --output-f
   --allowedTools "Read" "Write" "Agent" "Skill" "ToolSearch" "Grep" "Glob" "WebSearch" "WebFetch" \
     "Bash(curl -s http://localhost:8787/*)" "Bash(curl -s 'http://localhost:8787/*)" \
     "Bash(curl -s \"http://localhost:8787/*)" \
-  --disallowedTools "Read(//Volumes/ExFATStorag/DeepSports/reports/**)" "Read(./.sync/ensemble/picks-*)" \
+  --disallowedTools "Read(//Volumes/ExFATStorag/DeepSports/reports/**)" \
     "Read(./.sync/ensemble-sim/**)" "Read(~/Library/Logs/DeepSports/**)" > "$CLAUDE_OUT"
 status=$?
-REPLIES=$(ls "$WORK"/picks-*.json 2>/dev/null | wc -l | tr -d ' ')
+REPLIES=$(ls "$WORK"/replies/picks-*.json 2>/dev/null | wc -l | tr -d ' ')
 [ "$status" -eq 124 ] && echo "$(ts) claude timed out after ${ENSEMBLE_TIMEOUT:-3000} s"
 python3 - "$CLAUDE_OUT" <<'PY' || true
 import json, sys
@@ -140,7 +145,7 @@ if [ "$REPLIES" -eq 0 ]; then
   exit 1
 fi
 
-copied=$(copy_matching "$WORK/picks-*.json" "$RUN")
+copied=$(copy_matching "$WORK/replies/picks-*.json" "$RUN")
 if [ "${copied:-0}" != "$REPLIES" ]; then
   # A tally would freeze the run without the missing picks; leave it for a manual tally.
   echo "$(ts) copied ${copied:-0} of $REPLIES picks to $RUN; run left untallied"

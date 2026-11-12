@@ -23,7 +23,7 @@ You may research before deciding (owner's instruction: use all of the repo's res
   page that isn't clearly dated within the last 48 hours: old injury reports are worse than none.
 
 Hard limits:
-- Never open another bettor's picks or any earlier ensemble run (`.sync/ensemble/picks-*`,
+- Never open another bettor's picks or any earlier ensemble run (`.sync/ensemble/replies/`,
   `reports/ensemble-bets/`): independence is what the experiment measures.
 - Read-only. Don't run `deepsports` or ManualBets commands, don't call the Odds API, don't write or
   edit files. The API above is the way to reach the warehouse.

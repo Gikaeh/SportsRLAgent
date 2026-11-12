@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import random
+import re
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -602,10 +603,11 @@ What we know from this project's own backtests (use it however you like):
 
 Answer with ONLY a JSON object, no prose around it:
 {{"picks": [{{"game_id": "...", "market": "spread|total|moneyline", "side": "...",
-  "stake": 1, "confidence": 0.55, "reason": "one short sentence"}}],
+  "bet": "TOR +5.5", "stake": 1, "confidence": 0.55, "reason": "one short sentence"}}],
  "notes": "optional: your overall approach in one or two sentences"}}
 
-`confidence` is your probability that the bet wins.
+`confidence` is your probability that the bet wins. Write `bet` the way the slate labels it
+(`TOR +5.5`, `Over 214.5`, `TOR ML`); it is checked against `side`.
 
 Slate created {created_at}. {n_games} bettable games; {unlined} more in the window have
 no line yet and can't be bet.
@@ -800,13 +802,51 @@ def priced(game: Mapping[str, Any], market: str, side: str) -> tuple[float | Non
     return None, m[f"{side}_price"]
 
 
+def _bet_matches(game: Mapping[str, Any], market: str, side: str, bet: Any) -> bool | None:
+    """Does the pick's free-text `bet` agree with its `side`? False only on a clear contradiction:
+    for spreads/moneylines the other team's abbreviation appears (whole word, exact case) and
+    the chosen team's (any case) doesn't; for totals the bet says over/under against the side.
+    None when `bet` is missing or can't be checked. Lenient on purpose ("TOR +5.5 at -108"
+    matches)."""
+    if not isinstance(bet, str) or not bet.strip():
+        return None
+
+    def has(word: str, case: bool = False) -> bool:
+        flags = 0 if case else re.I
+        return (
+            re.search(rf"(?<![A-Za-z0-9]){re.escape(word)}(?![A-Za-z0-9])", bet, flags) is not None
+        )
+
+    if market == "total":
+        over, under = has("over"), has("under")
+        if over == under:
+            return None
+        return over == (side == "over")
+    other = "away" if side == "home" else "home"
+    mine, theirs = game[side]["abbr"], game[other]["abbr"]
+    if not mine or not theirs or mine.lower() == theirs.lower():
+        return None
+    if has(mine):
+        return True
+    # The opponent's abbreviation must match case-sensitively: college codes such as WIN, NO and
+    # OU are ordinary words ("Duke to win" against Winthrop is not a contradiction).
+    return False if has(theirs, case=True) else None
+
+
+def break_even(price: int) -> float:
+    """Win probability needed to break even at an American price (-110 -> 0.5238, +150 -> 0.4)."""
+    return -price / (-price + 100) if price < 0 else 100 / (price + 100)
+
+
 def validate_picks(
     reply: Mapping[str, Any], slate: Mapping[str, Any], now: datetime | None = None
 ) -> tuple[list[dict[str, Any]], list[str]]:
     """(valid picks with slate line/price attached, problems). Keeps the first pick per game and
     the first MAX_PICKS valid picks; stakes are clamped to 1..MAX_STAKE (a slate's own
     `max_picks` / `max_stake` override both). With `now`, picks on
-    games that tipped at or before `now` are dropped (they'd be graded with hindsight)."""
+    games that tipped at or before `now` are dropped (they'd be graded with hindsight). A pick
+    whose `bet` text contradicts its `side` is dropped; a missing `bet` or a confidence below the
+    price's break-even only adds a problem line (the pick stays)."""
     games = {g["game_id"]: g for g in slate["games"]}
     max_picks = slate.get("max_picks", MAX_PICKS)  # backtest (one-pick) slates set 1
     max_stake = slate.get("max_stake", MAX_STAKE)
@@ -840,25 +880,39 @@ def validate_picks(
         if len(picks) >= max_picks:
             problems.append(f"pick {i}: over the {max_picks}-pick limit, dropped")
             continue
+        bet = p.get("bet")
+        ok = _bet_matches(game, market, side, bet)
+        if ok is False:
+            who = f" ({game[side]['abbr']})" if market != "total" else ""
+            problems.append(f"pick {i}: bet {bet!r} contradicts side {side!r}{who}; dropped")
+            continue
+        if not isinstance(bet, str) or not bet.strip():
+            problems.append(f"pick {i}: no 'bet' to check against side {side!r}; kept")
         try:
             stake = int(round(float(p.get("stake", 1))))
         except (TypeError, ValueError):
             stake = 1
         conf = p.get("confidence")
+        conf = float(conf) if isinstance(conf, int | float) and not isinstance(conf, bool) else None
+        if conf is not None and conf < (be := break_even(lp[1])):
+            problems.append(
+                f"pick {i}: confidence {conf:.3f} is below break-even {be:.3f} at {lp[1]:+d}; kept"
+            )
         seen.add(gid)
-        picks.append(
-            {
-                "game_id": gid,
-                "league": game["league"],
-                "market": market,
-                "side": side,
-                "line": lp[0],
-                "price": lp[1],
-                "stake": min(max(stake, 1), max_stake),
-                "confidence": float(conf) if isinstance(conf, int | float) else None,
-                "reason": str(p.get("reason", ""))[:300],
-            }
-        )
+        out = {
+            "game_id": gid,
+            "league": game["league"],
+            "market": market,
+            "side": side,
+            "line": lp[0],
+            "price": lp[1],
+            "stake": min(max(stake, 1), max_stake),
+            "confidence": conf,
+            "reason": str(p.get("reason", ""))[:300],
+        }
+        if isinstance(bet, str) and bet.strip():
+            out["bet"] = bet.strip()[:100]
+        picks.append(out)
     return picks, problems
 
 

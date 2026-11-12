@@ -605,3 +605,21 @@ verbatim (on 11-11 it "corrected" a reply with two objects, which hid a bettor m
 covers the run's context version only, not all versions pooled. (5) Bettors date their web queries and ignore
 pages older than 48 h (a test search returned 2024 injury pages). Later items (CLV grading, model-only baseline,
 bettor count, worktree on `main`, `sources`, version tag) are in ROADMAP.
+
+### 2026-11-12: ensemble run hardening, round 2
+**Why:** a second two-reviewer pass over the first `+tools1` runs. Done now:
+(1) Picks carry a `bet` text (`TOR +5.5`, `Over 214.5`, `TOR ML`) that `validate_picks` checks against `side`: a clear
+contradiction drops the pick, a missing `bet` only logs a problem. Run `20261111T223533Z` agent a01 picked `side: away`
+(BOS) with the reason "TOR +5.5"; nothing caught it. The check is lenient ("TOR +5.5 at -108" passes) and old replies
+(no `bet`) are unaffected. The opponent's abbreviation must match in exact case, since college codes `WIN`, `NO` and
+`OU` are ordinary words ("Duke to win" against Winthrop is not a contradiction). The BRIEF change also reaches the backtest/sim contexts (same `render_context`).
+(2) A confidence below the price's break-even is logged as a problem, pick kept: it shows a bettor betting against
+its own number, but dropping it would second-guess the vote.
+(3) Bettor brief: about 8 tool calls / 10 min of research, then answer: the run has a hard cap and a late answer is lost.
+(4) `ensemble-daily.sh`: the one-day override accepts only a number 1-30 (the old `tr -dc 0-9` turned "1 5" into 15);
+a failed `ensemble-bets context` is retried once after 60 s (a writer may hold the lock briefly), then a "blocked" alert.
+(5) The ManualBets export is capped at 1200 s (a hung ssh/nba.com call must not eat the vote; the vote still runs
+with `--manualbets none`), and the `claude` cap is now 3000 s (more headroom for researching bettors; the export cap keeps the total bounded).
+(6) The picks copy to the drive is counted: fewer files than replies → "blocked" alert and no tally, since a tally
+would freeze the run without them.
+(7) Bettors may not read `.sync/ensemble-sim/` or `~/Library/Logs/DeepSports/` (other runs' picks and the sync log).

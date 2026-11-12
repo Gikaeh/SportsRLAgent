@@ -59,6 +59,14 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
   switches never change what the scheduled jobs run
 - [ ] College ensemble backtest on 2026-27 games with real names (option 2), once ~10 post-cutoff college game
       days are final (about 2026-11-20); compare with the anonymized 2025-26 run
+- [ ] Bettors write their own picks file as soon as they decide, so a reply survives a `claude` timeout
+- [ ] Discord table extras: best price + book per majority pick, and the line capture time
+- [ ] Split-context test: half the bettors get no model/ManualBets numbers, to measure how much the vote echoes the model
+- [ ] `ensemble-bets grade` by league (NBA vs college)
+- [ ] Dedupe overlapping runs in `grade` (same game voted in two runs counts once)
+- [ ] Void picks on postponed games after 3 days instead of leaving them ungraded
+- [ ] Owner decision: strip ManualBets win prob/edge/Kelly from the context as `+mb2` (they look miscalibrated:
+      TOR +5.5 at 78% to cover, Kelly at the cap on 2026-11-11)
 - **Ensemble context is the lever.** Bettors decide only from their context file, so what we give them bounds
   their votes (the first run: every agent keyed on the model-vs-line gap). Improve it in versions
   (`CONTEXT_VERSION` in `src/deepsports/analysis/ensemble_bets.py`, logged in DECISIONS), each with its own graded

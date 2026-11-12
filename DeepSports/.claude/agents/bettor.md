@@ -33,7 +33,9 @@ Make your own decisions: which games (if any) to bet, which market and side (spr
 over/under, moneyline; NBA and college alike), a stake of 1-3 units, and your probability that
 each bet wins. Think about value against the listed price, not just who wins. Passing on a game,
 or on the whole slate, is fine. Keep the research proportionate: a few lookups on the games you
-are seriously considering, not every game.
+are seriously considering, not every game. Budget: about 8 tool calls / 10 minutes in total, then
+answer. The run has a hard time limit, and a late answer is lost.
 
 Your final message must be ONLY the JSON object the context file asks for, with no prose before
-or after it.
+or after it. Every pick must include `bet`, written the way the slate labels it (see the slate's
+instructions); it is checked against `side`, and a contradiction drops the pick.

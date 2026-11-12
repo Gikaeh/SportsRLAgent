@@ -10,7 +10,7 @@ Keep each fact in one place and point to it from everywhere else (see "Context h
 |---|---|---|
 | `DeepSports/` | NBA + college data warehouse (DuckDB), frozen prediction models, read API + phone web app + glasses plugin, Google Calendar alerts, watch-only paper trading and ensemble betting vote. Runs on the owner's Mac via launchd. | `DeepSports/CLAUDE.md` |
 | `ManualBets/` | Handmade pipeline: XGBoost models per bet type, Kelly-sized bet suggestions, graded CSV bet logs. A human runs the menus and places bets. | `ManualBets/CLAUDE.md` |
-| `BetDesk/` | Shared app for both owners on Cloudflare (Worker + D1 + PWA, behind Cloudflare Access). Phase 1: read-only mirror of DeepSports' read API, pushed from the owner's Mac. | `BetDesk/CLAUDE.md` |
+| `BetDesk/` | Shared app for both owners on Cloudflare (Worker + PWA, behind Cloudflare Access). Phase 1: read-only live view of DeepSports' read API through a Cloudflare Tunnel to the owner's Mac. | `BetDesk/CLAUDE.md` |
 | `logs/` | Bet journals `logs/<sport>/betting/*_bets.csv`. Written by ManualBets, read by DeepSports. Append-only. Only open-bet labels (never stakes) leave the Mac, via edge 3. | (rule 3 below) |
 | `.claude/agents/` | Repo-wide dev agents (registry below). | |
 | `docs/DECISIONS.md` | Repo-wide decisions (structure, scope, integration). Projects keep their own logs. | |
@@ -26,8 +26,9 @@ these read-only edges:
 2. ManualBets reads `DeepSports/data/deepsports.duckdb`, read-only: `college_basketball/`
    (`college_basketball/data_pipeline/warehouse_loader.py`) and the NBA totals backtest's
    closing lines (`tools/total_walkforward.py`, `NBA_WAREHOUSE_DB` points it at a copy).
-3. BetDesk's pusher reads DeepSports' read API over HTTP on `localhost:8787` (`BetDesk/pusher/`;
-   contract `DeepSports/docs/API.md`) and pushes those responses to BetDesk's Cloudflare Worker.
+3. BetDesk's Worker reads DeepSports' read API over HTTP (GET, allowlisted endpoints) through a
+   Cloudflare Tunnel to `localhost:8787` on the owner's Mac (`BetDesk/worker/src/origin.ts`;
+   contract `DeepSports/docs/API.md`).
 4. DeepSports' ensemble vote reads a JSON written by `ManualBets/tools/export_predictions.py`
    (run by `DeepSports/tools/manualbets-export.py`, NBA half on the LAN Raspberry Pi;
    `analysis/manualbets_context.py`).

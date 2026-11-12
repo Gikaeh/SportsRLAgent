@@ -549,7 +549,7 @@ skills are called by DeepSports' headless scheduled jobs, which run from `DeepSp
 **Scope:** basketball only (NBA + NCAA men's D1). The other-sport plans were removed from PRODUCT, ROADMAP, HANDOFF and
 DATA_SOURCES; DeepSports and ManualBets will be integrated step by step, each step logged in `../docs/DECISIONS.md`.
 
-### 2026-11-10: web/ frozen; BetDesk mirrors the read API
+### 2026-11-10: web/ frozen; BetDesk mirrors the read API (pusher replaced by a tunnel 2026-11-11, below)
 **Why:** both owners need the app away from the home Wi-Fi; the owner chose a separate Cloudflare-hosted
 project, `../BetDesk`, which copied `web/` and now gets all new UI work. `web/` stays as the LAN build
 (fixes only). BetDesk's pusher reads this API over HTTP every minute (`../AGENTS.md`, edge 3), so the
@@ -582,3 +582,9 @@ entry (edge 4): `../docs/DECISIONS.md`.
 **Pi (same day):** nba.com blocks NordVPN even on a dedicated IP, so the NBA half runs on the owner's Raspberry Pi
 (`tools/manualbets-export.py`, PIPELINE.md). The owner asked that access there stay inside one folder,
 `~/SportsRLAgent`, uv included.
+
+### 2026-11-11: BetDesk reads this API live through a Cloudflare Tunnel
+Replaces the pusher of the 2026-11-10 entry above: BetDesk's Worker forwards allowlisted GETs to
+`localhost:8787` through `cloudflared` on this Mac, so `serve` must stay up for the phone app to work.
+No change to the API itself; contract changes the app uses go into BetDesk's Worker allowlist.
+Repo-wide entry: `../docs/DECISIONS.md`.

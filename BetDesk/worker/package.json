@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "wrangler dev --port 8788",
     "deploy": "wrangler deploy",
-    "migrate:local": "wrangler d1 migrations apply betdesk --local",
-    "migrate:remote": "wrangler d1 migrations apply betdesk --remote",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "check:deploy": "wrangler deploy --dry-run --outdir .wrangler/dry-run"

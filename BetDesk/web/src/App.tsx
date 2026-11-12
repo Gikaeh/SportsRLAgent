@@ -1,5 +1,5 @@
 import { TabBar } from "./components/Layout";
-import { MirrorStatus } from "./components/MirrorStatus";
+import { MacStatus } from "./components/MacStatus";
 import { Empty } from "./components/States";
 import { useEffect } from "react";
 import { setLeague, useLeague } from "./league";
@@ -32,7 +32,7 @@ export function App() {
   return (
     <div className="app">
       {import.meta.env.VITE_MOCK === "1" && <div className="mock-flag">Mock data</div>}
-      {import.meta.env.VITE_MOCK !== "1" && <MirrorStatus />}
+      {import.meta.env.VITE_MOCK !== "1" && <MacStatus />}
       {route.name === "today" && <Today key={route.date ?? "today"} date={route.date} league={linked ?? league} />}
       {route.name === "game" && <Game key={`${route.league}:${route.id}`} id={route.id} league={route.league} />}
       {route.name === "bets" && <Bets />}

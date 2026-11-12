@@ -594,3 +594,14 @@ earlier runs (permission deny rules plus the bettor brief: independence is the e
 `context_version` `…+tools1` (`ensemble-bets context --tag`), so `grade` keeps their record apart.
 The Discord post is `ensemble-bets table`. Owner asked for 20 bettors on 2026-11-12 only:
 `.sync/ensemble-agents.<date>` is a one-day override read by `tools/ensemble-daily.sh`.
+
+### 2026-11-11: ensemble run hardening (two-reviewer pass)
+**Why:** the owner asked for recommendations agreed between Claude and a second agent before the +tools1 PR.
+Done now: (1) 0 replies → "blocked" alert and the run is left untallied, since a tally would freeze it as "no
+majority" and `grade` would count it (run `20261107T220208Z` was exactly that); fewer than N replies is stated in
+the post. (2) `timeout` on `claude -p` (2400 s; 20 researching bettors have no timing yet) and cost/duration in the
+log. (3) `parse_reply` takes the last JSON object with a `picks` list, and the coordinator must save replies
+verbatim (on 11-11 it "corrected" a reply with two objects, which hid a bettor mistake). (4) Discord's record line
+covers the run's context version only, not all versions pooled. (5) Bettors date their web queries and ignore
+pages older than 48 h (a test search returned 2024 injury pages). Later items (CLV grading, model-only baseline,
+bettor count, worktree on `main`, `sources`, version tag) are in ROADMAP.

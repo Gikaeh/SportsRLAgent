@@ -77,6 +77,22 @@ def test_parse_reply_tolerates_fences():
         eb.parse_reply('{"bets": []}')
 
 
+def test_parse_reply_takes_the_last_answer():
+    pick = '{"game_id": "g1", "market": "total", "side": "over"}'
+    draft = '{"picks": [' + pick + "]}"
+    final = '{"picks": [], "notes": "changed my mind"}'
+    # two objects: the last one wins
+    assert eb.parse_reply(draft + "\n" + final)["notes"] == "changed my mind"
+    # a draft, then the final answer in a fence
+    assert eb.parse_reply(f"Draft: {draft}\nFinal:\n```json\n{final}\n```")["picks"] == []
+    # prose with stray braces around a single answer
+    got = eb.parse_reply("Thinking {not json} ... " + draft + " {oops")
+    assert got["picks"][0]["game_id"] == "g1"
+    # a reply whose only object is a pick (no picks list) is still an error
+    with pytest.raises(ValueError, match="picks"):
+        eb.parse_reply(pick)
+
+
 def test_validate_picks_uses_slate_prices_and_rules():
     slate = _slate()
     reply = {"picks": [

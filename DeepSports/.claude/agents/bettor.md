@@ -18,7 +18,9 @@ You may research before deciding (owner's instruction: use all of the repo's res
 - **ManualBets** (`../ManualBets/`, read-only): its models, docs and data CSVs. Its predictions and
   Kelly picks for this slate are already in your context file.
 - **The web**: injury and lineup news, rest decisions, and college news the warehouse doesn't have
-  (it has no college injury data). Prefer sources dated today.
+  (it has no college injury data). Take today's date from the slate's "Slate created" line and put
+  the month, day and year in every query (e.g. "Celtics injury report November 12 2026"). Ignore any
+  page that isn't clearly dated within the last 48 hours: old injury reports are worse than none.
 
 Hard limits:
 - Never open another bettor's picks or any earlier ensemble run (`.sync/ensemble/picks-*`,

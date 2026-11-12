@@ -81,14 +81,39 @@ fi
 # Bettors may research: read files (incl. ManualBets), the DeepSports read API via curl, and the web.
 # No other shell commands (one DuckDB writer; no Odds API calls per bettor), and no reading other
 # bettors' picks or earlier runs (independence).
-claude -p "/ensemble-betting prefetched $WORK $AGENTS" --model sonnet \
+# Hard limit so a hung bettor can't block the rest of the sync; JSON output gives cost and duration.
+CLAUDE_OUT="$REPO/.sync/ensemble-claude.json"
+rm -f "$CLAUDE_OUT"
+timeout -k 60 "${ENSEMBLE_TIMEOUT:-2400}" \
+claude -p "/ensemble-betting prefetched $WORK $AGENTS" --model sonnet --output-format json \
   --add-dir "$REPO/../ManualBets" \
   --allowedTools "Read" "Write" "Agent" "Skill" "ToolSearch" "Grep" "Glob" "WebSearch" "WebFetch" \
     "Bash(curl -s http://localhost:8787/*)" "Bash(curl -s 'http://localhost:8787/*)" \
     "Bash(curl -s \"http://localhost:8787/*)" \
-  --disallowedTools "Read(//Volumes/ExFATStorag/DeepSports/reports/**)" "Read(./.sync/ensemble/picks-*)"
+  --disallowedTools "Read(//Volumes/ExFATStorag/DeepSports/reports/**)" "Read(./.sync/ensemble/picks-*)" > "$CLAUDE_OUT"
 status=$?
-echo "$(ts) claude exit $status; $(ls "$WORK"/picks-*.json 2>/dev/null | wc -l | tr -d ' ') of $AGENTS replies"
+REPLIES=$(ls "$WORK"/picks-*.json 2>/dev/null | wc -l | tr -d ' ')
+[ "$status" -eq 124 ] && echo "$(ts) claude timed out after ${ENSEMBLE_TIMEOUT:-2400} s"
+python3 - "$CLAUDE_OUT" <<'PY' || true
+import json, sys
+try:
+    r = json.load(open(sys.argv[1]))
+except (OSError, ValueError):
+    print("claude: no JSON result (killed or failed)")
+else:
+    cost, ms = r.get("total_cost_usd"), r.get("duration_ms")
+    print("claude: {}; cost ${}; {:.1f} min".format(
+        "error" if r.get("is_error") else "ok",
+        "?" if cost is None else f"{cost:.2f}", (ms or 0) / 60000))
+    print((r.get("result") or "").strip()[:2000])
+PY
+echo "$(ts) claude exit $status; $REPLIES of $AGENTS replies"
+if [ "$REPLIES" -eq 0 ]; then
+  # Leave the run untallied: a tally would freeze it as "no majority" and grade would count it.
+  why="claude exit $status"; [ "$status" -eq 124 ] && why="timed out after ${ENSEMBLE_TIMEOUT:-2400} s"
+  $NOTIFY --kind blocked "DeepSports ensemble vote failed: 0 of $AGENTS bettors replied ($why). Run left untallied: $RUN. See ~/Library/Logs/DeepSports/sync.log" || true
+  exit 1
+fi
 
 copy_matching "$WORK/picks-*.json" "$RUN" >/dev/null || echo "$(ts) couldn't copy picks to $RUN"
 if ! tally=$(uv run deepsports ensemble-bets tally "$RUN"); then
@@ -96,14 +121,22 @@ if ! tally=$(uv run deepsports ensemble-bets tally "$RUN"); then
   $NOTIFY --kind blocked "DeepSports ensemble vote: tally failed. See ~/Library/Logs/DeepSports/sync.log" || true
   exit 1
 fi
+# The record for this run's context version only (versions differ in what bettors could see).
 record=$(uv run deepsports ensemble-bets grade | $PY -c '
 import json, sys
-g = json.load(sys.stdin)["majority"]
-print("Majority record so far: {} (W-L-P), {:+} units".format(g["record"], g["units_profit"]) if g["bets"] else "No graded majority picks yet.")')
+ver = json.load(open(sys.argv[1]))["context_version"]
+g = json.load(sys.stdin)["by_context_version"].get(ver, {}).get("majority") or {}
+if g.get("bets"):
+    print("Record for {}: {} (W-L-P) over {} majority picks, {:+} units".format(ver, g["record"], g["bets"], g["units_profit"]))
+else:
+    print("No graded majority picks yet for {}.".format(ver))' "$RUN/tally.json") || record="(record unavailable)"
 
 # Discord: the majority picks as a table, plus close calls (the full tally stays in the run dir).
 summary=$(uv run deepsports ensemble-bets table "$RUN") || summary="(table failed; see $RUN/tally.md)"
-$NOTIFY --kind info "Ensemble vote: what to bet ($AGENTS bettors, $GAMES games, NBA + college, watch-only)
+replied=""
+[ "$REPLIES" -lt "$AGENTS" ] && replied="
+Only $REPLIES of $AGENTS bettors replied; the rest count as passes, so a majority still needs more than $((AGENTS / 2))."
+$NOTIFY --kind info "Ensemble vote: what to bet ($AGENTS bettors, $GAMES games, NBA + college, watch-only)$replied
 $summary
 $record
 Run: $RUN" || true

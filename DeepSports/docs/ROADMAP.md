@@ -46,6 +46,17 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
 ### Betting research (watch-only)
 - [ ] Review the paper-trade record at the end of the 2026-27 regular season (pre-declared; no rule edits before then, only new versions)
 - [ ] Review the ensemble-betting record after ~200 graded majority picks
+- [ ] Grade ensemble picks by closing-line value (points for spread/total, no-vig probability for ML; closing
+  rows in `odds_snapshots`), majority and agent picks, by `context_version`, with bootstrap CIs. CLV gives a
+  signal after ~50-100 picks; W-L needs hundreds. Check college closing-row coverage first
+- [ ] Model-only baseline: on the same slates, grade "bet the model side when |model - line| > k". Bettors often
+  echo the model's gap; if the vote doesn't beat this rule on CLV, the agents add nothing
+- [ ] Settle the bettor count (10 vs 20) from the 2026-11-12 run's logged cost/time and the agreement between
+  the 20-bettor majority and 10-bettor subsets
+- [ ] Optional `sources` field per pick (kept by `validate_picks`) to audit whether research changes picks
+- [ ] Decide whether a failed ManualBets export (`ctx-v1+tools1` vs `ctx-v1+mb1+tools1`) should share a record
+- [ ] Run the launchd jobs from a worktree pinned to `main` (after the +tools1 PR merges), so dev branch
+  switches never change what the scheduled jobs run
 - [ ] College ensemble backtest on 2026-27 games with real names (option 2), once ~10 post-cutoff college game
       days are final (about 2026-11-20); compare with the anonymized 2025-26 run
 - **Ensemble context is the lever.** Bettors decide only from their context file, so what we give them bounds

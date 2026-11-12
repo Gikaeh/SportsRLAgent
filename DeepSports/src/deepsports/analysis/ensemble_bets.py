@@ -764,14 +764,27 @@ def agent_names(n: int) -> list[str]:
 
 
 def parse_reply(text: str) -> dict[str, Any]:
-    """The JSON object in an agent's reply (tolerates code fences or prose around it)."""
-    start, end = text.find("{"), text.rfind("}")
-    if start < 0 or end < start:
-        raise ValueError("no JSON object in reply")
-    obj = json.loads(text[start : end + 1])
-    if not isinstance(obj, dict) or not isinstance(obj.get("picks"), list):
-        raise ValueError("reply has no 'picks' list")
-    return obj
+    """The agent's answer: the LAST JSON object in the reply that has a `picks` list. Tolerates code
+    fences, prose and stray braces around it, and a draft object followed by a corrected one."""
+    dec = json.JSONDecoder()
+    found: dict[str, Any] | None = None
+    seen_json = False
+    i = text.find("{")
+    while i >= 0:
+        try:
+            obj, end = dec.raw_decode(text, i)
+        except ValueError:
+            i = text.find("{", i + 1)
+            continue
+        seen_json = True
+        if isinstance(obj, dict) and isinstance(obj.get("picks"), list):
+            found = obj
+            i = text.find("{", end)  # skip the picks nested inside this object
+        else:
+            i = text.find("{", i + 1)
+    if found is None:
+        raise ValueError("reply has no 'picks' list" if seen_json else "no JSON object in reply")
+    return found
 
 
 def priced(game: Mapping[str, Any], market: str, side: str) -> tuple[float | None, int] | None:

@@ -31,7 +31,7 @@ flowchart TB
     SCHED["tools/scheduled-sync.sh<br/>launchd 08:00 · 14:00"]
     SYNCF[".sync/upcoming*.json"]
     SCHED -->|"headless claude -p<br/>/sync-game-calendar prefetched"| SYNC
-    EBDAILY["tools/ensemble-daily.sh<br/>14:00 run only · 10 bettors<br/>majority table → Discord"]
+    EBDAILY["tools/ensemble-daily.sh<br/>14:00 run only · 10 bettors (one-day override 1-30)<br/>export ≤20 min · claude ≤50 min · picks-copy check<br/>majority table or blocked alert → Discord"]
     SCHED --> EBDAILY -->|"headless claude -p<br/>/ensemble-betting prefetched"| EBSKILL
     MBEXPORT["tools/manualbets-export.py<br/>runs ../ManualBets/tools/export_predictions.py<br/>XGBoost + Kelly + Odds API → .sync/manualbets-export.json (edge 4)"]
     RPI["Raspberry Pi (LAN, ssh rpi)<br/>~/SportsRLAgent clone · NBA half<br/>(nba.com blocks the Mac's VPN)"]
@@ -63,8 +63,8 @@ flowchart TB
     WEB["web/ mobile PWA (LAN; frozen,<br/>new UI in ../BetDesk/web)"]
     GLASS["glasses/ Even Hub<br/>G2 plugin"]
     API --> WEB
-    BETDESK["../BetDesk pusher<br/>launchd 60 s · HTTP read-only<br/>→ Cloudflare mirror"]
-    API -->|"/api/* snapshots"| BETDESK
+    BETDESK["../BetDesk Worker + PWA (Cloudflare, behind Access)<br/>reads live · allowlisted GET /api/*<br/>via cloudflared tunnel (launchd) on this Mac"]
+    API -->|"/api/* live (edge 3)"| BETDESK
     API -->|"/api/scoreboard"| GLASS
   end
 
@@ -91,7 +91,7 @@ flowchart TB
     PIMPACT["player_impact.py · player_impact_eval.py<br/>player ratings (RAPM-lite) + injury impact in points<br/>v1.2 candidate backtest · negative · not wired"]
     MODEL --> PIMPACT
     BET --> PAPER
-    EBETS["ensemble_bets.py<br/>slate · agent contexts · majority tally · grading<br/>watch-only; runs in reports/ensemble-bets/"]
+    EBETS["ensemble_bets.py<br/>slate · agent contexts · bet/side check · majority tally · grading<br/>watch-only; runs in reports/ensemble-bets/"]
     BET --> EBETS
     MBCTX["manualbets_context.py<br/>attach ManualBets export to slate (+mb1)"]
     MBCTX --> EBETS
@@ -140,6 +140,8 @@ flowchart TB
   WEB --> USER
   GLASS --> USER
   DISCORD --> USER
+  BETDESK --> USER
+  EBDAILY -->|"picks table · blocked alerts"| DISCORD
 
   classDef planned stroke-dasharray: 5 5
   class NONE planned

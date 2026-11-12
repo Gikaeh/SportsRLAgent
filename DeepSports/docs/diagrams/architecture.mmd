@@ -18,7 +18,7 @@ flowchart TB
     subgraph RUNTIME["Runtime: DeepSports/.claude (agents + skills)"]
       direction TB
       CA[calendar-agent]
-      BETTOR["bettor ×N<br/>Read-only, independent"]
+      BETTOR["bettor ×N<br/>independent · may research:<br/>files incl. ManualBets · read API · web"]
       SYNC["/sync-game-calendar<br/>skill"]
       EBSKILL["/ensemble-betting<br/>skill: N bettors vote"]
     end
@@ -31,7 +31,7 @@ flowchart TB
     SCHED["tools/scheduled-sync.sh<br/>launchd 08:00 · 14:00"]
     SYNCF[".sync/upcoming*.json"]
     SCHED -->|"headless claude -p<br/>/sync-game-calendar prefetched"| SYNC
-    EBDAILY["tools/ensemble-daily.sh<br/>14:00 run only · 10 bettors<br/>majority → Discord"]
+    EBDAILY["tools/ensemble-daily.sh<br/>14:00 run only · 10 bettors<br/>majority table → Discord"]
     SCHED --> EBDAILY -->|"headless claude -p<br/>/ensemble-betting prefetched"| EBSKILL
     MBEXPORT["tools/manualbets-export.py<br/>runs ../ManualBets/tools/export_predictions.py<br/>XGBoost + Kelly + Odds API → .sync/manualbets-export.json (edge 4)"]
     RPI["Raspberry Pi (LAN, ssh rpi)<br/>~/SportsRLAgent clone · NBA half<br/>(nba.com blocks the Mac's VPN)"]
@@ -44,7 +44,7 @@ flowchart TB
 
   subgraph PIPE["Data collection: src/deepsports"]
     direction LR
-    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|grade · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
+    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|table|grade · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
     PIPELINE --> SRC["sources/espn.py<br/>EspnBasketball(league)<br/>site + core endpoints"] --> HTTP["http.py PoliteClient<br/>1 req/s · retry/backoff"]
     PIPELINE --> PARSE["parse_espn.py<br/>pure raw → rows"] --> STORE["store.py<br/>schema + upserts"]
     QUAL["quality.py<br/>data checks"]
@@ -143,3 +143,4 @@ flowchart TB
 
   classDef planned stroke-dasharray: 5 5
   class NONE planned
+  BETTOR -.->|"curl -s (read only)"| API

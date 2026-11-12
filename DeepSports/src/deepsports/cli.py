@@ -154,8 +154,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="ManualBets export (ManualBets/tools/export_predictions.py) to add to every game;"
         " 'none' records that it is unavailable",
     )
+    ec.add_argument(
+        "--tag",
+        default="",
+        help="appended to context_version (e.g. +tools1) so grade keeps such runs apart",
+    )
     et = ebsub.add_parser("tally", help="validate picks-<agent>.json files and count votes")
     et.add_argument("run", help="run directory (from `context`)")
+    etb = ebsub.add_parser("table", help="a tallied run's majority picks as a table (Discord)")
+    etb.add_argument("run", help="run directory (tallied)")
     ebsub.add_parser("grade", help="grade the majority and agent picks of every finished run")
 
     sub.add_parser("migrate", help="bring the warehouse schema up to date (idempotent)")
@@ -210,6 +217,13 @@ def main(argv: list[str] | None = None) -> int:
         from deepsports.analysis.ensemble_bets import tally_run
 
         print(tally_run(Path(args.run))[0], end="")
+        return 0
+    if args.command == "ensemble-bets" and args.ensemble_command == "table":  # files only
+        from pathlib import Path
+
+        from deepsports.analysis.ensemble_bets import table_run
+
+        print(table_run(Path(args.run)))
         return 0
     read_only = args.command in ("upcoming", "status", "check", "ensemble-bets") or (
         args.command == "paper" and args.paper_command == "report"
@@ -646,6 +660,8 @@ def _ensemble_bets(args: argparse.Namespace, db: Store) -> int:
             except (OSError, ValueError) as err:
                 print(f"warning: ManualBets export unreadable: {err}", file=sys.stderr)
         attach_manualbets(slate, export)
+    if args.tag:
+        slate["context_version"] += args.tag
     run = eb.new_run_dir(now)
     paths = eb.write_context(run, slate, args.agents, seed=args.seed)
     print(

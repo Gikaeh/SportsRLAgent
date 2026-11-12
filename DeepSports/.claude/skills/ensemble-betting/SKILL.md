@@ -12,7 +12,9 @@ headless sandbox can't open the warehouse). Do only this:
 1. The context files are `<dir>/context-a01.md` … `<dir>/context-aNN.md` (two digits, N files).
    Don't read them yourself.
 2. Launch one `bettor` agent per file, **all in one message**, with exactly step 2's prompt below.
-3. When all have finished, Write each reply verbatim to `<dir>/picks-aNN.json`.
+3. When all have finished, Write each reply verbatim to `<dir>/picks-aNN.json`. Never fix, trim or
+   merge a reply, even one with two JSON objects or a bad pick: the tally parses the last answer and
+   drops invalid picks itself, and its problems list is how we see bettor mistakes.
 4. Final message: one line, e.g. `ensemble: 10 of 10 replies saved`. The script tallies and posts
    the result to Discord itself.
 
@@ -47,8 +49,10 @@ asked for one), all in the same message so none can see another's output. Prompt
 Do not add hints, opinions, or anything about other agents. Same prompt shape for every agent.
 If the `bettor` type isn't available (agent types load at session start), use
 `subagent_type: "general-purpose"`, `model: "sonnet"`, and paste the body of
-`.claude/agents/bettor.md` into the prompt (with the file path filled in, and "do not run commands or
-search the web"). Same text for every agent.
+`.claude/agents/bettor.md` into the prompt (with the file path filled in). Same text for every agent.
+Bettors may research (read API via `curl -s http://localhost:8787/...`, ManualBets files, the web) but
+never open other bettors' picks or earlier runs; the scheduled run enforces that with permission rules
+(`tools/ensemble-daily.sh`).
 
 ## 3. Save each reply, then tally
 When all bettors have finished, write each agent's final reply verbatim to

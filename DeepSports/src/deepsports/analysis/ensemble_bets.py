@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import random
+import re
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -602,10 +603,11 @@ What we know from this project's own backtests (use it however you like):
 
 Answer with ONLY a JSON object, no prose around it:
 {{"picks": [{{"game_id": "...", "market": "spread|total|moneyline", "side": "...",
-  "stake": 1, "confidence": 0.55, "reason": "one short sentence"}}],
+  "bet": "TOR +5.5", "stake": 1, "confidence": 0.55, "reason": "one short sentence"}}],
  "notes": "optional: your overall approach in one or two sentences"}}
 
-`confidence` is your probability that the bet wins.
+`confidence` is your probability that the bet wins. Write `bet` the way the slate labels it
+(`TOR +5.5`, `Over 214.5`, `TOR ML`); it is checked against `side`.
 
 Slate created {created_at}. {n_games} bettable games; {unlined} more in the window have
 no line yet and can't be bet.
@@ -764,14 +766,27 @@ def agent_names(n: int) -> list[str]:
 
 
 def parse_reply(text: str) -> dict[str, Any]:
-    """The JSON object in an agent's reply (tolerates code fences or prose around it)."""
-    start, end = text.find("{"), text.rfind("}")
-    if start < 0 or end < start:
-        raise ValueError("no JSON object in reply")
-    obj = json.loads(text[start : end + 1])
-    if not isinstance(obj, dict) or not isinstance(obj.get("picks"), list):
-        raise ValueError("reply has no 'picks' list")
-    return obj
+    """The agent's answer: the LAST JSON object in the reply that has a `picks` list. Tolerates code
+    fences, prose and stray braces around it, and a draft object followed by a corrected one."""
+    dec = json.JSONDecoder()
+    found: dict[str, Any] | None = None
+    seen_json = False
+    i = text.find("{")
+    while i >= 0:
+        try:
+            obj, end = dec.raw_decode(text, i)
+        except ValueError:
+            i = text.find("{", i + 1)
+            continue
+        seen_json = True
+        if isinstance(obj, dict) and isinstance(obj.get("picks"), list):
+            found = obj
+            i = text.find("{", end)  # skip the picks nested inside this object
+        else:
+            i = text.find("{", i + 1)
+    if found is None:
+        raise ValueError("reply has no 'picks' list" if seen_json else "no JSON object in reply")
+    return found
 
 
 def priced(game: Mapping[str, Any], market: str, side: str) -> tuple[float | None, int] | None:
@@ -787,13 +802,51 @@ def priced(game: Mapping[str, Any], market: str, side: str) -> tuple[float | Non
     return None, m[f"{side}_price"]
 
 
+def _bet_matches(game: Mapping[str, Any], market: str, side: str, bet: Any) -> bool | None:
+    """Does the pick's free-text `bet` agree with its `side`? False only on a clear contradiction:
+    for spreads/moneylines the other team's abbreviation appears (whole word, exact case) and
+    the chosen team's (any case) doesn't; for totals the bet says over/under against the side.
+    None when `bet` is missing or can't be checked. Lenient on purpose ("TOR +5.5 at -108"
+    matches)."""
+    if not isinstance(bet, str) or not bet.strip():
+        return None
+
+    def has(word: str, case: bool = False) -> bool:
+        flags = 0 if case else re.I
+        return (
+            re.search(rf"(?<![A-Za-z0-9]){re.escape(word)}(?![A-Za-z0-9])", bet, flags) is not None
+        )
+
+    if market == "total":
+        over, under = has("over"), has("under")
+        if over == under:
+            return None
+        return over == (side == "over")
+    other = "away" if side == "home" else "home"
+    mine, theirs = game[side]["abbr"], game[other]["abbr"]
+    if not mine or not theirs or mine.lower() == theirs.lower():
+        return None
+    if has(mine):
+        return True
+    # The opponent's abbreviation must match case-sensitively: college codes such as WIN, NO and
+    # OU are ordinary words ("Duke to win" against Winthrop is not a contradiction).
+    return False if has(theirs, case=True) else None
+
+
+def break_even(price: int) -> float:
+    """Win probability needed to break even at an American price (-110 -> 0.5238, +150 -> 0.4)."""
+    return -price / (-price + 100) if price < 0 else 100 / (price + 100)
+
+
 def validate_picks(
     reply: Mapping[str, Any], slate: Mapping[str, Any], now: datetime | None = None
 ) -> tuple[list[dict[str, Any]], list[str]]:
     """(valid picks with slate line/price attached, problems). Keeps the first pick per game and
     the first MAX_PICKS valid picks; stakes are clamped to 1..MAX_STAKE (a slate's own
     `max_picks` / `max_stake` override both). With `now`, picks on
-    games that tipped at or before `now` are dropped (they'd be graded with hindsight)."""
+    games that tipped at or before `now` are dropped (they'd be graded with hindsight). A pick
+    whose `bet` text contradicts its `side` is dropped; a missing `bet` or a confidence below the
+    price's break-even only adds a problem line (the pick stays)."""
     games = {g["game_id"]: g for g in slate["games"]}
     max_picks = slate.get("max_picks", MAX_PICKS)  # backtest (one-pick) slates set 1
     max_stake = slate.get("max_stake", MAX_STAKE)
@@ -827,25 +880,39 @@ def validate_picks(
         if len(picks) >= max_picks:
             problems.append(f"pick {i}: over the {max_picks}-pick limit, dropped")
             continue
+        bet = p.get("bet")
+        ok = _bet_matches(game, market, side, bet)
+        if ok is False:
+            who = f" ({game[side]['abbr']})" if market != "total" else ""
+            problems.append(f"pick {i}: bet {bet!r} contradicts side {side!r}{who}; dropped")
+            continue
+        if not isinstance(bet, str) or not bet.strip():
+            problems.append(f"pick {i}: no 'bet' to check against side {side!r}; kept")
         try:
             stake = int(round(float(p.get("stake", 1))))
         except (TypeError, ValueError):
             stake = 1
         conf = p.get("confidence")
+        conf = float(conf) if isinstance(conf, int | float) and not isinstance(conf, bool) else None
+        if conf is not None and conf < (be := break_even(lp[1])):
+            problems.append(
+                f"pick {i}: confidence {conf:.3f} is below break-even {be:.3f} at {lp[1]:+d}; kept"
+            )
         seen.add(gid)
-        picks.append(
-            {
-                "game_id": gid,
-                "league": game["league"],
-                "market": market,
-                "side": side,
-                "line": lp[0],
-                "price": lp[1],
-                "stake": min(max(stake, 1), max_stake),
-                "confidence": float(conf) if isinstance(conf, int | float) else None,
-                "reason": str(p.get("reason", ""))[:300],
-            }
-        )
+        out = {
+            "game_id": gid,
+            "league": game["league"],
+            "market": market,
+            "side": side,
+            "line": lp[0],
+            "price": lp[1],
+            "stake": min(max(stake, 1), max_stake),
+            "confidence": conf,
+            "reason": str(p.get("reason", ""))[:300],
+        }
+        if isinstance(bet, str) and bet.strip():
+            out["bet"] = bet.strip()[:100]
+        picks.append(out)
     return picks, problems
 
 
@@ -1090,6 +1157,64 @@ def tally_run(run: Path, now: datetime | None = None) -> tuple[str, dict[str, An
     (run / "tally.json").write_text(json.dumps(out, indent=1))
     (run / "tally.md").write_text(md)
     return md, out
+
+
+def _short_tip(tip_local: str) -> str:
+    """'Wed Nov 11 4:00 PM PST' -> 'Wed 4:00p' (phone-width table)."""
+    parts = tip_local.split()
+    if len(parts) >= 5:
+        return f"{parts[0]} {parts[3]}{parts[4][0].lower()}"
+    return tip_local
+
+
+def render_table(tally_out: Mapping[str, Any], slate: Mapping[str, Any], near_max: int = 8) -> str:
+    """The tallied majority picks as a monospace table (for Discord), then close calls.
+
+    Pure: built from `tally.json` (as `tally_run` writes it) and the run's slate."""
+    games = {g["game_id"]: g for g in slate["games"]}
+    n = tally_out["n_agents"]
+    head = ("Bet", "Odds", "Game", "Tip (PT)", "Votes")
+    rows = []
+    for m in tally_out["majority"]:
+        g = games[m["game_id"]]
+        game = f"{g['away']['abbr']} @ {g['home']['abbr']}"
+        lg = "" if m.get("league", g["league"]) == "nba" else " (CBB)"
+        rows.append(
+            (m["label"], f"{m['price']:+d}", game + lg, _short_tip(g["tip_local"]),
+             f"{m['votes']}/{n}" + (f" ({m['against']} vs)" if m["against"] else ""))
+        )  # fmt: skip
+    out = [f"Majority picks: more than {n // 2} of {n} bettors"]
+    if rows:
+        widths = [max(len(r[i]) for r in [head, *rows]) for i in range(len(head))]
+        fmt = lambda r: "  ".join(c.ljust(w) for c, w in zip(r, widths, strict=True)).rstrip()  # noqa: E731
+        out += ["```", fmt(head), *(fmt(r) for r in rows), "```"]
+    else:
+        out.append("No pick has a majority today.")
+    near = [
+        c
+        for c in tally(tally_out["picks"], n)["all"]
+        if c.votes * 2 <= n and c.votes >= max(2, -(-n // 5))  # at least 20% of bettors
+    ]
+    if near:
+        out.append("Close calls (no majority):")
+        for c in near[:near_max]:
+            g = games[c.game_id]
+            p0 = next(
+                p for p in tally_out["picks"][c.agents[0]]
+                if (p["game_id"], p["market"], p["side"]) == (c.game_id, c.market, c.side)
+            )  # fmt: skip
+            out.append(
+                f"- {label(g, c.market, c.side, p0['line'])} ({p0['price']:+d}) "
+                f"{g['away']['abbr']} @ {g['home']['abbr']}: {c.votes}/{n}"
+                + (f", {c.against} on the other side" if c.against else "")
+            )
+    return "\n".join(out)
+
+
+def table_run(run: Path) -> str:
+    """`render_table` for a run that has been tallied (files only)."""
+    slate = json.loads((run / "slate.json").read_text())
+    return render_table(json.loads((run / "tally.json").read_text()), slate)
 
 
 def grade_runs(con: duckdb.DuckDBPyConnection, root: Path = RUNS_DIR) -> dict[str, Any]:

@@ -77,16 +77,32 @@ def test_parse_reply_tolerates_fences():
         eb.parse_reply('{"bets": []}')
 
 
+def test_parse_reply_takes_the_last_answer():
+    pick = '{"game_id": "g1", "market": "total", "side": "over"}'
+    draft = '{"picks": [' + pick + "]}"
+    final = '{"picks": [], "notes": "changed my mind"}'
+    # two objects: the last one wins
+    assert eb.parse_reply(draft + "\n" + final)["notes"] == "changed my mind"
+    # a draft, then the final answer in a fence
+    assert eb.parse_reply(f"Draft: {draft}\nFinal:\n```json\n{final}\n```")["picks"] == []
+    # prose with stray braces around a single answer
+    got = eb.parse_reply("Thinking {not json} ... " + draft + " {oops")
+    assert got["picks"][0]["game_id"] == "g1"
+    # a reply whose only object is a pick (no picks list) is still an error
+    with pytest.raises(ValueError, match="picks"):
+        eb.parse_reply(pick)
+
+
 def test_validate_picks_uses_slate_prices_and_rules():
     slate = _slate()
     reply = {"picks": [
         {"game_id": "g1", "market": "spread", "side": "away", "line": 10, "price": 500,
-         "stake": 9, "confidence": 0.56},
+         "stake": 9, "confidence": 0.56, "bet": "BOS +3.5"},
         {"game_id": "g1", "market": "total", "side": "over"},          # second pick, same game
         {"game_id": "g2", "market": "spread", "side": "home"},         # not offered
         {"game_id": "g9", "market": "total", "side": "over"},          # not on slate
         {"game_id": "g2", "market": "total", "side": "sideways"},      # bad side
-        {"game_id": "g2", "market": "total", "side": "UNDER", "stake": "x"},
+        {"game_id": "g2", "market": "total", "side": "UNDER", "stake": "x", "bet": "u 225.5"},
     ]}  # fmt: skip
     picks, problems = eb.validate_picks(reply, slate)
     assert [(p["game_id"], p["market"], p["side"]) for p in picks] == [
@@ -104,7 +120,8 @@ def test_validate_picks_uses_slate_prices_and_rules():
 def test_validate_picks_caps_count():
     games = [eb.build_game(_raw(f"g{i}"), {"last": _line()}, None, FORM, {}, {}) for i in range(12)]
     slate = {**_slate(), "games": games}
-    reply = {"picks": [{"game_id": f"g{i}", "market": "total", "side": "over"} for i in range(12)]}
+    reply = {"picks": [{"game_id": f"g{i}", "market": "total", "side": "over", "bet": "Over"}
+                       for i in range(12)]}  # fmt: skip
     picks, problems = eb.validate_picks(reply, slate)
     assert len(picks) == eb.MAX_PICKS and len(problems) == 12 - eb.MAX_PICKS
 
@@ -163,6 +180,26 @@ def test_run_dir_round_trip(tmp_path):
     assert "a03" in out["problems"] and "2/3 agree" in md
     # tallied once: a later call returns the saved tally even after tip-off
     assert eb.tally_run(run, now=TIP + timedelta(hours=1))[1] == out
+    table = eb.table_run(run)
+    assert "```" in table and "LAL -3.5" in table and "-112" in table and "2/3" in table
+
+
+def test_render_table_close_calls_and_empty():
+    slate = _slate()
+    g = slate["games"][0]
+    pick = {
+        "game_id": g["game_id"],
+        "market": "total",
+        "side": "over",
+        "line": 225.5,
+        "price": -110,
+    }
+    under = {**pick, "side": "under"}
+    out = {"n_agents": 10, "majority": [],
+           "picks": {"a01": [pick], "a02": [pick], "a03": [pick], "a04": [under]}}  # fmt: skip
+    t = eb.render_table(out, slate)
+    assert "No pick has a majority today." in t
+    assert "Over 225.5 (-110)" in t and "3/10, 1 on the other side" in t
 
 
 def test_grade_runs_by_context_version(tmp_path):
@@ -212,12 +249,72 @@ def test_render_context_one_pick_and_notes():
 def test_validate_picks_one_pick_slate():
     slate = {**_slate(), "max_picks": 1, "max_stake": 1}
     reply = {"picks": [
-        {"game_id": "g1", "market": "spread", "side": "home", "stake": 3},
+        {"game_id": "g1", "market": "spread", "side": "home", "stake": 3, "bet": "LAL -3.5"},
         {"game_id": "g2", "market": "total", "side": "over"},
     ]}  # fmt: skip
     picks, problems = eb.validate_picks(reply, slate)
     assert [(p["game_id"], p["stake"]) for p in picks] == [("g1", 1)]
     assert problems == ["pick 1: over the 1-pick limit, dropped"]
+
+
+def _one(slate, **pick):
+    return eb.validate_picks({"picks": [{"game_id": "g1", **pick}]}, slate)
+
+
+def test_validate_picks_drops_bet_that_contradicts_side():
+    slate = _slate()  # g1: BOS @ LAL, LAL -3.5 / BOS +3.5, total 225.5
+    # the a01 case: side away (BOS) but the bet names the home team
+    picks, problems = _one(slate, market="spread", side="away", bet="LAL -3.5")
+    assert picks == []
+    assert problems == ["pick 0: bet 'LAL -3.5' contradicts side 'away' (BOS); dropped"]
+    # matching bet kept, and kept on the pick
+    picks, problems = _one(slate, market="spread", side="away", bet="BOS +3.5", confidence=0.55)
+    assert picks[0]["bet"] == "BOS +3.5" and problems == []
+    # lenient: price and prose around it, any case
+    picks, problems = _one(slate, market="spread", side="home", bet="lal -3.5 at -112")
+    assert len(picks) == 1 and problems == []
+    picks, _ = _one(slate, market="moneyline", side="home", bet="LAL ML")
+    assert len(picks) == 1
+    picks, problems = _one(slate, market="moneyline", side="home", bet="BOS ML")
+    assert picks == [] and "contradicts" in problems[0]
+    # totals: over/under against the side
+    picks, problems = _one(slate, market="total", side="under", bet="Over 225.5")
+    assert picks == [] and problems == [
+        "pick 0: bet 'Over 225.5' contradicts side 'under'; dropped"
+    ]
+    picks, _ = _one(slate, market="total", side="over", bet="OVER 225.5 (-110)")
+    assert len(picks) == 1
+    # uncheckable text is kept silently; a missing bet is kept with a problem
+    picks, problems = _one(slate, market="spread", side="away", bet="Celtics +3.5")
+    assert len(picks) == 1 and problems == []
+    picks, problems = _one(slate, market="spread", side="away")
+    assert len(picks) == 1 and "bet" not in picks[0]
+    assert problems == ["pick 0: no 'bet' to check against side 'away'; kept"]
+
+
+def test_bet_check_word_abbreviations_and_prefixes():
+    game = {"home": {"abbr": "WIN"}, "away": {"abbr": "DUKE"}}
+    # "win" in prose is not Winthrop's code; only the exact-case WIN contradicts
+    assert eb._bet_matches(game, "moneyline", "away", "Blue Devils to win") is None
+    assert eb._bet_matches(game, "moneyline", "away", "WIN ML") is False
+    assert eb._bet_matches(game, "moneyline", "away", "duke ml") is True
+    no = {"home": {"abbr": "NO"}, "away": {"abbr": "GS"}}
+    assert eb._bet_matches(no, "spread", "away", "No doubt, Warriors +4") is None
+    assert eb._bet_matches(no, "spread", "away", "NO -4") is False
+    # whole words only: GSW does not contain a GS match
+    assert eb._bet_matches(no, "spread", "home", "GSW +4") is None
+
+
+def test_validate_picks_flags_confidence_below_break_even():
+    assert eb.break_even(-110) == pytest.approx(0.5238, abs=1e-4)
+    assert eb.break_even(150) == pytest.approx(0.4)
+    slate = _slate()
+    # BOS +3.5 at -108 needs 51.9%: 0.51 is flagged but kept
+    picks, problems = _one(slate, market="spread", side="away", bet="BOS +3.5", confidence=0.51)
+    assert len(picks) == 1 and picks[0]["confidence"] == 0.51
+    assert problems == ["pick 0: confidence 0.510 is below break-even 0.519 at -108; kept"]
+    _, problems = _one(slate, market="moneyline", side="away", bet="BOS ML", confidence=0.45)
+    assert problems == []  # +135 needs 42.6%
 
 
 NOW = datetime(2026, 11, 7, 23, 0, tzinfo=UTC)  # decision time; the target game tips at 00:00

@@ -5,6 +5,9 @@ set -uo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO"
 export PATH="/opt/homebrew/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
+# Long-lived token for headless `claude -p` (from `claude setup-token`), kept outside the repo.
+TOKEN_FILE="$HOME/.config/deepsports/claude-oauth-token"
+[ -r "$TOKEN_FILE" ] && export CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$TOKEN_FILE")"
 NOTIFY="python3 $HOME/.claude/tools/notify.py --kind blocked"
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 

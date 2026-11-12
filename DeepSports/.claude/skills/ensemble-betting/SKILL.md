@@ -12,7 +12,8 @@ headless sandbox can't open the warehouse). Do only this:
 1. The context files are `<dir>/context-a01.md` … `<dir>/context-aNN.md` (two digits, N files).
    Don't read them yourself.
 2. Launch one `bettor` agent per file, **all in one message**, with exactly step 2's prompt below.
-3. When all have finished, Write each reply verbatim to `<dir>/picks-aNN.json`. Never fix, trim or
+3. Only when **all** N have finished, Write each reply verbatim to `<dir>/replies/picks-aNN.json`
+   (the script copies them into the run). Never fix, trim or
    merge a reply, even one with two JSON objects or a bad pick: the tally parses the last answer and
    drops invalid picks itself, and its problems list is how we see bettor mistakes.
 4. Final message: one line, e.g. `ensemble: 10 of 10 replies saved`. The script tallies and posts

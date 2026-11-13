@@ -101,6 +101,8 @@ flowchart TB
     MPICKS["model_picks.py<br/>DeepSports + ManualBets vs line · strong/lean · top 5<br/>watch-only; runs in reports/model-picks/"]
     EBETS -->|"slate · grading"| MPICKS
     MBCTX --> MPICKS
+    MOON["src/deepsports/moon · deepsports moon<br/>risk-ladder sim · proposals from the picks run ·<br/>append-only ledger ../logs/moon/bets.csv (edge 5)<br/>watch-only; the owner places every bet"]
+    MPICKS -->|"picks run"| MOON
   end
 
   subgraph EXT[External services]
@@ -148,6 +150,7 @@ flowchart TB
   GLASS --> USER
   DISCORD --> USER
   BETDESK --> USER
+  MOON -->|"terminal"| USER
   EBDAILY -->|"picks table · blocked alerts"| DISCORD
 
   classDef planned stroke-dasharray: 5 5

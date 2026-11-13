@@ -44,9 +44,11 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
 - [ ] Re-test opening-line totals forward with real posting times (30-min captures since 2026-11-06) once a few hundred bets exist
 
 ### Betting research (watch-only)
-- [ ] **To The Moon (betting):** monthly $50–100 high-variance bets with a risk-tier simulator, honest
-  odds and an append-only ledger; owner places every bet. Proposal + owner decisions:
-  [`../../docs/TO_THE_MOON_BETTING.md`](../../docs/TO_THE_MOON_BETTING.md) (integration step first)
+- [x] **To The Moon (betting) v1** (2026-11-13): `deepsports moon` (risk ladder, proposals, append-only ledger
+  `../logs/moon/bets.csv`); guide [TO_THE_MOON.md](TO_THE_MOON.md), numbers
+  [results](results/2026-11-13-moon-risk-ladder.md). At −vig "save, then bold" has the highest P(target)
+- [ ] To The Moon next: a BetDesk tab on the same code (needs an integration step; stakes must stay on the Mac),
+  William Hill as a second book
 - [ ] Review the paper-trade record at the end of the 2026-27 regular season (pre-declared; no rule edits before then, only new versions)
 - [ ] Review the models-only picks record (`deepsports model-picks grade`, with CLV) after a few hundred graded picks.
   First grade 2026-11-13: no edge on the college walk-forward reference ([results](results/2026-11-13-model-picks-grade.md));

@@ -132,6 +132,11 @@ diagram in the same change (see CLAUDE.md).
   ensemble slate and ManualBets attach; a bet qualifies when both models are on the same side of the
   spread or total, strong at 4+ points past the line each, lean at 3+; top 5, one per game. Runs in
   `reports/model-picks/<run>/`, graded with `ensemble_bets.grade_pick`. No warehouse writes, no Claude.
+- `src/deepsports/moon/` (`deepsports moon`, since 2026-11-13; outside `analysis/`): To The Moon (betting).
+  Risk tiers + a seeded 12-month Monte Carlo at −vig (`tiers.py`, `sim.py`), proposals for a tier from the
+  latest model-picks run (`picks.py`), and an append-only ledger of the owner's real bets at
+  `../logs/moon/bets.csv` (`ledger.py`, edge 5; grading reads finals read-only and appends result rows).
+  Not served by the API. Guide: [TO_THE_MOON.md](TO_THE_MOON.md).
 - `ensemble_bets.py` + `/ensemble-betting` skill + `bettor` agent: a watch-only vote (by hand only since 2026-11-13). `ensemble-bets
   context` builds a slate (games tipping 1 h to N days out with a pregame line: lines + prices, line
   movement, the display model's prediction, season form, rest/travel, NBA pre-tip injuries with mpg/ppg)

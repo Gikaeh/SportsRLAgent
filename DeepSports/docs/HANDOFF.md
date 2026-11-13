@@ -1,4 +1,4 @@
-# Handoff: state of DeepSports (updated 2026-11-11)
+# Handoff: state of DeepSports (updated 2026-11-13)
 
 Read this first in a new session, then the open items in docs/ROADMAP.md. Rules: CLAUDE.md;
 other docs on demand via the index in README.md.
@@ -34,6 +34,11 @@ line (no betting edge). Details: the done summary in docs/ROADMAP.md and the dat
 reports in `docs/results/`. Model v1.1i (pre-tip injury reports) has no backtest (snapshots start
 2026-11-03) and is graded live, paired with v1.1 on the same games. Player impact ratings / injury impact in
 points (2026-11-11) were dropped: no edge, ratings not face-valid; the code stays as research tooling.
+
+## To The Moon (betting), by hand
+`deepsports moon` (guide `docs/TO_THE_MOON.md`): risk ladder, proposals from the latest model-picks run, and an
+append-only ledger of the owner's real bets in `../logs/moon/bets.csv` (stakes stay on the Mac). Nothing scheduled.
+Book: Circa (not in The Odds API feed; compare by the owner's screenshot).
 
 ## Known gaps / gotchas
 - ESPN gaps (warnings in `deepsports check`): 8 NBA playoff summaries 404; 29 NBA team-games and ~430 college

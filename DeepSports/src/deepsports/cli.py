@@ -187,6 +187,13 @@ def build_parser() -> argparse.ArgumentParser:
         " slates without ManualBets numbers are skipped)",
     )
 
+    sub.add_parser(
+        "moon",
+        help="To The Moon (betting): risk ladder, proposals and a ledger of real bets (watch-only;"
+        " `deepsports moon -h`)",
+        add_help=False,
+    )
+
     sub.add_parser("migrate", help="bring the warehouse schema up to date (idempotent)")
 
     up = sub.add_parser("upcoming", help="list upcoming games (input for calendar sync)")
@@ -206,6 +213,11 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else list(argv)
+    if argv[:1] == ["moon"]:  # its own parser (deepsports/moon/cli.py); opens the DB itself
+        from deepsports.moon.cli import main as moon_main
+
+        return moon_main(argv[1:])
     args = build_parser().parse_args(argv)
     logging.basicConfig(
         level=logging.INFO if args.verbose else logging.WARNING,

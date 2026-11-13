@@ -21,6 +21,12 @@ LIVE_CACHE_DIR = Path(
     )
 )
 
+# To The Moon (betting) ledger of the owner's real bets: append-only CSV at the repo root
+# (edge 5, DECISIONS 2026-11-13). Stakes in it never leave the Mac.
+MOON_LEDGER_PATH = Path(
+    os.environ.get("DEEPSPORTS_MOON_LEDGER", ROOT.parent / "logs" / "moon" / "bets.csv")
+)
+
 # The user's timezone, used for calendar output.
 LOCAL_TZ = ZoneInfo(os.environ.get("DEEPSPORTS_TZ", "America/Los_Angeles"))
 # ESPN's `dates=YYYYMMDD` scoreboard parameter is a US/Eastern game day.

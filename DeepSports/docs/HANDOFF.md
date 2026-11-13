@@ -39,6 +39,9 @@ points (2026-11-11) were dropped: no edge, ratings not face-valid; the code stay
 `deepsports moon` (guide `docs/TO_THE_MOON.md`): risk ladder, proposals from the latest model-picks run, and an
 append-only ledger of the owner's real bets in `../logs/moon/bets.csv` (stakes stay on the Mac). Nothing scheduled.
 Book: Circa (not in The Odds API feed; compare by the owner's screenshot).
+Next (from 2026-11-13): `deepsports moon grade` + `status` for the first 6 ledger rows (Nov 13 picks + a $2
+parlay logged at ~+264; confirm the price); the owner picks a budget/target/tier and starts the plan with a
+`log deposit`; open question whether the hand-placed daily picks keep going in the ledger (tier `manual`).
 
 ## Known gaps / gotchas
 - ESPN gaps (warnings in `deepsports check`): 8 NBA playoff summaries 404; 29 NBA team-games and ~430 college

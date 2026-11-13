@@ -86,21 +86,80 @@ def test_best_price_only_when_same_line_or_better():
     assert "best" not in mp.find_picks(s)[0]
 
 
-def test_write_and_grade(tmp_path, monkeypatch):
-    from datetime import UTC, datetime
-
+def _db(games, closes):
     import duckdb
+
+    con = duckdb.connect()
+    con.execute(
+        "CREATE TABLE games (game_id VARCHAR, league VARCHAR, season_year INT, season_type INT,"
+        " start_time_utc TIMESTAMPTZ, home_score INT, away_score INT, completed BOOLEAN,"
+        " status VARCHAR)"
+    )
+    con.execute(
+        "CREATE TABLE odds_snapshots (game_id VARCHAR, source VARCHAR, captured_at TIMESTAMPTZ,"
+        " provider VARCHAR, details VARCHAR, spread_home DOUBLE, over_under DOUBLE,"
+        " home_moneyline INT, away_moneyline INT)"
+    )
+    for gid, league, hs, as_ in games:
+        con.execute(
+            "INSERT INTO games VALUES (?, ?, 2027, 2, '2026-11-14 00:00:00+00', ?, ?, ?, ?)",
+            [gid, league, hs, as_, hs is not None, "STATUS_FINAL" if hs is not None else "pre"],
+        )
+    for gid, when, sp, tot in closes:
+        con.execute(
+            "INSERT INTO odds_snapshots VALUES (?, 'closing', ?, 'x', '', ?, ?, NULL, NULL)",
+            [gid, when, sp, tot],
+        )
+    return con
+
+
+def test_pick_clv_bet_side_view():
+    close = {"spread_home": -7.0, "over_under": 205.0}
+    home = {"league": "nba", "market": "spread", "side": "home", "line": -5}
+    away = {"league": "nba", "market": "spread", "side": "away", "line": 5}
+    over = {"league": "nba", "market": "total", "side": "over", "line": 200}
+    under = {"league": "nba", "market": "total", "side": "under", "line": 200}
+    # home -5 taken, closed -7: +2 for home; away +5 vs +7 at the close: -2
+    assert mp.pick_clv(home, close) == 2.0 and mp.pick_clv(away, close) == -2.0
+    assert mp.pick_clv(over, close) == 5.0 and mp.pick_clv(under, close) == -5.0
+    assert mp.pick_clv(home, None) is None
+    assert mp.pick_clv(over, {"spread_home": -7.0, "over_under": 999.0}) is None  # not sane
+
+
+def test_grade_picks_clv_by_league_and_pending():
+    s = slate(
+        game("1", "nba", -5, 200, (10, 196), (10, 195)),  # home -5 strong, under 200 strong
+        game("2", "ncaab", -3, 140, (4, 150), (5, 150)),  # total over 140 strong only
+        game("3", "ncaab", -3, 140, (4, 150), (5, 150)),  # not final yet
+    )
+    con = _db(
+        [("1", "nba", 110, 100), ("2", "ncaab", 70, 60), ("3", "ncaab", None, None)],
+        [
+            ("1", "2026-11-14 00:30:00+00", -6.5, 198.0),
+            ("1", "2026-11-13 23:00:00+00", -5.0, 200.0),  # older close row: ignored
+        ],
+    )
+    rec = mp.grade_picks(con, [mp.slate_run(s, run="r1")])
+    assert rec["pending_picks"] == 1
+    st = rec["strong"]
+    # home -5 won by 10 (win), under 200 vs 210 (loss), over 140 vs 130 (loss)
+    assert st["record"] == "1-2-0" and st["bets"] == 3
+    assert st["clv_n"] == 2 and st["clv_coverage"] == round(2 / 3, 3)
+    assert st["clv_mean"] == 1.75  # home +1.5, under +2.0; game 2 has no closing row
+    assert rec["by_league"]["nba"]["strong"]["clv_mean"] == 1.75
+    assert rec["by_league"]["ncaab"]["strong"]["clv_n"] == 0
+    assert rec["per_run"][0]["run"] == "r1" and rec["per_run"][0]["all"]["bets"] == 3
+
+
+def test_write_and_grade(tmp_path):
+    from datetime import UTC, datetime
 
     s = slate(game("1", "nba", -5, 200, (10, 196), (10, 195)))
     run, _ = mp.write_run(s, datetime(2026, 11, 13, 22, tzinfo=UTC), root=tmp_path)
     saved = json.loads((run / "picks.json").read_text())
     assert saved["rule_version"] == mp.RULE_VERSION and len(saved["top"]) == 1
-    con = duckdb.connect()
-    con.execute(
-        "CREATE TABLE games (game_id VARCHAR, home_score INT, away_score INT,"
-        " completed BOOLEAN, status VARCHAR)"
-    )
-    con.execute("INSERT INTO games VALUES ('1', 110, 100, true, 'STATUS_FINAL')")
+    con = _db([("1", "nba", 110, 100)], [])
     rec = mp.grade_runs(con, root=tmp_path)
     # home -5 wins by 10 -> win; under 200 with 210 -> loss
     assert rec["strong"]["record"] == "1-1-0" and rec["top"]["bets"] == 1
+    assert rec["strong"]["clv_n"] == 0 and rec["per_run"][0]["run"] == run.name

@@ -667,3 +667,12 @@ keychain login that has them expires every few days). `tools/scheduled-sync.sh` 
 `.sync/upcoming*.json` or calls Claude, so no scheduled job needs a Claude login. The skill,
 `calendar-agent`, `config/calendar.toml` and `deepsports upcoming` stay for runs by hand; existing
 calendar events are left as they are.
+
+### 2026-11-13: mp-v1 graded: no edge; stays a watch-only list
+**Why:** first grade (docs/results/2026-11-13-model-picks-grade.md). Live: 2 graded slates, too small
+(top 7-3, strong 14-17). Walk-forward reference, college 2025-26 with both models out of sample vs the
+close: strong 50.6% (n 1,679, ROI -3.5%), top 5 52.2% (n 628, ROI -0.3%), all at or below break-even;
+model agreement doesn't create an edge. The rule keeps running as the daily list; the Discord post now
+says so in one line and shows at most 10 rows per tier (it reached ~3.1k characters on a Friday slate).
+No rule changes before a few hundred live picks; a sub-rule (college lean spreads, 56.4%, 1 of 9 cells)
+is only a candidate for a pre-registered forward test.

@@ -29,6 +29,8 @@ from typing import Any
 import duckdb
 
 from deepsports import config
+from deepsports.analysis.betting.grading import clv
+from deepsports.analysis.betting.loaders import load_odds, sane_lines
 from deepsports.analysis.ensemble_bets import (
     _short_tip,
     grade_pick,
@@ -45,6 +47,7 @@ LEAN_PTS = 3.0
 TOP_N = 5
 BIG_DOG_LINE = 15.0
 MARKETS = ("spread", "total")
+MAX_ROWS = 10  # per tier in the Discord message; the full list is in picks.json
 
 
 def _edge(market: str, margin_or_total: float | None, game: Mapping[str, Any]) -> float | None:
@@ -186,14 +189,19 @@ def render(slate: Mapping[str, Any], picks: Sequence[Mapping[str, Any]], top: Se
     ):
         rows = [_row(p, games) for p in picks if p["tier"] == tier]
         if rows:
-            out.append(title)
-            out += _table([head, *rows])
+            out.append(
+                title + (f" (best {MAX_ROWS} of {len(rows)})" if len(rows) > MAX_ROWS else "")
+            )
+            out += _table([head, *rows[:MAX_ROWS]])
     notes = []
     if any(p["early"] for p in picks):
         notes.append("* early-season college game (ManualBets withholds its own bets)")
     if not any(p["league"] == "nba" for p in picks):
         notes.append("NBA: the models don't agree on any line today")
-    notes.append("Neither model has beaten the closing line. Check the line before betting.")
+    notes.append(
+        "Backtest (college 2025-26, both models walk-forward vs close): strong 50.6%, top 5 52.2%,"
+        " at or below break-even. Watch-only; check the line before betting."
+    )
     out += notes
     return "\n".join(out)
 
@@ -218,25 +226,97 @@ def write_run(slate: Mapping[str, Any], now: datetime, root: Path = RUNS_DIR) ->
     return run, text
 
 
-def grade_runs(con: duckdb.DuckDBPyConnection, root: Path = RUNS_DIR) -> dict[str, Any]:
-    """Graded record of every run at the run's line and price, 1 unit per pick: top picks,
-    strong, lean. Unfinished games count as pending."""
+def load_closes(con: duckdb.DuckDBPyConnection, game_ids: Sequence[str]) -> dict[str, dict]:
+    """Latest `closing` odds row per game (spread_home, over_under), keyed by game_id."""
+    if not game_ids:
+        return {}
+    return {r["game_id"]: r for r in load_odds(con, "closing", game_ids=list(game_ids))}
+
+
+def pick_clv(pick: Mapping[str, Any], close: Mapping[str, Any] | None) -> float | None:
+    """Closing-line value in points from the bet side's view (positive = the pick's line beat
+    the close), via `betting.grading.clv`; None without a sane closing line."""
+    if close is None:
+        return None
+    spread = pick["market"] == "spread"
+    home_line = pick["line"] if pick["side"] == "home" else -pick["line"]
+    row = sane_lines(
+        {
+            "league": pick["league"],
+            "open_spread_home": home_line if spread else None,
+            "close_spread_home": close.get("spread_home"),
+            "open_total": None if spread else pick["line"],
+            "close_total": close.get("over_under"),
+        }
+    )
+    return clv({"timing": "open", "market": pick["market"], "side": pick["side"]}, row)
+
+
+def _summary(graded: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """W-L-P / units / ROI (`summarize_graded`) plus CLV: n with a closing line, coverage,
+    mean, % positive."""
+    out = summarize_graded(graded)
+    clvs = [g["clv"] for g in graded if g.get("clv") is not None]
+    out["clv_n"] = len(clvs)
+    out["clv_coverage"] = None if not graded else round(len(clvs) / len(graded), 3)
+    out["clv_mean"] = None if not clvs else round(sum(clvs) / len(clvs), 2)
+    out["clv_pct_positive"] = None if not clvs else round(sum(c > 0 for c in clvs) / len(clvs), 3)
+    return out
+
+
+def grade_picks(
+    con: duckdb.DuckDBPyConnection, runs: Sequence[Mapping[str, Any]]
+) -> dict[str, Any]:
+    """Grade runs ({"run", "picks", "top"}) at each pick's line and price, 1 unit per pick, with
+    CLV vs the closing row. Groups: top, strong, lean; also per league and per run. Unfinished
+    games count as pending."""
     groups: dict[str, list[dict]] = {"top": [], "strong": [], "lean": []}
+    leagues: dict[str, dict[str, list[dict]]] = {}
+    per_run = []
     pending = 0
-    runs = sorted(root.glob("*/picks.json"))
-    for f in runs:
-        r = json.loads(f.read_text())
-        finals = load_finals(con, sorted({p["game_id"] for p in r["picks"]}))
+    for r in runs:
+        ids = sorted({p["game_id"] for p in r["picks"]} | {p["game_id"] for p in r["top"]})
+        finals = load_finals(con, ids)
+        closes = load_closes(con, ids)
+        mine: dict[str, list[dict]] = {"top": [], "all": []}
         for name, ps in (("top", r["top"]), ("all", r["picks"])):
             for p in ps:
                 if p["game_id"] not in finals:
                     pending += name == "all"
                     continue
-                groups[name if name == "top" else p["tier"]].append(
-                    grade_pick(p, finals[p["game_id"]])
-                )
+                g = grade_pick(p, finals[p["game_id"]])
+                g["clv"] = pick_clv(p, closes.get(p["game_id"]))
+                key = name if name == "top" else p["tier"]
+                groups[key].append(g)
+                lg = leagues.setdefault(p["league"], {"top": [], "strong": [], "lean": []})
+                lg[key].append(g)
+                mine[name].append(g)
+        per_run.append(
+            {"run": r.get("run"), "picks": len(r["picks"]), "top_n": len(r["top"])}
+            | {k: _summary(v) for k, v in mine.items()}
+        )
     return {
         "runs": len(runs),
         "pending_picks": pending,
-        **{k: summarize_graded(v) for k, v in groups.items()},
+        **{k: _summary(v) for k, v in groups.items()},
+        "by_league": {
+            lg: {k: _summary(v) for k, v in gs.items()} for lg, gs in sorted(leagues.items())
+        },
+        "per_run": per_run,
     }
+
+
+def slate_run(slate: Mapping[str, Any], run: str | None = None) -> dict[str, Any]:
+    """Apply the rule to a saved slate (pure): {"run", "picks", "top"} for `grade_picks`.
+    Used to retro-grade slates saved before the rule existed (e.g. ensemble-bets runs)."""
+    picks = find_picks(slate)
+    return {"run": run, "picks": picks, "top": top_picks(picks)}
+
+
+def grade_runs(con: duckdb.DuckDBPyConnection, root: Path = RUNS_DIR) -> dict[str, Any]:
+    """Graded record of every saved run (see `grade_picks`)."""
+    runs = []
+    for f in sorted(root.glob("*/picks.json")):
+        r = json.loads(f.read_text())
+        runs.append({"run": f.parent.name, "picks": r["picks"], "top": r["top"]})
+    return grade_picks(con, runs)

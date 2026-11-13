@@ -48,7 +48,10 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
   odds and an append-only ledger; owner places every bet. Proposal + owner decisions:
   [`../../docs/TO_THE_MOON_BETTING.md`](../../docs/TO_THE_MOON_BETTING.md) (integration step first)
 - [ ] Review the paper-trade record at the end of the 2026-27 regular season (pre-declared; no rule edits before then, only new versions)
-- [ ] Review the models-only picks record (`deepsports model-picks grade`) after ~200 graded picks; add CLV grading
+- [ ] Review the models-only picks record (`deepsports model-picks grade`, with CLV) after a few hundred graded picks.
+  First grade 2026-11-13: no edge on the college walk-forward reference ([results](results/2026-11-13-model-picks-grade.md));
+  any forward test of a sub-rule (e.g. college lean spreads) must be pre-registered first
+- [ ] ManualBets NBA spread walk-forward (needs its NBA history on this Mac) to test mp-v1 in the NBA
 - [ ] Review the ensemble-betting record after ~200 graded majority picks (no longer scheduled since 2026-11-13; few runs)
 - [ ] Grade ensemble picks by closing-line value (points for spread/total, no-vig probability for ML; closing
   rows in `odds_snapshots`), majority and agent picks, by `context_version`, with bootstrap CIs. CLV gives a

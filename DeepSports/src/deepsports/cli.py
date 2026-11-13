@@ -178,7 +178,14 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         help="ManualBets export (tools/manualbets-export.py); 'none' if it failed",
     )
-    mpsub.add_parser("grade", help="record of every run: top picks, strong, lean")
+    mpg = mpsub.add_parser("grade", help="record of every run: top, strong, lean, with CLV")
+    mpg.add_argument(
+        "--slates",
+        nargs="+",
+        metavar="SLATE_JSON",
+        help="instead of the saved runs, apply the rule to these slate.json files (read-only;"
+        " slates without ManualBets numbers are skipped)",
+    )
 
     sub.add_parser("migrate", help="bring the warehouse schema up to date (idempotent)")
 
@@ -699,7 +706,17 @@ def _model_picks(args: argparse.Namespace, db: Store) -> int:
     from deepsports.analysis.manualbets_context import attach_manualbets, load_export
 
     if args.picks_command == "grade":
-        print(json.dumps(mp.grade_runs(db.con), indent=1))
+        if args.slates:
+            runs = []
+            for f in map(Path, args.slates):
+                slate = json.loads(f.read_text())
+                if not (slate.get("manualbets") or {}).get("available"):
+                    print(f"skip {f}: no ManualBets numbers", file=sys.stderr)
+                    continue
+                runs.append(mp.slate_run(slate, run=f.parent.name))
+            print(json.dumps(mp.grade_picks(db.con, runs), indent=1))
+        else:
+            print(json.dumps(mp.grade_runs(db.con), indent=1))
         return 0
     if args.days < 1:
         print("error: --days must be >= 1", file=sys.stderr)

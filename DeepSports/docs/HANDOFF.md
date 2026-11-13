@@ -1,4 +1,4 @@
-# Handoff: state of DeepSports (updated 2026-11-11)
+# Handoff: state of DeepSports (updated 2026-11-13)
 
 Read this first in a new session, then the open items in docs/ROADMAP.md. Rules: CLAUDE.md;
 other docs on demand via the index in README.md.
@@ -7,8 +7,8 @@ other docs on demand via the index in README.md.
 | Thing | How | Check |
 |---|---|---|
 | App server: API + web app + glasses plugin on `:8787` | launchd `com.deepsports.serve` (restarts itself) | `curl -s localhost:8787/api/health` · logs `~/Library/Logs/DeepSports/serve.log` |
-| Scheduled sync at 08:00 and 14:00: update NBA + college → predict v1.0 + v1.1 + v1.1i → headless Claude `/sync-game-calendar` → Discord | launchd `com.deepsports.sync` → `tools/scheduled-sync.sh` | `~/Library/Logs/DeepSports/sync.log` |
-| Daily ensemble-betting vote (watch-only): 10 Sonnet bettors (20 on 2026-11-12 only) that may research (read API, ManualBets, web) on NBA + college games tipping in the next 24 h → majority picks as a table to Discord | end of the 14:00 sync → `tools/ensemble-daily.sh` | runs in `/Volumes/ExFATStorag/DeepSports/reports/ensemble-bets/` · `deepsports ensemble-bets grade` |
+| Scheduled sync at 08:00 and 14:00: update NBA + college → predict v1.0 + v1.1 + v1.1i → paper log (no Claude call; the calendar sync was scrapped for now on 2026-11-13) | launchd `com.deepsports.sync` → `tools/scheduled-sync.sh` | `~/Library/Logs/DeepSports/sync.log` |
+| Daily models-only picks (watch-only, since 2026-11-13): DeepSports' model and ManualBets' model vs the lines for games tipping in the next 24 h → top 5 + strong/lean tables to Discord (no Claude call). Replaced the ensemble-agent vote, which stays runnable by hand (`tools/ensemble-daily.sh`) | end of the 14:00 sync → `tools/model-picks-daily.sh` | runs in `/Volumes/ExFATStorag/DeepSports/reports/model-picks/` · `deepsports model-picks grade` |
 | Pre-tip injury refresh at :20 and :50: NBA games tipping in 5-100 min → fresh ESPN injury report → v1.1i predictions (installed 2026-11-10) | launchd `com.deepsports.pretip` → `tools/pretip.sh` | `~/Library/Logs/DeepSports/pretip.log` (one line per run) · `deepsports status` (`pretip v1.1i` runs) |
 | Discord turn notifications | global Stop/Notification hooks → `~/.claude/tools/notify.py` | |
 
@@ -34,6 +34,11 @@ line (no betting edge). Details: the done summary in docs/ROADMAP.md and the dat
 reports in `docs/results/`. Model v1.1i (pre-tip injury reports) has no backtest (snapshots start
 2026-11-03) and is graded live, paired with v1.1 on the same games. Player impact ratings / injury impact in
 points (2026-11-11) were dropped: no edge, ratings not face-valid; the code stays as research tooling.
+
+## To The Moon (betting), by hand
+`deepsports moon` (guide `docs/TO_THE_MOON.md`): risk ladder, proposals from the latest model-picks run, and an
+append-only ledger of the owner's real bets in `../logs/moon/bets.csv` (stakes stay on the Mac). Nothing scheduled.
+Book: Circa (not in The Odds API feed; compare by the owner's screenshot).
 
 ## Known gaps / gotchas
 - ESPN gaps (warnings in `deepsports check`): 8 NBA playoff summaries 404; 29 NBA team-games and ~430 college

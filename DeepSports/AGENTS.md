@@ -17,8 +17,8 @@ a copy or wait). Cross-cutting changes go back to the orchestrator.
 ## Workflows
 - **Add a data source:** `data-engineer` (source, parser, fixtures, tests, backfill) → `architect`
   (diagram, DATA_SOURCES, DATA_MODEL) → orchestrator runs the checks.
-- **Daily refresh:** launchd runs `tools/scheduled-sync.sh` (warehouse steps, then headless
-  `/sync-game-calendar prefetched`); interactively, `calendar-agent` runs `/sync-game-calendar`.
+- **Daily refresh:** launchd runs `tools/scheduled-sync.sh` (warehouse steps; model picks at 14:00).
+  Calendar sync is by hand only for now: `calendar-agent` runs `/sync-game-calendar`.
 - **Model work:** orchestrator frames the question → `data-analyst` builds it (walk-forward, no
   leakage) → orchestrator reviews the method → `architect` files the dated result in `docs/results/`.
 
@@ -43,5 +43,6 @@ a copy or wait). Cross-cutting changes go back to the orchestrator.
 | paper-trade log (watch-only) | `deepsports paper log \| report` (`src/deepsports/analysis/paper.py`) |
 | bet grader + 3× move audit | `src/deepsports/analysis/betting/` |
 | feature walk-forward test | `src/deepsports/analysis/feature_test.py` |
-| ManualBets export for the vote (NBA on the Pi, college here) | `tools/manualbets-export.py` (PIPELINE.md, "Raspberry Pi helper") |
-| ensemble betting (watch-only vote) | `deepsports ensemble-bets context\|tally\|grade` (`src/deepsports/analysis/ensemble_bets.py`) |
+| ManualBets export for the daily picks and the vote (NBA on the Pi, college here) | `tools/manualbets-export.py` (PIPELINE.md, "Raspberry Pi helper") |
+| models-only daily picks (watch-only, 14:00) | `deepsports model-picks run\|grade` + `tools/model-picks-daily.sh` (`src/deepsports/analysis/model_picks.py`) |
+| ensemble betting (watch-only vote, by hand) | `deepsports ensemble-bets context\|tally\|grade` (`src/deepsports/analysis/ensemble_bets.py`) |

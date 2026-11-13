@@ -29,9 +29,11 @@ these read-only edges:
 3. BetDesk's Worker reads DeepSports' read API over HTTP (GET, allowlisted endpoints) through a
    Cloudflare Tunnel to `localhost:8787` on the owner's Mac (`BetDesk/worker/src/origin.ts`;
    contract `DeepSports/docs/API.md`).
-4. DeepSports' ensemble vote reads a JSON written by `ManualBets/tools/export_predictions.py`
+4. DeepSports' daily model picks and ensemble vote read a JSON written by `ManualBets/tools/export_predictions.py`
    (run by `DeepSports/tools/manualbets-export.py`, NBA half on the LAN Raspberry Pi;
    `analysis/manualbets_context.py`).
+5. DeepSports' To The Moon app appends real moon bets to `logs/moon/bets.csv` (append-only; stakes
+   never leave the Mac). Decided 2026-11-13 in `docs/DECISIONS.md`.
 A new edge is an integration step: propose it, log it, then build it.
 
 ## Non-negotiables (every project, every agent)

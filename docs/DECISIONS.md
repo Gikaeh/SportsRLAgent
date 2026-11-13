@@ -69,3 +69,20 @@ GETs to DeepSports' API through a Cloudflare Tunnel (`cloudflared` on the Mac). 
 accepts only the Worker's Access service token; people log in at the Worker as before. Edge 3 is now
 "BetDesk Worker → DeepSports read API over the tunnel" (still HTTP, read-only, allowlisted; no stakes).
 Details and trade-offs: `BetDesk/docs/DECISIONS.md` 2026-11-11.
+
+### 2026-11-13: To The Moon (betting) is built in DeepSports; new edge 5 (moon ledger under `logs/moon/`)
+Owner decisions on `docs/TO_THE_MOON_BETTING.md`:
+1. **Lives in DeepSports** as a terminal app (`deepsports.moon`, no new dependencies); a BetDesk tab can
+   come later on the same code.
+2. **Ledger:** a new append-only CSV `logs/moon/bets.csv`, apart from the normal bet logs. DeepSports
+   writes it (only appends, rule 3) — that is **edge 5**. Stakes in it never leave the Mac; the read API
+   and BetDesk don't serve it.
+3. **DeepStocks stays separate:** the engine pattern is re-written here, nothing is imported from or
+   shared with `~/Projects/DeepStocks` (owner: "always its own separate thing").
+4. **Books: Circa** (owner may add William Hill/Caesars). Neither is in The Odds API feed (checked
+   2026-11-13: 16 US/US2 books, no `circasports`, no `williamhill_us`; 437 credits left). Proposals show
+   the best price across the books in the feed as a reference; the owner checks Circa (or sends a
+   same-day screenshot) and the ledger records the price actually taken. Bet types: spreads, totals,
+   moneylines and ordinary parlays; no props, futures or same-game parlays.
+5. **Budget** $50 / $75 / $100 a month (default $75); targets $1k, $2.5k, $10k over 12 months.
+Default assumption EV = −vig per bet (no model beats the close); edge only from a graded record.

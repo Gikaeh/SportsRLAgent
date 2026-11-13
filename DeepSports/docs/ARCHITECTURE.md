@@ -38,9 +38,9 @@ diagram in the same change (see CLAUDE.md).
   connector. Events are matched by the key `deepsports:nba:<game_id>` in their description, so a sync can
   safely be repeated.
 - Scheduled runs (`tools/scheduled-sync.sh`, launchd 08:00/14:00) do every warehouse step themselves
-  (update, predict, paper log, export `upcoming --json` to `.sync/`) and then run headless Claude with
-  `/sync-game-calendar prefetched .sync`, which only reads those files and calls Google Calendar.
-  Headless Claude's Bash sandbox can't open DuckDB on the external drive.
+  (update, predict, paper log; model picks at 14:00). The scheduled calendar sync was scrapped for now
+  (2026-11-13); the skill still runs by hand (`calendar-agent`). Headless Claude's Bash sandbox can't open
+  DuckDB on the external drive, so a headless run would need `upcoming --json` exported first.
 - Line capture (`tools/odds-snapshot.sh`, launchd `com.deepsports.odds` every 30 min at :15/:45):
   `deepsports odds-snapshot` fetches today's and tomorrow's scoreboards (NBA + college) and writes
   only `pregame` odds rows. No Claude involved. It fetches before opening the warehouse and skips
@@ -128,7 +128,16 @@ diagram in the same change (see CLAUDE.md).
   list, the "missed the previous game" proxy, or the leaked oracle for a ceiling), plus the walk-forward
   backtest of the v1.2 candidate and its market tests. Result: no edge, star ratings not face-valid,
   dropped (docs/results/2026-11-11-player-impact.md).
-- `ensemble_bets.py` + `/ensemble-betting` skill + `bettor` agent: a watch-only vote. `ensemble-bets
+- `model_picks.py`: the daily watch-only picks (since 2026-11-13, replacing the scheduled vote). Reuses the
+  ensemble slate and ManualBets attach; a bet qualifies when both models are on the same side of the
+  spread or total, strong at 4+ points past the line each, lean at 3+; top 5, one per game. Runs in
+  `reports/model-picks/<run>/`, graded with `ensemble_bets.grade_pick`. No warehouse writes, no Claude.
+- `src/deepsports/moon/` (`deepsports moon`, since 2026-11-13; outside `analysis/`): To The Moon (betting).
+  Risk tiers + a seeded 12-month Monte Carlo at −vig (`tiers.py`, `sim.py`), proposals for a tier from the
+  latest model-picks run (`picks.py`), and an append-only ledger of the owner's real bets at
+  `../logs/moon/bets.csv` (`ledger.py`, edge 5; grading reads finals read-only and appends result rows).
+  Not served by the API. Guide: [TO_THE_MOON.md](TO_THE_MOON.md).
+- `ensemble_bets.py` + `/ensemble-betting` skill + `bettor` agent: a watch-only vote (by hand only since 2026-11-13). `ensemble-bets
   context` builds a slate (games tipping 1 h to N days out with a pregame line: lines + prices, line
   movement, the display model's prediction, season form, rest/travel, NBA pre-tip injuries with mpg/ppg)
   and one shuffled context file per agent in `reports/ensemble-bets/<run>/`; N `bettor` subagents

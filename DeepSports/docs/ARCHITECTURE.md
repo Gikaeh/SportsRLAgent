@@ -128,7 +128,11 @@ diagram in the same change (see CLAUDE.md).
   list, the "missed the previous game" proxy, or the leaked oracle for a ceiling), plus the walk-forward
   backtest of the v1.2 candidate and its market tests. Result: no edge, star ratings not face-valid,
   dropped (docs/results/2026-11-11-player-impact.md).
-- `ensemble_bets.py` + `/ensemble-betting` skill + `bettor` agent: a watch-only vote. `ensemble-bets
+- `model_picks.py`: the daily watch-only picks (since 2026-11-13, replacing the scheduled vote). Reuses the
+  ensemble slate and ManualBets attach; a bet qualifies when both models are on the same side of the
+  spread or total, strong at 4+ points past the line each, lean at 3+; top 5, one per game. Runs in
+  `reports/model-picks/<run>/`, graded with `ensemble_bets.grade_pick`. No warehouse writes, no Claude.
+- `ensemble_bets.py` + `/ensemble-betting` skill + `bettor` agent: a watch-only vote (by hand only since 2026-11-13). `ensemble-bets
   context` builds a slate (games tipping 1 h to N days out with a pregame line: lines + prices, line
   movement, the display model's prediction, season form, rest/travel, NBA pre-tip injuries with mpg/ppg)
   and one shuffled context file per agent in `reports/ensemble-bets/<run>/`; N `bettor` subagents

@@ -639,3 +639,16 @@ bettor can still be running to read them (the folder is emptied at the start of 
 drive stay denied). The bettor brief still forbids opening it. The run was recovered by hand: the 20 replies,
 taken verbatim from the blocked writes recorded in `.sync/ensemble-claude.json`, were tallied at 14:31 PT,
 before any picked game tipped (the earliest at 16:00 PT).
+
+### 2026-11-13: daily models-only picks replace the scheduled ensemble-agent vote
+**Why:** the owner asked to drop the daily agent vote and keep the "models only" view used by hand on
+2026-11-12: DeepSports' model and ManualBets' model against the 14:00 lines. The vote cost a 10-20-agent
+Claude run every day, failed outright once (0 of 20 replies saved on 2026-11-12), and its picks are not
+better grounded than the two models they read. A fixed rule is repeatable, free and gradable.
+Rule `mp-v1` (`analysis/model_picks.py`): per game, for spread and total, each model's edge is its number
+past the line in points; both models on the same side, strong if both >= 4, lean if both >= 3; top 5, one
+per game, ranked by the smaller edge, leaving out college spreads beyond 15 (early-season models pull
+lopsided games to the middle). Replayed on the 2026-11-12 slate, it reproduces that day's hand-made table
+(9 strong, 3 lean). Moneylines stay out. Neither model beats the close, so this stays watch-only
+and is graded (`model-picks grade`). The ensemble code, skill and `bettor` agent stay for runs by hand and
+for grading the existing record.

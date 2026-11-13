@@ -165,6 +165,21 @@ def build_parser() -> argparse.ArgumentParser:
     etb.add_argument("run", help="run directory (tallied)")
     ebsub.add_parser("grade", help="grade the majority and agent picks of every finished run")
 
+    mp = sub.add_parser(
+        "model-picks", help="models-only daily picks: DeepSports + ManualBets vs lines (watch-only)"
+    )
+    mpsub = mp.add_subparsers(dest="picks_command", required=True)
+    mpr = mpsub.add_parser("run", help="write a run dir (slate, picks, message); print the message")
+    mpr.add_argument("--days", type=int, default=1, help="games tipping in the next N days")
+    mpr.add_argument("--league", choices=["nba", "ncaab", "all"], default="all")
+    mpr.add_argument(
+        "--manualbets",
+        metavar="JSON",
+        required=True,
+        help="ManualBets export (tools/manualbets-export.py); 'none' if it failed",
+    )
+    mpsub.add_parser("grade", help="record of every run: top picks, strong, lean")
+
     sub.add_parser("migrate", help="bring the warehouse schema up to date (idempotent)")
 
     up = sub.add_parser("upcoming", help="list upcoming games (input for calendar sync)")
@@ -225,7 +240,7 @@ def main(argv: list[str] | None = None) -> int:
 
         print(table_run(Path(args.run)))
         return 0
-    read_only = args.command in ("upcoming", "status", "check", "ensemble-bets") or (
+    read_only = args.command in ("upcoming", "status", "check", "ensemble-bets", "model-picks") or (
         args.command == "paper" and args.paper_command == "report"
     )
     db = Store(read_only=read_only)
@@ -678,9 +693,38 @@ def _ensemble_bets(args: argparse.Namespace, db: Store) -> int:
     return 0
 
 
+def _model_picks(args: argparse.Namespace, db: Store) -> int:
+    from deepsports.analysis import ensemble_bets as eb
+    from deepsports.analysis import model_picks as mp
+    from deepsports.analysis.manualbets_context import attach_manualbets, load_export
+
+    if args.picks_command == "grade":
+        print(json.dumps(mp.grade_runs(db.con), indent=1))
+        return 0
+    if args.days < 1:
+        print("error: --days must be >= 1", file=sys.stderr)
+        return 2
+    now = datetime.now(UTC)
+    leagues = list(LEAGUES) if args.league == "all" else [args.league]
+    slate = eb.load_slate(db.con, now, days=args.days, leagues=leagues)
+    export = None
+    if args.manualbets != "none":
+        try:
+            export = load_export(Path(args.manualbets))
+        except (OSError, ValueError) as err:
+            print(f"warning: ManualBets export unreadable: {err}", file=sys.stderr)
+    attach_manualbets(slate, export)
+    run, text = mp.write_run(slate, now)
+    print(text)
+    print(f"run: {run}", file=sys.stderr)
+    return 0
+
+
 def _read_commands(args: argparse.Namespace, db: Store) -> int:
     if args.command == "ensemble-bets":
         return _ensemble_bets(args, db)
+    if args.command == "model-picks":
+        return _model_picks(args, db)
     if args.command == "paper":
         from deepsports.analysis.paper import paper_report, render_report, report_json
 

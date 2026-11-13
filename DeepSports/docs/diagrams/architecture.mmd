@@ -31,11 +31,14 @@ flowchart TB
     SCHED["tools/scheduled-sync.sh<br/>launchd 08:00 · 14:00"]
     SYNCF[".sync/upcoming*.json"]
     SCHED -->|"headless claude -p<br/>/sync-game-calendar prefetched"| SYNC
-    EBDAILY["tools/ensemble-daily.sh<br/>14:00 run only · 10 bettors (one-day override 1-30)<br/>export ≤20 min · claude ≤50 min · picks-copy check<br/>majority table or blocked alert → Discord"]
-    SCHED --> EBDAILY -->|"headless claude -p<br/>/ensemble-betting prefetched"| EBSKILL
+    MPDAILY["tools/model-picks-daily.sh<br/>14:00 run only · no Claude<br/>export ≤20 min → model-picks run<br/>top 5 + strong/lean or blocked alert → Discord"]
+    SCHED --> MPDAILY
+    EBDAILY["tools/ensemble-daily.sh<br/>by hand only (unscheduled 2026-11-13)<br/>N bettors · majority table → Discord"]
+    EBDAILY -.->|"headless claude -p<br/>/ensemble-betting prefetched"| EBSKILL
     MBEXPORT["tools/manualbets-export.py<br/>runs ../ManualBets/tools/export_predictions.py<br/>XGBoost + Kelly + Odds API → .sync/manualbets-export.json (edge 4)"]
     RPI["Raspberry Pi (LAN, ssh rpi)<br/>~/SportsRLAgent clone · NBA half<br/>(nba.com blocks the Mac's VPN)"]
-    EBDAILY -->|"before context"| MBEXPORT
+    MPDAILY -->|"before picks"| MBEXPORT
+    EBDAILY -.->|"before context"| MBEXPORT
     MBEXPORT -->|"ssh + scp: NBA"| RPI
     ODDSJOB["tools/odds-snapshot.sh<br/>launchd every 30 min (:15 · :45)<br/>skips if the writer lock is held"]
     PRETIPJOB["tools/pretip.sh<br/>launchd every 30 min (:20 · :50)<br/>NBA games tipping in 5-100 min<br/>skips if the writer lock is held"]
@@ -44,7 +47,7 @@ flowchart TB
 
   subgraph PIPE["Data collection: src/deepsports"]
     direction LR
-    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|table|grade · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
+    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|table|grade · model-picks run|grade · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
     PIPELINE --> SRC["sources/espn.py<br/>EspnBasketball(league)<br/>site + core endpoints"] --> HTTP["http.py PoliteClient<br/>1 req/s · retry/backoff"]
     PIPELINE --> PARSE["parse_espn.py<br/>pure raw → rows"] --> STORE["store.py<br/>schema + upserts"]
     QUAL["quality.py<br/>data checks"]
@@ -95,6 +98,9 @@ flowchart TB
     BET --> EBETS
     MBCTX["manualbets_context.py<br/>attach ManualBets export to slate (+mb1)"]
     MBCTX --> EBETS
+    MPICKS["model_picks.py<br/>DeepSports + ManualBets vs line · strong/lean · top 5<br/>watch-only; runs in reports/model-picks/"]
+    EBETS -->|"slate · grading"| MPICKS
+    MBCTX --> MPICKS
   end
 
   subgraph EXT[External services]
@@ -133,6 +139,7 @@ flowchart TB
   PAPER -->|"paper_bets (insert-only)"| DB
   DB -->|"read-only: lines · predictions · form · injuries"| EBETS
   EBSKILL -->|"ensemble-bets context · tally"| CLI
+  MPDAILY -->|"model-picks run"| CLI
   PAPERV["paper_results view<br/>graded paper bets + CLV"]
   DB --> PAPERV --> PAPER
   RAW -.->|"cached summaries"| PBP

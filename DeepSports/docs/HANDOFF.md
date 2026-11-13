@@ -8,7 +8,7 @@ other docs on demand via the index in README.md.
 |---|---|---|
 | App server: API + web app + glasses plugin on `:8787` | launchd `com.deepsports.serve` (restarts itself) | `curl -s localhost:8787/api/health` · logs `~/Library/Logs/DeepSports/serve.log` |
 | Scheduled sync at 08:00 and 14:00: update NBA + college → predict v1.0 + v1.1 + v1.1i → headless Claude `/sync-game-calendar` → Discord | launchd `com.deepsports.sync` → `tools/scheduled-sync.sh` | `~/Library/Logs/DeepSports/sync.log` |
-| Daily ensemble-betting vote (watch-only): 10 Sonnet bettors (20 on 2026-11-12 only) that may research (read API, ManualBets, web) on NBA + college games tipping in the next 24 h → majority picks as a table to Discord | end of the 14:00 sync → `tools/ensemble-daily.sh` | runs in `/Volumes/ExFATStorag/DeepSports/reports/ensemble-bets/` · `deepsports ensemble-bets grade` |
+| Daily models-only picks (watch-only, since 2026-11-13): DeepSports' model and ManualBets' model vs the lines for games tipping in the next 24 h → top 5 + strong/lean tables to Discord (no Claude call). Replaced the ensemble-agent vote, which stays runnable by hand (`tools/ensemble-daily.sh`) | end of the 14:00 sync → `tools/model-picks-daily.sh` | runs in `/Volumes/ExFATStorag/DeepSports/reports/model-picks/` · `deepsports model-picks grade` |
 | Pre-tip injury refresh at :20 and :50: NBA games tipping in 5-100 min → fresh ESPN injury report → v1.1i predictions (installed 2026-11-10) | launchd `com.deepsports.pretip` → `tools/pretip.sh` | `~/Library/Logs/DeepSports/pretip.log` (one line per run) · `deepsports status` (`pretip v1.1i` runs) |
 | Discord turn notifications | global Stop/Notification hooks → `~/.claude/tools/notify.py` | |
 

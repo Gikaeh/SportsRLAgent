@@ -44,8 +44,12 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
 - [ ] Re-test opening-line totals forward with real posting times (30-min captures since 2026-11-06) once a few hundred bets exist
 
 ### Betting research (watch-only)
+- [ ] **To The Moon (betting):** monthly $50–100 high-variance bets with a risk-tier simulator, honest
+  odds and an append-only ledger; owner places every bet. Proposal + owner decisions:
+  [`../../docs/TO_THE_MOON_BETTING.md`](../../docs/TO_THE_MOON_BETTING.md) (integration step first)
 - [ ] Review the paper-trade record at the end of the 2026-27 regular season (pre-declared; no rule edits before then, only new versions)
-- [ ] Review the ensemble-betting record after ~200 graded majority picks
+- [ ] Review the models-only picks record (`deepsports model-picks grade`) after ~200 graded picks; add CLV grading
+- [ ] Review the ensemble-betting record after ~200 graded majority picks (no longer scheduled since 2026-11-13; few runs)
 - [ ] Grade ensemble picks by closing-line value (points for spread/total, no-vig probability for ML; closing
   rows in `odds_snapshots`), majority and agent picks, by `context_version`, with bootstrap CIs. CLV gives a
   signal after ~50-100 picks; W-L needs hundreds. Check college closing-row coverage first
@@ -122,6 +126,7 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
 - **SportsRLAgent comparison** ([results/2026-11-07-srla-comparison.md](results/2026-11-07-srla-comparison.md)):
   v1.1 beats its honest version; neither beats the close.
 - **Watch-only betting tools (2026-11-04/06):** forward paper-trade log with three frozen rules
-  (`deepsports paper log|report`); ensemble betting (`/ensemble-betting`, daily 10-bettor vote at 14:00).
+  (`deepsports paper log|report`); ensemble betting (`/ensemble-betting`, daily 10-bettor vote at 14:00 until 2026-11-13, then replaced by
+  models-only picks, `deepsports model-picks`).
 - **Line capture (2026-11-06):** 30-min pregame odds snapshots (`com.deepsports.odds`); historical prices
   backfilled from cache (`deepsports prices-backfill`).

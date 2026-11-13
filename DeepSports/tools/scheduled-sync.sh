@@ -104,9 +104,10 @@ status=$?
 if [ $status -ne 0 ]; then
   $NOTIFY "DeepSports calendar sync failed (claude exit $status). See ~/Library/Logs/DeepSports/sync.log" || true
 fi
-# Afternoon run only: the daily ensemble-betting vote (watch-only). Non-fatal; posts its own summary.
-if [ "$(date +%H)" -ge 12 ] && [ "${SKIP_ENSEMBLE:-0}" != 1 ]; then
-  "$REPO/tools/ensemble-daily.sh" || echo "$(ts) ensemble vote failed (exit $?)"
+# Afternoon run only: models-only picks (watch-only; replaced the ensemble-agent vote 2026-11-13).
+# Non-fatal; posts its own Discord message. The vote can still be run by hand: tools/ensemble-daily.sh.
+if [ "$(date +%H)" -ge 12 ] && [ "${SKIP_PICKS:-0}" != 1 ]; then
+  "$REPO/tools/model-picks-daily.sh" || echo "$(ts) model picks failed (exit $?)"
 fi
 echo "=== $(ts) scheduled sync end (claude exit $status)"
 exit $status

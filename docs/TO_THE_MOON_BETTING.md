@@ -1,4 +1,4 @@
-# To The Moon: sports-betting version (proposal, not started)
+# To The Moon: sports-betting version (decided 2026-11-13, building in DeepSports)
 
 Owner request (2026-11-13): build a sports-betting version of DeepStocks' "To The Moon" in this
 repo. Status: **idea only**. Before building, it needs a decided integration step logged in
@@ -54,6 +54,9 @@ ledger, Textual TUI), `docs/results/2026-11-13-moon-risk-ladder.md`.
   (multi-book, live). Props and futures coverage need checking; DeepSports has no props data.
 
 ## Owner decisions before building
+**Decided 2026-11-13** — see `docs/DECISIONS.md` ("To The Moon (betting) is built in DeepSports"). The
+original questions are kept below for context.
+
 1. **Where it lives.** Options: a local TUI like DeepStocks' `tothemoon`, a BetDesk tab
    (BetDesk is this repo's app), or a ManualBets menu. Which project owns it?
 2. **The ledger.** Either a new append-only CSV under `logs/<sport>/betting/moon_*.csv`, or a tag

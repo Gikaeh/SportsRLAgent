@@ -32,6 +32,8 @@ these read-only edges:
 4. DeepSports' daily model picks and ensemble vote read a JSON written by `ManualBets/tools/export_predictions.py`
    (run by `DeepSports/tools/manualbets-export.py`, NBA half on the LAN Raspberry Pi;
    `analysis/manualbets_context.py`).
+5. DeepSports' To The Moon app appends real moon bets to `logs/moon/bets.csv` (append-only; stakes
+   never leave the Mac). Decided 2026-11-13 in `docs/DECISIONS.md`.
 A new edge is an integration step: propose it, log it, then build it.
 
 ## Non-negotiables (every project, every agent)

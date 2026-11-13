@@ -652,3 +652,11 @@ lopsided games to the middle). Replayed on the 2026-11-12 slate, it reproduces t
 (9 strong, 3 lean). Moneylines stay out. Neither model beats the close, so this stays watch-only
 and is graded (`model-picks grade`). The ensemble code, skill and `bettor` agent stay for runs by hand and
 for grading the existing record.
+
+### 2026-11-13: the calendar sync runs on the keychain login, not the setup-token
+**Why:** the 08:00 run synced nothing: "no Google Calendar tools are available" (claude still exited 0, so
+no alert). The long-lived token from `claude setup-token` (added 2026-11-12) is inference-only and
+doesn't load claude.ai connectors; a test with the token found no `list_events`, the keychain login did.
+The calendar `claude -p` now unsets `CLAUDE_CODE_OAUTH_TOKEN`. That login ends 2026-11-16..19, so it needs
+`claude auth login` on the Mac before then (and after each expiry) until the calendar step stops
+depending on a claude.ai connector.

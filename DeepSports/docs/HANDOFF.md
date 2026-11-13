@@ -59,7 +59,8 @@ points (2026-11-11) were dropped: no edge, ratings not face-valid; the code stay
 3. v1.1i vs v1.1 paired review once a few hundred NBA games with a pre-tip report are graded.
 4. Step-by-step integration with ManualBets (one data source, one app); each step is decided in
    `../docs/DECISIONS.md` first.
-5. Owner: DHCP reservation for 172.16.0.61; glasses background-update test; paid odds API decision.
+5. Owner: run `claude auth login` on the Mac before 2026-11-16: the calendar sync uses that login (the
+   setup-token can't load the Google Calendar connector; DECISIONS 2026-11-13). DHCP reservation for 172.16.0.61; glasses background-update test; paid odds API decision.
 6. Carried over from 2026-11-09: confirm the Bets tab shows on the owner's phone; watch the live screen during a
    real game (a brief ESPN failure on `/api/games/{id}` returns 404 with no stale fallback); grade the Nov 8-10
    forward freeze (`/Volumes/ExFATStorag/DeepSports/reports/srla-comparison-2026-11-07/forward_freeze.csv`);

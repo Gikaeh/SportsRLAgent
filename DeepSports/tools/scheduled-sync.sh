@@ -93,7 +93,9 @@ done
 
 # Headless Claude runs the calendar skill with only the tools it needs.
 # Its Stop hook posts the summary to Discord.
-claude -p "/sync-game-calendar prefetched $SYNC_DIR" \
+# Runs on the keychain login, not the setup-token: that token is inference-only and doesn't load
+# claude.ai connectors, so Google Calendar was missing on 2026-11-13 08:00 (DECISIONS 2026-11-13).
+env -u CLAUDE_CODE_OAUTH_TOKEN claude -p "/sync-game-calendar prefetched $SYNC_DIR" \
   --allowedTools \
     "Read" "Skill" "ToolSearch" \
     "mcp__claude_ai_Google_Calendar__list_events" \

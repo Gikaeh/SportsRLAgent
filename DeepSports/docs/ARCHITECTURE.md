@@ -38,9 +38,9 @@ diagram in the same change (see CLAUDE.md).
   connector. Events are matched by the key `deepsports:nba:<game_id>` in their description, so a sync can
   safely be repeated.
 - Scheduled runs (`tools/scheduled-sync.sh`, launchd 08:00/14:00) do every warehouse step themselves
-  (update, predict, paper log, export `upcoming --json` to `.sync/`) and then run headless Claude with
-  `/sync-game-calendar prefetched .sync`, which only reads those files and calls Google Calendar.
-  Headless Claude's Bash sandbox can't open DuckDB on the external drive.
+  (update, predict, paper log; model picks at 14:00). The scheduled calendar sync was scrapped for now
+  (2026-11-13); the skill still runs by hand (`calendar-agent`). Headless Claude's Bash sandbox can't open
+  DuckDB on the external drive, so a headless run would need `upcoming --json` exported first.
 - Line capture (`tools/odds-snapshot.sh`, launchd `com.deepsports.odds` every 30 min at :15/:45):
   `deepsports odds-snapshot` fetches today's and tomorrow's scoreboards (NBA + college) and writes
   only `pregame` odds rows. No Claude involved. It fetches before opening the warehouse and skips

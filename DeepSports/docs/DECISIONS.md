@@ -653,10 +653,17 @@ lopsided games to the middle). Replayed on the 2026-11-12 slate, it reproduces t
 and is graded (`model-picks grade`). The ensemble code, skill and `bettor` agent stay for runs by hand and
 for grading the existing record.
 
-### 2026-11-13: the calendar sync runs on the keychain login, not the setup-token
+### ~~2026-11-13: the calendar sync runs on the keychain login, not the setup-token~~ (superseded the same day: calendar sync scrapped, below)
 **Why:** the 08:00 run synced nothing: "no Google Calendar tools are available" (claude still exited 0, so
 no alert). The long-lived token from `claude setup-token` (added 2026-11-12) is inference-only and
 doesn't load claude.ai connectors; a test with the token found no `list_events`, the keychain login did.
 The calendar `claude -p` now unsets `CLAUDE_CODE_OAUTH_TOKEN`. That login ends 2026-11-16..19, so it needs
 `claude auth login` on the Mac before then (and after each expiry) until the calendar step stops
 depending on a claude.ai connector.
+
+### 2026-11-13: scheduled calendar sync scrapped for now
+**Why:** owner's call after the 08:00 run synced nothing (setup-token has no claude.ai connectors; the
+keychain login that has them expires every few days). `tools/scheduled-sync.sh` no longer exports
+`.sync/upcoming*.json` or calls Claude, so no scheduled job needs a Claude login. The skill,
+`calendar-agent`, `config/calendar.toml` and `deepsports upcoming` stay for runs by hand; existing
+calendar events are left as they are.

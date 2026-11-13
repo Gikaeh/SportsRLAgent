@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
-# Scheduled refresh: update the warehouse, then let Claude reconcile Google Calendar.
+# Scheduled refresh: update the warehouse, predict, paper log; afternoon run adds the model picks.
 # Run by launchd (tools/launchd/com.deepsports.sync.plist); safe to run by hand.
 set -uo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO"
 export PATH="/opt/homebrew/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
-# Long-lived token for headless `claude -p` (from `claude setup-token`), kept outside the repo.
-TOKEN_FILE="$HOME/.config/deepsports/claude-oauth-token"
-[ -r "$TOKEN_FILE" ] && export CLAUDE_CODE_OAUTH_TOKEN="$(tr -d '[:space:]' < "$TOKEN_FILE")"
 NOTIFY="python3 $HOME/.claude/tools/notify.py --kind blocked"
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
 
@@ -75,41 +72,13 @@ if ! uv run deepsports paper log; then
   echo "$(ts) paper log reported errors (continuing)"
 fi
 
-# Export the games to sync. Headless Claude's Bash sandbox can't open the DuckDB file on the
-# external drive (it hangs), so Claude only reads these files and talks to Google Calendar.
-SYNC_DIR="$REPO/.sync"
-mkdir -p "$SYNC_DIR"
-rm -f "$SYNC_DIR"/upcoming*.json
-if ! uv run deepsports upcoming --league all --json > "$SYNC_DIR/upcoming.json.tmp"; then
-  echo "$(ts) upcoming export failed; skipping calendar sync"
-  $NOTIFY "DeepSports calendar sync skipped: couldn't export upcoming games. See ~/Library/Logs/DeepSports/sync.log" || true
-  exit 3
-fi
-mv "$SYNC_DIR/upcoming.json.tmp" "$SYNC_DIR/upcoming.json"
-for league in nba ncaab; do
-  uv run deepsports upcoming --league "$league" --all --days 30 --json \
-    > "$SYNC_DIR/upcoming-30d-$league.json" || rm -f "$SYNC_DIR/upcoming-30d-$league.json"
-done
-
-# Headless Claude runs the calendar skill with only the tools it needs.
-# Its Stop hook posts the summary to Discord.
-# Runs on the keychain login, not the setup-token: that token is inference-only and doesn't load
-# claude.ai connectors, so Google Calendar was missing on 2026-11-13 08:00 (DECISIONS 2026-11-13).
-env -u CLAUDE_CODE_OAUTH_TOKEN claude -p "/sync-game-calendar prefetched $SYNC_DIR" \
-  --allowedTools \
-    "Read" "Skill" "ToolSearch" \
-    "mcp__claude_ai_Google_Calendar__list_events" \
-    "mcp__claude_ai_Google_Calendar__create_event" \
-    "mcp__claude_ai_Google_Calendar__update_event" \
-    "mcp__claude_ai_Google_Calendar__delete_event"
-status=$?
-if [ $status -ne 0 ]; then
-  $NOTIFY "DeepSports calendar sync failed (claude exit $status). See ~/Library/Logs/DeepSports/sync.log" || true
-fi
+# Calendar sync scrapped for now (owner, 2026-11-13; DECISIONS). The skill and `deepsports upcoming`
+# stay; nothing here calls Claude any more.
+status=0
 # Afternoon run only: models-only picks (watch-only; replaced the ensemble-agent vote 2026-11-13).
 # Non-fatal; posts its own Discord message. The vote can still be run by hand: tools/ensemble-daily.sh.
 if [ "$(date +%H)" -ge 12 ] && [ "${SKIP_PICKS:-0}" != 1 ]; then
   "$REPO/tools/model-picks-daily.sh" || echo "$(ts) model picks failed (exit $?)"
 fi
-echo "=== $(ts) scheduled sync end (claude exit $status)"
+echo "=== $(ts) scheduled sync end"
 exit $status

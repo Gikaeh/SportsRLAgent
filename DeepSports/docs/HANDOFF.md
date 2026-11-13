@@ -7,7 +7,7 @@ other docs on demand via the index in README.md.
 | Thing | How | Check |
 |---|---|---|
 | App server: API + web app + glasses plugin on `:8787` | launchd `com.deepsports.serve` (restarts itself) | `curl -s localhost:8787/api/health` · logs `~/Library/Logs/DeepSports/serve.log` |
-| Scheduled sync at 08:00 and 14:00: update NBA + college → predict v1.0 + v1.1 + v1.1i → headless Claude `/sync-game-calendar` → Discord | launchd `com.deepsports.sync` → `tools/scheduled-sync.sh` | `~/Library/Logs/DeepSports/sync.log` |
+| Scheduled sync at 08:00 and 14:00: update NBA + college → predict v1.0 + v1.1 + v1.1i → paper log (no Claude call; the calendar sync was scrapped for now on 2026-11-13) | launchd `com.deepsports.sync` → `tools/scheduled-sync.sh` | `~/Library/Logs/DeepSports/sync.log` |
 | Daily models-only picks (watch-only, since 2026-11-13): DeepSports' model and ManualBets' model vs the lines for games tipping in the next 24 h → top 5 + strong/lean tables to Discord (no Claude call). Replaced the ensemble-agent vote, which stays runnable by hand (`tools/ensemble-daily.sh`) | end of the 14:00 sync → `tools/model-picks-daily.sh` | runs in `/Volumes/ExFATStorag/DeepSports/reports/model-picks/` · `deepsports model-picks grade` |
 | Pre-tip injury refresh at :20 and :50: NBA games tipping in 5-100 min → fresh ESPN injury report → v1.1i predictions (installed 2026-11-10) | launchd `com.deepsports.pretip` → `tools/pretip.sh` | `~/Library/Logs/DeepSports/pretip.log` (one line per run) · `deepsports status` (`pretip v1.1i` runs) |
 | Discord turn notifications | global Stop/Notification hooks → `~/.claude/tools/notify.py` | |
@@ -59,8 +59,7 @@ points (2026-11-11) were dropped: no edge, ratings not face-valid; the code stay
 3. v1.1i vs v1.1 paired review once a few hundred NBA games with a pre-tip report are graded.
 4. Step-by-step integration with ManualBets (one data source, one app); each step is decided in
    `../docs/DECISIONS.md` first.
-5. Owner: run `claude auth login` on the Mac before 2026-11-16: the calendar sync uses that login (the
-   setup-token can't load the Google Calendar connector; DECISIONS 2026-11-13). DHCP reservation for 172.16.0.61; glasses background-update test; paid odds API decision.
+5. Owner: DHCP reservation for 172.16.0.61; glasses background-update test; paid odds API decision.
 6. Carried over from 2026-11-09: confirm the Bets tab shows on the owner's phone; watch the live screen during a
    real game (a brief ESPN failure on `/api/games/{id}` returns 404 with no stale fallback); grade the Nov 8-10
    forward freeze (`/Volumes/ExFATStorag/DeepSports/reports/srla-comparison-2026-11-07/forward_freeze.csv`);

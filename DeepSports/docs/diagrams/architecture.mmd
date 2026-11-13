@@ -30,7 +30,7 @@ flowchart TB
     CFG --> SYNC
     SCHED["tools/scheduled-sync.sh<br/>launchd 08:00 · 14:00"]
     SYNCF[".sync/upcoming*.json"]
-    SCHED -->|"headless claude -p<br/>/sync-game-calendar prefetched"| SYNC
+    SCHED -.->|"unscheduled 2026-11-13<br/>(skill runs by hand)"| SYNC
     MPDAILY["tools/model-picks-daily.sh<br/>14:00 run only · no Claude<br/>export ≤20 min → model-picks run<br/>top 5 + strong/lean or blocked alert → Discord"]
     SCHED --> MPDAILY
     EBDAILY["tools/ensemble-daily.sh<br/>by hand only (unscheduled 2026-11-13)<br/>N bettors · majority table → Discord"]
@@ -116,7 +116,7 @@ flowchart TB
   FE -.-> APPS
   SYNC -->|"interactive: update · upcoming --json"| CLI
   SCHED -->|"update · predict · paper log · upcoming --json"| CLI
-  SCHED -->|export| SYNCF
+  SCHED -.->|"export (unscheduled 2026-11-13)"| SYNCF
   ODDSJOB -->|"odds-snapshot: today + tomorrow<br/>pregame lines + prices only"| CLI
   PRETIPJOB -->|"pretip: fresh ESPN summary per game<br/>→ injury_captures · injury_reports<br/>→ predictions v1.1i"| CLI
   SYNC -->|"create/update events<br/>key deepsports:nba:id"| GCAL

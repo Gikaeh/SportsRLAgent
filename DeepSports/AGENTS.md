@@ -17,8 +17,8 @@ a copy or wait). Cross-cutting changes go back to the orchestrator.
 ## Workflows
 - **Add a data source:** `data-engineer` (source, parser, fixtures, tests, backfill) → `architect`
   (diagram, DATA_SOURCES, DATA_MODEL) → orchestrator runs the checks.
-- **Daily refresh:** launchd runs `tools/scheduled-sync.sh` (warehouse steps, then headless
-  `/sync-game-calendar prefetched`); interactively, `calendar-agent` runs `/sync-game-calendar`.
+- **Daily refresh:** launchd runs `tools/scheduled-sync.sh` (warehouse steps; model picks at 14:00).
+  Calendar sync is by hand only for now: `calendar-agent` runs `/sync-game-calendar`.
 - **Model work:** orchestrator frames the question → `data-analyst` builds it (walk-forward, no
   leakage) → orchestrator reviews the method → `architect` files the dated result in `docs/results/`.
 

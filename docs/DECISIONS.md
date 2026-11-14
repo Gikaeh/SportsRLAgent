@@ -140,3 +140,10 @@ picks, get the 2 PM bets by message, and be reminded at 11 AM and 1 PM if nothin
    `X-Circa-Upload-Code`, checked against a code kept only on the Mac (`~/.config/deepsports/circa-upload-code`,
    mode 600, `deepsports circa code [--rotate]`). Ten bad codes in ten minutes return 429. The BetDesk path stays
    loopback-only. Once BetDesk is deployed this page can go.
+
+### 2026-11-14: Circa upload leaves BetDesk (edge 6 closed)
+Owner: "we'll remove upload from betdesk since I'll be uploading through local". The BetDesk Worker is
+GET-only again (every non-GET → 405) and its Circa tab only shows today's status. Uploads go through
+DeepSports' `/circa` page on home Wi-Fi (upload code) or the iCloud inbox; item 7 above ("this page can go")
+is reversed: the page stays. DeepSports' `POST /api/circa/screenshots` and its loopback path are unchanged;
+with no Worker route, the tunnel only carries it for a holder of the service token.

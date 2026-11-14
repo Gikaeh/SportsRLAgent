@@ -30,7 +30,7 @@ export function UpdatedAt({ at, refreshing, live }: { at: number | null; refresh
   );
 }
 
-export function TabBar({ active }: { active: "today" | "bets" | "standings" | "model" | null }) {
+export function TabBar({ active }: { active: "today" | "bets" | "standings" | "model" | "circa" | null }) {
   return (
     <nav className="tabbar" aria-label="Main">
       <a href="#/" className="tab" aria-current={active === "today" ? "page" : undefined}>
@@ -60,6 +60,13 @@ export function TabBar({ active }: { active: "today" | "bets" | "standings" | "m
           <circle cx="12" cy="12" r="1.2" fill="currentColor" />
         </svg>
         <span>Model</span>
+      </a>
+      <a href="#/circa" className="tab" aria-current={active === "circa" ? "page" : undefined}>
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h2l1.5-2h4l1.5 2h2A2.5 2.5 0 0 1 20 8.5v9A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+          <circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" strokeWidth="2" />
+        </svg>
+        <span>Circa</span>
       </a>
     </nav>
   );

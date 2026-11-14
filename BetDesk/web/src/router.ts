@@ -8,6 +8,7 @@ export type Route =
   | { name: "bets" }
   | { name: "standings" }
   | { name: "model" }
+  | { name: "circa" }
   | { name: "team"; abbr: string }
   | { name: "notfound" };
 
@@ -28,6 +29,7 @@ export function parseHash(hash: string): Route {
   if (parts[0] === "bets") return { name: "bets" };
   if (parts[0] === "standings") return { name: "standings" };
   if (parts[0] === "model") return { name: "model" };
+  if (parts[0] === "circa") return { name: "circa" };
   if (parts[0] === "team" && parts[1]) return { name: "team", abbr: parts[1].toUpperCase() };
   return { name: "notfound" };
 }
@@ -39,6 +41,7 @@ export const href = {
   bets: () => "#/bets",
   standings: () => "#/standings",
   model: () => "#/model",
+  circa: () => "#/circa",
   team: (abbr: string) => `#/team/${encodeURIComponent(abbr)}`,
 };
 

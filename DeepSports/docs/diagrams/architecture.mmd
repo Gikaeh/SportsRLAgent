@@ -31,7 +31,8 @@ flowchart TB
     SCHED["tools/scheduled-sync.sh<br/>launchd 08:00 · 14:00"]
     SYNCF[".sync/upcoming*.json"]
     SCHED -.->|"unscheduled 2026-11-13<br/>(skill runs by hand)"| SYNC
-    MPDAILY["tools/model-picks-daily.sh<br/>14:00 run only · no Claude<br/>export ≤20 min → model-picks run<br/>top 5 + strong/lean or blocked alert → Discord"]
+    MPDAILY["tools/model-picks-daily.sh<br/>14:00 run only<br/>export ≤20 min → circa read → model-picks run<br/>→ moon propose --tier mix --circa auto<br/>picks (or blocked alert) + moon proposal → Discord"]
+    CREMIND["tools/circa-remind.sh<br/>launchd 11:00 · 13:00<br/>circa ingest · reminder if no screenshots today"]
     SCHED --> MPDAILY
     EBDAILY["tools/ensemble-daily.sh<br/>by hand only (unscheduled 2026-11-13)<br/>N bettors · majority table → Discord"]
     EBDAILY -.->|"headless claude -p<br/>/ensemble-betting prefetched"| EBSKILL
@@ -47,27 +48,30 @@ flowchart TB
 
   subgraph PIPE["Data collection: src/deepsports"]
     direction LR
-    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|table|grade · model-picks run|grade · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
+    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|table|grade · model-picks run|grade ·<br/>moon · circa read|ingest|status · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
     PIPELINE --> SRC["sources/espn.py<br/>EspnBasketball(league)<br/>site + core endpoints"] --> HTTP["http.py PoliteClient<br/>1 req/s · retry/backoff"]
     PIPELINE --> PARSE["parse_espn.py<br/>pure raw → rows"] --> STORE["store.py<br/>schema + upserts"]
     QUAL["quality.py<br/>data checks"]
     PBP["parse_pbp.py<br/>pure play-by-play parser<br/>(on demand, no table)"]
+    CIRCA["circa/ · circa read|ingest|status<br/>iCloud inbox ingest · headless Claude transcribes<br/>validate lines · match to games (brief read-only open)<br/>no DuckDB table"]
   end
 
-  subgraph DATA["data/ → /Volumes/ExFATStorag/DeepSports/data"]
+  subgraph DATA["Storage: /Volumes/ExFATStorag/DeepSports (data/ → …/data)"]
     direction LR
     RAW[("raw/espn/{nba,ncaab}/**.json.gz<br/>raw landing zone<br/>+ summary_pregame snapshots")]
     DB[("deepsports.duckdb (league-aware keys)<br/>games · box scores · odds + prices · injuries<br/>team_game_context · predictions · paper_bets<br/>NBA 2021-22 → today · NCAAB 2023-24 → today")]
+    CIRCAFS[("circa/screenshots/YYYY-MM-DD/<br/>circa/lines/YYYY-MM-DD.json")]
   end
 
   subgraph APPS["Apps: deepsports serve :8787"]
     direction LR
-    API["api/ FastAPI (nba + ncaab)<br/>live: ESPN + 30s cache<br/>warehouse: standings · predictions · record"]
+    API["api/ FastAPI (nba + ncaab)<br/>live: ESPN + 30s cache<br/>warehouse: standings · predictions · record<br/>circa.py: POST /api/circa/screenshots · GET …/today"]
     WEB["web/ mobile PWA (LAN; frozen,<br/>new UI in ../BetDesk/web)"]
     GLASS["glasses/ Even Hub<br/>G2 plugin"]
     API --> WEB
-    BETDESK["../BetDesk Worker + PWA (Cloudflare, behind Access)<br/>reads live · allowlisted GET /api/*<br/>via cloudflared tunnel (launchd) on this Mac"]
+    BETDESK["../BetDesk Worker + PWA (Cloudflare, behind Access)<br/>reads live · allowlisted GET /api/* · Circa tab<br/>via cloudflared tunnel (launchd) on this Mac"]
     API -->|"/api/* live (edge 3)"| BETDESK
+    BETDESK -->|"POST /api/circa/screenshots<br/>the one write (edge 6)"| API
     API -->|"/api/scoreboard"| GLASS
   end
 
@@ -101,7 +105,7 @@ flowchart TB
     MPICKS["model_picks.py<br/>DeepSports + ManualBets vs line · strong/lean · top 5<br/>watch-only; runs in reports/model-picks/"]
     EBETS -->|"slate · grading"| MPICKS
     MBCTX --> MPICKS
-    MOON["src/deepsports/moon · deepsports moon<br/>risk-ladder sim · proposals from the picks run ·<br/>append-only ledger ../logs/moon/bets.csv (edge 5)<br/>watch-only; the owner places every bet"]
+    MOON["src/deepsports/moon · deepsports moon<br/>risk ladder + sim (--months) · tiers incl. ticket2, mix (default)<br/>proposals from the picks run · circa.py repricing ·<br/>append-only ledger ../logs/moon/bets.csv (edge 5)<br/>watch-only; the owner places every bet"]
     MPICKS -->|"picks run"| MOON
   end
 
@@ -111,6 +115,8 @@ flowchart TB
     CORE[(ESPN core API<br/>historical odds)]
     GCAL[[Google Calendar]]
     DISCORD[[Discord webhook]]
+    ICLOUD[[iCloud Drive<br/>DeepSports Circa inbox]]
+    CLAUDEHL[[headless claude -p<br/>Sonnet · Read only]]
   end
 
   DE -.-> PIPE
@@ -152,6 +158,19 @@ flowchart TB
   BETDESK --> USER
   MOON -->|"terminal"| USER
   EBDAILY -->|"picks table · blocked alerts"| DISCORD
+  MPDAILY -->|"picks · moon proposal"| DISCORD
+  MPDAILY -->|"circa read · moon propose"| CLI
+  CREMIND -->|"circa ingest · status"| CLI
+  CREMIND -->|"upload reminder"| DISCORD
+  CLI --> CIRCA
+  USER -->|"screenshots"| ICLOUD
+  USER -->|"screenshots (Circa tab)"| BETDESK
+  ICLOUD -->|"ingest"| CIRCA
+  API -->|"save uploads"| CIRCAFS
+  CIRCA <-->|"screenshots in · lines out"| CIRCAFS
+  CIRCA -->|"transcribe"| CLAUDEHL
+  DB -->|"read-only: match games"| CIRCA
+  CIRCAFS -->|"Circa lines + prices"| MOON
 
   classDef planned stroke-dasharray: 5 5
   class NONE planned

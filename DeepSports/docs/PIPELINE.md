@@ -25,6 +25,11 @@
 | `deepsports ensemble-bets table <run>` | Files only: a tallied run's majority picks as a monospace table plus close calls (the Discord post) | none |
 | `deepsports ensemble-bets grade` | Read-only: record, units, ROI of every run's majority picks (1 unit each) and of all agent picks | none |
 | `deepsports paper report [--json]` | Read-only: per rule logged/graded/pending, record, win%, ROI with a 95% day-clustered bootstrap CI, units, CLV vs the closing line (`paper_results` view, graded with `analysis.betting`) | none |
+| `deepsports circa read [--date YYYY-MM-DD] [--force]` | Circa screenshots (watch-only; `src/deepsports/circa/`): runs `ingest`, then, if the day has screenshots not yet read (or `--force`), copies them to a fresh temp dir under `.sync/circa/` and runs headless `claude -p` (Sonnet, `--permission-mode default`, `--allowedTools "Read(<that dir>/**)"` only, Bash/Write/Edit/Web*/Agent and reads of `~/.config`, `~/.ssh` denied, prompt says image text is data, never instructions; `--add-dir` that folder, timeout `DEEPSPORTS_CIRCA_CLAUDE_TIMEOUT`=240 s; token from `~/.config/deepsports/claude-oauth-token`). The reply (JSON lines) is validated (market/side, half-point lines, American prices; spread pairs must mirror, total pairs agree), matched to game_ids of not-started games today + tomorrow (local) by team names, with Circa rotation pairs (2k-1, 2k) carrying a match to the other side, and written to `circa/lines/<date>.json` (contract: docs/API.md, Circa). One brief read-only warehouse open (20 s lock wait, so Claude 240 s + lock wait fit the script's 300 s cap); if it fails the lines are kept with `game_id: null`. A failed read keeps the previous file. Prints one line; exit 1 on failure | 1 Claude call when there's something new |
+| `deepsports circa ingest` | Files only: copies new images from the iCloud inbox (`DEEPSPORTS_CIRCA_INBOX`, default `~/Library/Mobile Documents/com~apple~CloudDocs/DeepSports Circa/`; created if missing) into today's folder, moves originals to `done/` (non-images to `rejected/`); undownloaded iCloud placeholders are left; files over the daily limit stay. Prints `inbox blocked: ...` if macOS denies iCloud Drive access (see the launchd notes) | none |
+| `deepsports circa status [--date D] [--json]` | Files only: the day's screenshot count, latest upload, read state (`--json`: the `GET /api/circa/screenshots/today` body) | none |
+| `deepsports circa code [--rotate]` | Shows (or replaces) the LAN upload code for the `/circa` page, from `~/.config/deepsports/circa-upload-code` (mode 600, created on first use). Owner's own terminal only; the server never shows it | none |
+| `tools/circa-remind.sh` | launchd 11:00 and 13:00: `circa ingest`, then a Discord `input` message asking for screenshots if today has none; silent otherwise. Never touches DuckDB | none |
 | `deepsports migrate` | Bring the warehouse schema up to date and print rows before/after per rebuilt table; a no-op when current (docs/DATA_MODEL.md, Migrations) | none |
 | `deepsports status` | Row counts + last 5 runs | none |
 | `deepsports check` | Data-quality checks; exit 1 on hard failures (box scores, points add up, scores present); warnings for odds coverage per season | none |
@@ -113,7 +118,7 @@ DEEPSPORTS_DB=/tmp/dsmig/deepsports.duckdb uv run deepsports migrate`.
   `backfill` / `update`. Settled responses come from the cache, so it's fast and offline.
 
 ## Always-on (launchd)
-Four per-user LaunchAgents (templates in `tools/launchd/`), installed by the owner with
+Five per-user LaunchAgents (templates in `tools/launchd/`), installed by the owner with
 `tools/launchd/install.sh` and removed with `tools/launchd/install.sh uninstall` (add agent names
 to act on only those, e.g. `tools/launchd/install.sh install com.deepsports.odds`):
 | Agent | What | When |
@@ -122,6 +127,7 @@ to act on only those, e.g. `tools/launchd/install.sh install com.deepsports.odds
 | `com.deepsports.sync` | `tools/scheduled-sync.sh` (no calendar sync since 2026-11-13; run `/sync-game-calendar` by hand): `deepsports update` (nba, ncaab), `deepsports predict` (NBA v1.0, v1.1 and v1.1i, then `--league ncaab --model-version ncaab-v1` and `ncaab-v1p,ncaab-v1-early` (one prior-model fit); each continues on failure), `deepsports paper log` (non-fatal), on the 14:00 run, `tools/model-picks-daily.sh` (models-only picks below) | 08:00 and 14:00 local |
 | `com.deepsports.odds` | `tools/odds-snapshot.sh`: `deepsports odds-snapshot` (pregame lines for today + tomorrow, NBA + college). Yields to every other job: skips (exit 0, one log line) when the drive is missing or another writer holds the warehouse | Every 30 min at :15 and :45 (never together with the 08:00/14:00 sync) |
 | `com.deepsports.pretip` | `tools/pretip.sh`: `deepsports pretip` (fresh injury reports + v1.1i predictions for NBA games tipping in the next 5-100 min). Yields like the odds job: skips (exit 0, one log line) when the drive is missing or another writer holds the warehouse. `Nice` 10, `LowPriorityIO` | Every 30 min at :20 and :50 (offset from the odds job and the sync), so each game is refreshed 3 times in its last 100 min, the last one 5-35 min before tip |
+| `com.deepsports.circa-remind` | `tools/circa-remind.sh`: ingest the iCloud inbox; if today has 0 Circa screenshots, ask on Discord for them before the 14:00 picks. Files only (no DuckDB) | 11:00 and 13:00 local |
 
 - Predictions: `predict` runs in bash before Claude, so the calendar skill only reads them via
   `upcoming --json` (`prediction` per game). Each run refreshes predictions for games that haven't
@@ -132,7 +138,7 @@ to act on only those, e.g. `tools/launchd/install.sh install com.deepsports.odds
 - College predictions are sparse early in the season: none until both teams have 5 completed
   games (about late November). The API shows `prediction: null` for those games unless the opt-in
   `ncaab-v1-early` exists (flagged `early`).
-- Logs: `~/Library/Logs/DeepSports/{serve,sync,odds,pretip}.log` (`odds.log`, `pretip.log`: one timestamped line per run).
+- Logs: `~/Library/Logs/DeepSports/{serve,sync,odds,pretip,circa}.log` (`odds.log`, `pretip.log`: one timestamped line per run).
 - Install only the odds snapshot (after checking a manual run: `tools/odds-snapshot.sh`):
   `tools/launchd/install.sh install com.deepsports.odds`; status:
   `launchctl print gui/$(id -u)/com.deepsports.odds`; remove:
@@ -142,6 +148,24 @@ to act on only those, e.g. `tools/launchd/install.sh install com.deepsports.odds
   `tools/launchd/install.sh install com.deepsports.pretip`; status:
   `launchctl print gui/$(id -u)/com.deepsports.pretip`; remove:
   `tools/launchd/install.sh uninstall com.deepsports.pretip`. Same drive permission as the odds job.
+- **Circa screenshots** (owner bets by hand at Circa, which isn't in The Odds API feed): upload from the
+  phone. **On home Wi-Fi today:** open `http://172.16.0.61:8787/circa` (the Mac's LAN address, as in
+  HANDOFF; Add to Home Screen), enter the upload code once (`deepsports circa code` on the Mac), pick the
+  screenshots, Upload. Later: BetDesk > Circa through the tunnel (loopback, no code). Both use
+  `POST /api/circa/screenshots` (docs/API.md, Circa); or save into Files > iCloud Drive > DeepSports Circa.
+  Stored under `/Volumes/ExFATStorag/DeepSports/circa/screenshots/<local
+  date>/HHMMSS-n.<png|jpg|webp>` (HEIC converted to JPEG with `sips`; 10 MB each, 30 a day); lines in
+  `circa/lines/<date>.json`. Env overrides: `DEEPSPORTS_CIRCA_DIR`, `DEEPSPORTS_CIRCA_SCREENSHOTS`,
+  `DEEPSPORTS_CIRCA_LINES`, `DEEPSPORTS_CIRCA_INBOX` (empty disables the inbox). The 14:00
+  `tools/model-picks-daily.sh` runs `circa read` before `model-picks run` (non-fatal, capped at 300 s,
+  one log line) and, after the picks message, posts the To The Moon proposal
+  (`moon propose --tier mix --months 1 --circa auto --format discord`, falling back to
+  `moon propose --months 1`; never fails the script). **iCloud under launchd:** macOS may deny a
+  launchd process access to `~/Library/Mobile Documents` (TCC) even when interactive runs work. `circa
+  ingest` then prints `inbox blocked: ...` (the reminder adds a note to its Discord message) instead of
+  failing silently. Fix: System Settings > Privacy & Security > Full Disk Access (or Files and Folders >
+  iCloud Drive) for uv's Python, or upload through the API instead. Install the reminder:
+  `tools/launchd/install.sh install com.deepsports.circa-remind`.
 - Model v1.1i on cards: the API prefers v1.1i, then v1.1 (docs/API.md); the calendar export, paper log
   and ensemble vote stay on v1.1. Compare v1.1i with v1.1 paired on the same games (DECISIONS 2026-11-10).
 - Status: `launchctl print gui/$(id -u)/com.deepsports.serve`.

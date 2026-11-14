@@ -1250,7 +1250,7 @@ button {
   bottom: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   height: calc(var(--tabbar-h) + var(--safe-b));
   padding-bottom: var(--safe-b);
   transform: translateZ(0); /* its own layer, so iOS doesn't repaint it with the page while scrolling */
@@ -2020,4 +2020,164 @@ button {
   background: var(--warn-soft);
   color: var(--warn);
   pointer-events: none;
+}
+
+/* ---------- Circa screenshots ---------- */
+.circa-intro {
+  margin: 0 0 12px;
+  font-size: 15px;
+  color: var(--text-2);
+}
+
+.circa-pick,
+.circa-send {
+  width: 100%;
+  min-height: 56px;
+  gap: 10px;
+  font-size: 17px;
+  border-radius: 14px;
+}
+
+.circa-pick:focus-within {
+  outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  outline-offset: 2px;
+}
+
+.circa-pick.is-disabled,
+.circa-send:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.circa-send {
+  margin-top: 12px;
+}
+
+.circa-previews {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.circa-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  min-width: 0;
+}
+
+.circa-preview img {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--border);
+}
+
+.circa-preview-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.circa-preview-name {
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.circa-size {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.circa-problem,
+.circa-err {
+  font-size: 13px;
+  color: var(--neg);
+}
+
+.circa-preview.has-problem img {
+  opacity: 0.5;
+}
+
+.circa-remove {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-2);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.circa-warn {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: 14px;
+}
+
+.circa-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+}
+
+.circa-progress progress {
+  flex: 1;
+  height: 10px;
+  accent-color: var(--accent);
+}
+
+.circa-ok {
+  margin: 12px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--pos);
+}
+
+.circa-err {
+  margin: 12px 0 0;
+  font-size: 15px;
+}
+
+.circa-status-main {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.circa-status-sub {
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.circa-read {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: var(--warn);
+}
+
+.circa-read.is-read {
+  color: var(--pos);
 }

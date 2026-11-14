@@ -163,3 +163,17 @@ def test_cli_log_and_status(path, capsys):
     out = capsys.readouterr().out
     assert "$57.50" in out and "+600" in out
     assert parse_leg("g2:ncaab:moneyline:away::250")["line"] is None
+
+
+def test_status_splits_manual_and_flags_stakes_over_deposit(path, capsys):
+    assert main(["--ledger", str(path), "log", "deposit", "--amount", "10"]) == 0
+    for _ in range(3):
+        assert main(["--ledger", str(path), "log", "bet", "--tier", "manual", "--game-id", "g1",
+                     "--league", "nba", "--market", "spread", "--side", "home", "--line", "-1.5",
+                     "--price", "-110", "--stake", "5"]) == 0  # fmt: skip
+    capsys.readouterr()
+    assert main(["--ledger", str(path), "status"]) == 0
+    out = capsys.readouterr().out
+    assert "of it manual" in out and "$15.00" in out
+    assert "over this month's deposit ($10.00)" in out
+    assert "of 12" not in out

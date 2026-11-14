@@ -10,14 +10,18 @@ import argparse
 import json
 import sys
 from collections.abc import Callable, Sequence
+from datetime import date
 from pathlib import Path
 from typing import Any
 
 from deepsports import config
+from deepsports.moon import circa as circa_mod
 from deepsports.moon import ledger, picks, sim
 from deepsports.moon import tiers as tiers_mod
 
-DEFAULT_TIER = "save-bold"  # see docs/results/2026-11-13-moon-risk-ladder.md
+# The owner's plan: straights + a parlay out of each month's deposit (2026-11-14 results file
+# docs/results/2026-11-14-moon-mix-tier.md; root docs/DECISIONS.md).
+DEFAULT_TIER = "mix"
 
 
 def _signed(x: float) -> str:
@@ -28,6 +32,8 @@ def _common(p: argparse.ArgumentParser, *, sim_opts: bool = True) -> None:
     p.add_argument("--budget", type=float, default=tiers_mod.DEFAULT_BUDGET, help="$ per month")
     p.add_argument("--target", type=float, default=tiers_mod.DEFAULT_TARGET, help="$ goal")
     if sim_opts:
+        p.add_argument("--months", type=int, default=tiers_mod.MONTHS,
+                       help="horizon in months (1 = this month only; default 12)")  # fmt: skip
         p.add_argument("--paths", type=int, default=sim.DEFAULT_PATHS)
         p.add_argument("--seed", type=int, default=sim.DEFAULT_SEED)
         p.add_argument(
@@ -50,7 +56,8 @@ def cmd_tiers(args) -> int:
 
 
 def _print_ladder(args) -> None:
-    res = sim.ladder(args.budget, args.target, paths=args.paths, seed=args.seed)
+    res = sim.ladder(args.budget, args.target, months=args.months, paths=args.paths,
+                     seed=args.seed)  # fmt: skip
     print(sim.headline(res))
     print(sim.render_ladder(res))
     best = sim.best_tier(res)
@@ -59,8 +66,8 @@ def _print_ladder(args) -> None:
     if res[0].p_reach == 1:
         print("Deposits alone reach the target: keeping the cash is the sure way.")
     if args.edge is not None:
-        hyp = sim.ladder(args.budget, args.target, paths=args.paths, seed=args.seed,
-                         ev_leg=args.edge)  # fmt: skip
+        hyp = sim.ladder(args.budget, args.target, months=args.months, paths=args.paths,
+                         seed=args.seed, ev_leg=args.edge)  # fmt: skip
         print("\n" + sim.headline(hyp))
         print(sim.render_ladder(hyp))
         print("HYPOTHETICAL: no model has shown this edge against the closing line.")
@@ -74,23 +81,30 @@ def cmd_sim(args) -> int:
         runs.append((f"HYPOTHETICAL edge {args.edge:+.1%}/leg", args.edge))
     out = []
     for label, ev in runs:
-        r = sim.simulate(t, args.budget, args.target, paths=args.paths, seed=args.seed,
-                         ev_leg=ev, cash_out=args.cash_out)  # fmt: skip
+        r = sim.simulate(t, args.budget, args.target, months=args.months, paths=args.paths,
+                         seed=args.seed, ev_leg=ev, cash_out=args.cash_out)  # fmt: skip
         out.append((label, r))
     if args.json:
         print(json.dumps([r.as_dict() | {"label": lab} for lab, r in out], indent=1))
         return 0
     odds = sim.bet_odds(t.legs, t.leg_price)
     print(f"Tier {t.id} {t.name}: {t.description}")
-    if t.stake != "none":
+    if t.stake == "mix":
+        single, par = picks.mix_units(t, args.budget)
+        print(f"A card: {t.per_day} singles -110 at ${single:g} + one 2-leg parlay +264 at "
+              f"${par:g}, when the paced share of the month's deposit covers it; "
+              f"{tiers_mod.DAYS_PER_MONTH} slate days a month")  # fmt: skip
+    elif t.stake != "none":
         print(f"One bet: {t.bet_kind} {odds.american:+d}, ~{odds.p_hit:.1%} to hit at -vig, "
-              f"EV {odds.ev:+.1%} per $1")  # fmt: skip
+              f"EV {odds.ev:+.1%} per $1; ${args.budget:,.0f} returns "
+              f"${args.budget * odds.decimal:,.0f} if it hits")  # fmt: skip
     for label, r in out:
         print(f"\n{label}: ${r.budget:,.0f}/month x {r.months} = ${r.deposits:,.0f} deposited, "
               f"target ${r.target:,.0f}, cash-out {'on' if r.cash_out else 'off'}, "
               f"{r.paths:,} runs (seed {r.seed})")  # fmt: skip
         print(sim.table([
             ["P(reach target)", f"{r.p_reach:.1%} (+/- {1.96 * r.se_reach:.1%})"],
+            ["P(ahead of keeping the cash)", f"{r.p_up:.1%}"],
             ["P(touch target)", f"{r.p_touch:.1%}"],
             ["P(lose > half of deposits)", f"{r.p_lose_half:.1%}"],
             ["P(end at $0)", f"{r.p_zero:.1%}"],
@@ -98,7 +112,7 @@ def cmd_sim(args) -> int:
              f"${r.p10:,.0f} / ${r.median:,.0f} / ${r.p90:,.0f}"],
             ["Mean ending balance", f"${r.mean_end:,.0f} (keep the cash: ${r.deposits:,.0f})"],
             ["Months where most new money is lost", f"{r.months_mostly_lost:.0%}"],
-            ["Bets / $ staked per year (mean)",
+            [f"Bets / $ staked over {sim.months_label(r.months)} (mean)",
              f"{r.bets_per_path:.0f} / ${r.staked_per_path:,.0f}"],
         ]))  # fmt: skip
     return 0
@@ -109,10 +123,23 @@ def _ledger_state(path: Path | None) -> tuple[list[dict], dict[str, Any]]:
     return rows, ledger.summary(rows)
 
 
+def _circa_payload(arg: str, day: date) -> tuple[dict | None, str | None]:
+    """(lines payload, None) or (None, the one fallback note)."""
+    if arg == "off":
+        return None, "Circa check off: reference prices shown; check Circa by hand."
+    path = circa_mod.default_path(day) if arg == "auto" else Path(arg)
+    data, why = circa_mod.load(path)
+    if data is None:
+        return None, f"{why}: reference prices shown; check Circa by hand."
+    return data, None
+
+
 def cmd_propose(args) -> int:
     t = tiers_mod.get(args.tier)
     rows, s = _ledger_state(args.ledger)
-    month_now = ledger._month(ledger._now(None))
+    today = date.fromisoformat(args.date) if args.date else ledger._now(None).astimezone(
+        config.LOCAL_TZ).date()  # fmt: skip
+    month_now = today.strftime("%Y-%m")
     notes = []
     if args.balance is not None:
         balance = args.balance
@@ -122,22 +149,48 @@ def cmd_propose(args) -> int:
         balance = args.budget
         notes.append(f"Ledger has no deposits: assuming this month's ${args.budget:,.0f}.")
     month = args.month or ledger.plan_month(s["first_month"])
-    bets_now = int(s["months"].get(month_now, {}).get("bets", 0))
+    bets_now = sum(1 for r in ledger.live_rows(rows) if r["kind"] == "bet"
+                   and r["month"] == month_now and r["tier"] == t.key)  # fmt: skip
+    mb = None
+    sim_budget = args.budget
+    if t.stake == "mix":
+        mb = picks.month_budget(rows, t.key, today)
+        if mb.deposit <= 0 and s["deposits"] <= 0:  # nothing logged at all: assume --budget
+            mb.deposit = args.budget
+        if mb.plan_money > 0:
+            sim_budget = mb.plan_money
     run = Path(args.run) if args.run else picks.latest_run()
     payload = slate = None
     if run is not None:
         payload, slate = picks.load_run(run)
         notes.append(f"Picks: model-picks run {run.name} (lines as of {slate['created_at']}).")
-    r = sim.simulate(t, args.budget, args.target, paths=args.paths, seed=args.seed)
-    plan = picks.propose(t, payload, slate, balance=balance, month=month, budget=args.budget,
+    lines, circa_note = _circa_payload(args.circa, today)
+    if lines is not None:
+        notes.append(f"Circa lines read {lines.get('read_at', '?')} ({len(lines['lines'])} lines).")
+    r = sim.simulate(t, sim_budget, args.target, months=args.months, paths=args.paths,
+                     seed=args.seed)  # fmt: skip
+    plan = picks.propose(t, payload, slate, balance=balance, month=month, budget=sim_budget,
                          target=args.target, bets_this_month=bets_now,
-                         p_reach=r.p_reach)  # fmt: skip
-    print(picks.render(plan, args.budget, args.target))
+                         p_reach=r.p_reach, months=args.months, p_up=r.p_up,
+                         month_budget=mb, circa=lines)  # fmt: skip
+    if circa_note:
+        plan.circa_notes.append(circa_note)
+    if args.format == "discord":
+        sim_line = (f"Sim, {sim.months_label(r.months)} at ${sim_budget:,.0f}: P(up) "
+                    f"{r.p_up:.0%}, P(lose>1/2) {r.p_lose_half:.0%}, mean end "
+                    f"${r.mean_end:,.0f} (-vig)")  # fmt: skip
+        print(picks.render_discord(plan, sim_line=sim_line))
+        return 0
+    print(picks.render(plan, sim_budget, args.target))
     for n in notes:
         print(n)
+    if t.stake == "mix":
+        print(f"Sim ({sim.months_label(r.months)}, ${sim_budget:,.0f}, -vig): P(up) {r.p_up:.0%}, "
+              f"P(lose > half) {r.p_lose_half:.0%}, mean end ${r.mean_end:,.2f}, "
+              f"{r.bets_per_path:.0f} bets a month.")  # fmt: skip
     if args.edge is not None:
-        h = sim.simulate(t, args.budget, args.target, paths=args.paths, seed=args.seed,
-                         ev_leg=args.edge)  # fmt: skip
+        h = sim.simulate(t, sim_budget, args.target, months=args.months, paths=args.paths,
+                         seed=args.seed, ev_leg=args.edge)  # fmt: skip
         print(f"HYPOTHETICAL edge {args.edge:+.1%}/leg: this tier reaches "
               f"${args.target:,.0f} ~{h.p_reach:.0%} (vs {r.p_reach:.0%} at -vig).")  # fmt: skip
     return 0
@@ -226,6 +279,15 @@ def cmd_log(args) -> int:
 # ---------- status / grade ----------
 
 
+def manual_staked(rows) -> dict[str, float]:
+    """$ staked per month on hand-placed picks (tier `manual`), voids excluded."""
+    out: dict[str, float] = {}
+    for r in ledger.live_rows(rows):
+        if r["kind"] == "bet" and r["tier"] == tiers_mod.MANUAL_TIER:
+            out[r["month"]] = out.get(r["month"], 0.0) + float(r["stake"])
+    return out
+
+
 def cmd_status(args) -> int:
     rows, s = _ledger_state(args.ledger)
     print(f"To The Moon ledger: {args.ledger or config.MOON_LEDGER_PATH}")
@@ -239,15 +301,23 @@ def cmd_status(args) -> int:
         ["Settled bets", f"{s['settled']} ({s['record']} W-L-P), staked ${s['staked']:,.2f}"],
         ["Betting P&L", _signed(s["profit"])
          + ("" if s["roi"] is None else f" (ROI {s['roi']:+.1%})")],
-        ["Plan month", f"{ledger.plan_month(s['first_month'])} of 12 "
+        ["Plan month", f"{ledger.plan_month(s['first_month'])} "
          f"(first deposit {s['first_month'] or '-'})"],
     ]))  # fmt: skip
+    manual = manual_staked(rows)
     if s["months"]:
         print()
-        rows_m = [["Month", "Deposits", "Bets", "Staked", "Net from bets"]]
+        rows_m = [["Month", "Deposits", "Bets", "Staked", "of it manual", "Net from bets"]]
         rows_m += [[m, f"${v['deposits']:,.2f}", str(int(v["bets"])), f"${v['staked']:,.2f}",
-                    _signed(v["net"])] for m, v in sorted(s["months"].items())]  # fmt: skip
+                    f"${manual.get(m, 0.0):,.2f}", _signed(v["net"])]
+                   for m, v in sorted(s["months"].items())]  # fmt: skip
         print(sim.table(rows_m))
+        cur = s["months"].get(ledger._month(ledger._now(None)))
+        if cur and cur["staked"] > cur["deposits"] + 0.005:
+            print(f"This month's stakes (${cur['staked']:,.2f}, manual picks included) are over "
+                  f"this month's deposit (${cur['deposits']:,.2f}): the excess is re-staked "
+                  f"winnings or an unlogged deposit. "
+                  f"The plan caps a month's risk at its deposit.")  # fmt: skip
     if s["open"]:
         print("\nOpen bets:")
         print(sim.table([["Id", "Placed", "Bet", "Price", "Stake", "Book"]] + [
@@ -300,7 +370,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(fn=cmd_tiers)
 
     p = sub.add_parser("sim", help="simulate one tier")
-    p.add_argument("--tier", default=DEFAULT_TIER, help="id (1-10) or key")
+    p.add_argument("--tier", default=DEFAULT_TIER, help="id (1-12) or key")
     _common(p)
     p.add_argument("--cash-out", dest="cash_out", action=argparse.BooleanOptionalAction,
                    default=None, help="override the tier's cash-out-at-target rule")  # fmt: skip
@@ -308,11 +378,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(fn=cmd_sim)
 
     p = sub.add_parser("propose", help="today's bets for a tier from the models-only picks")
-    p.add_argument("--tier", default=DEFAULT_TIER, help="id (1-10) or key")
+    p.add_argument("--tier", default=DEFAULT_TIER, help="id (1-12) or key")
     _common(p)
     p.add_argument("--balance", type=float, default=None, help="override the ledger balance")
-    p.add_argument("--month", type=int, default=None, help="plan month 1-12 (default: ledger)")
+    p.add_argument("--month", type=int, default=None, help="plan month (default: from the ledger)")
     p.add_argument("--run", default=None, help="model-picks run dir (default: latest)")
+    p.add_argument("--circa", default="auto",
+                   help="Circa lines: auto (today's file in $DEEPSPORTS_CIRCA_LINES, else "
+                   "$DEEPSPORTS_CIRCA_DIR/lines, default "
+                   f"{circa_mod.DEFAULT_DIR}), a JSON path, or off")  # fmt: skip
+    p.add_argument("--format", choices=["text", "discord"], default="text")
+    p.add_argument("--date", default=None,
+                   help="today YYYY-MM-DD (pacing, Circa file)")  # fmt: skip
     p.set_defaults(fn=cmd_propose, paths=5_000)
 
     p = sub.add_parser("log", help="append a row to the ledger (after you placed the bet)")

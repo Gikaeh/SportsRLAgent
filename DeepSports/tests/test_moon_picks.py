@@ -123,3 +123,38 @@ def test_cli_propose_reads_run_dir(run, tmp_path, capsys):
     out = capsys.readouterr().out
     assert "3-leg parlay +596" in out and "assuming this month's $75" in out
     assert not (tmp_path / "l.csv").exists()  # propose never writes the ledger
+
+
+def test_odds_line_shows_payout_and_horizon(run):
+    pr = plan("ticket2", run, p_reach=0.25, months=1).proposals[0]
+    assert pr.stake == 75 and pr.price == 264
+    line = pr.odds_line()
+    assert "returns $273.00 on $75.00" in line
+    assert "reaches $1,000 in 1 month ~25% (sim)" in line
+
+
+def test_cli_propose_ignores_manual_bets_this_month(run, tmp_path, capsys):
+    payload, slate = run
+    d = tmp_path / "runs" / "20261113T220000Z"
+    d.mkdir(parents=True)
+    (d / "picks.json").write_text(json.dumps(payload))
+    (d / "slate.json").write_text(json.dumps(slate))
+    led = str(tmp_path / "l.csv")
+    assert main(["--ledger", led, "log", "deposit", "--amount", "75"]) == 0
+    assert main(["--ledger", led, "log", "bet", "--tier", "manual", "--game-id", "1",
+                 "--league", "ncaab", "--market", "spread", "--side", "home", "--line", "-1.5",
+                 "--price", "-110", "--stake", "5"]) == 0  # fmt: skip
+    capsys.readouterr()
+    assert main(["--ledger", led, "propose", "--tier", "ticket2", "--run", str(d), "--months", "1",
+                 "--paths", "500"]) == 0  # fmt: skip
+    out = capsys.readouterr().out
+    assert "tier 11 Monthly 2-leg ticket" in out and "2-leg parlay +264" in out
+    assert main(["--ledger", led, "log", "parlay", "--tier", "ticket2",
+                 "--leg", "1:ncaab:spread:home:-1.5:-110", "--leg", "2:ncaab:spread:home:-1.5:-110",
+                 "--price", "264", "--stake", "70"]) == 0  # fmt: skip
+    capsys.readouterr()
+    assert (
+        main(["--ledger", led, "propose", "--tier", "ticket2", "--run", str(d), "--paths", "500"])
+        == 0
+    )
+    assert "This month's 1 bet(s) are logged" in capsys.readouterr().out

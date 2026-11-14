@@ -3,6 +3,7 @@
 # Optional agent names after the action limit it to those, e.g.
 #   tools/launchd/install.sh install com.deepsports.odds
 #   tools/launchd/install.sh install com.deepsports.pretip
+#   tools/launchd/install.sh install com.deepsports.circa-remind
 #   tools/launchd/install.sh uninstall com.deepsports.odds
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -11,7 +12,7 @@ UID_=$(id -u)
 ACTION="${1:-install}"
 [ $# -gt 0 ] && shift
 NAMES=("$@")
-[ ${#NAMES[@]} -eq 0 ] && NAMES=(com.deepsports.serve com.deepsports.sync com.deepsports.odds com.deepsports.pretip)
+[ ${#NAMES[@]} -eq 0 ] && NAMES=(com.deepsports.serve com.deepsports.sync com.deepsports.odds com.deepsports.pretip com.deepsports.circa-remind)
 mkdir -p "$DEST" "$HOME/Library/Logs/DeepSports"
 for name in "${NAMES[@]}"; do
   launchctl bootout "gui/$UID_/$name" 2>/dev/null || true

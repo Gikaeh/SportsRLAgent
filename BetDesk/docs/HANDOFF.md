@@ -1,5 +1,16 @@
 # BetDesk handoff
 
+## State (2026-11-13): Circa screenshot upload (edge 6, root `docs/DECISIONS.md` 2026-11-14)
+Built against mocks and unit tests, **not deployed, not run end to end yet** (DeepSports' endpoints
+weren't on :8787 when this was built).
+- Worker: allowlist adds `GET /api/circa/screenshots/today`; the one write route is
+  `POST /api/circa/screenshots` (Access JWT required, `multipart/form-data` only (415), body capped at
+  35 MB (413) whatever Content-Length says, foreign `Origin` refused (403)). The body goes to the Mac
+  unchanged with the service token only. Every other non-GET is still 405.
+- Web: new **Circa** tab (`#/circa`): "Add screenshots" (opens Photos on iPhone), previews with
+  per-file checks (image type, 10 MB), upload progress, then today's status (count, last added,
+  read time and lines matched, or "not read yet; read at 2 PM").
+
 ## State (2026-11-11)
 Switched from the snapshot mirror to a live proxy through a Cloudflare Tunnel (decision in
 `DECISIONS.md`, 2026-11-11). Built and tested locally, **not deployed yet**.
@@ -11,6 +22,12 @@ Switched from the snapshot mirror to a live proxy through a Cloudflare Tunnel (d
 - `npm run check` passes (32 worker tests, web build, deploy dry run).
 
 ## Next
+0. **Circa:** local GET end-to-end done 2026-11-14 (`/today` 200, JSON POST 415, DELETE 405). Before the
+   first tunnel upload, restart `com.deepsports.serve` so it runs with `proxy_headers=False` (otherwise
+   cloudflared's `X-Forwarded-For` hides the loopback client and uploads get 403). Still to do: the local end-to-end
+   (`npm run dev`, then `curl -s 127.0.0.1:8788/api/circa/screenshots/today` and a tiny PNG
+   `curl -F file=@x.png 127.0.0.1:8788/api/circa/screenshots`). After the owner deploys: upload a real
+   screenshot from the iPhone (check HEIC vs JPEG arrives) and see the count change.
 1. **Owner:** `docs/SETUP.md` (deploy, Access on the Worker, tunnel on the Mac, Access on the
    tunnel hostname, Worker secrets).
 2. Check on a phone away from home: login, Today, Bets, Game, Standings, Team, Model record; the

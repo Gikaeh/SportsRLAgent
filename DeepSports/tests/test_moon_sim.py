@@ -115,3 +115,20 @@ def test_tier_lookup():
     assert tiers.get("Bold").id == 9
     with pytest.raises(ValueError):
         tiers.get("moonshot")
+
+
+def test_one_month_ticket2_is_one_coin_squared():
+    t = tiers.get("ticket2")
+    assert t.id == 11 and t.legs == 2 and t.stake == "deposit"
+    r = sim.simulate("ticket2", 75, 250, months=1, paths=40_000)
+    assert r.months == 1 and r.deposits == 75
+    assert r.p_reach == pytest.approx(0.25, abs=0.01)  # one +264 ticket returns $273
+    assert r.p_up == pytest.approx(r.p_reach)
+    assert r.bets_per_path == 1
+
+
+def test_ladder_passes_months_and_p_up():
+    res = sim.ladder(75, 1000, months=1, paths=500)
+    assert {r.months for r in res} == {1}
+    assert res[0].p_up == 0  # keeping the cash is never ahead of keeping the cash
+    assert "for 1 month ($75 deposited)" in sim.headline(res)

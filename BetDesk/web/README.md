@@ -7,7 +7,10 @@ no UI framework, one plain stylesheet, hash routing.
 
 BetDesk additions: a "Mac offline" banner and error state when the Worker answers `503 mac_offline`
 (`src/components/MacStatus.tsx`, polls `/api/health`), and a page reload when the Cloudflare Access
-session has expired (`src/api/client.ts`).
+session has expired (`src/api/client.ts`). The Circa screen (`#/circa`, `src/screens/Circa.tsx`)
+uploads Circa odds-board screenshots (`POST /api/circa/screenshots`, XHR for progress, batches under
+30 MB) and shows today's read status; mock switches `?mock=circa0|circaread|circafull|uploadfail`
+(`src/mocks/circa.ts`).
 
 ## Commands (from `BetDesk/`)
 ```bash

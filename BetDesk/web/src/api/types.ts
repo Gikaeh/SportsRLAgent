@@ -233,3 +233,19 @@ export type HealthResponse = {
   warehouse: "ok" | "busy" | "unavailable";
   now: string;
 };
+
+// ---- Circa screenshots (POST /api/circa/screenshots, GET /api/circa/screenshots/today) ----
+export type CircaUploadResponse = {
+  date: string;
+  saved: { name: string; bytes: number }[];
+  today_count: number;
+};
+
+export type CircaTodayResponse = {
+  date: string;
+  count: number;
+  /** ISO time of the newest screenshot today, or null when there are none. */
+  latest_at: string | null;
+  /** Set once DeepSports has read today's screenshots (around 2 PM, before the picks). */
+  read: null | { read_at: string; lines: number; matched: number };
+};

@@ -8,7 +8,8 @@ other docs on demand via the index in README.md.
 |---|---|---|
 | App server: API + web app + glasses plugin on `:8787` | launchd `com.deepsports.serve` (restarts itself) | `curl -s localhost:8787/api/health` · logs `~/Library/Logs/DeepSports/serve.log` |
 | Scheduled sync at 08:00 and 14:00: update NBA + college → predict v1.0 + v1.1 + v1.1i → paper log (no Claude call; the calendar sync was scrapped for now on 2026-11-13) | launchd `com.deepsports.sync` → `tools/scheduled-sync.sh` | `~/Library/Logs/DeepSports/sync.log` |
-| Daily models-only picks (watch-only, since 2026-11-13): DeepSports' model and ManualBets' model vs the lines for games tipping in the next 24 h → top 5 + strong/lean tables to Discord (no Claude call). Replaced the ensemble-agent vote, which stays runnable by hand (`tools/ensemble-daily.sh`) | end of the 14:00 sync → `tools/model-picks-daily.sh` | runs in `/Volumes/ExFATStorag/DeepSports/reports/model-picks/` · `deepsports model-picks grade` |
+| Daily models-only picks (watch-only, since 2026-11-13): `circa read` (headless Claude transcribes today's Circa screenshots), then DeepSports' model and ManualBets' model vs the lines for games tipping in the next 24 h → top 5 + strong/lean tables to Discord, then a second message with the To The Moon proposal (tier `mix`, Circa prices). Replaced the ensemble-agent vote, which stays runnable by hand (`tools/ensemble-daily.sh`) | end of the 14:00 sync → `tools/model-picks-daily.sh` | runs in `/Volumes/ExFATStorag/DeepSports/reports/model-picks/` · `deepsports model-picks grade` · `deepsports circa status` |
+| Circa screenshot reminder at 11:00 and 13:00: ingest the iCloud inbox; Discord reminder only if none arrived today | launchd `com.deepsports.circa-remind` → `tools/circa-remind.sh` | `~/Library/Logs/DeepSports/circa.log` |
 | Pre-tip injury refresh at :20 and :50: NBA games tipping in 5-100 min → fresh ESPN injury report → v1.1i predictions (installed 2026-11-10) | launchd `com.deepsports.pretip` → `tools/pretip.sh` | `~/Library/Logs/DeepSports/pretip.log` (one line per run) · `deepsports status` (`pretip v1.1i` runs) |
 | Discord turn notifications | global Stop/Notification hooks → `~/.claude/tools/notify.py` | |
 
@@ -35,13 +36,15 @@ reports in `docs/results/`. Model v1.1i (pre-tip injury reports) has no backtest
 2026-11-03) and is graded live, paired with v1.1 on the same games. Player impact ratings / injury impact in
 points (2026-11-11) were dropped: no edge, ratings not face-valid; the code stays as research tooling.
 
-## To The Moon (betting), by hand
-`deepsports moon` (guide `docs/TO_THE_MOON.md`): risk ladder, proposals from the latest model-picks run, and an
-append-only ledger of the owner's real bets in `../logs/moon/bets.csv` (stakes stay on the Mac). Nothing scheduled.
-Book: Circa (not in The Odds API feed; compare by the owner's screenshot).
-Next (from 2026-11-13): `deepsports moon grade` + `status` for the first 6 ledger rows (Nov 13 picks + a $2
-parlay logged at ~+264; confirm the price); the owner picks a budget/target/tier and starts the plan with a
-`log deposit`; open question whether the hand-placed daily picks keep going in the ledger (tier `manual`).
+## To The Moon (betting)
+`deepsports moon` (guide `docs/TO_THE_MOON.md`; why: root `docs/DECISIONS.md` 2026-11-13/14): proposals from the
+model-picks run, repriced at Circa's lines read from the owner's screenshots (BetDesk Circa tab or the iCloud
+inbox; docs/PIPELINE.md, Circa), sent to Discord at 14:00; the owner places every bet and logs it in the
+append-only `../logs/moon/bets.csv`.
+Plan: $50 for 2026-11 (rows 8-9: $77 deposited, $27 of manual picks before; units size from the $50), tier `mix`.
+Next: `deepsports moon grade` + `status` after the 08:00 sync. Owner: check the first real Circa read
+(`circa status`, the lines file; the test reply fixture is synthetic); if `circa ingest` says `inbox blocked`,
+give uv's Python Full Disk Access; deploying BetDesk is still the owner's (`../BetDesk/docs/SETUP.md`).
 
 ## Known gaps / gotchas
 - ESPN gaps (warnings in `deepsports check`): 8 NBA playoff summaries 404; 29 NBA team-games and ~430 college

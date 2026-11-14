@@ -234,12 +234,7 @@ export type HealthResponse = {
   now: string;
 };
 
-// ---- Circa screenshots (POST /api/circa/screenshots, GET /api/circa/screenshots/today) ----
-export type CircaUploadResponse = {
-  date: string;
-  saved: { name: string; bytes: number }[];
-  today_count: number;
-};
+// ---- Circa screenshots (GET /api/circa/screenshots/today; uploads happen on the Mac's LAN page) ----
 
 export type CircaTodayResponse = {
   date: string;

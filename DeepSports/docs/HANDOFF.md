@@ -38,7 +38,7 @@ points (2026-11-11) were dropped: no edge, ratings not face-valid; the code stay
 
 ## To The Moon (betting)
 `deepsports moon` (guide `docs/TO_THE_MOON.md`; why: root `docs/DECISIONS.md` 2026-11-13/14): proposals from the
-model-picks run, repriced at Circa's lines read from the owner's screenshots (BetDesk Circa tab or the iCloud
+model-picks run, repriced at Circa's lines read from the owner's screenshots (the `/circa` page on home Wi-Fi or the iCloud
 inbox; docs/PIPELINE.md, Circa), sent to Discord at 14:00; the owner places every bet and logs it in the
 append-only `../logs/moon/bets.csv`.
 Plan: $50 for 2026-11 (rows 8-9: $77 deposited, $27 of manual picks before; units size from the $50), tier `mix`.

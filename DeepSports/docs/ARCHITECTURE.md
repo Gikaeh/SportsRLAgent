@@ -69,14 +69,13 @@ diagram in the same change (see CLAUDE.md).
   - `warehouse.py` serves standings and team pages through short read-only DuckDB connections, and returns 503
     `warehouse_busy` while a job holds the lock.
   - `circa.py`: `POST /api/circa/screenshots` (multipart images, size and count capped; the API's one write,
-    reached from BetDesk through the tunnel as edge 6) and `GET /api/circa/screenshots/today` (counts only).
+    from the `/circa` LAN page) and `GET /api/circa/screenshots/today` (counts only).
     Never opens DuckDB.
   - `views.py` holds pure shaping functions (game cards, box scores, glance lines). CORS allows GET from any
     origin for the glasses WebView.
 - **Mobile web app** (`web/`, Vite + React + TS PWA): built into `web/dist` and served at `/` by the same process.
   Frozen since 2026-11-10 (LAN + glasses build); new UI work happens in `../BetDesk/web`, whose Cloudflare
-  Worker reads this API live through a Cloudflare Tunnel on this Mac and forwards the Circa upload
-  (its one write; BetDesk's Circa tab) (`../BetDesk/CLAUDE.md`).
+  Worker reads this API live through a Cloudflare Tunnel on this Mac, GET only (`../BetDesk/CLAUDE.md`).
   Open `http://<mac-lan-ip>:8787` on the phone.
 - **G2 glasses plugin** (`glasses/`, served at `/glasses/`): an Even Hub plugin that polls `/api/scoreboard`
   and draws text on the G2. SDK calls sit behind `src/even.ts`; formatting is pure and tested. See glasses/README.md and

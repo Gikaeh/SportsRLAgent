@@ -197,7 +197,7 @@ The owner's photos of Circa's odds board, read into lines before the 14:00 picks
 | `POST /api/circa/screenshots` | Body `multipart/form-data`, one or more parts named `file`. → `{date: "YYYY-MM-DD", saved: [{name: string, bytes: number}], today_count: number}` (local date; `name` like `"143012-3.png"`) |
 | `GET /api/circa/screenshots/today` | `{date, count: number, latest_at: string \| null, read: null \| {read_at: string, lines: number, matched: number}}` (ISO 8601 times; `matched` = lines with a game_id) |
 
-| `GET /circa` | Temporary upload page for home Wi-Fi until BetDesk > Circa is deployed (e.g. `http://172.16.0.61:8787/circa`; Add to Home Screen works). Self-contained HTML, no external resources; picks images, previews, uploads with progress, shows today's status. Creates the upload code file on first visit |
+| `GET /circa` | Upload page for home Wi-Fi, the owner's way to add screenshots (BetDesk doesn't upload since 2026-11-14) (e.g. `http://172.16.0.61:8787/circa`; Add to Home Screen works). Self-contained HTML, no external resources; picks images, previews, uploads with progress, shows today's status. Creates the upload code file on first visit |
 
 **Who may POST** (the server binds 0.0.0.0), either:
 - **BetDesk tunnel:** a loopback client (127.0.0.1 / ::1; cloudflared forwards from localhost) with no

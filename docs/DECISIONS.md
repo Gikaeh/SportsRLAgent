@@ -86,3 +86,57 @@ Owner decisions on `docs/TO_THE_MOON_BETTING.md`:
    moneylines and ordinary parlays; no props, futures or same-game parlays.
 5. **Budget** $50 / $75 / $100 a month (default $75); targets $1k, $2.5k, $10k over 12 months.
 Default assumption EV = −vig per bet (no model beats the close); edge only from a graded record.
+
+### 2026-11-13: To The Moon is played one month at a time; default play is one 2-leg ticket
+The owner rejected the 12-month framing ("not a long term investment, calculated risks knowing what we
+are risking") and "save, then bold", then delegated the choice. Decided with a `data-analyst` check:
+1. **One month at a time.** Each month's deposit ($50-100, the owner picks it monthly) is that month's
+   whole risk. A winning ticket's payout is set aside, never re-staked (otherwise it drifts into "let it
+   ride").
+2. **Default play: the month's deposit on one 2-leg parlay** of the model-picks' top legs (tier 11
+   `ticket2`, the new `propose` default): about +264, hits ~25% at -vig, EV -8.9%. A 3-leg ticket
+   (`ticket3`, ~12.5%, EV -13%) is the opt-in "moon month". Bold play on singles to the same multiple
+   has the same odds within noise (25.1% to 3.64x) but needs about two chained bets and twice the money
+   in play, so it isn't the default.
+3. **Hand-placed daily picks stay in the ledger as tier `manual`.** They count against the month's
+   deposit. `status` shows the manual share per month and flags stakes above the month's deposit.
+   `propose` counts only the plan tier's own bets toward its one-a-month limit.
+4. The tool gained `--months` (1 = this month only) on `tiers`/`sim`/`propose`, a `P(up)` column (ahead
+   of keeping the cash), and the payout at the stake in each proposal. Numbers:
+   `DeepSports/docs/results/2026-11-13-moon-one-month.md`.
+Legs are assumed independent: avoid correlated legs, and check Circa's real parlay price.
+
+### 2026-11-14: Circa screenshots: new edge 6 (BetDesk → DeepSports, one write route); daily moon message
+Owner request (2026-11-13): upload Circa screenshots in the web app, have them read on a schedule before the
+picks, get the 2 PM bets by message, and be reminded at 11 AM and 1 PM if nothing was uploaded that day.
+1. **Edge 6:** the BetDesk Worker allows exactly one write, `POST /api/circa/screenshots`, forwarded to
+   DeepSports' API through the tunnel (Access JWT checked, multipart images only, size and count capped).
+   Data only flows in (the owner's own odds-board screenshots); no stakes leave the Mac. Every other
+   non-GET is still refused. BetDesk isn't deployed yet, so an iCloud Drive inbox folder is the interim
+   upload path.
+2. **Reading:** in the 14:00 job, before `model-picks run`, `deepsports circa read` asks headless Claude
+   (Sonnet, Read only) to transcribe the board into JSON, validates it, matches lines to games, and writes
+   `circa/lines/<date>.json` on the external drive. The moon proposal uses Circa's line and price and drops
+   a leg when Circa's line or price is worse. A Claude call is fine here: it's a transcription step, and the
+   betting rule stays deterministic code.
+3. **Messages** via the existing Discord notifier: the 14:00 run sends the moon proposal after the picks;
+   a new launchd agent `com.deepsports.circa-remind` (11:00, 13:00) asks for screenshots only when none
+   arrived that day.
+4. **Budget:** 2026-11 is a $50 month (ledger row 8 tops up the $27). The play mixes small singles with a
+   parlay (tier `mix`; numbers in `DeepSports/docs/results/2026-11-14-moon-mix-tier.md`).
+5. **Tier 12 `mix` is the default play** (data-analyst, then adjusted by the orchestrator). Each day can bet up
+   to 2 singles at 6% of the month's deposit plus one 2-leg parlay at 4% ($3 + $3 + $2 at $50). The day's
+   allowance is an even share of what's left of the month's deposit over the days left, and a day bets as
+   much of that card as its share covers. The deposit is a hard cap: every stake counts against it, manual
+   ones included, and winnings never refill it. Sim at $50 for one month: 41% chance to end ahead, 6% to lose
+   more than half, mean end $47. Proposals are repriced at Circa's screenshot lines: a worse line or price
+   drops the leg (compared with the slate's own price).
+6. **The 14:00 moon message carries stake figures** (balance, what's left of the month, each bet's stake) to the
+   owner's own Discord webhook, the same notifier the Stop hook uses. It's the owner's private channel, and
+   the owner asked for the bets by message, so this is allowed. The read API, BetDesk and the Circa endpoints
+   still never serve stakes, and the message never includes past rows from `logs/`.
+7. **Temporary upload page on home Wi-Fi** (owner, 2026-11-14): `GET /circa` on DeepSports' server is one
+   standalone page; the frozen `DeepSports/web` app is untouched. Uploads from the LAN need the header
+   `X-Circa-Upload-Code`, checked against a code kept only on the Mac (`~/.config/deepsports/circa-upload-code`,
+   mode 600, `deepsports circa code [--rotate]`). Ten bad codes in ten minutes return 429. The BetDesk path stays
+   loopback-only. Once BetDesk is deployed this page can go.

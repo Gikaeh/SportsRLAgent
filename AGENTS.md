@@ -11,7 +11,7 @@ Keep each fact in one place and point to it from everywhere else (see "Context h
 | `DeepSports/` | NBA + college data warehouse (DuckDB), frozen prediction models, read API + phone web app + glasses plugin, Google Calendar alerts, watch-only paper trading and ensemble betting vote. Runs on the owner's Mac via launchd. | `DeepSports/CLAUDE.md` |
 | `ManualBets/` | Handmade pipeline: XGBoost models per bet type, Kelly-sized bet suggestions, graded CSV bet logs. A human runs the menus and places bets. | `ManualBets/CLAUDE.md` |
 | `BetDesk/` | Shared app for both owners on Cloudflare (Worker + PWA, behind Cloudflare Access). Phase 1: read-only live view of DeepSports' read API through a Cloudflare Tunnel to the owner's Mac. | `BetDesk/CLAUDE.md` |
-| `logs/` | Bet journals `logs/<sport>/betting/*_bets.csv`. Written by ManualBets, read by DeepSports. Append-only. Only open-bet labels (never stakes) leave the Mac, via edge 3. | (rule 3 below) |
+| `logs/` | Bet journals `logs/<sport>/betting/*_bets.csv`. Written by ManualBets, read by DeepSports. Append-only. Only open-bet labels (never stakes) leave the Mac, via edge 3; the one exception is the 14:00 moon message to the owner's own Discord (`docs/DECISIONS.md` 2026-11-14, item 6). | (rule 3 below) |
 | `.claude/agents/` | Repo-wide dev agents (registry below). | |
 | `docs/DECISIONS.md` | Repo-wide decisions (structure, scope, integration). Projects keep their own logs. | |
 
@@ -34,6 +34,9 @@ these read-only edges:
    `analysis/manualbets_context.py`).
 5. DeepSports' To The Moon app appends real moon bets to `logs/moon/bets.csv` (append-only; stakes
    never leave the Mac). Decided 2026-11-13 in `docs/DECISIONS.md`.
+6. BetDesk's Worker forwards one write, `POST /api/circa/screenshots` (the owner's Circa odds-board
+   screenshots, images only, size/count capped), to DeepSports' API through the same tunnel; a phone can
+   also drop them in an iCloud Drive folder. Only counts come back (`GET …/today`). Decided 2026-11-14 in `docs/DECISIONS.md`.
 A new edge is an integration step: propose it, log it, then build it.
 
 ## Non-negotiables (every project, every agent)

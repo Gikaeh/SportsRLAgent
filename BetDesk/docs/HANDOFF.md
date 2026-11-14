@@ -1,5 +1,16 @@
 # BetDesk handoff
 
+## State (2026-11-14): deployed and live
+- Live on workers.dev behind Worker-level Access (Workers & Pages → betdesk → **Access** tab, policy
+  "Cloudflare account"); the Worker re-checks the JWT and `ALLOWED_EMAILS`. All 6 secrets set.
+- Tunnel `deepsports-mac` (cloudflared 2026.11.0, launchd daemon) → `localhost:8787`; its hostname has
+  a Service Auth-only Access app (`betdesk-worker` token). It replaced a dead 2025 tunnel service on
+  the Mac ("Tunnel not found"). `com.deepsports.serve` restarted with `proxy_headers=False`.
+- Verified from outside: no login → 302 to Access; tunnel hostname without or with a fake token →
+  403; LAN upload without code → 403. Phone sign-in loads live data through the tunnel.
+- Setup gotcha: a wrong `ACCESS_TEAM_DOMAIN` gives every signed-in request 403. `wrangler tail` now
+  shows `access_refused <reason>` (one word, never values) for each refused request.
+
 ## State (2026-11-13): Circa screenshot upload (edge 6, root `docs/DECISIONS.md` 2026-11-14)
 Built against mocks and unit tests, **not deployed, not run end to end yet** (DeepSports' endpoints
 weren't on :8787 when this was built).
@@ -22,20 +33,13 @@ Switched from the snapshot mirror to a live proxy through a Cloudflare Tunnel (d
 - `npm run check` passes (32 worker tests, web build, deploy dry run).
 
 ## Next
-0. **Circa:** local GET end-to-end done 2026-11-14 (`/today` 200, JSON POST 415, DELETE 405). Before the
-   first tunnel upload, restart `com.deepsports.serve` so it runs with `proxy_headers=False` (otherwise
-   cloudflared's `X-Forwarded-For` hides the loopback client and uploads get 403). Still to do: the local end-to-end
-   (`npm run dev`, then `curl -s 127.0.0.1:8788/api/circa/screenshots/today` and a tiny PNG
-   `curl -F file=@x.png 127.0.0.1:8788/api/circa/screenshots`). After the owner deploys: upload a real
-   screenshot from the iPhone (check HEIC vs JPEG arrives) and see the count change.
-1. **Owner:** `docs/SETUP.md` (deploy, Access on the Worker, tunnel on the Mac, Access on the
-   tunnel hostname, Worker secrets).
-2. Check on a phone away from home: login, Today, Bets, Game, Standings, Team, Model record; the
-   "Mac offline" banner when the tunnel is stopped (`sudo launchctl stop` the cloudflared daemon).
-3. Not yet verified against real Cloudflare: the Worker → tunnel service-token flow, Access's JWT
-   on the Worker, and the expired-session reload in the installed iPhone app.
-4. Later: add Gikaeh's email (SETUP.md, last section). Phase 2 proposal (bet logging, bankroll per
-   person) needs its own decision; writes would now go straight to the Mac.
+1. **Owner:** Add to Home Screen; tap through Today, Bets, Game, Standings, Team, Model record; the
+   "Mac offline" banner when the tunnel is stopped (`sudo launchctl stop com.cloudflare.cloudflared`).
+2. **Circa:** one real upload from the iPhone (check HEIC vs JPEG arrives) and see the count change.
+3. After a month: the expired-session reload in the installed iPhone app.
+4. Service token: renew before it expires (if it was given a year), then update `ORIGIN_CLIENT_*`.
+5. Later: add Gikaeh (SETUP.md, last section). Phase 2 proposal (bet logging, bankroll per person)
+   needs its own decision; writes would now go straight to the Mac.
 
 ## Known limits
 - The app works only while the Mac, DeepSports' server and `cloudflared` are up (the Mac mini runs

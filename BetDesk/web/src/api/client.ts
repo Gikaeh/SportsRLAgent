@@ -1,4 +1,4 @@
-import type { BetsResponse, GameDetailResponse, League, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse } from "./types";
+import type { BetsResponse, CircaTodayResponse, CircaUploadResponse, GameDetailResponse, League, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse } from "./types";
 
 export class ApiError extends Error {
   status: number;
@@ -55,8 +55,7 @@ export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> 
   if (!res.ok) {
     let code: string | null = null;
     try {
-      const body = await res.json();
-      if (body && typeof body.error === "string") code = body.error;
+      code = errorCode(await res.json());
     } catch {
       /* non-JSON error body */
     }
@@ -80,6 +79,54 @@ export const api = {
   bets: () => `/api/bets`,
   standings: () => `/api/standings`,
   team: (abbr: string) => `/api/teams/${encodeURIComponent(abbr)}`,
+  circaToday: () => `/api/circa/screenshots/today`,
 };
 
-export type { BetsResponse, GameDetailResponse, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse };
+/** Error code from a JSON error body: the Worker sends `error`, DeepSports' 4xx may send `detail`. */
+function errorCode(body: unknown): string | null {
+  if (body && typeof body === "object") {
+    const b = body as { error?: unknown; detail?: unknown };
+    if (typeof b.error === "string") return b.error;
+    if (typeof b.detail === "string") return b.detail;
+  }
+  return null;
+}
+
+/**
+ * Upload Circa screenshots in one multipart POST (field `file`, repeated). Uses XHR, not fetch,
+ * because only XHR reports upload progress. `onProgress` gets bytes sent so far.
+ */
+export async function uploadCircaScreenshots(
+  files: File[],
+  onProgress: (sent: number) => void,
+): Promise<CircaUploadResponse> {
+  if (MOCK) {
+    const { mockCircaUpload } = await import("../mocks/circa");
+    return mockCircaUpload(files, onProgress);
+  }
+  const form = new FormData();
+  for (const f of files) form.append("file", f, f.name);
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/circa/screenshots");
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.upload.onprogress = (e) => onProgress(e.loaded);
+    xhr.onload = () => {
+      let body: unknown = null;
+      try {
+        body = JSON.parse(xhr.responseText);
+      } catch {
+        /* non-JSON body */
+      }
+      if (xhr.status >= 200 && xhr.status < 300 && body) resolve(body as CircaUploadResponse);
+      else reject(new ApiError(xhr.status || 0, errorCode(body)));
+    };
+    xhr.onerror = () => {
+      void reloadIfSignedOut();
+      reject(new TypeError("network"));
+    };
+    xhr.send(form);
+  });
+}
+
+export type { BetsResponse, CircaTodayResponse, CircaUploadResponse, GameDetailResponse, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse };

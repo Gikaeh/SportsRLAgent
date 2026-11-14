@@ -7,9 +7,11 @@
 // `?mock=record0` returns a model record with 0 graded games. `?mock=v1` mimics a pre-v2 server
 // (ignores league=, no league/prediction fields, no /api/predictions/record).
 // v3: `?mock=noplays` mimics a pre-v3 server: game detail has no `plays`/`possession` fields.
+// Circa screenshots: switches in ./circa.ts (`?mock=circa0`, `circaread`, `circafull`, `uploadfail`).
 // `?mock=flaky` makes every 4th game-detail poll fail with a 404, as the server does when an ESPN fetch fails.
 import type { GameCard, League, ScoreboardResponse, StandingsResponse } from "../api/types";
 import { gameDetail } from "./boxscore";
+import { circaToday } from "./circa";
 import { advanceLive, playsFor, possessionFor } from "./plays";
 import { predictionRecord } from "./record";
 import { allKnownCards, etToday, nextFollowedGame, slateFor } from "./scoreboard";
@@ -53,6 +55,8 @@ export async function mockFetch(path: string, signal?: AbortSignal): Promise<Res
   if (lgParam && lgParam !== "nba" && lgParam !== "ncaab") return json({ detail: "bad league" }, 422);
   const league: League = mode === "v1" ? "nba" : ((lgParam as League | null) ?? "nba");
   if (warehouse && mode === "busy") return json({ error: "warehouse_busy" }, 503);
+
+  if (p === "/api/circa/screenshots/today") return json(circaToday());
 
   if (p === "/api/health") {
     return json({ ok: true, warehouse: mode === "busy" ? "busy" : "ok", now: new Date().toISOString() });

@@ -4,7 +4,7 @@ Repo-wide rules (non-negotiables, git, boundary, context hygiene) are in `../AGE
 adds only what is specific to BetDesk.
 
 BetDesk is the shared app for both owners, hosted on Cloudflare's free tier behind Cloudflare
-Access. Phase 1 is a read-only live view of DeepSports' read API, proxied from the owner's Mac
+Access. Phase 1 is a live view of DeepSports' read API (plus one upload route, below), proxied from the owner's Mac
 through a Cloudflare Tunnel; phase 2 (not decided yet) adds
 shared bet logging with a bankroll per person. Proposal: `../docs/proposals/2026-11-10-betdesk-cloudflare.md`.
 
@@ -17,7 +17,8 @@ shared bet logging with a bankroll per person. Proposal: `../docs/proposals/2026
   `DeepSports/web` is frozen (LAN + glasses only).
 - `worker/`: Cloudflare Worker. Serves static assets from `web/dist`; checks the Access JWT itself
   (fails closed) and forwards allowed `GET /api/*` to the tunnel hostname with an Access service token
-  (`src/origin.ts`). On the Mac, `cloudflared` (a launchd daemon, set up in SETUP.md) forwards the
+  (`src/origin.ts`). The one write is `POST /api/circa/screenshots` (multipart images, 35 MB cap;
+  edge 6 in `../docs/DECISIONS.md`); every other non-GET gets 405. On the Mac, `cloudflared` (a launchd daemon, set up in SETUP.md) forwards the
   tunnel to `localhost:8787`. No code of BetDesk's runs on the Mac.
 
 ## Rules

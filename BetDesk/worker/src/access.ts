@@ -45,25 +45,26 @@ export const fetchAccessKeys = async (teamDomain: string, fresh = false): Promis
 /** Verify an Access JWT. Returns the identity, or null when it isn't valid for this app. */
 export async function verifyAccessJwt(
   token: string,
-  opts: { teamDomain: string; aud: string; now?: number; getKeys?: KeyFetcher },
+  opts: { teamDomain: string; aud: string; now?: number; getKeys?: KeyFetcher; why?: (r: string) => void },
 ): Promise<Identity | null> {
+  const no = (r: string): null => (opts.why?.(r), null);
   const parts = token.split(".");
-  if (parts.length !== 3) return null;
+  if (parts.length !== 3) return no("malformed");
   let header: Record<string, unknown>;
   let payload: Record<string, unknown>;
   try {
     header = b64urlJson(parts[0]);
     payload = b64urlJson(parts[1]);
   } catch {
-    return null;
+    return no("malformed");
   }
-  if (header.alg !== "RS256") return null;
+  if (header.alg !== "RS256") return no("alg");
   const getKeys = opts.getKeys ?? fetchAccessKeys;
   let ok = false;
   try {
     let jwk = (await getKeys(opts.teamDomain)).find((k) => k.kid === header.kid);
     if (!jwk) jwk = (await getKeys(opts.teamDomain, true)).find((k) => k.kid === header.kid); // key rotated?
-    if (!jwk) return null;
+    if (!jwk) return no("unknown_key");
     const key = await crypto.subtle.importKey(
       "jwk",
       { kty: jwk.kty, n: jwk.n, e: jwk.e, alg: "RS256", ext: true },
@@ -74,16 +75,16 @@ export async function verifyAccessJwt(
     const signed = new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
     ok = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, b64urlToBytes(parts[2]), signed);
   } catch {
-    return null; // certs unreachable, malformed key or signature: refuse, don't 500
+    return no("certs_or_signature"); // certs unreachable, malformed key or signature: refuse, don't 500
   }
-  if (!ok) return null;
+  if (!ok) return no("signature");
 
   const now = Math.floor((opts.now ?? Date.now()) / 1000);
-  if (typeof payload.exp !== "number" || payload.exp < now) return null;
-  if (typeof payload.nbf === "number" && payload.nbf > now + 60) return null;
+  if (typeof payload.exp !== "number" || payload.exp < now) return no("expired");
+  if (typeof payload.nbf === "number" && payload.nbf > now + 60) return no("not_yet_valid");
   const aud = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
-  if (!aud.includes(opts.aud)) return null;
-  if (payload.iss !== opts.teamDomain) return null;
+  if (!aud.includes(opts.aud)) return no("aud_mismatch");
+  if (payload.iss !== opts.teamDomain) return no("iss_mismatch");
 
   const email = typeof payload.email === "string" && payload.email ? payload.email.toLowerCase() : null;
   return { email, service: email == null };
@@ -100,15 +101,19 @@ export async function identify(req: Request, env: AccessEnv, getKeys?: KeyFetche
     return { email: "dev@localhost", service: false };
   }
   const allowed = (env.ALLOWED_EMAILS ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
-  if (!env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD || allowed.length === 0) return null;
+  // Why a request was refused, as one word (never a value), in `wrangler tail`.
+  const no = (r: string): null => (console.warn(`access_refused ${r}`), null);
+  if (!env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD || allowed.length === 0) return no("not_configured");
   const token = req.headers.get("Cf-Access-Jwt-Assertion");
-  if (!token) return null;
+  if (!token) return no("no_token");
   const id = await verifyAccessJwt(token, {
     teamDomain: env.ACCESS_TEAM_DOMAIN.replace(/\/+$/, ""),
     aud: env.ACCESS_AUD,
     getKeys,
+    why: no,
   });
   if (!id) return null;
-  if (id.email && !allowed.includes(id.email)) return null;
+  if (id.email && !allowed.includes(id.email)) return no("email_not_allowed");
+  if (!id.email) console.warn("access_refused no_email_in_token");
   return id;
 }

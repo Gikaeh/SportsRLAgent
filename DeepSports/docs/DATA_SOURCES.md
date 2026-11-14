@@ -165,6 +165,16 @@ What differs from the NBA:
   About **6,000-6,300 games** per season: 362 teams x ~31-34 games / 2, plus ~700-1,000 games against
   non-D1 schools and ~130 postseason games (NCAA, NIT, CBI). Conference tournaments are season type 2.
 
+## In use: Circa odds board screenshots (owner uploads)
+Circa (where the owner bets by hand) isn't in The Odds API feed and isn't scraped. The owner uploads
+phone screenshots of its board (`POST /api/circa/screenshots` or the iCloud inbox); `deepsports circa
+read` has headless Claude (Sonnet, Read only) transcribe them to JSON lines, which are validated and
+matched to ESPN game_ids by team names (Circa rotation numbers only pair a game's two sides; they aren't
+in any feed we have). No network fetch, no warehouse table: files under
+`/Volumes/ExFATStorag/DeepSports/circa/` (contract in docs/API.md, Circa). Known limits: transcription
+can misread; a line Claude can't place stays `game_id: null`; prices without a printed price default to
+-110 per the prompt.
+
 ## Tried and not used
 | Source | Result (2026-11-03) | Decision |
 |---|---|---|

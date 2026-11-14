@@ -187,3 +187,57 @@ substitutions, and is `null` whenever it can't be said honestly:
 `inferred` is a best guess that lags ESPN's feed. On finished games replayed play by play it matches the next
 shooting team about 98-99% of the time after rebounds and turnovers, and about 93% after made shots: an
 and-one looks like a change of possession until the foul posts.
+
+## Circa screenshots (owner's uploads; watch-only)
+The owner's photos of Circa's odds board, read into lines before the 14:00 picks
+(`deepsports circa read`, docs/PIPELINE.md). These endpoints never open DuckDB and never return stakes.
+
+| Method & path | Returns |
+|---|---|
+| `POST /api/circa/screenshots` | Body `multipart/form-data`, one or more parts named `file`. → `{date: "YYYY-MM-DD", saved: [{name: string, bytes: number}], today_count: number}` (local date; `name` like `"143012-3.png"`) |
+| `GET /api/circa/screenshots/today` | `{date, count: number, latest_at: string \| null, read: null \| {read_at: string, lines: number, matched: number}}` (ISO 8601 times; `matched` = lines with a game_id) |
+
+| `GET /circa` | Temporary upload page for home Wi-Fi until BetDesk > Circa is deployed (e.g. `http://172.16.0.61:8787/circa`; Add to Home Screen works). Self-contained HTML, no external resources; picks images, previews, uploads with progress, shows today's status. Creates the upload code file on first visit |
+
+**Who may POST** (the server binds 0.0.0.0), either:
+- **BetDesk tunnel:** a loopback client (127.0.0.1 / ::1; cloudflared forwards from localhost) with no
+  `Origin` header or the server's own origin; or
+- **LAN (the /circa page):** any client sending header `X-Circa-Upload-Code` equal to the code in
+  `~/.config/deepsports/circa-upload-code` (8 digits, mode 600, created on first use; env
+  `DEEPSPORTS_CIRCA_CODE_FILE`), compared with `hmac.compare_digest` (spaces/dashes ignored), and no
+  foreign `Origin`. The owner sees it with `deepsports circa code` (`--rotate` for a new one); the
+  server never logs, prints or returns it, and the page keeps it in localStorage and sends it only in
+  that header. The custom header forces a CORS preflight, which the GET-only CORS refuses, so other
+  websites can't send it.
+
+Anything else gets 403 `forbidden`. 10 wrong codes from one IP within 10 minutes → 429
+`too_many_attempts` for that IP until the window passes (in memory; resets when the server restarts).
+The GET stays open like the other read endpoints. At most 2 uploads at once (503 `busy`).
+
+**Upload limits:** request ≤ 60 MB (checked while streaming); type decided by
+magic bytes only (PNG, JPEG, WebP; HEIC is converted to JPEG with macOS `sips`); ≤ 10 MB per file; ≤ 30
+files per local day (size and count are checked before any decoding or HEIC conversion); all files in a request are saved or none. Client file names and content types are
+ignored; names are server-made (`HHMMSS-n.ext`), never overwritten. Errors are JSON
+`{error: string, detail: string}`:
+
+| Status | `error` |
+|---|---|
+| 400 | `bad_request` (not multipart / malformed), `no_file` (no `file` part), `empty_file` |
+| 403 | `forbidden` (not loopback and no valid upload code, or a foreign `Origin`) |
+| 413 | `request_too_large`, `file_too_large` |
+| 415 | `unsupported_type` |
+| 429 | `daily_limit`, `too_many_attempts` (wrong upload codes) |
+| 503 | `storage_unavailable` (external drive missing or not permitted), `busy` (2 uploads already running) |
+
+**Lines file** `/Volumes/ExFATStorag/DeepSports/circa/lines/YYYY-MM-DD.json` (Python:
+`deepsports.circa.load_lines(date) -> dict | None`):
+```ts
+{ date: "2026-11-14", read_at: string /* ISO 8601 */, files: string[] /* screenshots read */,
+  lines: { game_id: string | null; league: "nba" | "ncaab" | null; away: string; home: string;
+           market: "spread" | "total" | "moneyline"; side: "home" | "away" | "over" | "under";
+           line: number | null; price: number; rotation: string | null }[] }
+```
+One entry per side visible on the board. `line` is from the bet side's view (home -1.5 = home gives
+1.5); totals carry the total; moneyline `null`. `away`/`home` are Circa's names, upper case, oriented to
+the warehouse game when matched (a neutral-site game Circa lists the other way round is flipped, side
+included). `price` is American. Unmatched lines keep `game_id: null`.

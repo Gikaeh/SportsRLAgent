@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.deepsports.circa-remind</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/bash</string><string>__REPO__/tools/circa-remind.sh</string></array>
+  <key>WorkingDirectory</key><string>__REPO__</string>
+  <!-- 11:00 and 13:00 local: remind the owner to upload Circa screenshots before the 14:00 picks
+       if none came in today. Files only, never DuckDB, so it can overlap any warehouse job. -->
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Hour</key><integer>11</integer><key>Minute</key><integer>0</integer></dict>
+    <dict><key>Hour</key><integer>13</integer><key>Minute</key><integer>0</integer></dict>
+  </array>
+  <key>LowPriorityIO</key><true/>
+  <key>Nice</key><integer>10</integer>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/DeepSports/circa.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/DeepSports/circa.log</string>
+</dict>
+</plist>

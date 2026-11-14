@@ -34,6 +34,15 @@ fi
 echo "$(ts) manualbets export: $mb_out"
 if [ -s "$MB_JSON" ]; then MB_ARG="$MB_JSON"; else MB_ARG="none"; fi
 
+# Circa's real lines from the owner's screenshots (src/deepsports/circa/): ingest the iCloud inbox,
+# then headless Claude reads unread screenshots into circa/lines/<date>.json for the moon proposal.
+# Non-fatal and capped at 5 min; one log line.
+circa_raw=$(timeout -k 15 300 uv run --frozen deepsports circa read 2>/dev/null)
+circa_status=$?
+circa_out=$(printf '%s\n' "$circa_raw" | tail -1)
+if [ "$circa_status" -eq 124 ] || [ "$circa_status" -eq 137 ]; then circa_out="timed out after 300 s"; fi
+echo "$(ts) circa read: ${circa_out:-no output} (exit $circa_status)"
+
 # One retry after a minute (e.g. a writer briefly held the warehouse lock).
 run_picks() { uv run --frozen deepsports model-picks run --days "${PICKS_DAYS:-1}" --manualbets "$MB_ARG"; }
 if ! msg=$(run_picks); then
@@ -47,4 +56,19 @@ if ! msg=$(run_picks); then
 fi
 echo "$msg"
 $NOTIFY --kind info "$msg" || true
+
+# Second message: today's To The Moon proposal (watch-only; the owner places any bet by hand).
+# Uses Circa's lines when read above. Falls back to the plain proposal if the newer flags fail;
+# never fails this script.
+moon_msg=$(timeout -k 15 300 uv run --frozen deepsports moon propose --tier mix --months 1 \
+  --circa auto --format discord) || {
+  echo "$(ts) moon propose (mix, circa) failed; falling back"
+  moon_msg=$(timeout -k 15 300 uv run --frozen deepsports moon propose --months 1) || moon_msg=""
+}
+if [ -n "$moon_msg" ]; then
+  echo "$moon_msg"
+  $NOTIFY --kind info "$moon_msg" || true
+else
+  echo "$(ts) moon propose failed; no proposal message"
+fi
 echo "=== $(ts) model picks end"

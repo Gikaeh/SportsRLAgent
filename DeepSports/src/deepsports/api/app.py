@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 
 from deepsports import config
 from deepsports.api import bets, views, warehouse
+from deepsports.api import circa as circa_api
 from deepsports.api.live import LEAGUES, LiveService, UnknownLeague
 from deepsports.http import FetchError
 from deepsports.pipeline import league_today
@@ -254,6 +255,8 @@ def create_app(
         if page is None:
             raise HTTPException(404, "unknown team")
         return page
+
+    circa_api.add_routes(app)
 
     # G2 glasses plugin (glasses/), served same-origin so the WebView needs no CORS/whitelist hop.
     if glasses_dist.exists():

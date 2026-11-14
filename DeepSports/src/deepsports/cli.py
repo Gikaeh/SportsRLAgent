@@ -194,6 +194,12 @@ def build_parser() -> argparse.ArgumentParser:
         add_help=False,
     )
 
+    sub.add_parser(
+        "circa",
+        help="Circa screenshots: read|ingest|status (no writer lock; `deepsports circa -h`)",
+        add_help=False,
+    )
+
     sub.add_parser("migrate", help="bring the warehouse schema up to date (idempotent)")
 
     up = sub.add_parser("upcoming", help="list upcoming games (input for calendar sync)")
@@ -218,6 +224,10 @@ def main(argv: list[str] | None = None) -> int:
         from deepsports.moon.cli import main as moon_main
 
         return moon_main(argv[1:])
+    if argv[:1] == ["circa"]:  # its own parser; files only, plus one brief read-only open
+        from deepsports.circa.cli import main as circa_main
+
+        return circa_main(argv[1:])
     args = build_parser().parse_args(argv)
     logging.basicConfig(
         level=logging.INFO if args.verbose else logging.WARNING,
@@ -237,7 +247,12 @@ def main(argv: list[str] | None = None) -> int:
 
         from deepsports.api.app import create_app
 
-        uvicorn.run(create_app(), host=args.host, port=args.port, log_level="info")
+        # proxy_headers=False: cloudflared connects from 127.0.0.1 and sends X-Forwarded-For;
+        # uvicorn would otherwise swap in the public IP and the Circa upload would lose its
+        # loopback check (api/circa.py).
+        uvicorn.run(
+            create_app(), host=args.host, port=args.port, log_level="info", proxy_headers=False
+        )
         return 0
     if args.command == "odds-snapshot":  # opens the warehouse itself, only to write
         return _odds_snapshot(args)

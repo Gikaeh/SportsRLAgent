@@ -18,12 +18,15 @@ diagram in the same change (see CLAUDE.md).
 | `parse_espn.py` | Pure functions turning raw JSON into table rows. No I/O, fully unit-tested on real fixtures. |
 | `parse_pbp.py` | Pure play-by-play parser for cached ESPN summaries (NBA + college): chronological events with repaired cumulative scores, shot values/distances, players. Ported from the edge study; parsed on demand, no warehouse table yet. |
 | `store.py` | DuckDB schema, league-aware keys (`teams` PK = league + team_id), the idempotent `migrate()`, and fast bulk upserts (rows go in as one JSON parameter). Pregame odds (with spread/total prices) are stored only when the line or a price moves. |
+| `circa/` | Circa screenshots (`deepsports circa read\|ingest\|status`, since 2026-11-14, edge 6): `ingest` copies images from the iCloud Drive inbox into today's folder; `read` has headless `claude -p` (Sonnet, Read tool only; `reader.py`) transcribe unread screenshots, validates the lines (`lines.py`, pure), matches them to games by team names and Circa rotation pairs (`match.py`, one brief read-only warehouse open) and writes the day's lines file. `multipart.py` parses the upload body for `api/circa.py`. No DuckDB table. Commands and env vars: PIPELINE.md. |
 | `config.py` | Paths, timezones, rate limit. All of them can be overridden with `DEEPSPORTS_*` env vars. |
 
 ### 2. Storage (`data/` → `/Volumes/ExFATStorag/DeepSports/data`, git-ignored)
 - **Raw landing zone:** `data/raw/espn/<league>/{scoreboard/YYYYMMDD, summary/<game_id>, teams}.json.gz`
   (`nba`, `ncaab`; plus `summary_pregame/` injury snapshots and `core_odds/`).
   It's an exact copy of what the source returned, so parsers can be fixed and re-run without refetching.
+- **Circa files** (`/Volumes/ExFATStorag/DeepSports/circa/`, `config.CIRCA_*`): `screenshots/<date>/` (local
+  day) and `lines/<date>.json` (contract in API.md, "Circa").
 - **Warehouse:** `data/deepsports.duckdb` (schema in DATA_MODEL.md). DuckDB is used because the
   workload is analytical (scans and aggregates over seasons), it's a single file, and it reads straight into pandas/polars.
 
@@ -38,7 +41,9 @@ diagram in the same change (see CLAUDE.md).
   connector. Events are matched by the key `deepsports:nba:<game_id>` in their description, so a sync can
   safely be repeated.
 - Scheduled runs (`tools/scheduled-sync.sh`, launchd 08:00/14:00) do every warehouse step themselves
-  (update, predict, paper log; model picks at 14:00). The scheduled calendar sync was scrapped for now
+  (update, predict, paper log; model picks at 14:00). The 14:00 picks job (`tools/model-picks-daily.sh`)
+  runs `circa read` first, then sends the picks and, as a second Discord message, the To The Moon
+  proposal (`moon propose --tier mix --months 1 --circa auto --format discord`). The scheduled calendar sync was scrapped for now
   (2026-11-13); the skill still runs by hand (`calendar-agent`). Headless Claude's Bash sandbox can't open
   DuckDB on the external drive, so a headless run would need `upcoming --json` exported first.
 - Line capture (`tools/odds-snapshot.sh`, launchd `com.deepsports.odds` every 30 min at :15/:45):
@@ -50,6 +55,8 @@ diagram in the same change (see CLAUDE.md).
   one fresh ESPN summary per game with no lock held (`pipeline.fetch_injury_snapshots`), then in one
   short writer session stores the pre-tip snapshots (`injury_captures`/`injury_reports`) and writes model
   `v1.1i` predictions for exactly those games. Same yielding rules as the odds job. No Claude involved.
+- Circa reminder (`tools/circa-remind.sh`, launchd `com.deepsports.circa-remind` at 11:00 and 13:00):
+  `circa ingest`, then a Discord message asking for screenshots only when none arrived today. Files only.
 - The global Claude Code Stop hook (`~/.claude/tools/notify.py`) posts each finished turn to
   Discord. That's how agent runs report back.
 - Mermaid (`tools/diagram.sh`) renders the diagrams.
@@ -61,11 +68,15 @@ diagram in the same change (see CLAUDE.md).
     It never touches DuckDB, so live scores keep working while data jobs run.
   - `warehouse.py` serves standings and team pages through short read-only DuckDB connections, and returns 503
     `warehouse_busy` while a job holds the lock.
+  - `circa.py`: `POST /api/circa/screenshots` (multipart images, size and count capped; the API's one write,
+    reached from BetDesk through the tunnel as edge 6) and `GET /api/circa/screenshots/today` (counts only).
+    Never opens DuckDB.
   - `views.py` holds pure shaping functions (game cards, box scores, glance lines). CORS allows GET from any
     origin for the glasses WebView.
 - **Mobile web app** (`web/`, Vite + React + TS PWA): built into `web/dist` and served at `/` by the same process.
   Frozen since 2026-11-10 (LAN + glasses build); new UI work happens in `../BetDesk/web`, whose Cloudflare
-  Worker reads this API live through a Cloudflare Tunnel on this Mac (`../BetDesk/CLAUDE.md`).
+  Worker reads this API live through a Cloudflare Tunnel on this Mac and forwards the Circa upload
+  (its one write; BetDesk's Circa tab) (`../BetDesk/CLAUDE.md`).
   Open `http://<mac-lan-ip>:8787` on the phone.
 - **G2 glasses plugin** (`glasses/`, served at `/glasses/`): an Even Hub plugin that polls `/api/scoreboard`
   and draws text on the G2. SDK calls sit behind `src/even.ts`; formatting is pure and tested. See glasses/README.md and
@@ -133,8 +144,10 @@ diagram in the same change (see CLAUDE.md).
   spread or total, strong at 4+ points past the line each, lean at 3+; top 5, one per game. Runs in
   `reports/model-picks/<run>/`, graded with `ensemble_bets.grade_pick`. No warehouse writes, no Claude.
 - `src/deepsports/moon/` (`deepsports moon`, since 2026-11-13; outside `analysis/`): To The Moon (betting).
-  Risk tiers + a seeded 12-month Monte Carlo at −vig (`tiers.py`, `sim.py`), proposals for a tier from the
-  latest model-picks run (`picks.py`), and an append-only ledger of the owner's real bets at
+  Risk tiers (incl. `ticket2` and `mix`, the default) + a seeded Monte Carlo at −vig over `--months`
+  (`tiers.py`, `sim.py`), proposals for a tier from the latest model-picks run (`picks.py`), repriced at
+  Circa's screenshot lines when a lines file exists (`circa.py`: a worse line or price drops the leg), and an
+  append-only ledger of the owner's real bets at
   `../logs/moon/bets.csv` (`ledger.py`, edge 5; grading reads finals read-only and appends result rows).
   Not served by the API. Guide: [TO_THE_MOON.md](TO_THE_MOON.md).
 - `ensemble_bets.py` + `/ensemble-betting` skill + `bettor` agent: a watch-only vote (by hand only since 2026-11-13). `ensemble-bets

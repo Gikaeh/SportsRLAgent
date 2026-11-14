@@ -1,0 +1,20 @@
+```
+{"league": "ncaab", "away": "IONA", "home": "ST JOHNS", "market": "spread", "side": "away", "line": 14.5, "price": -110, "rotation": "801"}
+{"league": "ncaab", "away": "IONA", "home": "ST JOHNS", "market": "spread", "side": "home", "line": -14.5, "price": -110, "rotation": "802"}
+{"league": "ncaab", "away": "IONA", "home": "ST JOHNS", "market": "total", "side": "over", "line": 147.5, "price": -110, "rotation": "801"}
+{"league": "ncaab", "away": "IONA", "home": "ST JOHNS", "market": "total", "side": "under", "line": 147.5, "price": -110, "rotation": "802"}
+{"league": "ncaab", "away": "IONA", "home": "ST JOHNS", "market": "moneyline", "side": "away", "line": null, "price": 900, "rotation": "801"}
+{"league": "ncaab", "away": "IONA", "home": "ST JOHNS", "market": "moneyline", "side": "home", "line": null, "price": -1600, "rotation": "802"}
+{"league": "ncaab", "away": "SE MISSOURI ST", "home": "SOUTH CAROLINA", "market": "spread", "side": "home", "line": "-19½", "price": "-115", "rotation": 806}
+{"league": "ncaab", "away": "SE MISSOURI ST", "home": "SOUTH CAROLINA", "market": "spread", "side": "away", "line": 19.5, "price": -105, "rotation": 805}
+{"league": null, "away": "NEVADA", "home": "SAINT MARYS", "market": "spread", "side": "home", "line": -2.5, "price": -110, "rotation": "812"}
+{"league": null, "away": "NEVADA", "home": "SAINT MARYS", "market": "spread", "side": "away", "line": 2.5, "price": -110, "rotation": "811"}
+{"league": "ncaab", "away": "BUTLR", "home": "BOISE ST.", "market": "total", "side": "over", "line": 141, "price": -110, "rotation": "821"}
+{"league": "ncaab", "away": "BTLR?", "home": "B0ISE", "market": "total", "side": "under", "line": 141, "price": -110, "rotation": "822"}
+{"league": "ncaab", "away": "HOUSTON", "home": "CALIFORNIA", "market": "spread", "side": "home", "line": 9.5, "price": -110, "rotation": "830"}
+{"league": "ncaab", "away": "HOUSTON", "home": "CALIFORNIA", "market": "spread", "side": "away", "line": 8.5, "price": -110, "rotation": "829"}
+{"league": "ncaab", "away": "MADEUP U", "home": "NOWHERE ST", "market": "moneyline", "side": "home", "line": null, "price": -150, "rotation": null}
+{"league": "ncaab", "away": "IONA", "home": "ST JOHNS", "market": "spread", "side": "home", "line": -14.25, "price": -110, "rotation": "802"}
+{"away": "IONA", "home": "ST JOHNS", "market": "teamtotal", "side": "over", "line": 70.5, "price": -110}
+Iona and St. John's lines above.
+```

@@ -1,4 +1,6 @@
-"""To The Moon (betting) simulator: Monte Carlo of a tier over 12 months of deposits.
+"""To The Moon (betting) simulator: Monte Carlo of a tier over `months` months of deposits.
+
+The horizon defaults to 12 months; `months=1` is the one-month view.
 
 Assumptions (also in docs/TO_THE_MOON.md):
 - Every leg has the same expected value per $1 staked, `ev_leg`. Default: minus the vig of a
@@ -9,9 +11,13 @@ Assumptions (also in docs/TO_THE_MOON.md):
   A parlay of n legs pays d^n and hits with p^n: the vig compounds per leg, EV = (1+ev_leg)^n - 1.
 - No pushes (half-point lines), no taxes, $1 minimum stake, stakes are not rounded.
 - A deposit lands at the start of each month, before that month's bets.
+- The `mix` tier plays `tiers.DAYS_PER_MONTH` slate days a month: each day it stakes what
+  `tiers.pace_allowance` allows out of the month's deposit minus the month's stakes, as flat
+  single units plus one 2-leg parlay (`tiers.mix_card`). Legs are independent.
 
 Reported per tier (all over `paths` seeded runs):
-- p_reach: balance >= target at the end of month 12
+- p_reach: balance >= target at the end of the last month
+- p_up: ending balance above all deposits (ahead of keeping the cash)
 - p_touch: balance >= target at any point (what a perfect cash-out would lock in)
 - p_lose_half: ending balance < half of all deposits
 - median / p10 / p90 ending balance, mean ending balance
@@ -95,6 +101,7 @@ class SimResult:
     cash_out: bool
     deposits: float
     p_reach: float
+    p_up: float
     p_touch: float
     p_lose_half: float
     p_zero: float  # ending balance under $1
@@ -160,7 +167,9 @@ def simulate(
         touched |= bal >= target
         if co:
             done |= touched
-        if t.stake != "none" and m >= t.start_month:
+        if t.stake == "mix":
+            _mix_month(t, budget, target, ev_leg, rng, bal, touched, done, bets, staked, co)
+        elif t.stake != "none" and m >= t.start_month:
             n = t.bets_per_month or MAX_BETS_PER_MONTH
             for k in range(n):
                 s = np.where(
@@ -191,6 +200,7 @@ def simulate(
         cash_out=co,
         deposits=deposits,
         p_reach=float((bal >= target).mean()),
+        p_up=float((bal > deposits + 1e-9).mean()),
         p_touch=float(touched.mean()),
         p_lose_half=float((bal < 0.5 * deposits).mean()),
         p_zero=float((bal < MIN_STAKE).mean()),
@@ -204,17 +214,55 @@ def simulate(
     )
 
 
+def _mix_month(t: Tier, budget, target, ev_leg, rng, bal, touched, done, bets, staked, co):
+    """One month of the `mix` tier, in place on the per-path arrays. Stakes come only out of
+    this month's deposit (`budget`), never out of winnings."""
+    single = tiers_mod.unit_usd(t.unit, budget)
+    parlay = tiers_mod.unit_usd(t.parlay_unit, budget)
+    o1 = bet_odds(1, t.leg_price, ev_leg)
+    o2 = bet_odds(2, t.leg_price, ev_leg)
+    days = tiers_mod.DAYS_PER_MONTH
+    spent = np.zeros_like(bal)
+    last = np.zeros_like(bal)  # day of the month's last bet (0 = none yet)
+    for d in range(1, days + 1):
+        left = budget - spent
+        allow = tiers_mod.pace_allowance(left, days - d + 1, d - last)
+        n, par = tiers_mod.mix_card(allow, left, single, parlay, t.per_day)
+        n = np.where(done, 0, n)
+        par = par & ~done
+        day = np.zeros_like(bal)
+        for j in range(t.per_day):
+            live = n > j
+            win = rng.random(bal.size) < o1.p_hit
+            day += np.where(live, np.where(win, single * (o1.decimal - 1), -single), 0.0)
+            bets += live
+            staked += live * single
+            spent += live * single
+        win = rng.random(bal.size) < o2.p_hit
+        day += np.where(par, np.where(win, parlay * (o2.decimal - 1), -parlay), 0.0)
+        bets += par
+        staked += par * parlay
+        spent += par * parlay
+        last = np.where((n > 0) | par, d, last)
+        bal += day
+        touched |= bal >= target
+        if co:
+            done |= touched
+
+
 def ladder(
     budget: float = tiers_mod.DEFAULT_BUDGET,
     target: float = tiers_mod.DEFAULT_TARGET,
     *,
+    months: int = MONTHS,
     paths: int = DEFAULT_PATHS,
     seed: int = DEFAULT_SEED,
     ev_leg: float = DEFAULT_EV,
 ) -> list[SimResult]:
-    """Every tier at one budget and target (same seed for each tier)."""
+    """Every tier at one budget, target and horizon (same seed for each tier)."""
     return [
-        simulate(t, budget, target, paths=paths, seed=seed, ev_leg=ev_leg) for t in tiers_mod.TIERS
+        simulate(t, budget, target, months=months, paths=paths, seed=seed, ev_leg=ev_leg)
+        for t in tiers_mod.TIERS
     ]
 
 
@@ -246,11 +294,12 @@ def table(rows: list[list[str]]) -> str:
 
 
 def render_ladder(results: list[SimResult], *, markdown: bool = False) -> str:
-    head = ["#", "Tier", "P(reach)", "P(touch)", "P(lose>1/2)", "p10", "Median", "p90",
+    head = ["#", "Tier", "P(reach)", "P(up)", "P(touch)", "P(lose>1/2)", "p10", "Median", "p90",
             "Mean", "Months mostly lost"]  # fmt: skip
     rows = [
-        [str(r.tier_id), r.tier, _pct(r.p_reach), _pct(r.p_touch), _pct(r.p_lose_half),
-         _usd(r.p10), _usd(r.median), _usd(r.p90), _usd(r.mean_end), _pct(r.months_mostly_lost)]
+        [str(r.tier_id), r.tier, _pct(r.p_reach), _pct(r.p_up), _pct(r.p_touch),
+         _pct(r.p_lose_half), _usd(r.p10), _usd(r.median), _usd(r.p90), _usd(r.mean_end),
+         _pct(r.months_mostly_lost)]
         for r in results
     ]  # fmt: skip
     if markdown:
@@ -259,11 +308,15 @@ def render_ladder(results: list[SimResult], *, markdown: bool = False) -> str:
     return table([head, *rows])
 
 
+def months_label(n: int) -> str:
+    return "1 month" if n == 1 else f"{n} months"
+
+
 def headline(results: list[SimResult]) -> str:
     r0 = results[0]
     ev = r0.ev_leg
     label = "at -vig" if abs(ev - DEFAULT_EV) < 1e-9 else f"HYPOTHETICAL edge {ev:+.1%}/leg"
     return (
-        f"${r0.budget:,.0f}/month for {r0.months} months (${r0.deposits:,.0f} deposited), "
+        f"${r0.budget:,.0f}/month for {months_label(r0.months)} (${r0.deposits:,.0f} deposited), "
         f"target ${r0.target:,.0f}, {label}, {r0.paths:,} runs, seed {r0.seed}"
     )

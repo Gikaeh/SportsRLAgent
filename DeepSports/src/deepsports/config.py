@@ -27,6 +27,20 @@ MOON_LEDGER_PATH = Path(
     os.environ.get("DEEPSPORTS_MOON_LEDGER", ROOT.parent / "logs" / "moon" / "bets.csv")
 )
 
+# Circa screenshots (src/deepsports/circa/): the owner's photos of Circa's odds board, saved per
+# local day under screenshots/YYYY-MM-DD/, and the lines read from them in lines/YYYY-MM-DD.json.
+CIRCA_DIR = Path(os.environ.get("DEEPSPORTS_CIRCA_DIR", "/Volumes/ExFATStorag/DeepSports/circa"))
+CIRCA_SCREENSHOTS_DIR = Path(
+    os.environ.get("DEEPSPORTS_CIRCA_SCREENSHOTS", CIRCA_DIR / "screenshots")
+)
+CIRCA_LINES_DIR = Path(os.environ.get("DEEPSPORTS_CIRCA_LINES", CIRCA_DIR / "lines"))
+# Upload fallback until BetDesk is live: an iCloud Drive folder the phone's Files app can save to.
+# `deepsports circa ingest` copies new images from it into today's folder ("" disables it).
+CIRCA_INBOX = os.environ.get(
+    "DEEPSPORTS_CIRCA_INBOX",
+    str(Path.home() / "Library" / "Mobile Documents" / "com~apple~CloudDocs" / "DeepSports Circa"),
+)
+
 # The user's timezone, used for calendar output.
 LOCAL_TZ = ZoneInfo(os.environ.get("DEEPSPORTS_TZ", "America/Los_Angeles"))
 # ESPN's `dates=YYYYMMDD` scoreboard parameter is a US/Eastern game day.

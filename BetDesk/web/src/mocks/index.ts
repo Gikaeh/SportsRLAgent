@@ -7,7 +7,7 @@
 // `?mock=record0` returns a model record with 0 graded games. `?mock=v1` mimics a pre-v2 server
 // (ignores league=, no league/prediction fields, no /api/predictions/record).
 // v3: `?mock=noplays` mimics a pre-v3 server: game detail has no `plays`/`possession` fields.
-// Circa screenshots: switches in ./circa.ts (`?mock=circa0`, `circaread`, `circafull`, `uploadfail`).
+// Circa screenshots: switches in ./circa.ts (`?mock=circa0`, `circaread`, `circafull`).
 // `?mock=flaky` makes every 4th game-detail poll fail with a 404, as the server does when an ESPN fetch fails.
 import type { GameCard, League, ScoreboardResponse, StandingsResponse } from "../api/types";
 import { gameDetail } from "./boxscore";

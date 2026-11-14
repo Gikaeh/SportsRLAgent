@@ -1,4 +1,4 @@
-import type { BetsResponse, CircaTodayResponse, CircaUploadResponse, GameDetailResponse, League, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse } from "./types";
+import type { BetsResponse, CircaTodayResponse, GameDetailResponse, League, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse } from "./types";
 
 export class ApiError extends Error {
   status: number;
@@ -92,41 +92,4 @@ function errorCode(body: unknown): string | null {
   return null;
 }
 
-/**
- * Upload Circa screenshots in one multipart POST (field `file`, repeated). Uses XHR, not fetch,
- * because only XHR reports upload progress. `onProgress` gets bytes sent so far.
- */
-export async function uploadCircaScreenshots(
-  files: File[],
-  onProgress: (sent: number) => void,
-): Promise<CircaUploadResponse> {
-  if (MOCK) {
-    const { mockCircaUpload } = await import("../mocks/circa");
-    return mockCircaUpload(files, onProgress);
-  }
-  const form = new FormData();
-  for (const f of files) form.append("file", f, f.name);
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/circa/screenshots");
-    xhr.setRequestHeader("Accept", "application/json");
-    xhr.upload.onprogress = (e) => onProgress(e.loaded);
-    xhr.onload = () => {
-      let body: unknown = null;
-      try {
-        body = JSON.parse(xhr.responseText);
-      } catch {
-        /* non-JSON body */
-      }
-      if (xhr.status >= 200 && xhr.status < 300 && body) resolve(body as CircaUploadResponse);
-      else reject(new ApiError(xhr.status || 0, errorCode(body)));
-    };
-    xhr.onerror = () => {
-      void reloadIfSignedOut();
-      reject(new TypeError("network"));
-    };
-    xhr.send(form);
-  });
-}
-
-export type { BetsResponse, CircaTodayResponse, CircaUploadResponse, GameDetailResponse, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse };
+export type { BetsResponse, CircaTodayResponse, GameDetailResponse, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse };

@@ -69,9 +69,8 @@ flowchart TB
     WEB["web/ mobile PWA (LAN; frozen,<br/>new UI in ../BetDesk/web)"]
     GLASS["glasses/ Even Hub<br/>G2 plugin"]
     API --> WEB
-    BETDESK["../BetDesk Worker + PWA (Cloudflare, behind Access)<br/>reads live · allowlisted GET /api/* · Circa tab<br/>via cloudflared tunnel (launchd) on this Mac"]
+    BETDESK["../BetDesk Worker + PWA (Cloudflare, behind Access)<br/>reads live · allowlisted GET /api/* only<br/>via cloudflared tunnel (launchd) on this Mac"]
     API -->|"/api/* live (edge 3)"| BETDESK
-    BETDESK -->|"POST /api/circa/screenshots<br/>the one write (edge 6)"| API
     API -->|"/api/scoreboard"| GLASS
   end
 
@@ -164,7 +163,7 @@ flowchart TB
   CREMIND -->|"upload reminder"| DISCORD
   CLI --> CIRCA
   USER -->|"screenshots"| ICLOUD
-  USER -->|"screenshots (Circa tab)"| BETDESK
+  USER -->|"screenshots (/circa page, home Wi-Fi)"| API
   ICLOUD -->|"ingest"| CIRCA
   API -->|"save uploads"| CIRCAFS
   CIRCA <-->|"screenshots in · lines out"| CIRCAFS

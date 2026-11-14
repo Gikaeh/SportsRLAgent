@@ -151,8 +151,8 @@ to act on only those, e.g. `tools/launchd/install.sh install com.deepsports.odds
 - **Circa screenshots** (owner bets by hand at Circa, which isn't in The Odds API feed): upload from the
   phone. **On home Wi-Fi today:** open `http://172.16.0.61:8787/circa` (the Mac's LAN address, as in
   HANDOFF; Add to Home Screen), enter the upload code once (`deepsports circa code` on the Mac), pick the
-  screenshots, Upload. Later: BetDesk > Circa through the tunnel (loopback, no code). Both use
-  `POST /api/circa/screenshots` (docs/API.md, Circa); or save into Files > iCloud Drive > DeepSports Circa.
+  screenshots, Upload (`POST /api/circa/screenshots`, docs/API.md, Circa; BetDesk only shows the count since
+  2026-11-14); or save into Files > iCloud Drive > DeepSports Circa.
   Stored under `/Volumes/ExFATStorag/DeepSports/circa/screenshots/<local
   date>/HHMMSS-n.<png|jpg|webp>` (HEIC converted to JPEG with `sips`; 10 MB each, 30 a day); lines in
   `circa/lines/<date>.json`. Env overrides: `DEEPSPORTS_CIRCA_DIR`, `DEEPSPORTS_CIRCA_SCREENSHOTS`,

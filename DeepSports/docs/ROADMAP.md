@@ -48,7 +48,7 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
   `../logs/moon/bets.csv`); guide [TO_THE_MOON.md](TO_THE_MOON.md), numbers
   [results](results/2026-11-13-moon-risk-ladder.md). At −vig "save, then bold" has the highest P(target)
 - [x] **To The Moon one-month play + Circa screenshots** (2026-11-14): `--months`, tiers `ticket2` and `mix`
-  (default), Circa repricing from `deepsports circa` (BetDesk upload = edge 6, iCloud inbox), 14:00 Discord
+  (default), Circa repricing from `deepsports circa` (`/circa` LAN page, iCloud inbox; BetDesk upload removed 2026-11-14), 14:00 Discord
   proposal, 11:00/13:00 reminder; numbers [one month](results/2026-11-13-moon-one-month.md),
   [mix](results/2026-11-14-moon-mix-tier.md)
 - [ ] To The Moon next: a BetDesk tab on the same code (needs an integration step; stakes must stay on the Mac),

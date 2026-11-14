@@ -8,3 +8,15 @@ id,created_at,kind,ref,month,tier,book,league,game_id,bet,market,side,line,price
 7,2026-11-13T23:21:47+00:00,bet,,2026-11,manual,Circa,ncaab,,2-leg: IDAHO -1 + ULM@ASU Over 148.5,parlay,,,264,"[{""game_id"":""401920123"",""league"":""ncaab"",""market"":""spread"",""side"":""home"",""line"":-1.0,""price"":-110,""label"":""""},{""game_id"":""401917980"",""league"":""ncaab"",""market"":""total"",""side"":""over"",""line"":148.5,""price"":-110,""label"":""""}]",2,,,-2,fun parlay; price approximate until confirmed from the slip
 8,2026-11-14T06:35:05+00:00,deposit,,2026-11,,,,,,,,,,,,,,23,"brings the 2026-11 budget to $50 (owner, 2026-11-13); first month of the one-month plan"
 9,2026-11-14T07:10:09+00:00,deposit,,2026-11,,,,,,,,,,,,,,27,"owner: $50 to bet from 2026-11-13 on, on top of the 2026-11-13 picks ($27); November total $77"
+10,2026-11-14T20:28:11+00:00,bet,,2026-11,manual,circa,ncaab,401911308,[650] SIENA UN 158.5,total,under,158.5,-110,,5,,,-5,
+11,2026-11-14T20:28:12+00:00,bet,,2026-11,manual,circa,ncaab,401925827,[637] S ALABAMA OV 134,total,over,134,-110,,5,,,-5,
+12,2026-11-14T20:28:13+00:00,bet,,2026-11,manual,circa,ncaab,401917530,[668] SANTA CLARA UN 166,total,under,166,-110,,5,,,-5,
+13,2026-11-14T20:28:14+00:00,bet,,2026-11,manual,circa,ncaab,401909534,[635] COLORADO +11,spread,away,11,-110,,5,,,-5,
+14,2026-11-14T20:28:14+00:00,bet,,2026-11,manual,circa,ncaab,401911520,[662] SACRAMENTO ST UN 160.5,total,under,160.5,-110,,5,,,-5,
+15,2026-11-14T20:31:19+00:00,bet,,2026-11,manual,circa,ncaab,,2-leg: [650] SIENA UN 158.5 + [637] S ALABAMA OV 134,parlay,,,264,"[{""game_id"":""401911308"",""league"":""ncaab"",""market"":""total"",""side"":""under"",""line"":158.5,""price"":-110,""label"":""""},{""game_id"":""401925827"",""league"":""ncaab"",""market"":""total"",""side"":""over"",""line"":134.0,""price"":-110,""label"":""""}]",9.46,,,-9.46,
+16,2026-11-14T20:31:59+00:00,result,2,2026-11,manual,Circa,ncaab,401925820,APP ST +8 (#823),spread,,,-110,,5,win,9.55,9.55,graded from warehouse finals
+17,2026-11-14T20:31:59+00:00,result,3,2026-11,manual,Circa,ncaab,401929199,USM@TXST Over 138 (#857),total,,,-110,,5,win,9.55,9.55,graded from warehouse finals
+18,2026-11-14T20:31:59+00:00,result,4,2026-11,manual,Circa,ncaab,401920123,IDAHO -1 (#888),spread,,,-110,,5,loss,0,0,graded from warehouse finals
+19,2026-11-14T20:31:59+00:00,result,5,2026-11,manual,Circa,ncaab,401917980,ULM@ASU Over 148.5 (#879),total,,,-110,,5,win,9.55,9.55,graded from warehouse finals
+20,2026-11-14T20:31:59+00:00,result,6,2026-11,manual,Circa,ncaab,401917525,ST MARYS -6 (#894),spread,,,-105,,5,win,9.76,9.76,graded from warehouse finals
+21,2026-11-14T20:31:59+00:00,result,7,2026-11,manual,Circa,ncaab,,2-leg: IDAHO -1 + ULM@ASU Over 148.5,parlay,,,264,,2,loss,0,0,graded from warehouse finals

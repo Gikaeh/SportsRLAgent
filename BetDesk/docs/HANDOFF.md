@@ -1,5 +1,10 @@
 # BetDesk handoff
 
+## State (2026-11-14): Circa upload removed
+The owner uploads Circa screenshots locally (DeepSports' `/circa` page on home Wi-Fi or the iCloud
+inbox), so the Worker is GET-only again (`POST /api/circa/screenshots` → 405) and the Circa tab only
+shows today's status (`GET /api/circa/screenshots/today`). Not deployed yet.
+
 ## State (2026-11-14): deployed and live
 - Live on workers.dev behind Worker-level Access (Workers & Pages → betdesk → **Access** tab, policy
   "Cloudflare account"); the Worker re-checks the JWT and `ALLOWED_EMAILS`. All 6 secrets set.
@@ -35,7 +40,7 @@ Switched from the snapshot mirror to a live proxy through a Cloudflare Tunnel (d
 ## Next
 1. **Owner:** Add to Home Screen; tap through Today, Bets, Game, Standings, Team, Model record; the
    "Mac offline" banner when the tunnel is stopped (`sudo launchctl stop com.cloudflare.cloudflared`).
-2. **Circa:** one real upload from the iPhone (check HEIC vs JPEG arrives) and see the count change.
+2. **Deploy** the GET-only Worker when the owner asks (`npm run deploy`), then check the Circa tab's count.
 3. After a month: the expired-session reload in the installed iPhone app.
 4. Service token: renew before it expires (if it was given a year), then update `ORIGIN_CLIENT_*`.
 5. Later: add Gikaeh (SETUP.md, last section). Phase 2 proposal (bet logging, bankroll per person)

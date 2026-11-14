@@ -125,90 +125,12 @@ describe("worker handler", () => {
     expect(await res.json()).toEqual({ error: "not_configured" });
   });
 
-  describe("Circa screenshot upload (the one write route)", () => {
-    const form = () => {
-      const fd = new FormData();
-      fd.append("file", new File([new Uint8Array([137, 80, 78, 71, 1, 2, 3])], "board.png", { type: "image/png" }));
-      return fd;
-    };
-
-    it("forwards the multipart body unchanged with the service token, and nothing of the user's", async () => {
-      originCalls.length = 0;
-      originReply = () => Response.json({ date: "2026-11-13", saved: [{ name: "a.png", bytes: 7 }], today_count: 1 });
-      const sent = new Request("https://x/", { method: "POST", body: form() });
-      const type = sent.headers.get("Content-Type")!;
-      const bytes = await sent.arrayBuffer();
-      const res = await call(makeEnv(), "/api/circa/screenshots", {
-        method: "POST",
-        body: bytes,
-        headers: { ...(await owner()), "Content-Type": type, Origin: "https://betdesk.example.workers.dev" },
-      });
-      expect(res.status).toBe(200);
-      expect(((await res.json()) as { today_count: number }).today_count).toBe(1);
-      expect(originCalls).toHaveLength(1);
-      const c = originCalls[0];
-      expect(c.url).toBe(`${ORIGIN}/api/circa/screenshots`);
-      expect(c.method).toBe("POST");
-      expect(c.headers.get("Content-Type")).toBe(type);
-      expect(c.headers.get("CF-Access-Client-Id")).toBe("cid");
-      expect(c.headers.get("Cookie")).toBeNull();
-      expect(c.headers.get("Cf-Access-Jwt-Assertion")).toBeNull();
-      expect(new Uint8Array(c.body as ArrayBuffer)).toEqual(new Uint8Array(bytes));
-    });
-
-    it("passes DeepSports' JSON 4xx through (e.g. the daily limit)", async () => {
-      originReply = () => Response.json({ detail: "daily limit reached" }, { status: 429 });
-      const res = await call(makeEnv(), "/api/circa/screenshots", {
-        method: "POST",
-        body: form(),
-        headers: await owner(),
-      });
-      expect(res.status).toBe(429);
-      expect(await res.json()).toEqual({ detail: "daily limit reached" });
-    });
-
-    it("refuses other methods and paths, wrong types, oversized bodies and other sites without calling the Mac", async () => {
-      originCalls.length = 0;
-      const h = await owner();
-      const post = (path: string, init: RequestInit = {}) =>
-        call(makeEnv(), path, { method: "POST", body: form(), ...init, headers: { ...h, ...(init.headers as object) } });
-      expect((await post("/api/circa/screenshots/today")).status).toBe(405);
-      expect((await post("/api/circa")).status).toBe(405);
-      expect((await post("/api/circa/screenshots?x=1")).status).toBe(405);
-      expect((await call(makeEnv(), "/api/circa/screenshots", { method: "PUT", body: "x", headers: h })).status).toBe(405);
-      expect((await call(makeEnv(), "/api/circa/screenshots", { method: "DELETE", headers: h })).status).toBe(405);
-      expect((await call(makeEnv(), "/api/circa/screenshots", { headers: h })).status).toBe(404); // GET: not a read endpoint
-      const json415 = await call(makeEnv(), "/api/circa/screenshots", {
-        method: "POST",
-        body: JSON.stringify({ a: 1 }),
-        headers: { ...h, "Content-Type": "application/json" },
-      });
-      expect(json415.status).toBe(415);
-      const big = new Uint8Array(35 * 1024 * 1024 + 1);
-      const res413 = await call(makeEnv(), "/api/circa/screenshots", {
-        method: "POST",
-        body: big,
-        headers: { ...h, "Content-Type": "multipart/form-data; boundary=abc" },
-      });
-      expect(res413.status).toBe(413);
-      const lying = new Request("https://betdesk.example.workers.dev/api/circa/screenshots", {
-        method: "POST",
-        body: big,
-        headers: { ...h, "Content-Type": "multipart/form-data; boundary=abc" },
-      });
-      lying.headers.delete("Content-Length");
-      expect((await worker.fetch(lying, makeEnv())).status).toBe(413);
-      expect((await post("/api/circa/screenshots", { headers: { Origin: "https://evil.example" } })).status).toBe(403);
-      expect(originCalls).toHaveLength(0);
-    });
-
-    it("requires a valid Access identity like every other /api route", async () => {
-      originCalls.length = 0;
-      expect((await call(makeEnv(), "/api/circa/screenshots", { method: "POST", body: form() })).status).toBe(403);
-      const other = { "Cf-Access-Jwt-Assertion": await jwt({ email: "stranger@example.com" }) };
-      expect((await call(makeEnv(), "/api/circa/screenshots", { method: "POST", body: form(), headers: other })).status).toBe(403);
-      expect(originCalls).toHaveLength(0);
-    });
+  it("refuses Circa uploads: BetDesk is read-only (uploads go through the Mac's LAN page)", async () => {
+    originCalls.length = 0;
+    const h = { ...(await owner()), "Content-Type": "multipart/form-data; boundary=abc" };
+    expect((await call(makeEnv(), "/api/circa/screenshots", { method: "POST", body: "x", headers: h })).status).toBe(405);
+    expect((await call(makeEnv(), "/api/circa/screenshots", { headers: await owner() })).status).toBe(404);
+    expect(originCalls).toHaveLength(0);
   });
 
   it("serves the app shell without touching Access", async () => {

@@ -34,9 +34,9 @@ these read-only edges:
    `analysis/manualbets_context.py`).
 5. DeepSports' To The Moon app appends real moon bets to `logs/moon/bets.csv` (append-only; stakes
    never leave the Mac). Decided 2026-11-13 in `docs/DECISIONS.md`.
-6. BetDesk's Worker forwards one write, `POST /api/circa/screenshots` (the owner's Circa odds-board
-   screenshots, images only, size/count capped), to DeepSports' API through the same tunnel; a phone can
-   also drop them in an iCloud Drive folder. Only counts come back (`GET …/today`). Decided 2026-11-14 in `docs/DECISIONS.md`.
+6. ~~BetDesk's Worker forwards `POST /api/circa/screenshots`~~ (removed 2026-11-14): the owner's Circa
+   screenshots go in locally (DeepSports' `/circa` page on home Wi-Fi with an upload code, or an iCloud Drive
+   folder). BetDesk only reads the counts (`GET /api/circa/screenshots/today`, part of edge 3). `docs/DECISIONS.md` 2026-11-14.
 A new edge is an integration step: propose it, log it, then build it.
 
 ## Non-negotiables (every project, every agent)

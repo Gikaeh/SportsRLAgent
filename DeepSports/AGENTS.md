@@ -44,6 +44,7 @@ a copy or wait). Cross-cutting changes go back to the orchestrator.
 | bet grader + 3× move audit | `src/deepsports/analysis/betting/` |
 | feature walk-forward test | `src/deepsports/analysis/feature_test.py` |
 | ManualBets export for the daily picks and the vote (NBA on the Pi, college here) | `tools/manualbets-export.py` (PIPELINE.md, "Raspberry Pi helper") |
-| models-only daily picks (watch-only, 14:00) | `deepsports model-picks run\|grade` + `tools/model-picks-daily.sh` (`src/deepsports/analysis/model_picks.py`) |
-| Circa screenshots: upload API, iCloud inbox, Claude read into lines (watch-only) | `deepsports circa read\|ingest\|status` (`src/deepsports/circa/`, `src/deepsports/api/circa.py`) + `tools/circa-remind.sh` (launchd `com.deepsports.circa-remind`, 11:00/13:00) |
+| models-only daily picks (watch-only; weekdays 14:00, weekends 08:00) | `deepsports model-picks run\|grade` + `tools/model-picks-daily.sh` (`src/deepsports/analysis/model_picks.py`) |
+| Circa screenshots: upload API, iCloud inbox, Claude read into lines (watch-only) | `deepsports circa read\|ingest\|status` (`src/deepsports/circa/`, `src/deepsports/api/circa.py`) |
+| Circa + William Hill lines from OddsPapi (watch-only; Caesars' feed stands in for WH) | `deepsports books grab\|status` (`src/deepsports/books/`), run by `tools/model-picks-daily.sh` |
 | ensemble betting (watch-only vote, by hand) | `deepsports ensemble-bets context\|tally\|grade` (`src/deepsports/analysis/ensemble_bets.py`) |

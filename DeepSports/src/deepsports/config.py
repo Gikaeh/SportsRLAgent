@@ -41,6 +41,16 @@ CIRCA_INBOX = os.environ.get(
     str(Path.home() / "Library" / "Mobile Documents" / "com~apple~CloudDocs" / "DeepSports Circa"),
 )
 
+# Book lines grabbed from OddsPapi (src/deepsports/books/): <BOOKS_DIR>/<book>/YYYY-MM-DD.json in
+# the Circa lines contract, raw responses under <BOOKS_DIR>/raw/. The key lives only in
+# ODDSPAPI_KEY_FILE (mode 600), never in code, logs or the cached files.
+BOOKS_DIR = Path(os.environ.get("DEEPSPORTS_BOOKS_DIR", "/Volumes/ExFATStorag/DeepSports/books"))
+ODDSPAPI_KEY_FILE = Path(
+    os.environ.get(
+        "DEEPSPORTS_ODDSPAPI_KEY_FILE", Path.home() / ".config" / "deepsports" / "oddspapi-key"
+    )
+)
+
 # The user's timezone, used for calendar output.
 LOCAL_TZ = ZoneInfo(os.environ.get("DEEPSPORTS_TZ", "America/Los_Angeles"))
 # ESPN's `dates=YYYYMMDD` scoreboard parameter is a US/Eastern game day.

@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping, Sequence
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -39,6 +39,7 @@ from deepsports.analysis.ensemble_bets import (
     new_run_dir,
     summarize_graded,
 )
+from deepsports.books import LABELS as BOOK_LABELS
 
 RUNS_DIR = config.REPORTS_DIR / "model-picks"
 RULE_VERSION = "mp-v1"
@@ -135,6 +136,34 @@ def top_picks(picks: Sequence[Mapping[str, Any]], n: int = TOP_N) -> list[dict[s
     return out
 
 
+def attach_books(top: Sequence[dict], books: Mapping[str, Mapping[str, Any] | None]) -> None:
+    """Add each book's line and price for the pick's game, market and side (pure; in place).
+    `books`: book name -> that day's lines payload (`deepsports books grab`), or None."""
+    for p in top:
+        found = {}
+        for book, data in books.items():
+            for q in (data or {}).get("lines", []):
+                if (
+                    str(q.get("game_id")) == str(p["game_id"])
+                    and q.get("market") == p["market"]
+                    and q.get("side") == p["side"]
+                ):
+                    found[book] = {"line": q.get("line"), "price": q.get("price")}
+                    break
+        if found:
+            p["books"] = found
+
+
+def _book_quote(p: Mapping[str, Any]) -> str:
+    """' | Circa -7.5 -110, WH -7 -105' (empty when no book has the pick)."""
+    parts = []
+    for book, q in (p.get("books") or {}).items():
+        line = q.get("line")
+        ln = "" if line is None else (f"{line:+g} " if p["market"] == "spread" else f"{line:g} ")
+        parts.append(f"{BOOK_LABELS.get(book, book)} {ln}{q['price']:+d}")
+    return " | " + ", ".join(parts) if parts else ""
+
+
 def _table(rows: Sequence[Sequence[str]]) -> list[str]:
     widths = [max(len(r[i]) for r in rows) for i in range(len(rows[0]))]
     fmt = lambda r: "  ".join(c.ljust(w) for c, w in zip(r, widths, strict=True)).rstrip()  # noqa: E731
@@ -182,6 +211,7 @@ def render(slate: Mapping[str, Any], picks: Sequence[Mapping[str, Any]], top: Se
         out.append(
             f"- {p['label']} ({p['price']:+d}) {g['away']['abbr']} @ {g['home']['abbr']}"
             f" {_short_tip(g['tip_local'])}: DS +{p['ds_edge']:g}, MB +{p['mb_edge']:g}{shop}"
+            f"{_book_quote(p)}"
         )
     for tier, title in (
         ("strong", f"Strong: both models {STRONG_PTS:g}+ pts past the line"),
@@ -209,9 +239,37 @@ def render(slate: Mapping[str, Any], picks: Sequence[Mapping[str, Any]], top: Se
 # ---------- run directory I/O and grading ----------
 
 
-def write_run(slate: Mapping[str, Any], now: datetime, root: Path = RUNS_DIR) -> tuple[Path, str]:
+POSTED_HOURS = 36  # longest gap between runs is 30 h (Sunday 08:00 -> Monday 14:00)
+
+
+def posted_games(root: Path, now: datetime, hours: float = POSTED_HOURS) -> set[str]:
+    """game_ids in any run saved in the last `hours` (its picks and top), so a game is only ever
+    posted once even when two runs' windows overlap (e.g. the switch to weekend mornings)."""
+    out: set[str] = set()
+    for f in root.glob("*/picks.json"):
+        try:
+            r = json.loads(f.read_text())
+            created = datetime.fromisoformat(r["created_at"])
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+        if timedelta(0) <= now - created <= timedelta(hours=hours):
+            out |= {str(p["game_id"]) for p in [*r.get("picks", []), *r.get("top", [])]}
+    return out
+
+
+def write_run(
+    slate: Mapping[str, Any],
+    now: datetime,
+    root: Path = RUNS_DIR,
+    books: Mapping[str, Mapping[str, Any] | None] | None = None,
+) -> tuple[Path, str]:
+    seen = posted_games(root, now)
     picks = find_picks(slate)
+    repeats = {p["game_id"] for p in picks if str(p["game_id"]) in seen}
+    picks = [p for p in picks if p["game_id"] not in repeats]
     top = top_picks(picks)
+    if books:
+        attach_books(top, books)
     run = new_run_dir(now, root)
     (run / "slate.json").write_text(json.dumps(slate, indent=1, default=str))
     payload = {
@@ -222,6 +280,9 @@ def write_run(slate: Mapping[str, Any], now: datetime, root: Path = RUNS_DIR) ->
     }
     (run / "picks.json").write_text(json.dumps(payload, indent=1))
     text = render(slate, picks, top)
+    if repeats:
+        n = len(repeats)
+        text += f"\n{n} game{'s' if n > 1 else ''} already posted in an earlier run left out."
     (run / "message.txt").write_text(text + "\n")
     return run, text
 

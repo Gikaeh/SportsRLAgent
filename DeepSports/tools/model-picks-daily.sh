@@ -5,7 +5,8 @@
 # safe to run by hand.
 #   MANUALBETS_EXPORT=<file>        reuse an export made earlier instead of running it
 #   MANUALBETS_NBA_HOST=<ssh host>  where the NBA half runs (default rpi; read by manualbets-export.py)
-#   PICKS_DAYS (default 1)          games tipping in the next N days
+#   PICKS_DAYS                      games tipping in the next N days (default: until the next run,
+#                                   see below)
 set -uo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO"
@@ -16,6 +17,17 @@ ts() { date '+%Y-%m-%d %H:%M:%S'; }
 PY="uv run --frozen python"
 
 echo "=== $(ts) model picks start"
+
+# Each run covers the games until the next one, so no game is picked twice: weekdays run at 14:00,
+# Saturday and Sunday at 08:00 (tools/scheduled-sync.sh). Friday 14:00 -> Saturday 08:00 is 18 h,
+# Sunday 08:00 -> Monday 14:00 is 30 h, every other gap 24 h.
+case "$(date +%u)" in
+  5) default_days=0.75 ;;
+  7) default_days=1.25 ;;
+  *) default_days=1 ;;
+esac
+PICKS_DAYS="${PICKS_DAYS:-$default_days}"
+echo "$(ts) picks window: next $PICKS_DAYS days"
 
 # ManualBets' view of the slate (edge 4). nba.com blocks this Mac's VPN, so the NBA half runs on
 # the Pi. 2 Odds API credits (+3 for college). Capped at 20 min.
@@ -34,6 +46,15 @@ fi
 echo "$(ts) manualbets export: $mb_out"
 if [ -s "$MB_JSON" ]; then MB_ARG="$MB_JSON"; else MB_ARG="none"; fi
 
+# Circa and William Hill (Caesars feed) lines from OddsPapi (src/deepsports/books/): ~2 of the free
+# tier's 250 requests a month. The top-5 message shows both books; the moon proposal uses Circa's
+# (screenshot lines win where both exist). Non-fatal and capped at 2 min; one log line.
+books_raw=$(timeout -k 15 120 uv run --frozen deepsports books grab 2>/dev/null)
+books_status=$?
+books_out=$(printf '%s\n' "$books_raw" | tail -1)
+if [ "$books_status" -eq 124 ] || [ "$books_status" -eq 137 ]; then books_out="timed out after 120 s"; fi
+echo "$(ts) books grab: ${books_out:-no output} (exit $books_status)"
+
 # Circa's real lines from the owner's screenshots (src/deepsports/circa/): ingest the iCloud inbox,
 # then headless Claude reads unread screenshots into circa/lines/<date>.json for the moon proposal.
 # Non-fatal and capped at 5 min; one log line.
@@ -44,7 +65,7 @@ if [ "$circa_status" -eq 124 ] || [ "$circa_status" -eq 137 ]; then circa_out="t
 echo "$(ts) circa read: ${circa_out:-no output} (exit $circa_status)"
 
 # One retry after a minute (e.g. a writer briefly held the warehouse lock).
-run_picks() { uv run --frozen deepsports model-picks run --days "${PICKS_DAYS:-1}" --manualbets "$MB_ARG"; }
+run_picks() { uv run --frozen deepsports model-picks run --days "$PICKS_DAYS" --manualbets "$MB_ARG"; }
 if ! msg=$(run_picks); then
   echo "$(ts) model-picks failed; retrying in 60 s"
   sleep 60

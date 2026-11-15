@@ -1,0 +1,462 @@
+[
+ {
+  "marketId": 111,
+  "marketLength": 2,
+  "marketName": "Winner (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 0.0,
+  "period": "result",
+  "marketType": "moneyline",
+  "outcomes": [
+   {
+    "outcomeId": 112,
+    "outcomeName": "2"
+   },
+   {
+    "outcomeId": 111,
+    "outcomeName": "1"
+   }
+  ]
+ },
+ {
+  "marketId": 1172,
+  "marketLength": 2,
+  "marketName": "Over Under (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 133.5,
+  "period": "result",
+  "marketType": "totals",
+  "outcomes": [
+   {
+    "outcomeId": 1173,
+    "outcomeName": "Under"
+   },
+   {
+    "outcomeId": 1172,
+    "outcomeName": "Over"
+   }
+  ]
+ },
+ {
+  "marketId": 1190,
+  "marketLength": 2,
+  "marketName": "Over Under (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 142.5,
+  "period": "result",
+  "marketType": "totals",
+  "outcomes": [
+   {
+    "outcomeId": 1191,
+    "outcomeName": "Under"
+   },
+   {
+    "outcomeId": 1190,
+    "outcomeName": "Over"
+   }
+  ]
+ },
+ {
+  "marketId": 1192,
+  "marketLength": 2,
+  "marketName": "Over Under (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 143.5,
+  "period": "result",
+  "marketType": "totals",
+  "outcomes": [
+   {
+    "outcomeId": 1192,
+    "outcomeName": "Over"
+   },
+   {
+    "outcomeId": 1193,
+    "outcomeName": "Under"
+   }
+  ]
+ },
+ {
+  "marketId": 1194,
+  "marketLength": 2,
+  "marketName": "Over Under (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 144.5,
+  "period": "result",
+  "marketType": "totals",
+  "outcomes": [
+   {
+    "outcomeId": 1195,
+    "outcomeName": "Under"
+   },
+   {
+    "outcomeId": 1194,
+    "outcomeName": "Over"
+   }
+  ]
+ },
+ {
+  "marketId": 1198,
+  "marketLength": 2,
+  "marketName": "Over Under (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 146.5,
+  "period": "result",
+  "marketType": "totals",
+  "outcomes": [
+   {
+    "outcomeId": 1198,
+    "outcomeName": "Over"
+   },
+   {
+    "outcomeId": 1199,
+    "outcomeName": "Under"
+   }
+  ]
+ },
+ {
+  "marketId": 11254,
+  "marketLength": 2,
+  "marketName": "Over Under (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 224.5,
+  "period": "result",
+  "marketType": "totals",
+  "outcomes": [
+   {
+    "outcomeId": 11254,
+    "outcomeName": "Over"
+   },
+   {
+    "outcomeId": 11255,
+    "outcomeName": "Under"
+   }
+  ]
+ },
+ {
+  "marketId": 11258,
+  "marketLength": 2,
+  "marketName": "Over Under (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 226.5,
+  "period": "result",
+  "marketType": "totals",
+  "outcomes": [
+   {
+    "outcomeId": 11258,
+    "outcomeName": "Over"
+   },
+   {
+    "outcomeId": 11259,
+    "outcomeName": "Under"
+   }
+  ]
+ },
+ {
+  "marketId": 11426,
+  "marketLength": 2,
+  "marketName": "Handicap (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": -7.5,
+  "period": "result",
+  "marketType": "spreads",
+  "outcomes": [
+   {
+    "outcomeId": 11426,
+    "outcomeName": "1"
+   },
+   {
+    "outcomeId": 11427,
+    "outcomeName": "2"
+   }
+  ]
+ },
+ {
+  "marketId": 11436,
+  "marketLength": 2,
+  "marketName": "Handicap (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": -5.0,
+  "period": "result",
+  "marketType": "spreads",
+  "outcomes": [
+   {
+    "outcomeId": 11436,
+    "outcomeName": "1"
+   },
+   {
+    "outcomeId": 11437,
+    "outcomeName": "2"
+   }
+  ]
+ },
+ {
+  "marketId": 11442,
+  "marketLength": 2,
+  "marketName": "Handicap (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": -3.5,
+  "period": "result",
+  "marketType": "spreads",
+  "outcomes": [
+   {
+    "outcomeId": 11442,
+    "outcomeName": "1"
+   },
+   {
+    "outcomeId": 11443,
+    "outcomeName": "2"
+   }
+  ]
+ },
+ {
+  "marketId": 11466,
+  "marketLength": 2,
+  "marketName": "Handicap (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 2.5,
+  "period": "result",
+  "marketType": "spreads",
+  "outcomes": [
+   {
+    "outcomeId": 11466,
+    "outcomeName": "1"
+   },
+   {
+    "outcomeId": 11467,
+    "outcomeName": "2"
+   }
+  ]
+ },
+ {
+  "marketId": 11468,
+  "marketLength": 2,
+  "marketName": "Handicap (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 3.0,
+  "period": "result",
+  "marketType": "spreads",
+  "outcomes": [
+   {
+    "outcomeId": 11469,
+    "outcomeName": "2"
+   },
+   {
+    "outcomeId": 11468,
+    "outcomeName": "1"
+   }
+  ]
+ },
+ {
+  "marketId": 11474,
+  "marketLength": 2,
+  "marketName": "Handicap (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 4.5,
+  "period": "result",
+  "marketType": "spreads",
+  "outcomes": [
+   {
+    "outcomeId": 11475,
+    "outcomeName": "2"
+   },
+   {
+    "outcomeId": 11474,
+    "outcomeName": "1"
+   }
+  ]
+ },
+ {
+  "marketId": 11478,
+  "marketLength": 2,
+  "marketName": "Handicap (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 5.5,
+  "period": "result",
+  "marketType": "spreads",
+  "outcomes": [
+   {
+    "outcomeId": 11479,
+    "outcomeName": "2"
+   },
+   {
+    "outcomeId": 11478,
+    "outcomeName": "1"
+   }
+  ]
+ },
+ {
+  "marketId": 111856,
+  "marketLength": 2,
+  "marketName": "Over Under Player Points + Assists + Rebounds (incl. overtime)",
+  "playerProp": true,
+  "sportId": 11,
+  "handicap": 34.5,
+  "period": "result",
+  "marketType": "playertotals-ptsassreb",
+  "outcomes": [
+   {
+    "outcomeId": 111857,
+    "outcomeName": "Under"
+   },
+   {
+    "outcomeId": 111856,
+    "outcomeName": "Over"
+   }
+  ]
+ },
+ {
+  "marketId": 112948,
+  "marketLength": 2,
+  "marketName": "Over Under (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 135.0,
+  "period": "result",
+  "marketType": "totals",
+  "outcomes": [
+   {
+    "outcomeId": 112949,
+    "outcomeName": "Under"
+   },
+   {
+    "outcomeId": 112948,
+    "outcomeName": "Over"
+   }
+  ]
+ },
+ {
+  "marketId": 112966,
+  "marketLength": 2,
+  "marketName": "Over Under (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 144.0,
+  "period": "result",
+  "marketType": "totals",
+  "outcomes": [
+   {
+    "outcomeId": 112966,
+    "outcomeName": "Over"
+   },
+   {
+    "outcomeId": 112967,
+    "outcomeName": "Under"
+   }
+  ]
+ },
+ {
+  "marketId": 113126,
+  "marketLength": 2,
+  "marketName": "Over Under (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 224.0,
+  "period": "result",
+  "marketType": "totals",
+  "outcomes": [
+   {
+    "outcomeId": 113126,
+    "outcomeName": "Over"
+   },
+   {
+    "outcomeId": 113127,
+    "outcomeName": "Under"
+   }
+  ]
+ },
+ {
+  "marketId": 113130,
+  "marketLength": 2,
+  "marketName": "Over Under (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 226.0,
+  "period": "result",
+  "marketType": "totals",
+  "outcomes": [
+   {
+    "outcomeId": 113131,
+    "outcomeName": "Under"
+   },
+   {
+    "outcomeId": 113130,
+    "outcomeName": "Over"
+   }
+  ]
+ },
+ {
+  "marketId": 113134,
+  "marketLength": 2,
+  "marketName": "Over Under (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": 228.0,
+  "period": "result",
+  "marketType": "totals",
+  "outcomes": [
+   {
+    "outcomeId": 113134,
+    "outcomeName": "Over"
+   },
+   {
+    "outcomeId": 113135,
+    "outcomeName": "Under"
+   }
+  ]
+ },
+ {
+  "marketId": 113362,
+  "marketLength": 2,
+  "marketName": "Handicap (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": -39.5,
+  "period": "result",
+  "marketType": "spreads",
+  "outcomes": [
+   {
+    "outcomeId": 113362,
+    "outcomeName": "1"
+   },
+   {
+    "outcomeId": 113363,
+    "outcomeName": "2"
+   }
+  ]
+ },
+ {
+  "marketId": 113366,
+  "marketLength": 2,
+  "marketName": "Handicap (incl. overtime)",
+  "playerProp": false,
+  "sportId": 11,
+  "handicap": -38.5,
+  "period": "result",
+  "marketType": "spreads",
+  "outcomes": [
+   {
+    "outcomeId": 113366,
+    "outcomeName": "1"
+   },
+   {
+    "outcomeId": 113367,
+    "outcomeName": "2"
+   }
+  ]
+ }
+]

@@ -1,8 +1,11 @@
 """Reprice To The Moon proposals at Circa's lines (read-only, watch-only).
 
-Another job writes Circa's lines, read off the owner's screenshots, to
-`<config.CIRCA_LINES_DIR>/<YYYY-MM-DD>.json` (`$DEEPSPORTS_CIRCA_LINES`, else
-`$DEEPSPORTS_CIRCA_DIR/lines`, else /Volumes/ExFATStorag/DeepSports/circa/lines):
+Two jobs write Circa's lines in the same shape: `deepsports circa read` (the owner's screenshots)
+to `<config.CIRCA_LINES_DIR>/<YYYY-MM-DD>.json` (`$DEEPSPORTS_CIRCA_LINES`, else
+`$DEEPSPORTS_CIRCA_DIR/lines`, else /Volumes/ExFATStorag/DeepSports/circa/lines), and
+`deepsports books grab` (OddsPapi's Circa feed) to `<config.BOOKS_DIR>/circa/<YYYY-MM-DD>.json`.
+`--circa auto` merges the two (`merge`): a screenshot line wins over the feed's for the same game,
+market and side.
 
     {"date": "2026-11-14", "read_at": ISO8601, "files": [...],
      "lines": [{"game_id": "401..." | null, "league": ..., "away": "..", "home": "..",
@@ -15,7 +18,7 @@ directly (it does not import `deepsports.circa`). For each proposed leg (`repric
 - another line: the leg is kept (at Circa's line and price) only if Circa is at least as good on
   BOTH the line and the price (+8.5 -110 vs +8 -110); otherwise it is dropped with the reason
   (e.g. line better, price worse), for the owner to judge by hand
-- no Circa entry: the leg stays, marked "not on Circa screenshots: check by hand"
+- no Circa entry: the leg stays, marked "not in Circa's lines: check by hand"
 Teams (when a line has no game_id) match only on whole normalized names: "Kansas" never matches
 "Arkansas", nor "Texas" "Texas Tech".
 """
@@ -37,7 +40,7 @@ from deepsports.moon import sim
 ENV_LINES = "DEEPSPORTS_CIRCA_LINES"
 ENV_DIR = "DEEPSPORTS_CIRCA_DIR"
 DEFAULT_DIR = config.CIRCA_LINES_DIR
-UNCHECKED = "not on Circa screenshots: check by hand"
+UNCHECKED = "not in Circa's lines: check by hand"
 
 
 def lines_dir() -> Path:
@@ -51,6 +54,36 @@ def lines_dir() -> Path:
 
 def default_path(day: date) -> Path:
     return lines_dir() / f"{day.isoformat()}.json"
+
+
+def grabbed_path(day: date) -> Path:
+    """OddsPapi's Circa lines for the day (`deepsports books grab`)."""
+    env = os.environ.get("DEEPSPORTS_BOOKS_DIR")
+    root = Path(env) if env else config.BOOKS_DIR
+    return root / "circa" / f"{day.isoformat()}.json"
+
+
+def merge(screens: Mapping[str, Any] | None, grabbed: Mapping[str, Any] | None) -> dict | None:
+    """One payload from both sources (either may be None). Screenshot lines win per game, market
+    and side; a screenshot line without a game_id never hides a feed line."""
+    if screens is None and grabbed is None:
+        return None
+    s_lines = [q for q in (screens or {}).get("lines", []) if isinstance(q, Mapping)]
+    taken = {
+        (str(q["game_id"]), q.get("market"), q.get("side")) for q in s_lines if q.get("game_id")
+    }
+    g_lines = [
+        q
+        for q in (grabbed or {}).get("lines", [])
+        if isinstance(q, Mapping)
+        and (str(q.get("game_id")), q.get("market"), q.get("side")) not in taken
+    ]
+    base = dict(screens or grabbed or {})
+    base["lines"] = s_lines + g_lines
+    base["sources"] = {"screenshots": len(s_lines), "feed": len(g_lines)}
+    if grabbed is not None:
+        base["grabbed_at"] = grabbed.get("grabbed_at")
+    return base
 
 
 def load(path: Path) -> tuple[dict[str, Any] | None, str | None]:

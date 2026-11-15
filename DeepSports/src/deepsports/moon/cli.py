@@ -127,8 +127,14 @@ def _circa_payload(arg: str, day: date) -> tuple[dict | None, str | None]:
     """(lines payload, None) or (None, the one fallback note)."""
     if arg == "off":
         return None, "Circa check off: reference prices shown; check Circa by hand."
-    path = circa_mod.default_path(day) if arg == "auto" else Path(arg)
-    data, why = circa_mod.load(path)
+    if arg == "auto":  # screenshots + OddsPapi's Circa feed, screenshots winning
+        screens, why = circa_mod.load(circa_mod.default_path(day))
+        grabbed, _ = circa_mod.load(circa_mod.grabbed_path(day))
+        data = circa_mod.merge(screens, grabbed)
+        if data is None:
+            return None, f"{why}; no Circa feed file: reference prices shown; check Circa by hand."
+        return data, None
+    data, why = circa_mod.load(Path(arg))
     if data is None:
         return None, f"{why}: reference prices shown; check Circa by hand."
     return data, None
@@ -166,7 +172,15 @@ def cmd_propose(args) -> int:
         notes.append(f"Picks: model-picks run {run.name} (lines as of {slate['created_at']}).")
     lines, circa_note = _circa_payload(args.circa, today)
     if lines is not None:
-        notes.append(f"Circa lines read {lines.get('read_at', '?')} ({len(lines['lines'])} lines).")
+        src = lines.get("sources")
+        if src:
+            when = lines.get("read_at") or lines.get("grabbed_at") or "?"
+            notes.append(f"Circa lines as of {when}: {src['screenshots']} from screenshots, "
+                         f"{src['feed']} from the OddsPapi feed.")  # fmt: skip
+        else:
+            notes.append(
+                f"Circa lines read {lines.get('read_at', '?')} ({len(lines['lines'])} lines)."
+            )
     r = sim.simulate(t, sim_budget, args.target, months=args.months, paths=args.paths,
                      seed=args.seed)  # fmt: skip
     plan = picks.propose(t, payload, slate, balance=balance, month=month, budget=sim_budget,

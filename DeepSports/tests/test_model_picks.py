@@ -163,3 +163,21 @@ def test_write_and_grade(tmp_path):
     # home -5 wins by 10 -> win; under 200 with 210 -> loss
     assert rec["strong"]["record"] == "1-1-0" and rec["top"]["bets"] == 1
     assert rec["strong"]["clv_n"] == 0 and rec["per_run"][0]["run"] == run.name
+
+
+def test_write_run_skips_games_an_earlier_run_posted(tmp_path):
+    from datetime import UTC, datetime, timedelta
+
+    s = slate(game("1", "nba", -5, 200, (10, 196), (10, 195)))
+    t0 = datetime.fromisoformat(s["created_at"])
+    first, _ = mp.write_run(s, t0, root=tmp_path)
+    s2 = dict(s, created_at=(t0 + timedelta(hours=18)).isoformat())
+    second, text = mp.write_run(s2, t0 + timedelta(hours=18), root=tmp_path)
+    saved = json.loads((second / "picks.json").read_text())
+    assert saved["picks"] == [] and saved["top"] == []
+    assert "1 game already posted in an earlier run left out." in text
+    # Two days later the old run no longer counts.
+    s3 = dict(s, created_at=(t0 + timedelta(hours=48)).isoformat())
+    third, _ = mp.write_run(s3, t0 + timedelta(hours=48), root=tmp_path)
+    assert len(json.loads((third / "picks.json").read_text())["top"]) == 1
+    assert mp.posted_games(tmp_path, datetime(2000, 1, 1, tzinfo=UTC)) == set()

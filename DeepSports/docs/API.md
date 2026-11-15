@@ -241,3 +241,10 @@ One entry per side visible on the board. `line` is from the bet side's view (hom
 1.5); totals carry the total; moneyline `null`. `away`/`home` are Circa's names, upper case, oriented to
 the warehouse game when matched (a neutral-site game Circa lists the other way round is flipped, side
 included). `price` is American. Unmatched lines keep `game_id: null`.
+
+**Book files from OddsPapi** `/Volumes/ExFATStorag/DeepSports/books/<book>/YYYY-MM-DD.json`, book `circa` or
+`williamhill` (Caesars' feed), written by `deepsports books grab` (Python: `deepsports.books.grab.load(book,
+date)`): the same `lines` entries (always matched, `rotation: null`; names are OddsPapi's, upper case), with
+`{date, grabbed_at, book, source: "oddspapi", source_book: "circasports" | "caesars"}` in place of
+`read_at`/`files`. The moon proposal (`--circa auto`) merges the Circa file with the screenshot file above,
+screenshot lines winning per game, market and side; the model-picks top 5 show both books.

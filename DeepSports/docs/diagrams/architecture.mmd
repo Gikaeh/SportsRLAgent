@@ -31,8 +31,7 @@ flowchart TB
     SCHED["tools/scheduled-sync.sh<br/>launchd 08:00 · 14:00"]
     SYNCF[".sync/upcoming*.json"]
     SCHED -.->|"unscheduled 2026-11-13<br/>(skill runs by hand)"| SYNC
-    MPDAILY["tools/model-picks-daily.sh<br/>14:00 run only<br/>export ≤20 min → circa read → model-picks run<br/>→ moon propose --tier mix --circa auto<br/>picks (or blocked alert) + moon proposal → Discord"]
-    CREMIND["tools/circa-remind.sh<br/>launchd 11:00 · 13:00<br/>circa ingest · reminder if no screenshots today"]
+    MPDAILY["tools/model-picks-daily.sh<br/>weekdays 14:00 · Sat/Sun 08:00<br/>export ≤20 min → books grab → circa read → model-picks run<br/>→ moon propose --tier mix --circa auto<br/>picks (or blocked alert) + moon proposal → Discord"]
     SCHED --> MPDAILY
     EBDAILY["tools/ensemble-daily.sh<br/>by hand only (unscheduled 2026-11-13)<br/>N bettors · majority table → Discord"]
     EBDAILY -.->|"headless claude -p<br/>/ensemble-betting prefetched"| EBSKILL
@@ -48,11 +47,12 @@ flowchart TB
 
   subgraph PIPE["Data collection: src/deepsports"]
     direction LR
-    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|table|grade · model-picks run|grade ·<br/>moon · circa read|ingest|status · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
+    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|table|grade · model-picks run|grade ·<br/>moon · circa read|ingest|status · books grab|status · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
     PIPELINE --> SRC["sources/espn.py<br/>EspnBasketball(league)<br/>site + core endpoints"] --> HTTP["http.py PoliteClient<br/>1 req/s · retry/backoff"]
     PIPELINE --> PARSE["parse_espn.py<br/>pure raw → rows"] --> STORE["store.py<br/>schema + upserts"]
     QUAL["quality.py<br/>data checks"]
     PBP["parse_pbp.py<br/>pure play-by-play parser<br/>(on demand, no table)"]
+    BOOKSM["books/ · books grab|status<br/>OddsPapi: Circa + Caesars (as William Hill)<br/>~2 requests/day · match to games (brief read-only open)"]
     CIRCA["circa/ · circa read|ingest|status<br/>iCloud inbox ingest · headless Claude transcribes<br/>validate lines · match to games (brief read-only open)<br/>no DuckDB table"]
   end
 
@@ -61,6 +61,7 @@ flowchart TB
     RAW[("raw/espn/{nba,ncaab}/**.json.gz<br/>raw landing zone<br/>+ summary_pregame snapshots")]
     DB[("deepsports.duckdb (league-aware keys)<br/>games · box scores · odds + prices · injuries<br/>team_game_context · predictions · paper_bets<br/>NBA 2021-22 → today · NCAAB 2023-24 → today")]
     CIRCAFS[("circa/screenshots/YYYY-MM-DD/<br/>circa/lines/YYYY-MM-DD.json")]
+    BOOKSFS[("books/circa|williamhill/YYYY-MM-DD.json<br/>books/raw/")]
   end
 
   subgraph APPS["Apps: deepsports serve :8787"]
@@ -115,6 +116,7 @@ flowchart TB
     GCAL[[Google Calendar]]
     DISCORD[[Discord webhook]]
     ICLOUD[[iCloud Drive<br/>DeepSports Circa inbox]]
+    ODDSPAPI[[OddsPapi v4<br/>free tier 250 req/month]]
     CLAUDEHL[[headless claude -p<br/>Sonnet · Read only]]
   end
 
@@ -159,9 +161,11 @@ flowchart TB
   EBDAILY -->|"picks table · blocked alerts"| DISCORD
   MPDAILY -->|"picks · moon proposal"| DISCORD
   MPDAILY -->|"circa read · moon propose"| CLI
-  CREMIND -->|"circa ingest · status"| CLI
-  CREMIND -->|"upload reminder"| DISCORD
   CLI --> CIRCA
+  CLI --> BOOKSM
+  BOOKSM -->|"odds-by-tournaments"| ODDSPAPI
+  BOOKSM -->|"lines per book"| BOOKSFS
+  MPDAILY -->|"books grab"| CLI
   USER -->|"screenshots"| ICLOUD
   USER -->|"screenshots (/circa page, home Wi-Fi)"| API
   ICLOUD -->|"ingest"| CIRCA
@@ -170,6 +174,8 @@ flowchart TB
   CIRCA -->|"transcribe"| CLAUDEHL
   DB -->|"read-only: match games"| CIRCA
   CIRCAFS -->|"Circa lines + prices"| MOON
+  BOOKSFS -->|"Circa feed lines"| MOON
+  BOOKSFS -->|"Circa + WH prices on the top 5"| MPICKS
 
   classDef planned stroke-dasharray: 5 5
   class NONE planned

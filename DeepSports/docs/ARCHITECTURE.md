@@ -19,6 +19,7 @@ diagram in the same change (see CLAUDE.md).
 | `parse_pbp.py` | Pure play-by-play parser for cached ESPN summaries (NBA + college): chronological events with repaired cumulative scores, shot values/distances, players. Ported from the edge study; parsed on demand, no warehouse table yet. |
 | `store.py` | DuckDB schema, league-aware keys (`teams` PK = league + team_id), the idempotent `migrate()`, and fast bulk upserts (rows go in as one JSON parameter). Pregame odds (with spread/total prices) are stored only when the line or a price moves. |
 | `circa/` | Circa screenshots (`deepsports circa read\|ingest\|status`, since 2026-11-14, edge 6): `ingest` copies images from the iCloud Drive inbox into today's folder; `read` has headless `claude -p` (Sonnet, Read tool only; `reader.py`) transcribe unread screenshots, validates the lines (`lines.py`, pure), matches them to games by team names and Circa rotation pairs (`match.py`, one brief read-only warehouse open) and writes the day's lines file. `multipart.py` parses the upload body for `api/circa.py`. No DuckDB table. Commands and env vars: PIPELINE.md. |
+| `books/` | Book lines from OddsPapi (`deepsports books grab\|status`, since 2026-11-14): `oddspapi.py` fetches one book's NBA + NCAAB odds through `PoliteClient` (key from `~/.config/deepsports/oddspapi-key`, masked in errors) and parses them (pure); `grab.py` orients them to warehouse games with `circa/match.py` and writes one file per book (Circa; William Hill = Caesars' feed). Used by the moon proposal (Circa) and the model-picks top 5 (both). DATA_SOURCES.md, OddsPapi. |
 | `config.py` | Paths, timezones, rate limit. All of them can be overridden with `DEEPSPORTS_*` env vars. |
 
 ### 2. Storage (`data/` → `/Volumes/ExFATStorag/DeepSports/data`, git-ignored)
@@ -27,6 +28,8 @@ diagram in the same change (see CLAUDE.md).
   It's an exact copy of what the source returned, so parsers can be fixed and re-run without refetching.
 - **Circa files** (`/Volumes/ExFATStorag/DeepSports/circa/`, `config.CIRCA_*`): `screenshots/<date>/` (local
   day) and `lines/<date>.json` (contract in API.md, "Circa").
+- **Book files** (`/Volumes/ExFATStorag/DeepSports/books/`, `config.BOOKS_DIR`): `<book>/<date>.json` from OddsPapi
+  (same contract) and `raw/` responses.
 - **Warehouse:** `data/deepsports.duckdb` (schema in DATA_MODEL.md). DuckDB is used because the
   workload is analytical (scans and aggregates over seasons), it's a single file, and it reads straight into pandas/polars.
 
@@ -41,8 +44,9 @@ diagram in the same change (see CLAUDE.md).
   connector. Events are matched by the key `deepsports:nba:<game_id>` in their description, so a sync can
   safely be repeated.
 - Scheduled runs (`tools/scheduled-sync.sh`, launchd 08:00/14:00) do every warehouse step themselves
-  (update, predict, paper log; model picks at 14:00). The 14:00 picks job (`tools/model-picks-daily.sh`)
-  runs `circa read` first, then sends the picks and, as a second Discord message, the To The Moon
+  (update, predict, paper log; model picks once a day: weekdays 14:00, Saturday and Sunday 08:00, each
+  covering the games until the next run). The picks job (`tools/model-picks-daily.sh`)
+  runs `books grab` and `circa read` first, then sends the picks and, as a second Discord message, the To The Moon
   proposal (`moon propose --tier mix --months 1 --circa auto --format discord`). The scheduled calendar sync was scrapped for now
   (2026-11-13); the skill still runs by hand (`calendar-agent`). Headless Claude's Bash sandbox can't open
   DuckDB on the external drive, so a headless run would need `upcoming --json` exported first.
@@ -55,8 +59,6 @@ diagram in the same change (see CLAUDE.md).
   one fresh ESPN summary per game with no lock held (`pipeline.fetch_injury_snapshots`), then in one
   short writer session stores the pre-tip snapshots (`injury_captures`/`injury_reports`) and writes model
   `v1.1i` predictions for exactly those games. Same yielding rules as the odds job. No Claude involved.
-- Circa reminder (`tools/circa-remind.sh`, launchd `com.deepsports.circa-remind` at 11:00 and 13:00):
-  `circa ingest`, then a Discord message asking for screenshots only when none arrived today. Files only.
 - The global Claude Code Stop hook (`~/.claude/tools/notify.py`) posts each finished turn to
   Discord. That's how agent runs report back.
 - Mermaid (`tools/diagram.sh`) renders the diagrams.
@@ -140,12 +142,14 @@ diagram in the same change (see CLAUDE.md).
   dropped (docs/results/2026-11-11-player-impact.md).
 - `model_picks.py`: the daily watch-only picks (since 2026-11-13, replacing the scheduled vote). Reuses the
   ensemble slate and ManualBets attach; a bet qualifies when both models are on the same side of the
-  spread or total, strong at 4+ points past the line each, lean at 3+; top 5, one per game. Runs in
+  spread or total, strong at 4+ points past the line each, lean at 3+; top 5, one per game, each shown
+  with Circa's and William Hill's (Caesars feed) line and price from today's `books/` files; games a run in
+  the last 36 h already posted are left out. Runs in
   `reports/model-picks/<run>/`, graded with `ensemble_bets.grade_pick`. No warehouse writes, no Claude.
 - `src/deepsports/moon/` (`deepsports moon`, since 2026-11-13; outside `analysis/`): To The Moon (betting).
   Risk tiers (incl. `ticket2` and `mix`, the default) + a seeded Monte Carlo at −vig over `--months`
   (`tiers.py`, `sim.py`), proposals for a tier from the latest model-picks run (`picks.py`), repriced at
-  Circa's screenshot lines when a lines file exists (`circa.py`: a worse line or price drops the leg), and an
+  Circa's lines (screenshots, plus OddsPapi's Circa feed; screenshots win) when a lines file exists (`circa.py`: a worse line or price drops the leg), and an
   append-only ledger of the owner's real bets at
   `../logs/moon/bets.csv` (`ledger.py`, edge 5; grading reads finals read-only and appends result rows).
   Not served by the API. Guide: [TO_THE_MOON.md](TO_THE_MOON.md).

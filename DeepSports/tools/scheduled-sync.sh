@@ -75,9 +75,16 @@ fi
 # Calendar sync scrapped for now (owner, 2026-11-13; DECISIONS). The skill and `deepsports upcoming`
 # stay; nothing here calls Claude any more.
 status=0
-# Afternoon run only: models-only picks (watch-only; replaced the ensemble-agent vote 2026-11-13).
-# Non-fatal; posts its own Discord message. The vote can still be run by hand: tools/ensemble-daily.sh.
-if [ "$(date +%H)" -ge 12 ] && [ "${SKIP_PICKS:-0}" != 1 ]; then
+# Models-only picks (watch-only; replaced the ensemble-agent vote 2026-11-13), once a day:
+# weekdays on the 14:00 run; Saturday and Sunday on the 08:00 run instead, since weekend games tip
+# from ~9 AM and Circa posts the day's college lines ~7 AM (owner, 2026-11-14). Once a day keeps one
+# picks run and one moon proposal per day. Non-fatal; posts its own Discord message.
+# The vote can still be run by hand: tools/ensemble-daily.sh.
+hour=$((10#$(date +%H)))
+dow=$(date +%u)  # 6 = Saturday, 7 = Sunday
+if [ "$dow" -ge 6 ]; then picks_now=$([ "$hour" -lt 12 ] && echo 1 || echo 0)
+else picks_now=$([ "$hour" -ge 12 ] && echo 1 || echo 0); fi
+if [ "$picks_now" = 1 ] && [ "${SKIP_PICKS:-0}" != 1 ]; then
   "$REPO/tools/model-picks-daily.sh" || echo "$(ts) model picks failed (exit $?)"
 fi
 echo "=== $(ts) scheduled sync end"

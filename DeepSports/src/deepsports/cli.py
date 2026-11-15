@@ -170,7 +170,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     mpsub = mp.add_subparsers(dest="picks_command", required=True)
     mpr = mpsub.add_parser("run", help="write a run dir (slate, picks, message); print the message")
-    mpr.add_argument("--days", type=int, default=1, help="games tipping in the next N days")
+    mpr.add_argument(
+        "--days", type=float, default=1, help="games tipping in the next N days (fractions ok)"
+    )
     mpr.add_argument("--league", choices=["nba", "ncaab", "all"], default="all")
     mpr.add_argument(
         "--manualbets",
@@ -197,6 +199,12 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser(
         "circa",
         help="Circa screenshots: read|ingest|status (no writer lock; `deepsports circa -h`)",
+        add_help=False,
+    )
+
+    sub.add_parser(
+        "books",
+        help="Circa + William Hill lines from OddsPapi: grab|status (`deepsports books -h`)",
         add_help=False,
     )
 
@@ -228,6 +236,10 @@ def main(argv: list[str] | None = None) -> int:
         from deepsports.circa.cli import main as circa_main
 
         return circa_main(argv[1:])
+    if argv[:1] == ["books"]:  # its own parser; OddsPapi + files, plus one brief read-only open
+        from deepsports.books.cli import main as books_main
+
+        return books_main(argv[1:])
     args = build_parser().parse_args(argv)
     logging.basicConfig(
         level=logging.INFO if args.verbose else logging.WARNING,
@@ -745,8 +757,8 @@ def _model_picks(args: argparse.Namespace, db: Store) -> int:
         else:
             print(json.dumps(mp.grade_runs(db.con), indent=1))
         return 0
-    if args.days < 1:
-        print("error: --days must be >= 1", file=sys.stderr)
+    if not 0 < args.days <= 14:
+        print("error: --days must be > 0 and <= 14", file=sys.stderr)
         return 2
     now = datetime.now(UTC)
     leagues = list(LEAGUES) if args.league == "all" else [args.league]
@@ -758,7 +770,11 @@ def _model_picks(args: argparse.Namespace, db: Store) -> int:
         except (OSError, ValueError) as err:
             print(f"warning: ManualBets export unreadable: {err}", file=sys.stderr)
     attach_manualbets(slate, export)
-    run, text = mp.write_run(slate, now)
+    from deepsports.books import BOOKS
+    from deepsports.books import grab as books_grab
+
+    books = {b: books_grab.load(b) for b in BOOKS}  # today's OddsPapi files, if grabbed
+    run, text = mp.write_run(slate, now, books=books)
     print(text)
     print(f"run: {run}", file=sys.stderr)
     return 0

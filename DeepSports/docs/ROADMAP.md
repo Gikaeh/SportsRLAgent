@@ -49,10 +49,11 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
   [results](results/2026-11-13-moon-risk-ladder.md). At −vig "save, then bold" has the highest P(target)
 - [x] **To The Moon one-month play + Circa screenshots** (2026-11-14): `--months`, tiers `ticket2` and `mix`
   (default), Circa repricing from `deepsports circa` (`/circa` LAN page, iCloud inbox; BetDesk upload removed 2026-11-14), 14:00 Discord
-  proposal, 11:00/13:00 reminder; numbers [one month](results/2026-11-13-moon-one-month.md),
+  proposal (the 11:00/13:00 reminder was removed 2026-11-14); numbers [one month](results/2026-11-13-moon-one-month.md),
   [mix](results/2026-11-14-moon-mix-tier.md)
-- [ ] To The Moon next: a BetDesk tab on the same code (needs an integration step; stakes must stay on the Mac),
-  William Hill as a second book
+- [x] **Book lines from OddsPapi** (2026-11-14): `deepsports books grab`, Circa + William Hill (Caesars' feed) for NBA +
+  NCAAB; the top 5 show both books, the moon proposal uses Circa's feed with screenshots as the fallback
+- [ ] To The Moon next: a BetDesk tab on the same code (needs an integration step; stakes must stay on the Mac)
 - [ ] Review the paper-trade record at the end of the 2026-27 regular season (pre-declared; no rule edits before then, only new versions)
 - [ ] Review the models-only picks record (`deepsports model-picks grade`, with CLV) after a few hundred graded picks.
   First grade 2026-11-13: no edge on the college walk-forward reference ([results](results/2026-11-13-model-picks-grade.md));

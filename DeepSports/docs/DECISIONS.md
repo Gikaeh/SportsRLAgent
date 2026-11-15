@@ -676,3 +676,27 @@ model agreement doesn't create an edge. The rule keeps running as the daily list
 says so in one line and shows at most 10 rows per tier (it reached ~3.1k characters on a Friday slate).
 No rule changes before a few hundred live picks; a sub-rule (college lean spreads, 56.4%, 1 of 9 cells)
 is only a candidate for a pre-registered forward test.
+
+### 2026-11-14: Circa and William Hill lines from OddsPapi; Caesars stands in for William Hill
+**Why:** the owner bets at Circa and opened a William Hill account on 2026-11-14, sticks to the daily top 5,
+and wanted both books' lines grabbed instead of only screenshots. Neither book has a public API or a desktop
+site in Nevada, and neither is in The Odds API feed (`williamhill_us` there is Caesars, paid plans only, no
+Circa). OddsPapi's free tier (250 requests a month) carries Circa and Caesars for NBA and NCAAB; one grab a
+day costs ~2 requests. There is no William Hill NV feed anywhere we looked (OddsPapi's `williamhill` is the UK
+book), so Caesars' out-of-state line stands in (owner: "just use Caesars I think that's pretty close"). The
+first pull's Circa NBA numbers matched the owner's app. Scraping the books' apps was rejected (terms, account
+risk, a stored password). **What:** `deepsports books grab` before `circa read` at 14:00; the top 5 show both
+books' line and price (display only, rule `mp-v1` unchanged); the moon proposal reprices at Circa's feed lines
+merged with the screenshots, which win. Key in `~/.config/deepsports/oddspapi-key` only (DATA_SOURCES.md, OddsPapi).
+
+### 2026-11-14: screenshot reminder removed; weekend picks run in the morning
+**Why:** with Circa's lines coming from OddsPapi, the 11:00/13:00 "upload your screenshots" message is noise
+(owner: "remove the upload photo reminders"). Weekend games tip from ~9 AM, before the 14:00 run, and Circa
+posts the day's college lines ~7 AM, so on weekends the 14:00 run priced Saturday's and Sunday's early games
+the afternoon before, without Circa's college lines. **What:** `com.deepsports.circa-remind` unloaded and
+deleted (screenshots and `circa read` stay as the fallback). The picks job runs once a day: weekdays after the
+14:00 sync, Saturday and Sunday after the 08:00 sync. Each run covers the games until the next run (Friday
+18 h, Sunday 30 h, else 24 h), so no game is picked twice and there is still one moon proposal a day. As a
+backstop (and for the first switch, when Saturday's 14:00 run already covered Sunday morning), a run leaves out
+any game a run in the last 36 h posted, and says how many (`model_picks.posted_games`).
+

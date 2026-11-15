@@ -8,8 +8,7 @@ other docs on demand via the index in README.md.
 |---|---|---|
 | App server: API + web app + glasses plugin on `:8787` | launchd `com.deepsports.serve` (restarts itself) | `curl -s localhost:8787/api/health` · logs `~/Library/Logs/DeepSports/serve.log` |
 | Scheduled sync at 08:00 and 14:00: update NBA + college → predict v1.0 + v1.1 + v1.1i → paper log (no Claude call; the calendar sync was scrapped for now on 2026-11-13) | launchd `com.deepsports.sync` → `tools/scheduled-sync.sh` | `~/Library/Logs/DeepSports/sync.log` |
-| Daily models-only picks (watch-only, since 2026-11-13): `circa read` (headless Claude transcribes today's Circa screenshots), then DeepSports' model and ManualBets' model vs the lines for games tipping in the next 24 h → top 5 + strong/lean tables to Discord, then a second message with the To The Moon proposal (tier `mix`, Circa prices). Replaced the ensemble-agent vote, which stays runnable by hand (`tools/ensemble-daily.sh`) | end of the 14:00 sync → `tools/model-picks-daily.sh` | runs in `/Volumes/ExFATStorag/DeepSports/reports/model-picks/` · `deepsports model-picks grade` · `deepsports circa status` |
-| Circa screenshot reminder at 11:00 and 13:00: ingest the iCloud inbox; Discord reminder only if none arrived today | launchd `com.deepsports.circa-remind` → `tools/circa-remind.sh` | `~/Library/Logs/DeepSports/circa.log` |
+| Daily models-only picks (watch-only, since 2026-11-13): `books grab` (Circa + William Hill lines from OddsPapi, since 2026-11-14), `circa read` (headless Claude transcribes today's Circa screenshots), then DeepSports' model and ManualBets' model vs the lines for games tipping before the next run → top 5 (each with Circa's and WH's line and price) + strong/lean tables to Discord, then a second message with the To The Moon proposal (tier `mix`, Circa prices). Replaced the ensemble-agent vote, which stays runnable by hand (`tools/ensemble-daily.sh`) | weekdays after the 14:00 sync, Saturday and Sunday after the 08:00 sync (each run covers the games until the next one) → `tools/model-picks-daily.sh` | runs in `/Volumes/ExFATStorag/DeepSports/reports/model-picks/` · `deepsports model-picks grade` · `deepsports circa status` · `deepsports books status` |
 | Pre-tip injury refresh at :20 and :50: NBA games tipping in 5-100 min → fresh ESPN injury report → v1.1i predictions (installed 2026-11-10) | launchd `com.deepsports.pretip` → `tools/pretip.sh` | `~/Library/Logs/DeepSports/pretip.log` (one line per run) · `deepsports status` (`pretip v1.1i` runs) |
 | Discord turn notifications | global Stop/Notification hooks → `~/.claude/tools/notify.py` | |
 
@@ -38,8 +37,8 @@ points (2026-11-11) were dropped: no edge, ratings not face-valid; the code stay
 
 ## To The Moon (betting)
 `deepsports moon` (guide `docs/TO_THE_MOON.md`; why: root `docs/DECISIONS.md` 2026-11-13/14): proposals from the
-model-picks run, repriced at Circa's lines read from the owner's screenshots (the `/circa` page on home Wi-Fi or the iCloud
-inbox; docs/PIPELINE.md, Circa), sent to Discord at 14:00; the owner places every bet and logs it in the
+model-picks run, repriced at Circa's lines: OddsPapi's Circa feed (`deepsports books grab`, since 2026-11-14) plus the
+owner's screenshots (the `/circa` page on home Wi-Fi or the iCloud inbox; docs/PIPELINE.md, Circa), screenshots winning, sent to Discord with the picks (weekdays 14:00, weekends 08:00); the owner places every bet and logs it in the
 append-only `../logs/moon/bets.csv`.
 Plan: $50 for 2026-11 (rows 8-9: $77 deposited, $27 of manual picks before; units size from the $50), tier `mix`.
 Next: `deepsports moon grade` + `status` after the 08:00 sync. Owner: check the first real Circa read

@@ -166,7 +166,8 @@ What differs from the NBA:
   non-D1 schools and ~130 postseason games (NCAA, NIT, CBI). Conference tournaments are season type 2.
 
 ## In use: Circa odds board screenshots (owner uploads)
-Circa (where the owner bets by hand) isn't in The Odds API feed and isn't scraped. The owner uploads
+Circa (where the owner bets by hand) isn't in The Odds API feed and isn't scraped (its lines also come from
+OddsPapi since 2026-11-14, below). The owner uploads
 phone screenshots of its board (`POST /api/circa/screenshots` or the iCloud inbox); `deepsports circa
 read` has headless Claude (Sonnet, Read only) transcribe them to JSON lines, which are validated and
 matched to ESPN game_ids by team names (Circa rotation numbers only pair a game's two sides; they aren't
@@ -174,6 +175,26 @@ in any feed we have). No network fetch, no warehouse table: files under
 `/Volumes/ExFATStorag/DeepSports/circa/` (contract in docs/API.md, Circa). Known limits: transcription
 can misread; a line Claude can't place stays `game_id: null`; prices without a printed price default to
 -110 per the prompt.
+
+## In use: OddsPapi (Circa + William Hill lines, since 2026-11-14)
+`deepsports books grab` (src/deepsports/books/) pulls Circa's (`circasports`) and Caesars' (`caesars`) pre-match
+NBA + NCAAB lines from OddsPapi's v4 REST API (`https://api.oddspapi.io/v4`): one
+`odds-by-tournaments?tournamentIds=132,648&bookmaker=<slug>` call per book (132 = NBA, 648 = "NCAA, Regular
+Season") plus `markets?sportId=11` (the market-id catalogue, cached, refetched only when an unknown id shows up).
+Free tier: 250 requests a month (resets on the 1st), every billable call counts even on a 4xx; one grab a day
+is ~2 requests. The key is a query parameter (`apiKey`) read from `~/.config/deepsports/oddspapi-key` (mode
+600); error messages mask it, httpx request logging is off, and cached responses never contain it.
+`PoliteClient` at 2.5 s between calls (documented cooldowns 0.5-2 s), raw responses under
+`/Volumes/ExFATStorag/DeepSports/books/raw/`. Checked 2026-11-14:
+- **William Hill:** OddsPapi's `williamhill` is the UK book; there is no Nevada feed. Caesars' feed stands in
+  (owner: "just use Caesars I think that's pretty close"); its links point to `sportsbook.caesars.com/us/az/`,
+  so it is an out-of-state Caesars line, not William Hill NV's.
+- **Circa:** NBA and NCAAB spreads, totals and moneylines, one main line each; Circa posts and pulls lines,
+  so only `active` prices are kept. College lines go up on game day (first seen 07:00 Pacific); the night
+  before, only NBA is posted. The two NBA games checked matched the owner's app.
+- The feed doesn't say which team is home: lines are oriented by matching both team names to an ESPN game
+  starting within 6 h; unmatched fixtures are dropped. A spread market's handicap is participant 1's line.
+Screenshots stay the fallback and win over the feed where both have a line (moon `--circa auto`).
 
 ## Tried and not used
 | Source | Result (2026-11-03) | Decision |

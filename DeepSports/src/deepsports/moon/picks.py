@@ -99,7 +99,7 @@ class Proposal:
 
     def circa_line(self) -> str:
         if all(lg.source == "circa" for lg in self.legs):
-            return "Price from Circa's screenshots" + (
+            return "Price from Circa's lines" + (
                 " (leg prices; check Circa's parlay price)" if len(self.legs) > 1 else ""
             )
         unchecked = [lg.label for lg in self.legs if lg.source == "unchecked"]

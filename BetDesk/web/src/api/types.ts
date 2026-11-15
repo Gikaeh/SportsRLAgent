@@ -234,13 +234,41 @@ export type HealthResponse = {
   now: string;
 };
 
-// ---- Circa screenshots (GET /api/circa/screenshots/today; uploads happen on the Mac's LAN page) ----
+// ---- Model picks (GET /api/picks/today; watch-only, the latest daily run, no stakes) ----
 
-export type CircaTodayResponse = {
-  date: string;
-  count: number;
-  /** ISO time of the newest screenshot today, or null when there are none. */
-  latest_at: string | null;
-  /** Set once DeepSports has read today's screenshots (around 2 PM, before the picks). */
-  read: null | { read_at: string; lines: number; matched: number };
+export type BookQuote = { line: number | null; price: number };
+
+export type ModelPick = {
+  game_id: string;
+  league: League;
+  /** e.g. "PHI -7.5", "Under 224.5" */
+  label: string;
+  market: "spread" | "total";
+  side: "home" | "away" | "over" | "under";
+  line: number;
+  /** American price the pick was made at (the reference books' line). */
+  price: number;
+  tier: "strong" | "lean";
+  /** Points past the line for DeepSports' and ManualBets' models. */
+  ds_edge: number;
+  mb_edge: number;
+  /** Early-season college game (ManualBets withholds its own bets). */
+  early: boolean;
+  away: { abbr: string | null; name: string | null };
+  home: { abbr: string | null; name: string | null };
+  tip_utc: string | null;
+  /** Circa's and William Hill's (Caesars feed) line and price for the same side, when grabbed. */
+  books: Partial<Record<"circa" | "williamhill", BookQuote>>;
+  best: { line: number | null; price: number; book: string } | null;
+};
+
+export type PicksTodayResponse = {
+  available: boolean;
+  /** When the run was made (ISO); null when there's no run in the last 36 hours. */
+  run_at: string | null;
+  rule_version?: string;
+  top: ModelPick[];
+  /** Other strong/lean picks, best first (at most 10). */
+  more: ModelPick[];
+  counts: { strong: number; lean: number };
 };

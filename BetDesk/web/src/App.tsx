@@ -4,9 +4,9 @@ import { Empty } from "./components/States";
 import { useEffect } from "react";
 import { setLeague, useLeague } from "./league";
 import { Bets } from "./screens/Bets";
-import { Circa } from "./screens/Circa";
 import { Game } from "./screens/Game";
 import { ModelRecord } from "./screens/ModelRecord";
+import { Picks } from "./screens/Picks";
 import { Standings } from "./screens/Standings";
 import { Team } from "./screens/Team";
 import { Today } from "./screens/Today";
@@ -21,7 +21,7 @@ export function App() {
     if (linked) setLeague(linked);
   }, [linked]);
   const tab =
-    route.name === "today" || route.name === "game"
+    route.name === "today" || route.name === "game" || route.name === "picks"
       ? "today"
       : route.name === "bets"
         ? "bets"
@@ -29,9 +29,7 @@ export function App() {
         ? "standings"
         : route.name === "model"
           ? "model"
-          : route.name === "circa"
-            ? "circa"
-            : null;
+          : null;
   return (
     <div className="app">
       {import.meta.env.VITE_MOCK === "1" && <div className="mock-flag">Mock data</div>}
@@ -41,7 +39,7 @@ export function App() {
       {route.name === "bets" && <Bets />}
       {route.name === "standings" && <Standings />}
       {route.name === "model" && <ModelRecord />}
-      {route.name === "circa" && <Circa />}
+      {route.name === "picks" && <Picks />}
       {route.name === "team" && <Team key={route.abbr} abbr={route.abbr} />}
       {route.name === "notfound" && (
         <main className="content">

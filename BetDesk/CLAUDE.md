@@ -14,11 +14,12 @@ shared bet logging with a bankroll per person. Proposal: `../docs/proposals/2026
 
 ## Layout
 - `web/`: Vite + React PWA, copied from `DeepSports/web` on 2026-11-10. New UI work happens here;
-  `DeepSports/web` is frozen (LAN + glasses only).
+  `DeepSports/web` is frozen (LAN + glasses only) except where the owner asks for the same feature
+  locally (the Picks button, 2026-11-14).
 - `worker/`: Cloudflare Worker. Serves static assets from `web/dist`; checks the Access JWT itself
   (fails closed) and forwards allowed `GET /api/*` to the tunnel hostname with an Access service token
-  (`src/origin.ts`); every non-GET gets 405. Circa screenshots are uploaded on the Mac's side (LAN page or
-  iCloud), not here (`../docs/DECISIONS.md` 2026-11-14, Circa upload). On the Mac, `cloudflared` (a launchd daemon, set up in SETUP.md) forwards the
+  (`src/origin.ts`); every non-GET gets 405. Circa screenshots stay on the Mac (LAN page or iCloud); BetDesk has
+  no Circa tab since 2026-11-14 (book prices show in the Picks screen). On the Mac, `cloudflared` (a launchd daemon, set up in SETUP.md) forwards the
   tunnel to `localhost:8787`. No code of BetDesk's runs on the Mac.
 
 ## Rules

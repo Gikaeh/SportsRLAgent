@@ -1,4 +1,4 @@
-import type { BetsResponse, CircaTodayResponse, GameDetailResponse, League, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse } from "./types";
+import type { BetsResponse, PicksTodayResponse, GameDetailResponse, League, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse } from "./types";
 
 export class ApiError extends Error {
   status: number;
@@ -79,7 +79,7 @@ export const api = {
   bets: () => `/api/bets`,
   standings: () => `/api/standings`,
   team: (abbr: string) => `/api/teams/${encodeURIComponent(abbr)}`,
-  circaToday: () => `/api/circa/screenshots/today`,
+  picksToday: () => `/api/picks/today`,
 };
 
 /** Error code from a JSON error body: the Worker sends `error`, DeepSports' 4xx may send `detail`. */
@@ -92,4 +92,4 @@ function errorCode(body: unknown): string | null {
   return null;
 }
 
-export type { BetsResponse, CircaTodayResponse, GameDetailResponse, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse };
+export type { BetsResponse, PicksTodayResponse, GameDetailResponse, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse };

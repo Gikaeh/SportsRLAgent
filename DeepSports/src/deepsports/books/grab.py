@@ -5,6 +5,10 @@ write `<BOOKS_DIR>/<book>/<YYYY-MM-DD>.json` in the Circa lines contract (docs/A
      "lines": [{"game_id", "league", "away", "home", "market", "side", "line", "price",
                 "rotation": null}]}
 
+`--early` (the 21:00 evening run) writes the same contract to
+`<BOOKS_DIR>/<book>/early/<YYYY-MM-DD>.json` for the next day's games instead, so the day file the
+picks read is never touched; its `grabbed_at` timestamps the night-before line.
+
 About 2 requests per run (one per book) plus 1 when the market catalogue needs a refresh. A line
 whose game can't be matched (no warehouse game with both teams within 6 h of the start) is left
 out, because the feed doesn't say which team is home. Never needs the writer lock: one brief
@@ -17,7 +21,7 @@ import json
 import os
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -31,17 +35,30 @@ from deepsports.http import PoliteClient
 MAX_START_GAP = timedelta(hours=6)
 
 
-def lines_path(book: str, day: date) -> Path:
-    return config.BOOKS_DIR / book / f"{day.isoformat()}.json"
+def lines_path(book: str, day: date, early: bool = False) -> Path:
+    return config.BOOKS_DIR / book / ("early" if early else "") / f"{day.isoformat()}.json"
+
+
+def _read(path: Path) -> dict | None:
+    try:
+        data = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) and isinstance(data.get("lines"), list) else None
 
 
 def load(book: str, day: date | None = None) -> dict | None:
     """The day's grabbed lines for `book`, or None if missing or unreadable."""
-    try:
-        data = json.loads(lines_path(book, day or today()).read_text())
-    except (OSError, ValueError):
-        return None
-    return data if isinstance(data, dict) and isinstance(data.get("lines"), list) else None
+    return _read(lines_path(book, day or today()))
+
+
+def load_early(book: str, day: date) -> dict | None:
+    """The night-before (`grab --early`) lines for `book`'s games on `day`, or None."""
+    return _read(lines_path(book, day, early=True))
+
+
+def tomorrow() -> date:
+    return today() + timedelta(days=1)
 
 
 def _start(v: Any) -> datetime | None:
@@ -64,6 +81,13 @@ def _near(cands: Sequence[Mapping], start: datetime | None) -> list[Mapping]:
         if gs is None or abs(gs - start) <= MAX_START_GAP:
             out.append(g)
     return out
+
+
+def _local_day(v: Any) -> date | None:
+    s = _start(v)
+    if s is None:
+        return None
+    return (s if s.tzinfo else s.replace(tzinfo=UTC)).astimezone(config.LOCAL_TZ).date()
 
 
 _SIDE = {("1", False): "home", ("2", False): "away", ("1", True): "away", ("2", True): "home"}
@@ -120,30 +144,37 @@ def grab_day(
     client: PoliteClient | None = None,
     key: str | None = None,
     candidates: Callable[[date], list[dict]] = load_candidates,
+    early: bool = False,
 ) -> GrabResult:
-    day = day or today()
+    """Grab `books` for `day`. With `early`, write the early file instead of the day file and keep
+    only games that tip on `day` (local); `day` then defaults to tomorrow."""
+    day = day or (tomorrow() if early else today())
     now = datetime.now(config.LOCAL_TZ)
+    label = f"books early {day}" if early else f"books {day}"
     try:
         key = key or oddspapi.read_key()
     except oddspapi.OddsPapiError as e:
-        return GrabResult(False, f"books {day}: FAILED, {e}")
+        return GrabResult(False, f"{label}: FAILED, {e}")
     if client is None:
         raw = require_mounted(config.BOOKS_DIR) / "raw"
         client = PoliteClient(raw_dir=raw, min_interval=oddspapi.MIN_INTERVAL, max_retries=1)
     try:
         cands = candidates(day)
     except Exception as e:  # warehouse busy: without games we can't tell home from away
-        return GrabResult(False, f"books {day}: FAILED, no games to match ({type(e).__name__})")
+        return GrabResult(False, f"{label}: FAILED, no games to match ({type(e).__name__})")
+    # The candidate window runs into the next day; a night-before file holds `day`'s games only.
+    keep = {g["game_id"] for g in cands if _local_day(g.get("start_time_utc")) == day}
     res = GrabResult(True, "")
     refreshed = False
     try:
         markets = oddspapi.fetch_markets(client, key)
     except oddspapi.OddsPapiError as e:
-        return GrabResult(False, f"books {day}: FAILED, market catalogue: {e}")
+        return GrabResult(False, f"{label}: FAILED, market catalogue: {e}")
     parts = []
     for book, slug in books.items():
         try:
-            fixtures = oddspapi.fetch_book(client, key, slug, f"{day}/{slug}-{now:%H%M%S}")
+            tag = f"early-{slug}" if early else slug
+            fixtures = oddspapi.fetch_book(client, key, slug, f"{day}/{tag}-{now:%H%M%S}")
             if oddspapi.unknown_markets(fixtures, slug, markets) and not refreshed:
                 markets, refreshed = oddspapi.fetch_markets(client, key, refresh=True), True
         except oddspapi.OddsPapiError as e:
@@ -153,7 +184,9 @@ def grab_day(
             continue
         rows = oddspapi.parse_fixtures(fixtures, slug, oddspapi.market_index(markets))
         lines, unmatched = to_lines(rows, cands)
-        _write(lines_path(book, day), {
+        if early:
+            lines = [q for q in lines if q["game_id"] in keep]
+        _write(lines_path(book, day, early), {
             "date": day.isoformat(),
             "grabbed_at": now.isoformat(timespec="seconds"),
             "book": book,
@@ -165,5 +198,5 @@ def grab_day(
         res.counts[book] = len(lines)
         parts.append(f"{book} {len(lines)} lines ({games} games" +
                      (f", {unmatched} unmatched)" if unmatched else ")"))  # fmt: skip
-    res.message = f"books {day}: " + ", ".join(parts) + f"; {client.network_requests} requests"
+    res.message = f"{label}: " + ", ".join(parts) + f"; {client.network_requests} requests"
     return res

@@ -143,13 +143,19 @@ def collect_boxscores(src: EspnBasketball, db: Store, limit: int | None = None) 
 
 
 def collect_core_odds(
-    src: EspnBasketball, db: Store, include_opening: bool = False, limit: int | None = None
+    src: EspnBasketball,
+    db: Store,
+    include_opening: bool = False,
+    limit: int | None = None,
+    since: datetime | None = None,
 ) -> RunStats:
-    """Historical lines from the ESPN core API for final games missing them. A closing line
-    already taken from the game summary is kept; the core API only fills gaps."""
+    """Historical lines from the ESPN core API for final games missing them (with `since`,
+    only games starting at or after it). A closing line already taken from the game summary is
+    kept; the core API only fills gaps. Responses are cached forever, so a game ESPN has no
+    opening line for costs a cache read, not a request, on later runs."""
     stats = RunStats()
     for game_id, start, has_closing in db.games_needing_core_odds(
-        include_opening, limit, league=src.league
+        include_opening, limit, league=src.league, since=since
     ):
         try:
             raw = src.core_odds(game_id)

@@ -181,3 +181,73 @@ def test_write_run_skips_games_an_earlier_run_posted(tmp_path):
     third, _ = mp.write_run(s3, t0 + timedelta(hours=48), root=tmp_path)
     assert len(json.loads((third / "picks.json").read_text())["top"]) == 1
     assert mp.posted_games(tmp_path, datetime(2000, 1, 1, tzinfo=UTC)) == set()
+
+
+def test_best_book_line_first_then_price():
+    sp = {
+        "market": "spread",
+        "side": "away",
+        "books": {
+            "circa": {"line": 7.5, "price": -115},
+            "williamhill": {"line": 7.0, "price": -105},
+        },
+    }
+    assert mp.best_book(sp) == {"book": "circa", "line": 7.5, "price": -115}
+    over = {
+        "market": "total",
+        "side": "over",
+        "books": {
+            "circa": {"line": 141.5, "price": -110},
+            "williamhill": {"line": 141.0, "price": -110},
+        },
+    }
+    assert mp.best_book(over)["book"] == "williamhill"
+    under = dict(over, side="under")
+    assert mp.best_book(under)["book"] == "circa"
+    tie = {
+        "market": "total",
+        "side": "over",
+        "books": {
+            "circa": {"line": 141.0, "price": -112},
+            "williamhill": {"line": 141.0, "price": +100},
+        },
+    }
+    assert mp.best_book(tie)["price"] == 100
+    assert mp.best_book({"market": "total", "side": "over"}) is None
+    assert mp.best_book({**over, "books": {"circa": {"line": None, "price": -110}}}) is None
+
+
+def test_grade_picks_at_book_price_beside_draftkings():
+    s = slate(
+        game("1", "nba", -5, 200, (10, 196), (10, 195)),  # top: home -5 (DK -110)
+        game("2", "ncaab", -3, 140, (4, 150), (5, 150)),  # top: over 140, no book quote
+    )
+    run = mp.slate_run(s, run="r1")
+    books = {
+        "circa": {
+            "lines": [
+                {"game_id": "1", "market": "spread", "side": "home", "line": -6.5, "price": +100}
+            ]
+        },
+        "williamhill": {
+            "lines": [
+                {"game_id": "1", "market": "spread", "side": "home", "line": -4.5, "price": -120}
+            ]
+        },
+    }
+    mp.attach_books(run["top"], books)
+    con = _db(
+        [("1", "nba", 110, 104), ("2", "ncaab", 70, 60)],
+        [("1", "2026-11-14 00:30:00+00", -6.0, 198.0)],
+    )
+    rec = mp.grade_picks(con, [run])
+    # DK home -5 wins by 6; WH -4.5 (better line) wins at -120; Circa -6.5 would have lost
+    assert rec["top"]["record"] == "1-1-0"  # unchanged DK record (over 140 vs 130 loses)
+    assert rec["book_quotes"]["top_picks"] == 2 and rec["book_quotes"]["with_quote"] == 1
+    assert rec["book_quotes"]["by_book"] == {"williamhill": 1}
+    tb, dk = rec["top_books"], rec["top_books_dk"]
+    assert tb["bets"] == dk["bets"] == 1 and tb["record"] == "1-0-0"
+    assert tb["units_profit"] == round(100 / 120, 2) and dk["units_profit"] == round(100 / 110, 2)
+    assert tb["clv_mean"] == 1.5 and dk["clv_mean"] == 1.0
+    assert rec["by_league"]["nba"]["top_books"]["bets"] == 1
+    assert rec["per_run"][0]["top_books"]["bets"] == 1

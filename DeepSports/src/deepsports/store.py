@@ -779,9 +779,14 @@ class Store:
         return [r[0] for r in self.con.execute(sql, [league]).fetchall()]
 
     def games_needing_core_odds(
-        self, include_opening: bool = False, limit: int | None = None, league: str = "nba"
+        self,
+        include_opening: bool = False,
+        limit: int | None = None,
+        league: str = "nba",
+        since: datetime | None = None,
     ) -> list[tuple[str, Any, bool]]:
-        """Final games lacking a closing line (or, with include_opening, an opening line).
+        """Final games lacking a closing line (or, with include_opening, an opening line),
+        oldest first; with `since`, only games starting at or after it.
         Returns (game_id, start_time_utc, has_closing)."""
         want = "has_opening" if include_opening else "has_closing"
         sql = f"""
@@ -795,11 +800,12 @@ class Store:
             FROM games g LEFT JOIN o USING (game_id)
             WHERE g.league = ? AND g.completed AND g.status = 'STATUS_FINAL'
               AND NOT coalesce(o.{want}, false)
+              AND (?::TIMESTAMPTZ IS NULL OR g.start_time_utc >= ?::TIMESTAMPTZ)
             ORDER BY g.start_time_utc
         """
         if limit:
             sql += f" LIMIT {int(limit)}"
-        return self.con.execute(sql, [league]).fetchall()
+        return self.con.execute(sql, [league, since, since]).fetchall()
 
     def upcoming_games(
         self,

@@ -33,6 +33,7 @@ flowchart TB
     SCHED -.->|"unscheduled 2026-11-13<br/>(skill runs by hand)"| SYNC
     MPDAILY["tools/model-picks-daily.sh<br/>weekdays 14:00 · Sat/Sun 08:00<br/>export ≤20 min → books grab → circa read → model-picks run<br/>→ moon propose --tier mix --circa auto<br/>picks (or blocked alert) + moon proposal → Discord"]
     SCHED --> MPDAILY
+    BEVENING["tools/books-evening.sh<br/>launchd 21:00<br/>books grab --early (Caesars, tomorrow)<br/>→ early-totals log (et-v1 forward test)"]
     EBDAILY["tools/ensemble-daily.sh<br/>by hand only (unscheduled 2026-11-13)<br/>N bettors · majority table → Discord"]
     EBDAILY -.->|"headless claude -p<br/>/ensemble-betting prefetched"| EBSKILL
     MBEXPORT["tools/manualbets-export.py<br/>runs ../ManualBets/tools/export_predictions.py<br/>XGBoost + Kelly + Odds API → .sync/manualbets-export.json (edge 4)"]
@@ -47,12 +48,13 @@ flowchart TB
 
   subgraph PIPE["Data collection: src/deepsports"]
     direction LR
-    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|table|grade · model-picks run|grade ·<br/>moon · circa read|ingest|status · books grab|status · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
+    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|table|grade · model-picks run|grade ·<br/>moon · circa read|ingest|status · books grab|status · early-totals · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
     PIPELINE --> SRC["sources/espn.py<br/>EspnBasketball(league)<br/>site + core endpoints"] --> HTTP["http.py PoliteClient<br/>1 req/s · retry/backoff"]
     PIPELINE --> PARSE["parse_espn.py<br/>pure raw → rows"] --> STORE["store.py<br/>schema + upserts"]
     QUAL["quality.py<br/>data checks"]
     PBP["parse_pbp.py<br/>pure play-by-play parser<br/>(on demand, no table)"]
-    BOOKSM["books/ · books grab|status<br/>OddsPapi: Circa + Caesars (as William Hill)<br/>~2 requests/day · match to games (brief read-only open)"]
+    BOOKSM["books/ · books grab|status (--early)<br/>OddsPapi: Circa + Caesars (as William Hill)<br/>~3 requests/day · match to games (brief read-only open)"]
+    ETOT["analysis/early_totals · early-totals log|grade|status<br/>pre-registered et-v1: college totals vs night-before Caesars<br/>reports/early-totals/ (append-only, no stakes)"]
     CIRCA["circa/ · circa read|ingest|status<br/>iCloud inbox ingest · headless Claude transcribes<br/>validate lines · match to games (brief read-only open)<br/>no DuckDB table"]
   end
 
@@ -163,6 +165,9 @@ flowchart TB
   MPDAILY -->|"circa read · moon propose"| CLI
   CLI --> CIRCA
   CLI --> BOOKSM
+  BEVENING -->|"books grab --early · early-totals log"| CLI
+  CLI --> ETOT
+  BOOKSFS -->|"night-before Caesars totals"| ETOT
   BOOKSM -->|"odds-by-tournaments"| ODDSPAPI
   BOOKSM -->|"lines per book"| BOOKSFS
   MPDAILY -->|"books grab"| CLI

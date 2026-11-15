@@ -339,3 +339,14 @@ def test_quality_known_points_mismatch_list():
     ids = {"401597895", "401597922", "401608976", "401720664", "401722030", "401722338",
            "401727325"}  # fmt: skip
     assert {g for g, _ in KNOWN_POINTS_MISMATCH} == ids and len(KNOWN_POINTS_MISMATCH) == 7
+
+
+def test_games_needing_core_odds_since_window(db):
+    games, _ = parse_scoreboard(load("espn_scoreboard_final.json"))
+    db.upsert_games(games[:2])
+    starts = sorted(g["start_time_utc"] for g in games[:2])
+    assert len(db.games_needing_core_odds(include_opening=True)) == 2
+    after = starts[-1] + timedelta(seconds=1)
+    assert db.games_needing_core_odds(include_opening=True, since=after) == []
+    got = db.games_needing_core_odds(include_opening=True, since=starts[-1])
+    assert [r[1] for r in got] == [starts[-1]] * len(got) and got

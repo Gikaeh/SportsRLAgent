@@ -700,3 +700,19 @@ deleted (screenshots and `circa read` stay as the fallback). The picks job runs 
 backstop (and for the first switch, when Saturday's 14:00 run already covered Sunday morning), a run leaves out
 any game a run in the last 36 h posted, and says how many (`model_picks.posted_games`).
 
+
+### 2026-11-14: pre-registered forward test of night-before college totals (`et-v1`); picks graded at the book price
+**Why:** a research pass found 2025-26 college totals where DS and MB agree and average 4+ points past the
+opening total won 56.8% (n 1,574, ROI +8.3% at opening prices, day CI +3.7% to +12.9%), with nothing left
+against the close; opening rows have no posting time, so that is an upper bound. The only honest test is
+forward, at a line the owner could really take. **What:** `deepsports early-totals log|grade|status`
+(watch-only): at 21:00 the evening before, against Caesars' night-before total, rule, sample size (300,
+one extension to 600) and pass/fail fixed in `docs/results/2026-11-15-early-totals-preregistration.md`
+before any such line was seen. No rest filter (it was a leak check for undated openers; recorded per bet
+instead). ManualBets numbers reuse the day's model-picks export (its college window is 2 days, so it
+already covers tomorrow; no new Odds API credits). Separately, `model-picks grade` adds `top_books`: top
+picks graded at the better Circa/WH quote beside the same picks at DraftKings; `mp-v1` is unchanged.
+Data for it: `books grab --early` (launchd `com.deepsports.books-evening`, 21:00, William Hill only, ~1 OddsPapi
+request a night) writes `books/williamhill/early/<date>.json`, then `early-totals log` runs; opening lines had
+stopped on 2026-11-03 (never scheduled), so they were backfilled and every sync now fetches them for recent
+finals (`odds-history --with-opening --days 4`).

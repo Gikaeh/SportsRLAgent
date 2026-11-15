@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Evening book grab (watch-only forward test of opening-line totals): `deepsports books grab --early`
+# writes tomorrow's night-before William Hill (Caesars feed) lines to
+# <BOOKS_DIR>/williamhill/early/<date>.json; the day file the picks read is untouched.
+# ~1 of OddsPapi's 250 free monthly requests. Run by launchd at 21:00
+# (tools/launchd/com.deepsports.books-evening.plist); safe to run by hand. Non-fatal, capped at
+# 2 min, one log line. Never needs the writer lock (one brief read-only open to match games).
+# Under launchd only uv's Python may touch the drive (DECISIONS 2026-11-07): this script only
+# tests that the warehouse file exists and leaves all access to deepsports.
+set -uo pipefail
+REPO="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$REPO"
+export PATH="/opt/homebrew/bin:$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
+ts() { date '+%Y-%m-%d %H:%M:%S'; }
+
+if [ ! -e data/deepsports.duckdb ]; then
+  echo "$(ts) books early: skipped, data dir unavailable (external drive not mounted?)"
+  exit 0
+fi
+raw=$(timeout -k 15 120 uv run --frozen deepsports books grab --early 2>/dev/null)
+status=$?
+out=$(printf '%s\n' "$raw" | tail -1)
+if [ "$status" -eq 124 ] || [ "$status" -eq 137 ]; then out="timed out after 120 s"; fi
+echo "$(ts) books grab --early: ${out:-no output} (exit $status)"
+
+# Forward test et-v1 (docs/results/2026-11-15-early-totals-preregistration.md): log tomorrow's
+# qualifying college totals at the night-before Caesars line. Watch-only, no stakes, append-only.
+# Exit 3 = the warehouse was busy (a :15/:20 job): retry once after 3 minutes.
+et_log() { timeout -k 15 180 uv run --frozen deepsports early-totals log 2>/dev/null | head -1; return "${PIPESTATUS[0]}"; }
+et_out=$(et_log); et_status=$?
+if [ "$et_status" -eq 3 ]; then
+  sleep 180
+  et_out=$(et_log); et_status=$?
+fi
+echo "$(ts) early-totals log: ${et_out:-no output} (exit $et_status)"
+
+exit 0

@@ -1,5 +1,13 @@
 # BetDesk handoff
 
+## State (2026-11-14): Picks button
+Today has a **Picks** button (top right) that opens `#/picks`: the latest model-picks run from
+`GET /api/picks/today` (allowlisted in `worker/src/origin.ts`), top 5 with Circa's and William Hill's
+(Caesars feed) prices, plus the other strong/lean picks. Watch-only, no stakes. The LAN app
+(`DeepSports/web`) got the same button and screen. The Circa tab (screenshot status) is gone: book
+prices now come from OddsPapi and show in Picks; `/api/circa/screenshots/today` left the allowlist.
+Not deployed yet.
+
 ## State (2026-11-14): Circa upload removed
 The owner uploads Circa screenshots locally (DeepSports' `/circa` page on home Wi-Fi or the iCloud
 inbox), so the Worker is GET-only again (`POST /api/circa/screenshots` → 405) and the Circa tab only

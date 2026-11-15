@@ -37,6 +37,7 @@ export function Today({ date, league }: { date: string | null; league: League })
             {liveCount > 0 && <span className="live-count"> · {liveCount} live</span>}
           </>
         }
+        right={<PicksButton />}
       />
       <div className="league-switch-wrap">
         <div className="segmented league-switch" role="group" aria-label="League">
@@ -139,4 +140,16 @@ function NextUp({ game }: { game: GameCard }) {
 function pickLeague(l: League, date: string | null) {
   setLeague(l);
   if (/[?&]league=/.test(window.location.hash)) window.location.hash = href.today(date);
+}
+
+/** Top-right button: opens today's model picks (top 5 with Circa and William Hill prices). */
+function PicksButton() {
+  return (
+    <a className="picks-btn" href={href.picks()} aria-label="Today's picks">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      </svg>
+      <span>Picks</span>
+    </a>
+  );
 }

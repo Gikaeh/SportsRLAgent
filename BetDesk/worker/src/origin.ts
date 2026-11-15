@@ -1,6 +1,6 @@
 // The Worker's proxy to DeepSports' read API on the owner's Mac, reached through a Cloudflare Tunnel
-// whose hostname is itself behind Access (service token only). GET only, on an allowlist (Circa uploads
-// go through the Mac's LAN page or iCloud since 2026-11-14). Pure helpers are unit-tested in
+// whose hostname is itself behind Access (service token only). GET only, on an allowlist (Circa
+// screenshots go in on the Mac; BetDesk has no Circa tab since 2026-11-14). Pure helpers are unit-tested in
 // test/origin.test.ts; the handler's behavior in test/handler.test.ts.
 
 /** Read endpoints the app may reach on the Mac. Everything else is refused before leaving Cloudflare. */
@@ -13,7 +13,7 @@ const ALLOWED = [
   /^\/api\/standings$/,
   /^\/api\/teams\/[A-Za-z0-9]{1,8}$/,
   /^\/api\/followed$/,
-  /^\/api\/circa\/screenshots\/today$/,
+  /^\/api\/picks\/today$/,
 ];
 
 /** Query strings the app sends are short (league, date, days); anything longer is refused. */

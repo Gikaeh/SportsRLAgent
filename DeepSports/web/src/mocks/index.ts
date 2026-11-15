@@ -11,6 +11,7 @@
 import type { GameCard, League, ScoreboardResponse, StandingsResponse } from "../api/types";
 import { gameDetail } from "./boxscore";
 import { advanceLive, playsFor, possessionFor } from "./plays";
+import { picksToday } from "./picks";
 import { predictionRecord } from "./record";
 import { allKnownCards, etToday, nextFollowedGame, slateFor } from "./scoreboard";
 import { extraGames, followedAbbrs, teamPage } from "./teamPage";
@@ -54,6 +55,7 @@ export async function mockFetch(path: string, signal?: AbortSignal): Promise<Res
   const league: League = mode === "v1" ? "nba" : ((lgParam as League | null) ?? "nba");
   if (warehouse && mode === "busy") return json({ error: "warehouse_busy" }, 503);
 
+  if (p === "/api/picks/today") return json(picksToday());
   if (p === "/api/health") {
     return json({ ok: true, warehouse: mode === "busy" ? "busy" : "ok", now: new Date().toISOString() });
   }

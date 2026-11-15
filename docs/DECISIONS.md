@@ -147,3 +147,13 @@ GET-only again (every non-GET → 405) and its Circa tab only shows today's stat
 DeepSports' `/circa` page on home Wi-Fi (upload code) or the iCloud inbox; item 7 above ("this page can go")
 is reversed: the page stays. DeepSports' `POST /api/circa/screenshots` and its loopback path are unchanged;
 with no Worker route, the tunnel only carries it for a holder of the service token.
+
+### 2026-11-14: Picks button in both apps (one exception to the `DeepSports/web` freeze)
+Owner: "have the local and betdesk app have the predictions for the day on the top right button". Today
+gets a Picks button in BetDesk and in the LAN app (`DeepSports/web`, frozen since 2026-11-10; this feature
+only, at the owner's request). Both read a new DeepSports endpoint, `GET /api/picks/today` (the newest
+model-picks run, top 5 with Circa/WH prices), added to the Worker's allowlist under edge 3. It carries no
+stakes (the picks' internal 1-unit `stake` field is dropped), so BetDesk's no-stakes rule holds. BetDesk's
+Circa tab (screenshot status, "send screenshots before 2 PM") is removed at the owner's request, and
+`/api/circa/screenshots/today` leaves the Worker's allowlist; screenshots stay a local fallback on the Mac.
+

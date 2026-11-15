@@ -72,6 +72,8 @@ diagram in the same change (see CLAUDE.md).
     `warehouse_busy` while a job holds the lock.
   - `circa.py`: `POST /api/circa/screenshots` (multipart images, size and count capped; the API's one write,
     from the `/circa` LAN page) and `GET /api/circa/screenshots/today` (counts only).
+  - `picks.py`: `GET /api/picks/today`, the newest model-picks run (top 5 with Circa/WH prices; files only,
+    no stakes), shown by the Picks button on Today in BetDesk and the LAN app.
     Never opens DuckDB.
   - `views.py` holds pure shaping functions (game cards, box scores, glance lines). CORS allows GET from any
     origin for the glasses WebView.

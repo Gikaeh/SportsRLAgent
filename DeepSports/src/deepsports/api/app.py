@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from deepsports import config
 from deepsports.api import bets, views, warehouse
 from deepsports.api import circa as circa_api
+from deepsports.api import picks as picks_api
 from deepsports.api.live import LEAGUES, LiveService, UnknownLeague
 from deepsports.http import FetchError
 from deepsports.pipeline import league_today
@@ -214,6 +215,16 @@ def create_app(
             "live": is_live,
             "refresh_seconds": live.refresh_seconds(is_live),
         }
+
+    @app.get("/api/picks/today")
+    def picks_today():
+        """The latest models-only picks run (top 5 with Circa/WH prices; watch-only). Files only."""
+        from deepsports.analysis.model_picks import RUNS_DIR
+
+        try:
+            return picks_api.latest_run(RUNS_DIR)
+        except OSError:  # external drive missing or not permitted
+            return JSONResponse({"error": "storage_unavailable"}, status_code=503)
 
     @app.get("/api/glance")
     def glance():

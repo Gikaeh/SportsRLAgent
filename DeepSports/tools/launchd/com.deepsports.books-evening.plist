@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.deepsports.books-evening</string>
+  <key>ProgramArguments</key>
+  <array><string>/bin/bash</string><string>__REPO__/tools/books-evening.sh</string></array>
+  <key>WorkingDirectory</key><string>__REPO__</string>
+  <!-- Daily at 21:00 local: night-before William Hill (Caesars feed) lines for tomorrow's games
+       from OddsPapi (`deepsports books grab --early`, ~1 request). Not a warehouse writer. -->
+  <key>StartCalendarInterval</key>
+  <dict><key>Hour</key><integer>21</integer><key>Minute</key><integer>0</integer></dict>
+  <key>LowPriorityIO</key><true/>
+  <key>Nice</key><integer>10</integer>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/DeepSports/books.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/DeepSports/books.log</string>
+</dict>
+</plist>

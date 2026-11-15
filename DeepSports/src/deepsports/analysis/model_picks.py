@@ -29,7 +29,7 @@ from typing import Any
 import duckdb
 
 from deepsports import config
-from deepsports.analysis.betting.grading import clv
+from deepsports.analysis.betting.grading import clv, profit_on_win
 from deepsports.analysis.betting.loaders import load_odds, sane_lines
 from deepsports.analysis.ensemble_bets import (
     _short_tip,
@@ -325,32 +325,79 @@ def _summary(graded: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     return out
 
 
+def _line_value(market: str, side: str, line: float) -> float:
+    """Bigger = better for the bettor: spread lines are from the bet side's view (higher is
+    better), an over wants a lower total, an under a higher one."""
+    return -line if (market == "total" and side == "over") else line
+
+
+def best_book(pick: Mapping[str, Any]) -> dict[str, Any] | None:
+    """The better of the pick's book quotes (`attach_books`): best line for the bettor first, then
+    the better price. {"book", "line", "price"}, or None without a usable quote. Chosen from the
+    quotes alone (known when the run was made), never from the result."""
+    best, key = None, None
+    for book, q in sorted((pick.get("books") or {}).items()):
+        line, price = q.get("line"), q.get("price")
+        if line is None or price is None:
+            continue
+        try:
+            k = (_line_value(pick["market"], pick["side"], float(line)), profit_on_win(price, 1))
+        except ValueError:
+            continue
+        if key is None or k > key:
+            best, key = {"book": book, "line": float(line), "price": int(price)}, k
+    return best
+
+
+TOP_GROUPS = ("top", "top_books", "top_books_dk")
+
+
 def grade_picks(
     con: duckdb.DuckDBPyConnection, runs: Sequence[Mapping[str, Any]]
 ) -> dict[str, Any]:
     """Grade runs ({"run", "picks", "top"}) at each pick's line and price, 1 unit per pick, with
     CLV vs the closing row. Groups: top, strong, lean; also per league and per run. Unfinished
-    games count as pending."""
-    groups: dict[str, list[dict]] = {"top": [], "strong": [], "lean": []}
+    games count as pending.
+
+    Bettable price: `top_books` grades each top pick that has a Circa/William Hill quote at the
+    better of those quotes (`best_book`: line and price); `top_books_dk` is the same picks at the
+    run's own (DraftKings) line and price, for a paired comparison. `book_quotes` counts top picks
+    with a quote (pending ones included). The `top` record is unchanged."""
+    groups: dict[str, list[dict]] = {k: [] for k in (*TOP_GROUPS, "strong", "lean")}
     leagues: dict[str, dict[str, list[dict]]] = {}
     per_run = []
     pending = 0
+    quotes = {"top_picks": 0, "with_quote": 0, "by_book": {}}
     for r in runs:
         ids = sorted({p["game_id"] for p in r["picks"]} | {p["game_id"] for p in r["top"]})
         finals = load_finals(con, ids)
         closes = load_closes(con, ids)
-        mine: dict[str, list[dict]] = {"top": [], "all": []}
+        mine: dict[str, list[dict]] = {"top": [], "all": [], "top_books": []}
         for name, ps in (("top", r["top"]), ("all", r["picks"])):
             for p in ps:
+                bb = best_book(p) if name == "top" else None
+                if name == "top":
+                    quotes["top_picks"] += 1
+                    if bb:
+                        quotes["with_quote"] += 1
+                        quotes["by_book"][bb["book"]] = quotes["by_book"].get(bb["book"], 0) + 1
                 if p["game_id"] not in finals:
                     pending += name == "all"
                     continue
-                g = grade_pick(p, finals[p["game_id"]])
-                g["clv"] = pick_clv(p, closes.get(p["game_id"]))
-                key = name if name == "top" else p["tier"]
-                groups[key].append(g)
-                lg = leagues.setdefault(p["league"], {"top": [], "strong": [], "lean": []})
-                lg[key].append(g)
+                final, close = finals[p["game_id"]], closes.get(p["game_id"])
+                g = grade_pick(p, final)
+                g["clv"] = pick_clv(p, close)
+                graded = [(name if name == "top" else p["tier"], g)]
+                if bb:
+                    at_book = {**p, "line": bb["line"], "price": bb["price"]}
+                    gb = grade_pick(at_book, final) | {"graded_at": bb["book"]}
+                    gb["clv"] = pick_clv(at_book, close)
+                    graded += [("top_books", gb), ("top_books_dk", g)]
+                    mine["top_books"].append(gb)
+                lg = leagues.setdefault(p["league"], {k: [] for k in groups})
+                for key, x in graded:
+                    groups[key].append(x)
+                    lg[key].append(x)
                 mine[name].append(g)
         per_run.append(
             {"run": r.get("run"), "picks": len(r["picks"]), "top_n": len(r["top"])}
@@ -359,6 +406,7 @@ def grade_picks(
     return {
         "runs": len(runs),
         "pending_picks": pending,
+        "book_quotes": quotes,
         **{k: _summary(v) for k, v in groups.items()},
         "by_league": {
             lg: {k: _summary(v) for k, v in gs.items()} for lg, gs in sorted(leagues.items())

@@ -76,6 +76,9 @@ def build_parser() -> argparse.ArgumentParser:
     oh = sub.add_parser("odds-history", help="historical lines (core API) for final games")
     oh.add_argument("--with-opening", action="store_true", help="also fetch opening lines")
     oh.add_argument("--limit", type=int)
+    oh.add_argument(
+        "--days", type=int, help="only games that started in the last N days (scheduled step)"
+    )
     league_arg(oh)
 
     osn = sub.add_parser(
@@ -208,6 +211,13 @@ def build_parser() -> argparse.ArgumentParser:
         add_help=False,
     )
 
+    sub.add_parser(
+        "early-totals",
+        help="night-before college totals forward test et-v1: log|grade|status (watch-only;"
+        " `deepsports early-totals -h`)",
+        add_help=False,
+    )
+
     sub.add_parser("migrate", help="bring the warehouse schema up to date (idempotent)")
 
     up = sub.add_parser("upcoming", help="list upcoming games (input for calendar sync)")
@@ -240,6 +250,10 @@ def main(argv: list[str] | None = None) -> int:
         from deepsports.books.cli import main as books_main
 
         return books_main(argv[1:])
+    if argv[:1] == ["early-totals"]:  # its own parser; files + brief read-only opens
+        from deepsports.analysis.early_totals_cli import main as early_main
+
+        return early_main(argv[1:])
     args = build_parser().parse_args(argv)
     logging.basicConfig(
         level=logging.INFO if args.verbose else logging.WARNING,
@@ -336,7 +350,8 @@ def _collect_commands(args: argparse.Namespace, db: Store) -> int:
     elif args.command == "backfill":
         stats = pipeline.backfill_season(src, db, args.season)
     elif args.command == "odds-history":
-        stats = pipeline.collect_core_odds(src, db, args.with_opening, args.limit)
+        since = datetime.now(UTC) - timedelta(days=args.days) if args.days else None
+        stats = pipeline.collect_core_odds(src, db, args.with_opening, args.limit, since)
     elif args.command == "injuries-backfill":
         stats = pipeline.backfill_injuries_from_raw(db, client.raw_dir, src.league)
     db.log_run(

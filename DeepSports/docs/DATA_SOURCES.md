@@ -181,8 +181,9 @@ can misread; a line Claude can't place stays `game_id: null`; prices without a p
 NBA + NCAAB lines from OddsPapi's v4 REST API (`https://api.oddspapi.io/v4`): one
 `odds-by-tournaments?tournamentIds=132,648&bookmaker=<slug>` call per book (132 = NBA, 648 = "NCAA, Regular
 Season") plus `markets?sportId=11` (the market-id catalogue, cached, refetched only when an unknown id shows up).
-Free tier: 250 requests a month (resets on the 1st), every billable call counts even on a 4xx; one grab a day
-is ~2 requests. The key is a query parameter (`apiKey`) read from `~/.config/deepsports/oddspapi-key` (mode
+Free tier: 250 requests a month (resets on the 1st), every billable call counts even on a 4xx; the daily grab
+is ~2 requests and the 21:00 evening grab (`books grab --early`, William Hill/Caesars only, tomorrow's games, into
+`books/williamhill/early/<date>.json`; since 2026-11-14) ~1, so ~3 a day (~90 a month). The key is a query parameter (`apiKey`) read from `~/.config/deepsports/oddspapi-key` (mode
 600); error messages mask it, httpx request logging is off, and cached responses never contain it.
 `PoliteClient` at 2.5 s between calls (documented cooldowns 0.5-2 s), raw responses under
 `/Volumes/ExFATStorag/DeepSports/books/raw/`. Checked 2026-11-14:

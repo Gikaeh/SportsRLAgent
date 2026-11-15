@@ -127,7 +127,7 @@ def load_predictions(
     versions = DISPLAY_VERSIONS[league]
     rows = _rows(
         con,
-        f"""SELECT game_id, model_version, p_home_win, pred_home_margin, pred_total
+        f"""SELECT game_id, model_version, p_home_win, pred_home_margin, pred_total, created_at
             FROM predictions
             WHERE model = 'v1' AND created_at <= ? AND model_version IN ({_marks(versions)})
               AND game_id IN ({_marks(game_ids)})

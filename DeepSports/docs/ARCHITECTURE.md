@@ -44,12 +44,16 @@ diagram in the same change (see CLAUDE.md).
   connector. Events are matched by the key `deepsports:nba:<game_id>` in their description, so a sync can
   safely be repeated.
 - Scheduled runs (`tools/scheduled-sync.sh`, launchd 08:00/14:00) do every warehouse step themselves
-  (update, predict, paper log; model picks once a day: weekdays 14:00, Saturday and Sunday 08:00, each
+  (update, opening lines for recent finals, predict, paper log; model picks once a day: weekdays 14:00, Saturday and Sunday 08:00, each
   covering the games until the next run). The picks job (`tools/model-picks-daily.sh`)
   runs `books grab` and `circa read` first, then sends the picks and, as a second Discord message, the To The Moon
   proposal (`moon propose --tier mix --months 1 --circa auto --format discord`). The scheduled calendar sync was scrapped for now
   (2026-11-13); the skill still runs by hand (`calendar-agent`). Headless Claude's Bash sandbox can't open
   DuckDB on the external drive, so a headless run would need `upcoming --json` exported first.
+- Evening book grab (`tools/books-evening.sh`, launchd `com.deepsports.books-evening` at 21:00): `books grab --early`
+  (tomorrow's Caesars lines into `books/williamhill/early/`), then `early-totals log`, the pre-registered `et-v1`
+  forward test (`analysis/early_totals.py`; rule in docs/results/2026-11-15-early-totals-preregistration.md).
+  Watch-only, append-only records under `reports/early-totals/`, no stakes.
 - Line capture (`tools/odds-snapshot.sh`, launchd `com.deepsports.odds` every 30 min at :15/:45):
   `deepsports odds-snapshot` fetches today's and tomorrow's scoreboards (NBA + college) and writes
   only `pregame` odds rows. No Claude involved. It fetches before opening the warehouse and skips

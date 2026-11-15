@@ -42,6 +42,15 @@ for league in nba ncaab; do
   fi
 done
 
+# Opening lines (ESPN core API, 1 request per game) for games that went final in the last 4 days
+# and have no opening row yet. Core responses are cached forever, so a game ESPN has no opening
+# line for costs a cache read, not a request, on later runs. Non-fatal; capped at 300 games / 15 min.
+for league in nba ncaab; do
+  if ! timeout -k 15 900 uv run deepsports odds-history --league "$league" --with-opening --days 4 --limit 300; then
+    echo "$(ts) odds-history --league $league (opening lines) reported errors (continuing)"
+  fi
+done
+
 # Model v1 predictions for upcoming NBA and college games (pre-tip only); the calendar skill reads them
 # through `deepsports upcoming --json`.
 # v1.0, v1.1 and v1.1i are all kept and graded so their records can be compared. v1.1i (v1.1 +

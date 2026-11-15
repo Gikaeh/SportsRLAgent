@@ -5,6 +5,7 @@ import { setLeague, useLeague } from "./league";
 import { Bets } from "./screens/Bets";
 import { Game } from "./screens/Game";
 import { ModelRecord } from "./screens/ModelRecord";
+import { Picks } from "./screens/Picks";
 import { Standings } from "./screens/Standings";
 import { Team } from "./screens/Team";
 import { Today } from "./screens/Today";
@@ -19,7 +20,7 @@ export function App() {
     if (linked) setLeague(linked);
   }, [linked]);
   const tab =
-    route.name === "today" || route.name === "game"
+    route.name === "today" || route.name === "game" || route.name === "picks"
       ? "today"
       : route.name === "bets"
         ? "bets"
@@ -36,6 +37,7 @@ export function App() {
       {route.name === "bets" && <Bets />}
       {route.name === "standings" && <Standings />}
       {route.name === "model" && <ModelRecord />}
+      {route.name === "picks" && <Picks />}
       {route.name === "team" && <Team key={route.abbr} abbr={route.abbr} />}
       {route.name === "notfound" && (
         <main className="content">

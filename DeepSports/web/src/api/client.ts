@@ -1,4 +1,4 @@
-import type { BetsResponse, GameDetailResponse, League, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse } from "./types";
+import type { BetsResponse, PicksTodayResponse, GameDetailResponse, League, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse } from "./types";
 
 export class ApiError extends Error {
   status: number;
@@ -58,6 +58,7 @@ export const api = {
   bets: () => `/api/bets`,
   standings: () => `/api/standings`,
   team: (abbr: string) => `/api/teams/${encodeURIComponent(abbr)}`,
+  picksToday: () => `/api/picks/today`,
 };
 
-export type { BetsResponse, GameDetailResponse, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse };
+export type { BetsResponse, PicksTodayResponse, GameDetailResponse, PredictionRecordResponse, ScoreboardResponse, StandingsResponse, TeamResponse };

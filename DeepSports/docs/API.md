@@ -248,3 +248,22 @@ date)`): the same `lines` entries (always matched, `rotation: null`; names are O
 `{date, grabbed_at, book, source: "oddspapi", source_book: "circasports" | "caesars"}` in place of
 `read_at`/`files`. The moon proposal (`--circa auto`) merges the Circa file with the screenshot file above,
 screenshot lines winning per game, market and side; the model-picks top 5 show both books.
+
+## Picks (2026-11-14; watch-only)
+`GET /api/picks/today`: the newest models-only picks run (`deepsports model-picks run`; weekdays 14:00,
+weekends 08:00) made in the last 36 h, for the apps' Picks button. Files only (never DuckDB). Never
+returns stakes.
+```ts
+{ available: boolean; run_at: string | null /* ISO */; rule_version?: string;
+  top: Pick[]; more: Pick[] /* other strong/lean picks, best first, at most 10 */;
+  counts: { strong: number; lean: number } }
+Pick = { game_id: string; league: "nba" | "ncaab"; label: string /* "PHI -7.5" */;
+  market: "spread" | "total"; side: "home" | "away" | "over" | "under"; line: number; price: number;
+  tier: "strong" | "lean"; ds_edge: number; mb_edge: number; early: boolean;
+  away: { abbr; name }; home: { abbr; name }; tip_utc: string | null;
+  books: { circa?: { line: number | null; price: number }; williamhill?: { line; price } };
+  best: { line: number | null; price: number; book: string } | null }
+```
+`available: false` (empty lists) when no run in the last 36 h. `books` is empty for runs made before the
+grabber (2026-11-15) or when a book had no line. 503 `storage_unavailable` if the drive can't be read.
+

@@ -158,3 +158,17 @@ def test_cli_propose_ignores_manual_bets_this_month(run, tmp_path, capsys):
         == 0
     )
     assert "This month's 1 bet(s) are logged" in capsys.readouterr().out
+
+
+def test_book_quote_pick_legs_back_at_draftkings(run):
+    # mp-v1.1 pick taken at WH -1 (DK -1.5): the moon leg uses DK's line, label and price, so a
+    # Circa -1.5 stays "same line" instead of looking worse than WH's
+    payload, slate = run
+    payload["top"][0] |= {"line": -1.0, "price": -105, "label": "H1 -1", "book": "williamhill",
+                          "dk_line": -1.5, "dk_price": -110}  # fmt: skip
+    legs = picks.single_legs(payload, slate)
+    assert (legs[0].line, legs[0].price, legs[0].label) == (-1.5, -110, "H1 -1.5")
+    over = dict(pick("2", market="total", side="over", line=140.0), book="circa", dk_line=140.5,
+                dk_price=-110, label="Over 140")  # fmt: skip
+    leg = picks.single_legs({"top": [over]}, slate)[0]
+    assert (leg.line, leg.label) == (140.5, "Over 140.5")

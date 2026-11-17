@@ -189,15 +189,19 @@ shooting team about 98-99% of the time after rebounds and turnovers, and about 9
 and-one looks like a change of possession until the foul posts.
 
 ## Circa screenshots (owner's uploads; watch-only)
-The owner's photos of Circa's odds board, read into lines before the 14:00 picks
-(`deepsports circa read`, docs/PIPELINE.md). These endpoints never open DuckDB and never return stakes.
+The owner's photos of Circa's odds board, and since 2026-11-16 of William Hill's app, read into lines
+before the 14:00 picks (`deepsports circa read [--book williamhill]`, docs/PIPELINE.md). Every
+endpoint below takes `?book=circa` (default) or `?book=williamhill` (anything else → 400 `bad_book`);
+each book has its own folder, daily limit and lines file, and responses carry `book`. `&early=1`
+files an upload as the night-before (opening) screenshots of **tomorrow's** games (`date` = that game
+day, folder `screenshots/early/<date>/`, read into `lines/early/<date>.json`); responses carry `early`. These endpoints never open DuckDB and never return stakes.
 
 | Method & path | Returns |
 |---|---|
-| `POST /api/circa/screenshots` | Body `multipart/form-data`, one or more parts named `file`. → `{date: "YYYY-MM-DD", saved: [{name: string, bytes: number}], today_count: number}` (local date; `name` like `"143012-3.png"`) |
-| `GET /api/circa/screenshots/today` | `{date, count: number, latest_at: string \| null, read: null \| {read_at: string, lines: number, matched: number}}` (ISO 8601 times; `matched` = lines with a game_id) |
+| `POST /api/circa/screenshots` | Body `multipart/form-data`, one or more parts named `file`. → `{date: "YYYY-MM-DD", book, saved: [{name: string, bytes: number}], today_count: number}` (local date; `name` like `"143012-3.png"`) |
+| `GET /api/circa/screenshots/today` | `{date, book, count: number, latest_at: string \| null, read: null \| {read_at: string, lines: number, matched: number}}` (ISO 8601 times; `matched` = lines with a game_id) |
 
-| `GET /circa` | Upload page for home Wi-Fi, the owner's way to add screenshots (BetDesk doesn't upload since 2026-11-14) (e.g. `http://172.16.0.61:8787/circa`; Add to Home Screen works). Self-contained HTML, no external resources; picks images, previews, uploads with progress, shows today's status. Creates the upload code file on first visit |
+| `GET /circa` | Upload page for home Wi-Fi, the owner's way to add screenshots (BetDesk doesn't upload since 2026-11-14) (e.g. `http://172.16.0.61:8787/circa`; Add to Home Screen works). Self-contained HTML, no external resources; a Circa / William Hill tab (remembered on the phone), a Today (2 PM picks) / Tomorrow (opening) switch (opening by default after 17:00), picks images, previews, uploads with progress, shows today's status. Creates the upload code file on first visit |
 
 **Who may POST** (the server binds 0.0.0.0), either:
 - **BetDesk tunnel:** a loopback client (127.0.0.1 / ::1; cloudflared forwards from localhost) with no
@@ -259,11 +263,14 @@ returns stakes.
   counts: { strong: number; lean: number } }
 Pick = { game_id: string; league: "nba" | "ncaab"; label: string /* "PHI -7.5" */;
   market: "spread" | "total"; side: "home" | "away" | "over" | "under"; line: number; price: number;
+  book: "circa" | "williamhill" | null /* whose quote line+price are; null = DraftKings */;
   tier: "strong" | "lean"; ds_edge: number; mb_edge: number; early: boolean;
   away: { abbr; name }; home: { abbr; name }; tip_utc: string | null;
   books: { circa?: { line: number | null; price: number }; williamhill?: { line; price } };
   best: { line: number | null; price: number; book: string } | null }
 ```
 `available: false` (empty lists) when no run in the last 36 h. `books` is empty for runs made before the
-grabber (2026-11-15) or when a book had no line. 503 `storage_unavailable` if the drive can't be read.
+grabber (2026-11-15) or when a book had no line. Since rule `mp-v1.1` (2026-11-16) `line`, `price`, `tier`
+and the edges are at the best quote for the bettor among DraftKings, Circa and William Hill (`book` says
+which); older runs have no `book` (DraftKings). 503 `storage_unavailable` if the drive can't be read.
 

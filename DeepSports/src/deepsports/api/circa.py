@@ -1,4 +1,7 @@
-"""Circa screenshot upload + today's state (docs/API.md, "Circa"). Never opens DuckDB.
+"""Book screenshot upload + today's state (docs/API.md, "Circa"). Never opens DuckDB.
+
+`?book=circa` (default) or `?book=williamhill` picks the book; each has its own folder and limits.
+`?early=1` files the upload as the night-before (opening) screenshots of tomorrow's games.
 
 The server binds 0.0.0.0, so the upload is strictly bounded: whole request <= MAX_REQUEST_BYTES
 (checked while streaming), images by magic bytes only, 10 MB each, 30 per local day, server-chosen
@@ -90,6 +93,18 @@ STATUS_BY_CODE = {
 }
 
 
+def _book(request: Request) -> str | None:
+    book = request.query_params.get("book", "circa")
+    return book if book in storage.BOOKS else None
+
+
+def _early(request: Request) -> bool:
+    return request.query_params.get("early", "") in ("1", "true")
+
+
+BAD_BOOK = ("bad_book", f"book must be one of: {', '.join(storage.BOOKS)}")
+
+
 def add_routes(app: FastAPI) -> None:
     @app.post("/api/circa/screenshots")
     async def upload(request: Request):
@@ -97,15 +112,18 @@ def add_routes(app: FastAPI) -> None:
         refused = await run_in_threadpool(check_upload, request)  # reads the code file
         if refused is not None:
             return refused
+        book = _book(request)
+        if book is None:
+            return _error(400, *BAD_BOOK)
         if _active >= MAX_CONCURRENT:
             return _error(503, "busy", "another upload is in progress; try again")
         _active += 1
         try:
-            return await _upload(request)
+            return await _upload(request, book, _early(request))
         finally:
             _active -= 1
 
-    async def _upload(request: Request):
+    async def _upload(request: Request, book: str, early: bool):
         declared = request.headers.get("content-length")
         if declared and declared.isdigit() and int(declared) > MAX_REQUEST_BYTES:
             return _error(413, "request_too_large", "request over 60 MB")
@@ -120,15 +138,21 @@ def add_routes(app: FastAPI) -> None:
             return _error(400, "bad_request", str(e))
         if not images:
             return _error(400, "no_file", "send one or more images in form field 'file'")
-        day = storage.today()
+        day = storage.tomorrow() if early else storage.today()
         try:
-            saved = await run_in_threadpool(storage.save_images, images, day)
-            count = len(await run_in_threadpool(storage.list_day, day))
+            saved = await run_in_threadpool(storage.save_images, images, day, book, early)
+            count = len(await run_in_threadpool(storage.list_day, day, book, early))
         except storage.RejectedImage as e:
             return _error(STATUS_BY_CODE.get(e.code, 400), e.code, e.detail)
         except OSError:  # drive not mounted / not permitted
             return _error(503, "storage_unavailable", "screenshot storage unavailable")
-        return {"date": day.isoformat(), "saved": saved, "today_count": count}
+        return {
+            "date": day.isoformat(),
+            "book": book,
+            "early": early,
+            "saved": saved,
+            "today_count": count,
+        }
 
     @app.get("/circa", include_in_schema=False)
     def page():
@@ -139,8 +163,12 @@ def add_routes(app: FastAPI) -> None:
         return HTMLResponse(PAGE, headers={"Cache-Control": "no-store"})
 
     @app.get("/api/circa/screenshots/today")
-    def today():
+    def today(request: Request):
+        book = _book(request)
+        if book is None:
+            return _error(400, *BAD_BOOK)
         try:
-            return reader.status()
+            early = _early(request)
+            return reader.status(book=book, early=early) | {"book": book, "early": early}
         except OSError:
             return _error(503, "storage_unavailable", "screenshot storage unavailable")

@@ -15,7 +15,7 @@ from typing import Any
 
 MAX_AGE = timedelta(hours=36)  # longest gap between runs is 30 h (Sunday 08:00 -> Monday 14:00)
 MORE_MAX = 10
-PICK_FIELDS = ("game_id", "league", "label", "market", "side", "line", "price", "tier",
+PICK_FIELDS = ("game_id", "league", "label", "market", "side", "line", "price", "book", "tier",
                "ds_edge", "mb_edge", "early")  # fmt: skip
 
 

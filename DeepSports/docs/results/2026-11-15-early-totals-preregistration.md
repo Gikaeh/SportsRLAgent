@@ -80,3 +80,16 @@ Reasons to doubt it, all of which this test is meant to settle:
 - Circa isn't in this test: its college lines post around 7 AM on game day, after the 21:00 run.
 - The test needs the night-before grab and a fresh ManualBets export; nights without either are logged
   in `runs.jsonl` as skipped, not as bets.
+
+## Amendment 2026-11-16 (before any et-v1 bet was logged)
+**Why:** the night-before Caesars grab for 2026-11-16 returned 0 lines (OddsPapi had no Caesars college
+totals at 21:00), so et-v1 logged nothing; Caesars was only a stand-in for William Hill NV, whose opening
+lines the owner can see in the app. No bet had been logged (`bets.jsonl` didn't exist) and no outcome
+was looked at, so this changes the input, not a result.
+**Change:** the line and price come from the owner's William Hill opening screenshots for the game day
+(`/circa` page, William Hill, "Tomorrow (opening)"; read by `circa read --early --book williamhill` into
+`williamhill/lines/early/<date>.json`), and from the Caesars feed file for any game and side the
+screenshots lack. Each bet row records `line_source` (`screenshot` | `feed`) and `book_read_at`;
+`runs.jsonl` records `line_sources`. The rule, thresholds, start condition, metrics and pass/fail are
+unchanged. The secondary "CLV vs Caesars' own day-of total" stays on the Caesars feed. Rule version
+stays `et-v1`; the grade can be split by `line_source` if the two sources behave differently.

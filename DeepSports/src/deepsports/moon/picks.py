@@ -247,7 +247,27 @@ def _fair(game: Mapping[str, Any], market: str, side: str) -> float | None:
     return devig_probability(m.get(f"{side}_price"), m.get(f"{OTHER[side]}_price"))
 
 
+def _at_draftkings(pick: Mapping[str, Any], game: Mapping[str, Any]) -> Mapping[str, Any]:
+    """A pick the run took at a book's quote (`mp-v1.1`: `book`, `dk_line`, `dk_price`), back at
+    the slate's DraftKings line, so Circa's repricing compares against the same reference as before
+    (a William Hill line must not make Circa's look worse)."""
+    if (
+        pick["market"] not in ("spread", "total")
+        or not pick.get("book")
+        or pick.get("dk_line") is None
+        or pick.get("dk_price") is None
+    ):
+        return pick
+    line = pick["dk_line"]
+    if pick["market"] == "spread":
+        text = f"{game[pick['side']]['abbr']} {line:+g}"
+    else:
+        text = f"{pick['side'].capitalize()} {line:g}"
+    return {**pick, "line": line, "price": pick["dk_price"], "label": text}
+
+
 def _leg(pick: Mapping[str, Any], game: Mapping[str, Any]) -> Leg:
+    pick = _at_draftkings(pick, game)
     price, line = pick["price"], pick["line"]
     ref_price = int(pick["price"])
     best = pick.get("best")

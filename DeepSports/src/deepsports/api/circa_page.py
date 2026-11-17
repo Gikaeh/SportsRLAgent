@@ -1,6 +1,7 @@
-"""`GET /circa`: a temporary, self-contained upload page for Circa screenshots on home Wi-Fi (until
-BetDesk > Circa is deployed). Inline CSS/JS, no external resources. The upload code is kept in
-localStorage and sent only as the X-Circa-Upload-Code header, never in a URL."""
+"""`GET /circa`: a temporary, self-contained upload page for Circa and William Hill screenshots
+on home Wi-Fi (a tab per book). Until BetDesk > Circa is deployed. Inline CSS/JS, no external
+resources. The upload code is kept in localStorage and sent only as the X-Circa-Upload-Code
+header, never in a URL."""
 
 PAGE = """<!doctype html>
 <html lang="en">
@@ -9,11 +10,11 @@ PAGE = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Circa Upload">
+<meta name="apple-mobile-web-app-title" content="Book Upload">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="color-scheme" content="light dark">
 <meta name="referrer" content="no-referrer">
-<title>Circa Upload</title>
+<title>Book Upload</title>
 <style>
 :root {
   --bg: #f6f6f4; --card: #ffffff; --fg: #1c1c1e; --muted: #6b6b70; --line: #dcdcd8;
@@ -61,10 +62,24 @@ progress { width: 100%; height: 10px; margin-top: 10px; }
 .msg { margin-top: 10px; min-height: 1.4em; }
 .ok { color: var(--ok); } .err { color: var(--err); }
 .hidden { display: none; }
+.tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.tabs button { margin-top: 0; background: var(--card); color: var(--fg);
+  border: 1px solid var(--line); }
+.tabs button[aria-selected=true] { background: var(--accent); color: var(--accent-fg);
+  border-color: var(--accent); }
 </style>
 </head>
 <body>
-<h1>Circa screenshots</h1>
+<h1 id="title">Circa screenshots</h1>
+
+<div class="tabs" role="tablist">
+  <button type="button" role="tab" data-book="circa">Circa</button>
+  <button type="button" role="tab" data-book="williamhill">William Hill</button>
+</div>
+<div class="tabs" role="tablist">
+  <button type="button" role="tab" data-when="today">Today (2 PM picks)</button>
+  <button type="button" role="tab" data-when="early">Tomorrow (opening)</button>
+</div>
 
 <div class="card" id="status"><span class="muted">Loading today's status...</span></div>
 
@@ -93,6 +108,12 @@ progress { width: 100%; height: 10px; margin-top: 10px; }
   var BATCH_BYTES = 50 * 1024 * 1024;  // the server takes up to 60 MB per request
   var $ = function (id) { return document.getElementById(id); };
   var files = [];
+  var BOOKS = { circa: "Circa", williamhill: "William Hill" };
+  var BOOK_KEY = "uploadBook";
+  var book = "circa";
+  var when = new Date().getHours() >= 17 ? "early" : "today";  // evenings: tomorrow's openers
+  try { if (BOOKS[localStorage.getItem(BOOK_KEY)]) book = localStorage.getItem(BOOK_KEY); }
+  catch (e) {}
 
   function getCode() { try { return localStorage.getItem(KEY) || ""; } catch (e) { return ""; } }
   function setCode(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
@@ -117,21 +138,50 @@ progress { width: 100%; height: 10px; margin-top: 10px; }
     return isNaN(t) ? iso : t.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   }
   function loadStatus() {
-    fetch("/api/circa/screenshots/today", { cache: "no-store" })
+    var asked = book + when;
+    fetch("/api/circa/screenshots/today" + query(), { cache: "no-store" })
       .then(function (r) { return r.json(); })
       .then(function (s) {
+        if (asked !== book + when) return;  // the tab changed meanwhile
         var el = $("status"); el.textContent = "";
         var a = document.createElement("div");
-        a.textContent = s.count + " screenshot" + (s.count === 1 ? "" : "s") +
-          " today (" + s.date + ")" + (s.latest_at ? ", last at " + hhmm(s.latest_at) : "");
+        a.textContent = BOOKS[book] + (s.early ? " opening" : "") + ": " + s.count +
+          " screenshot" + (s.count === 1 ? "" : "s") +
+          (s.early ? " for games on " : " today (") + s.date + (s.early ? "" : ")") +
+          (s.latest_at ? ", last at " + hhmm(s.latest_at) : "");
         var b = document.createElement("div"); b.className = "muted";
         b.textContent = s.read ? "Read at " + hhmm(s.read.read_at) + ": " + s.read.lines +
           " lines, " + s.read.matched + " matched to games"
-          : "Not read yet (the 2 PM picks read them).";
+          : (s.early ? "Not read yet (the 9 PM job reads them)."
+            : "Not read yet (the 2 PM picks read them).");
         el.appendChild(a); el.appendChild(b);
       })
       .catch(function () { $("status").textContent = "Status unavailable."; });
   }
+
+  function query(b, w) {
+    return "?book=" + (b || book) + ((w || when) === "early" ? "&early=1" : "");
+  }
+  function setBook(b, w) {
+    book = b; when = w || when;
+    try { localStorage.setItem(BOOK_KEY, b); } catch (e) {}
+    $("title").textContent = BOOKS[b] + (when === "early" ? " opening lines" : " screenshots");
+    Array.prototype.forEach.call(document.querySelectorAll(".tabs button"), function (t) {
+      var on = t.hasAttribute("data-book") ? t.getAttribute("data-book") === book
+        : t.getAttribute("data-when") === when;
+      t.setAttribute("aria-selected", String(on));
+    });
+    $("status").textContent = "Loading...";
+    say("");
+    loadStatus();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll(".tabs button"), function (t) {
+    t.addEventListener("click", function () {
+      if ($("upload").disabled && files.length) return;  // uploading
+      if (t.hasAttribute("data-book")) setBook(t.getAttribute("data-book"));
+      else setBook(book, t.getAttribute("data-when"));
+    });
+  });
 
   $("files").addEventListener("change", function (ev) {
     files = Array.prototype.slice.call(ev.target.files || []);
@@ -156,12 +206,12 @@ progress { width: 100%; height: 10px; margin-top: 10px; }
     return out;
   }
 
-  function send(batch, doneBytes, totalBytes) {
+  function send(batch, doneBytes, totalBytes, target) {
     return new Promise(function (resolve, reject) {
       var fd = new FormData();
       batch.forEach(function (f) { fd.append("file", f, f.name); });
       var x = new XMLHttpRequest();
-      x.open("POST", "/api/circa/screenshots");
+      x.open("POST", "/api/circa/screenshots" + target);
       if (memCode) x.setRequestHeader("X-Circa-Upload-Code", memCode);
       x.upload.onprogress = function (e) {
         if (e.lengthComputable) $("bar").value = 100 * (doneBytes + e.loaded) / totalBytes;
@@ -178,21 +228,22 @@ progress { width: 100%; height: 10px; margin-top: 10px; }
 
   $("upload").addEventListener("click", function () {
     if (!files.length) return;
-    var list = batches(files), total = 0, done = 0, saved = 0;
+    var list = batches(files), total = 0, done = 0, saved = 0, target = query();
+    var label = BOOKS[book] + (when === "early" ? " (opening)" : "");
     files.forEach(function (f) { total += f.size; });
     $("upload").disabled = true; $("bar").classList.remove("hidden"); $("bar").value = 0;
     say("Uploading...");
     var chain = Promise.resolve();
     list.forEach(function (b) {
       chain = chain.then(function () {
-        return send(b, done, total).then(function (r) {
+        return send(b, done, total, target).then(function (r) {
           b.forEach(function (f) { done += f.size; });
           saved += (r.saved || []).length;
         });
       });
     });
     chain.then(function () {
-      say("Uploaded " + saved + ". Thanks!", "ok");
+      say("Uploaded " + saved + " to " + label + ". Thanks!", "ok");
       files = []; $("files").value = ""; $("thumbs").textContent = "";
     }).catch(function (e) {
       if (e.status === 403) {
@@ -207,7 +258,7 @@ progress { width: 100%; height: 10px; margin-top: 10px; }
     }).then(function () { $("bar").classList.add("hidden"); loadStatus(); });
   });
 
-  loadStatus();
+  setBook(book);
 })();
 </script>
 </body>

@@ -251,3 +251,94 @@ def test_grade_picks_at_book_price_beside_draftkings():
     assert tb["clv_mean"] == 1.5 and dk["clv_mean"] == 1.0
     assert rec["by_league"]["nba"]["top_books"]["bets"] == 1
     assert rec["per_run"][0]["top_books"]["bets"] == 1
+
+
+def _books(*rows):
+    """{"circa": {"lines": [...]}} from (book, game_id, market, side, line, price) rows."""
+    out = {}
+    for book, gid, market, side, line, price in rows:
+        out.setdefault(book, {"lines": []})["lines"].append(
+            {"game_id": gid, "market": market, "side": side, "line": line, "price": price}
+        )
+    return out
+
+
+def test_book_line_upgrades_tier_and_records_draftkings():
+    # home -3.5 at DK, DS by 7 (+3.5), MB by 10 (+6.5) -> lean; at Circa -3: +4.0 / +7.0 -> strong
+    s = slate(game("1", "nba", -3.5, 220, (7, 220), (10, 220)))
+    assert mp.find_picks(s)[0]["tier"] == "lean"
+    books = _books(
+        ("circa", "1", "spread", "home", -3.0, -110),
+        ("williamhill", "1", "spread", "home", -3.5, -110),
+    )
+    p = mp.find_picks(s, books)[0]
+    assert (p["tier"], p["line"], p["book"], p["label"]) == ("strong", -3.0, "circa", "H1 -3")
+    assert (p["ds_edge"], p["mb_edge"], p["dk_line"], p["dk_price"]) == (4.0, 7.0, -3.5, -110)
+    text = mp.render(s, [p], [p])
+    assert "H1 -3 (-110 Circa)" in text
+
+
+def test_book_quote_can_qualify_and_draftkings_wins_ties():
+    # total 150 at DK: DS 147.5 (-2.5), MB 146 (-4): no pick; WH under 151 makes DS +3.5 -> lean
+    s = slate(game("1", "ncaab", -2, 150, (0, 147.5), (0, 146)))
+    assert mp.find_picks(s) == []
+    p = mp.find_picks(s, _books(("williamhill", "1", "total", "under", 151, -110)))[0]
+    assert (p["side"], p["line"], p["book"], p["tier"]) == ("under", 151.0, "williamhill", "lean")
+    # same line and price as DK (spread away +8 at -105) -> stays a DraftKings pick
+    s2 = slate(game("2", "ncaab", -8, 150, (2, 150), (3, 150)))
+    p2 = mp.find_picks(s2, _books(("circa", "2", "spread", "away", 8, -105)))[0]
+    assert "book" not in p2 and p2["line"] == 8
+    # worse book line is ignored; better price at the same line is taken
+    p3 = mp.find_picks(s2, _books(("circa", "2", "spread", "away", 7.5, +100)))[0]
+    assert "book" not in p3
+    p4 = mp.find_picks(s2, _books(("circa", "2", "spread", "away", 8, +100)))[0]
+    assert (p4["book"], p4["price"]) == ("circa", 100)
+
+
+def test_repriced_lists_earlier_picks_at_a_better_line(tmp_path):
+    from datetime import datetime, timedelta
+
+    # night run: home -7.5 at DK, DS by 13 (+5.5), MB by 17 (+9.5) -> top pick
+    s = slate(game("1", "ncaab", -7.5, 150, (13, 150), (17, 150)))
+    t0 = datetime.fromisoformat(s["created_at"])
+    mp.write_run(s, t0, root=tmp_path)
+    # next run: DK now -5.5, Circa -6 -> posted game, line moved our way -> repriced, not top
+    s2 = dict(slate(game("1", "ncaab", -5.5, 150, (13, 150), (17, 150))),
+              created_at=(t0 + timedelta(hours=16)).isoformat())  # fmt: skip
+    books = _books(("circa", "1", "spread", "home", -6, -105))
+    run, text = mp.write_run(s2, t0 + timedelta(hours=16), root=tmp_path, books=books)
+    saved = json.loads((run / "picks.json").read_text())
+    assert saved["top"] == [] and len(saved["repriced"]) == 1
+    r = saved["repriced"][0]
+    assert (r["line"], r["was_line"], r.get("book")) == (-5.5, -7.5, None)
+    assert "Posted earlier, now at a better line" in text and "was -7.5" in text
+    assert "1 game already posted in an earlier run left out." in text
+    # a third run at the same line: the repriced -5.5 now counts as posted -> nothing new
+    s3 = dict(s2, created_at=(t0 + timedelta(hours=20)).isoformat())
+    run3, _ = mp.write_run(s3, t0 + timedelta(hours=20), root=tmp_path, books=books)
+    assert json.loads((run3 / "picks.json").read_text())["repriced"] == []
+
+
+def test_repriced_skips_worse_lines_and_big_college_dogs():
+    posted = {("1", "spread", "away"): 16.5, ("2", "total", "over"): 140.0}
+    picks = [
+        {"game_id": "1", "league": "ncaab", "market": "spread", "side": "away", "line": 15.0,
+         "min_edge": 6.0},
+        {"game_id": "2", "league": "ncaab", "market": "total", "side": "over", "line": 140.5,
+         "min_edge": 4.0},
+    ]  # fmt: skip
+    assert mp.better_than_posted(picks, posted) == []
+    dog = [dict(picks[0], line=17.5)]  # better than +16.5, but beyond the big-dog cap
+    assert mp.better_than_posted(dog, posted) == []
+
+
+def test_grade_book_pick_pairs_with_draftkings_line():
+    s = slate(game("1", "nba", -3.5, 220, (7, 220), (10, 220)))
+    books = _books(("circa", "1", "spread", "home", -3.0, -110))
+    picks = mp.find_picks(s, books)
+    top = mp.top_picks(picks)
+    mp.attach_books(top, books)
+    con = _db([("1", "nba", 110, 107)], [])  # home by 3: -3 pushes, -3.5 loses
+    rec = mp.grade_picks(con, [{"run": "r", "picks": picks, "top": top}])
+    assert rec["top"]["record"] == "0-0-1" and rec["top_books"]["record"] == "0-0-1"
+    assert rec["top_books_dk"]["record"] == "0-1-0"

@@ -37,7 +37,7 @@ BOOT_SEED = 0
 def book_totals(early: Mapping[str, Any] | None) -> dict[str, dict[str, dict]]:
     """game_id -> {"over": {line, price}, "under": {line, price}} from a lines payload (Circa
     contract). The first quote per game and side wins; quotes without a line or price are
-    skipped."""
+    skipped. Each quote keeps its `source` ("screenshot" | "feed"; default "feed")."""
     out: dict[str, dict[str, dict]] = {}
     for q in (early or {}).get("lines") or []:
         if q.get("market") != "total" or q.get("side") not in ("over", "under"):
@@ -45,7 +45,14 @@ def book_totals(early: Mapping[str, Any] | None) -> dict[str, dict[str, dict]]:
         if q.get("game_id") is None or q.get("line") is None or q.get("price") is None:
             continue
         slot = out.setdefault(str(q["game_id"]), {})
-        slot.setdefault(q["side"], {"line": float(q["line"]), "price": int(q["price"])})
+        slot.setdefault(
+            q["side"],
+            {
+                "line": float(q["line"]),
+                "price": int(q["price"]),
+                "source": q.get("source") or "feed",
+            },
+        )
     return out
 
 
@@ -130,7 +137,9 @@ def find_bets(
                 "line": q[side]["line"],
                 "price": q[side]["price"],
                 "book": BOOK,
+                "line_source": q[side].get("source", "feed"),
                 "book_grabbed_at": (early or {}).get("grabbed_at"),
+                "book_read_at": (early or {}).get("read_at"),
                 "ds_total": round(float(ds["pred_total"]), 1),
                 "ds_version": ds.get("model_version"),
                 "ds_created_at": _iso(ds.get("created_at")),

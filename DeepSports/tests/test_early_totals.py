@@ -181,6 +181,7 @@ def env(tmp_path, monkeypatch):
     mbf.write_text(json.dumps(mb(("1", 146.0))))
     monkeypatch.setattr(cli.config, "DB_PATH", db)
     monkeypatch.setattr(cli.config, "BOOKS_DIR", books)
+    monkeypatch.setattr(cli.config, "WH_LINES_DIR", tmp_path / "wh" / "lines")
     monkeypatch.setattr(cli.config, "require_data_dir", lambda: None)
 
     class Clock(datetime):
@@ -229,3 +230,39 @@ def test_cli_busy_warehouse_fails_with_one_line(env, capsys, monkeypatch):
     assert "\n" not in text and "busy" in text
     assert not (out / "r" / "bets.jsonl").exists()
     assert cli.read_jsonl(out / "r" / "runs.jsonl")[0]["status"] == "busy"
+
+
+def test_cli_log_prefers_wh_screenshot_openers(env, capsys):
+    """Amendment 2026-11-16: the owner's WH opening screenshots win over the Caesars feed; the
+    feed fills sides they lack; each bet records its line_source."""
+    out, mbf = env
+    shots = early(("1", 139.5, -110, -110))
+    shots["lines"] = [q for q in shots["lines"] if q["side"] == "over"]  # over only
+    shots |= {"read_at": "2026-11-14T20:30:00-08:00", "early": True}
+    d = out / "wh" / "lines" / "early"
+    d.mkdir(parents=True)
+    (d / "2026-11-15.json").write_text(json.dumps(shots))
+    argv = ["log", "--date", "2026-11-15", "--manualbets", str(mbf), "--out-dir", str(out / "r")]
+    assert cli.main(argv) == 0
+    assert "with DS+MB+WH line" in capsys.readouterr().out
+    (b,) = cli.read_jsonl(out / "r" / "bets.jsonl")
+    assert (b["side"], b["line"], b["price"], b["line_source"]) == (
+        "over",
+        139.5,
+        -110,
+        "screenshot",
+    )
+    assert b["book_read_at"] == "2026-11-14T20:30:00-08:00"
+    run = cli.read_jsonl(out / "r" / "runs.jsonl")[-1]
+    assert run["status"] == "ok" and run["line_sources"] == {"screenshots": 1, "feed": 2}
+    early_lines = cli.load_early_lines(datetime(2026, 11, 15).date())
+    under = [q for q in early_lines["lines"] if q["side"] == "under"]
+    assert under and under[0]["source"] == "feed" and under[0]["line"] == 140.0
+
+
+def test_cli_log_feed_only_marks_feed(env, capsys):
+    out, mbf = env
+    argv = ["log", "--date", "2026-11-15", "--manualbets", str(mbf), "--out-dir", str(out / "r")]
+    assert cli.main(argv) == 0
+    (b,) = cli.read_jsonl(out / "r" / "bets.jsonl")
+    assert b["line_source"] == "feed" and b["line"] == 140.0

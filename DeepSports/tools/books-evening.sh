@@ -23,8 +23,22 @@ out=$(printf '%s\n' "$raw" | tail -1)
 if [ "$status" -eq 124 ] || [ "$status" -eq 137 ]; then out="timed out after 120 s"; fi
 echo "$(ts) books grab --early: ${out:-no output} (exit $status)"
 
+# The owner's night-before (opening) screenshots of tomorrow's games (the /circa page, "Tomorrow
+# (opening)"): headless Claude reads them into <book>/lines/early/<date>.json. William Hill's go
+# first because et-v1 uses them (screenshot lines win over the Caesars feed; pre-registration
+# amendment 2026-11-16); Circa's are only recorded. Non-fatal, 5 min cap each.
+early_read() {
+  local book=$1 raw st out
+  raw=$(timeout -k 15 300 uv run --frozen deepsports circa read --early --book "$book" 2>/dev/null)
+  st=$?
+  out=$(printf '%s\n' "$raw" | tail -1)
+  if [ "$st" -eq 124 ] || [ "$st" -eq 137 ]; then out="timed out after 300 s"; fi
+  echo "$(ts) $book early read: ${out:-no output} (exit $st)"
+}
+early_read williamhill
+
 # Forward test et-v1 (docs/results/2026-11-15-early-totals-preregistration.md): log tomorrow's
-# qualifying college totals at the night-before Caesars line. Watch-only, no stakes, append-only.
+# qualifying college totals at the night-before WH line (screenshots, else the Caesars feed). Watch-only, no stakes, append-only.
 # Exit 3 = the warehouse was busy (a :15/:20 job): retry once after 3 minutes.
 et_log() { timeout -k 15 180 uv run --frozen deepsports early-totals log 2>/dev/null | head -1; return "${PIPESTATUS[0]}"; }
 et_out=$(et_log); et_status=$?
@@ -33,5 +47,7 @@ if [ "$et_status" -eq 3 ]; then
   et_out=$(et_log); et_status=$?
 fi
 echo "$(ts) early-totals log: ${et_out:-no output} (exit $et_status)"
+
+early_read circa
 
 exit 0

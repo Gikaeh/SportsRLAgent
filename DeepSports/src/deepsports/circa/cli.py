@@ -19,10 +19,18 @@ def build_parser() -> argparse.ArgumentParser:
     r = sub.add_parser("read", help="ingest, then read unread screenshots into lines/<date>.json")
     r.add_argument("--date", type=date.fromisoformat, default=None, help="YYYY-MM-DD (local)")
     r.add_argument("--force", action="store_true", help="read again even if nothing is new")
+    r.add_argument("--book", choices=storage.BOOKS, default="circa")
+    r.add_argument(
+        "--early",
+        action="store_true",
+        help="the night-before (opening) screenshots for --date's games (default tomorrow)",
+    )
     sub.add_parser("ingest", help="copy new images from the iCloud inbox into today's folder")
     s = sub.add_parser("status", help="today's screenshot count and read state")
     s.add_argument("--date", type=date.fromisoformat, default=None)
     s.add_argument("--json", action="store_true")
+    s.add_argument("--book", choices=storage.BOOKS, default="circa")
+    s.add_argument("--early", action="store_true", help="opening screenshots (default tomorrow)")
     c = sub.add_parser("code", help="show the LAN upload code for the /circa page (owner only)")
     c.add_argument("--rotate", action="store_true", help="make a new code (phones must re-enter)")
     return p
@@ -48,22 +56,24 @@ def main(argv: list[str]) -> int:
             print(f"Circa upload code: {code}")
             return 0
         if args.cmd == "status":
-            st = reader.status(args.date)
+            st = reader.status(args.date, args.book, args.early)
             if args.json:
                 print(json.dumps(st))
                 return 0
             r = st["read"]
             read = (
                 f"read {r['read_at']}: {r['lines']} lines, {r['matched']} matched, "
-                f"{len(reader.unread(args.date))} unread screenshots"
+                f"{len(reader.unread(args.date, args.book, args.early))} unread screenshots"
                 if r
                 else "not read"
             )
             print(
-                f"circa {st['date']}: {st['count']} screenshots (latest {st['latest_at']}); {read}"
+                f"{args.book}{' early' if args.early else ''} {st['date']}: "
+                f"{st['count']} screenshots "
+                f"(latest {st['latest_at']}); {read}"
             )
             return 0
-        res = reader.read_day(args.date, force=args.force)
+        res = reader.read_day(args.date, force=args.force, book=args.book, early=args.early)
         print(res.message)
         for p in res.problems:
             print(f"  {p}", file=sys.stderr)

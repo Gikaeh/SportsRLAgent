@@ -27,7 +27,7 @@ deepsports = "deepsports.cli:main"
 
 [tool.uv]
 # Only resolve package versions published at least ~2 weeks ago.
-exclude-newer = "2026-10-20T00:00:00Z"
+exclude-newer = "2026-11-10T00:00:00Z"
 
 [tool.ruff]
 line-length = 100

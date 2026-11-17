@@ -16,7 +16,7 @@ import tempfile
 import threading
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from deepsports import config
@@ -61,8 +61,32 @@ def today() -> date:
     return datetime.now(config.LOCAL_TZ).date()
 
 
-def day_dir(day: date) -> Path:
-    return config.CIRCA_SCREENSHOTS_DIR / day.isoformat()
+# Books whose screenshots the owner uploads. Same limits, names and reader for each; only Circa has
+# the iCloud inbox.
+BOOKS = ("circa", "williamhill")
+LABELS = {"circa": "Circa", "williamhill": "William Hill"}
+
+
+def check_book(book: str) -> str:
+    if book not in BOOKS:
+        raise ValueError(f"unknown book {book!r} (one of {', '.join(BOOKS)})")
+    return book
+
+
+def screenshots_dir(book: str = "circa") -> Path:
+    check_book(book)
+    return config.WH_SCREENSHOTS_DIR if book == "williamhill" else config.CIRCA_SCREENSHOTS_DIR
+
+
+def day_dir(day: date, book: str = "circa", early: bool = False) -> Path:
+    """`<screenshots>/<date>/`, or `<screenshots>/early/<game day>/` for the night-before (opening)
+    screenshots of that day's games, uploaded the evening before."""
+    root = screenshots_dir(book)
+    return (root / "early" if early else root) / day.isoformat()
+
+
+def tomorrow() -> date:
+    return today() + timedelta(days=1)
 
 
 def sniff(data: bytes) -> str | None:
@@ -133,16 +157,16 @@ def validate(data: bytes) -> tuple[bytes, str]:
     return data, kind
 
 
-def list_day(day: date) -> list[Path]:
+def list_day(day: date, book: str = "circa", early: bool = False) -> list[Path]:
     """The day's saved screenshots, oldest first (names sort by time)."""
-    d = day_dir(day)
+    d = day_dir(day, book, early)
     if not d.is_dir():
         return []
     return sorted(p for p in d.iterdir() if p.is_file() and NAME_RE.match(p.name))
 
 
-def _check_room(day: date, adding: int) -> list[Path]:
-    existing = list_day(day)
+def _check_room(day: date, adding: int, book: str = "circa", early: bool = False) -> list[Path]:
+    existing = list_day(day, book, early)
     if len(existing) + adding > MAX_PER_DAY:
         raise DailyLimit(
             "daily_limit", f"{len(existing)} saved today; at most {MAX_PER_DAY} per day"
@@ -176,7 +200,9 @@ def _create_exclusive(d: Path, stamp: str, n: int, ext: str, data: bytes) -> tup
     raise FileExistsError(f"no free name for {stamp}-* in {d}")
 
 
-def save_images(images: list[bytes], day: date | None = None) -> list[dict]:
+def save_images(
+    images: list[bytes], day: date | None = None, book: str = "circa", early: bool = False
+) -> list[dict]:
     """Size and daily-limit checks first (cheap), then validate all (magic bytes, HEIC via sips),
     then save all under a cross-process lock with the count re-checked (all or nothing).
     Returns [{name, bytes}]. Raises RejectedImage (or DailyLimit) without saving anything."""
@@ -184,12 +210,12 @@ def save_images(images: list[bytes], day: date | None = None) -> list[dict]:
     for b in images:
         if len(b) > MAX_BYTES:
             raise RejectedImage("file_too_large", f"over {MAX_BYTES // (1024 * 1024)} MB")
-    _check_room(day, len(images))
+    _check_room(day, len(images), book, early)
     prepared = [validate(b) for b in images]
-    d = require_mounted(day_dir(day))
+    d = require_mounted(day_dir(day, book, early))
     d.mkdir(parents=True, exist_ok=True)
     with _day_lock(d):
-        existing = _check_room(day, len(prepared))
+        existing = _check_room(day, len(prepared), book, early)
         n = max((int(p.stem.split("-")[1]) for p in existing), default=0)
         stamp = datetime.now(config.LOCAL_TZ).strftime("%H%M%S")
         saved = []

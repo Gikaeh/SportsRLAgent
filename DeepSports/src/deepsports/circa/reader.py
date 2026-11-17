@@ -32,7 +32,7 @@ CLAUDE_TIMEOUT = float(os.environ.get("DEEPSPORTS_CIRCA_CLAUDE_TIMEOUT", "240"))
 TOKEN_FILE = Path.home() / ".config" / "deepsports" / "claude-oauth-token"
 WORK_DIR = config.ROOT / ".sync" / "circa"
 
-PROMPT = """You are reading screenshots of the Circa sportsbook odds board (basketball: NBA and \
+PROMPT = """You are reading screenshots of the {book} sportsbook odds (basketball: NBA and \
 NCAA men's college). Use the Read tool on each of these image files, oldest first:
 {files}
 
@@ -48,7 +48,7 @@ object per bet side you can actually see on the board, with exactly these keys:
 number as printed>"|null}}
 
 Rules:
-- On Circa's board the top team of a game is the away team and the bottom team is home.
+- {layout}
 - spread: side home/away; line from that side's view (a favorite is negative, e.g. -1.5; PK = 0).
 - total: side over/under; line is the game total (e.g. 151.5).
 - moneyline: side home/away; line is null.
@@ -59,6 +59,22 @@ or total, use -110.
 totals, props and futures.
 - If no lines are readable, output nothing.
 """
+
+
+LAYOUT = {
+    "circa": "On Circa's board the top team of a game is the away team and the bottom team is \
+home.",
+    "williamhill": "In William Hill's app the top team of a game is the away team and the bottom \
+team is home; if the screen shows '@' or 'vs', the team after '@' is home.",
+}
+
+
+def prompt_for(book: str, images: list[Path]) -> str:
+    return PROMPT.format(
+        book=storage.LABELS[storage.check_book(book)],
+        layout=LAYOUT[book],
+        files="\n".join(f"- {p}" for p in images),
+    )
 
 
 def _claude_env() -> dict[str, str]:
@@ -86,13 +102,13 @@ class ExtractFailed(RuntimeError):
     pass
 
 
-def claude_extract(images: list[Path], workdir: Path) -> str:
+def claude_extract(images: list[Path], workdir: Path, book: str = "circa") -> str:
     """Headless Claude (pattern of tools/ensemble-daily.sh): Sonnet, Read only, this dir only."""
     exe = shutil.which("claude")
     if not exe:
         raise ExtractFailed("claude CLI not on PATH")
     workdir = workdir.resolve()
-    prompt = PROMPT.format(files="\n".join(f"- {p}" for p in images))
+    prompt = prompt_for(book, images)
     try:
         proc = subprocess.run(
             [
@@ -134,16 +150,22 @@ def claude_extract(images: list[Path], workdir: Path) -> str:
 # ---------- files ----------
 
 
-def lines_path(day: date) -> Path:
-    return config.CIRCA_LINES_DIR / f"{day.isoformat()}.json"
+def lines_path(day: date, book: str = "circa", early: bool = False) -> Path:
+    """`<lines>/<date>.json`, or `<lines>/early/<game day>.json` for the opening screenshots
+    (the `books/<book>/early/` pattern)."""
+    wh = storage.check_book(book) == "williamhill"
+    root = config.WH_LINES_DIR if wh else config.CIRCA_LINES_DIR
+    return (root / "early" if early else root) / f"{day.isoformat()}.json"
 
 
-def load_lines(day: date | str | None = None) -> dict | None:
+def load_lines(
+    day: date | str | None = None, book: str = "circa", early: bool = False
+) -> dict | None:
     """The day's read lines (the lines/YYYY-MM-DD.json contract), or None if not read yet or
     unreadable. Default: today, local time."""
     if isinstance(day, str):
         day = date.fromisoformat(day)
-    p = lines_path(day or storage.today())
+    p = lines_path(day or storage.today(), book, early)
     try:
         data = json.loads(p.read_text())
     except (OSError, ValueError):
@@ -159,16 +181,17 @@ def _write_json(path: Path, data: dict) -> None:
     os.replace(tmp, path)
 
 
-def status(day: date | None = None) -> dict:
-    """{date, count, latest_at, read: null | {read_at, lines, matched}} (GET .../today)."""
-    day = day or storage.today()
-    files = storage.list_day(day)
+def status(day: date | None = None, book: str = "circa", early: bool = False) -> dict:
+    """{date, count, latest_at, read: null | {read_at, lines, matched}} (GET .../today). With
+    `early`, `date` is the game day (default tomorrow)."""
+    day = day or (storage.tomorrow() if early else storage.today())
+    files = storage.list_day(day, book, early)
     latest = None
     if files:
         mtime = max(p.stat().st_mtime for p in files)
         latest = datetime.fromtimestamp(mtime, config.LOCAL_TZ).isoformat(timespec="seconds")
     read = None
-    data = load_lines(day)
+    data = load_lines(day, book, early)
     if data is not None:
         lines = data["lines"]
         read = {
@@ -179,11 +202,12 @@ def status(day: date | None = None) -> dict:
     return {"date": day.isoformat(), "count": len(files), "latest_at": latest, "read": read}
 
 
-def unread(day: date | None = None) -> list[str]:
+def unread(day: date | None = None, book: str = "circa", early: bool = False) -> list[str]:
     """Saved screenshots that the day's lines file doesn't cover yet."""
-    day = day or storage.today()
-    data = load_lines(day) or {}
-    return sorted({p.name for p in storage.list_day(day)} - set(data.get("files") or []))
+    day = day or (storage.tomorrow() if early else storage.today())
+    data = load_lines(day, book, early) or {}
+    names = {p.name for p in storage.list_day(day, book, early)}
+    return sorted(names - set(data.get("files") or []))
 
 
 @dataclass
@@ -197,22 +221,35 @@ class ReadResult:
 def read_day(
     day: date | None = None,
     force: bool = False,
-    extract: ExtractFn = claude_extract,
+    extract: ExtractFn | None = None,
     candidates: Callable[[date], list[dict]] = load_candidates,
     do_ingest: bool = True,
+    book: str = "circa",
+    early: bool = False,
 ) -> ReadResult:
-    day = day or storage.today()
+    """Read the day's unread screenshots of `book` (circa | williamhill). Only Circa's same-day
+    read ingests the iCloud inbox. `extract` defaults to headless Claude with the book's prompt.
+    `early`: the opening screenshots for game day `day` (default tomorrow), uploaded the night
+    before, into `<lines>/early/<day>.json`."""
+    storage.check_book(book)
+    if extract is None:
+
+        def extract(images: list[Path], workdir: Path) -> str:
+            return claude_extract(images, workdir, book)
+
+    day = day or (storage.tomorrow() if early else storage.today())
+    tag = f"{book}{' early' if early else ''} {day}"
     notes = []
-    if do_ingest and day == storage.today():
+    if do_ingest and book == "circa" and not early and day == storage.today():
         notes.append(storage.ingest(day).summary())
-    files = storage.list_day(day)
-    prev = load_lines(day)
+    files = storage.list_day(day, book, early)
+    prev = load_lines(day, book, early)
     tail = f" ({'; '.join(notes)})" if notes else ""
     if not files:
-        return ReadResult(True, f"circa {day}: no screenshots{tail}", prev)
+        return ReadResult(True, f"{tag}: no screenshots{tail}", prev)
     names = [p.name for p in files]
     if prev is not None and not force and set(names) <= set(prev.get("files") or []):
-        return ReadResult(True, f"circa {day}: {len(names)} screenshots already read{tail}", prev)
+        return ReadResult(True, f"{tag}: {len(names)} screenshots already read{tail}", prev)
 
     # Headless Claude reads only copies of the images, in a fresh temp dir inside the repo (its
     # sandbox is unreliable on the drive); its Read permission is scoped to that dir.
@@ -225,14 +262,17 @@ def read_day(
     try:
         text = extract(copies, work)
     except ExtractFailed as e:
-        return ReadResult(False, f"circa {day}: read FAILED, {e}{tail}", prev)
+        return ReadResult(False, f"{tag}: read FAILED, {e}{tail}", prev)
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
     lines, problems = parse_output(text)
     if not lines and problems:
         return ReadResult(
-            False, f"circa {day}: read FAILED, no valid lines ({problems[0]}){tail}", prev, problems
+            False,
+            f"{tag}: read FAILED, no valid lines ({problems[0]}){tail}",
+            prev,
+            problems,
         )
     try:
         lines = match_lines(lines, candidates(day))
@@ -242,11 +282,12 @@ def read_day(
         "date": day.isoformat(),
         "read_at": datetime.now(config.LOCAL_TZ).isoformat(timespec="seconds"),
         "files": names,
+        "early": early,
         "lines": [{k: ln[k] for k in FIELDS} for ln in lines],
     }
-    _write_json(lines_path(day), data)
+    _write_json(lines_path(day, book, early), data)
     matched = sum(1 for ln in lines if ln["game_id"])
-    msg = f"circa {day}: {len(names)} screenshots, {len(lines)} lines, {matched} matched"
+    msg = f"{tag}: {len(names)} screenshots, {len(lines)} lines, {matched} matched"
     if problems:
         msg += f", {len(problems)} dropped/warnings"
     return ReadResult(True, msg + tail, data, problems)

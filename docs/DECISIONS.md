@@ -157,3 +157,13 @@ stakes (the picks' internal 1-unit `stake` field is dropped), so BetDesk's no-st
 Circa tab (screenshot status, "send screenshots before 2 PM") is removed at the owner's request, and
 `/api/circa/screenshots/today` leaves the Worker's allowlist; screenshots stay a local fallback on the Mac.
 
+
+### 2026-11-16: ManualBets is append-only (non-negotiable 7)
+Owner instruction: agents don't modify ManualBets without permission; appending is the most they may do
+on their own. **What:** rule 7 in `AGENTS.md`: nothing that exists under `ManualBets/` is edited,
+rewritten or deleted; agents may append rows to the end of a file or add new files. Any other change is
+proposed to the owner and is allowed once they approve that change. `ManualBets/AGENTS.md` is exempt
+and may be edited freely. Running ManualBets' menus and scripts stays allowed (2026-11-10 entry), except
+options that overwrite its files, such as Model Retraining, which also need the owner's OK. Moving the
+Odds API key out of `odd_scraping.py` is now one of those approval items. Pointers in
+`ManualBets/AGENTS.md` and the `data-engineer` and `data-analyst` agents.

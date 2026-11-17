@@ -6,6 +6,10 @@ and places every bet. Repo-wide rules (non-negotiables, git, boundary edges, age
 context hygiene) are in `../AGENTS.md` and are not repeated here. `hockey/` and `baseball/` are
 out of focus (see `../AGENTS.md`).
 
+**Append-only without the owner's permission (`../AGENTS.md` rule 7):** don't edit or delete what
+exists here; append rows or add new files. A specific change is allowed once the owner approves it.
+This file is the exception and may be edited.
+
 **Session read order:** this file, then the live entry in `docs/SESSION-LOG.md`. On demand:
 `docs/PROJECT.md` (goal, milestone, scope), `basketball/NOTES.md` (open audit items; read
 before touching basketball code), `docs/DECISIONS.md` (why things are the way they are).

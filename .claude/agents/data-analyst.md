@@ -10,6 +10,8 @@ Scope:
 - DeepSports: `src/deepsports/analysis/`, `analysis/`, `models/`. The warehouse is read-only
   for you; ask for new data instead of writing it.
 - ManualBets: `<sport>/model/`, `<sport>/betting/`, `models/` (basketball and college).
+  Append-only (root `AGENTS.md` rule 7): read and run, add new files; never edit, retrain over or
+  delete what exists without the owner's OK.
 
 Method rules:
 - No leakage: every feature uses only information available before tip-off. Evaluate

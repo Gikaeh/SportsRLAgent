@@ -34,6 +34,10 @@ CIRCA_SCREENSHOTS_DIR = Path(
     os.environ.get("DEEPSPORTS_CIRCA_SCREENSHOTS", CIRCA_DIR / "screenshots")
 )
 CIRCA_LINES_DIR = Path(os.environ.get("DEEPSPORTS_CIRCA_LINES", CIRCA_DIR / "lines"))
+# William Hill screenshots, same layout and code path as Circa's (`circa read --book williamhill`).
+WH_DIR = Path(os.environ.get("DEEPSPORTS_WH_DIR", "/Volumes/ExFATStorag/DeepSports/williamhill"))
+WH_SCREENSHOTS_DIR = Path(os.environ.get("DEEPSPORTS_WH_SCREENSHOTS", WH_DIR / "screenshots"))
+WH_LINES_DIR = Path(os.environ.get("DEEPSPORTS_WH_LINES", WH_DIR / "lines"))
 # Upload fallback until BetDesk is live: an iCloud Drive folder the phone's Files app can save to.
 # `deepsports circa ingest` copies new images from it into today's folder ("" disables it).
 CIRCA_INBOX = os.environ.get(

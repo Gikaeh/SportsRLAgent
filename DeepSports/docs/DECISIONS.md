@@ -716,3 +716,40 @@ Data for it: `books grab --early` (launchd `com.deepsports.books-evening`, 21:00
 request a night) writes `books/williamhill/early/<date>.json`, then `early-totals log` runs; opening lines had
 stopped on 2026-11-03 (never scheduled), so they were backfilled and every sync now fetches them for recent
 finals (`odds-history --with-opening --days 4`).
+
+### 2026-11-16: picks judged at the best book line (`mp-v1.1`); earlier picks at a better line listed; uv pin settled
+**Why:** the owner bets at Circa and William Hill, but `mp-v1` judged and ranked every pick at DraftKings'
+line, so a better book line (GS -3 at Circa vs -3.5) showed as a lean, and a pick only a book offered was
+missed. The one-post-per-game backstop also hid games whose line had since moved the bettor's way (TLSA
+-7.5 the night before, -6 at 14:00). **What:** `mp-v1.1` judges each side at the best quote for the bettor
+among DraftKings and today's Circa/WH `books/` files (line first, then price, DraftKings on a tie); a pick
+taken at a book's quote carries `book`, `dk_line`, `dk_price`. The `top` record is now graded at that
+quote; `top_books_dk` grades the same picks at DraftKings. Tiers and thresholds are unchanged and the rule
+is still watch-only with no edge shown (2026-11-13 entry). Games posted in the last 36 h still stay out of
+the top 5, but a side whose line now beats the best one posted is listed under "Posted earlier, now at a
+better line" (`repriced` in `picks.json`; not graded). Separately, `exclude-newer` moved to 2026-11-10 to
+match `uv.lock`, so a plain `uv run` no longer rewrites the lock (HANDOFF item 7).
+
+### 2026-11-16: William Hill screenshots, same upload page and reader as Circa
+**Why:** OddsPapi has no William Hill NV feed; Caesars' (out-of-state) feed stands in, so WH's real NV
+lines were missing from the picks. The owner asked for a WH upload next to Circa's. **What:** the `/circa`
+page gets a Circa / William Hill tab; the existing endpoints take `?book=williamhill` (own folder
+`williamhill/screenshots/`, own daily limit, `williamhill/lines/<date>.json`); `circa read --book
+williamhill` reads them with a WH prompt, no iCloud inbox. `model-picks run` now merges each book's
+screenshot lines over its OddsPapi feed (screenshot wins per game, market and side; `moon.circa.merge`),
+so Circa's screenshots also reach the picks, not only the moon proposal. Reused the Circa code path rather
+than a new module: one upload code, one auth path, one reader. Watch-only as before.
+
+**Same day, opening lines:** the owner wants the night-before pattern for screenshots too. `?early=1` /
+the page's "Tomorrow (opening)" switch files uploads for tomorrow's games under `screenshots/early/<game
+day>/`; the 21:00 `books-evening.sh` reads them (`circa read --early`) into `lines/early/<game day>.json`,
+after the et-v1 log, and the 14:00 job catches late uploads. Kept out of the picks (openers aren't the
+current price) and out of et-v1, whose input (Caesars feed at 21:00) is pre-registered; a later rule can
+compare screenshot openers with the feed once there is a record. ~~Kept out of et-v1~~: reversed the same
+evening, see the next paragraph.
+
+**Same day, et-v1 uses the WH openers:** the owner: the upload exists to fix et-v1, whose night-before
+Caesars pull came back empty (0 lines for 2026-11-16), and they have WH's opening lines in the app. WH NV is
+the book Caesars stood in for, and no et-v1 bet had been logged yet, so the pre-registration is amended
+(its "Amendment 2026-11-16"): screenshot lines first, the Caesars feed for gaps, `line_source` on each bet.
+`books-evening.sh` now reads WH openers before the et-v1 log (Circa's after; recorded only).

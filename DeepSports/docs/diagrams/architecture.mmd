@@ -31,9 +31,9 @@ flowchart TB
     SCHED["tools/scheduled-sync.sh<br/>launchd 08:00 · 14:00"]
     SYNCF[".sync/upcoming*.json"]
     SCHED -.->|"unscheduled 2026-11-13<br/>(skill runs by hand)"| SYNC
-    MPDAILY["tools/model-picks-daily.sh<br/>weekdays 14:00 · Sat/Sun 08:00<br/>export ≤20 min → books grab → circa read → model-picks run<br/>→ moon propose --tier mix --circa auto<br/>picks (or blocked alert) + moon proposal → Discord"]
+    MPDAILY["tools/model-picks-daily.sh<br/>weekdays 14:00 · Sat/Sun 08:00<br/>export ≤20 min → books grab → circa read (Circa, WH) → model-picks run<br/>→ moon propose --tier mix --circa auto<br/>picks (or blocked alert) + moon proposal → Discord"]
     SCHED --> MPDAILY
-    BEVENING["tools/books-evening.sh<br/>launchd 21:00<br/>books grab --early (Caesars, tomorrow)<br/>→ early-totals log (et-v1 forward test)"]
+    BEVENING["tools/books-evening.sh<br/>launchd 21:00<br/>books grab --early (Caesars, tomorrow)<br/>→ circa read --early --book williamhill<br/>→ early-totals log (et-v1: WH screenshots, else feed)<br/>→ circa read --early (Circa, recorded)"]
     EBDAILY["tools/ensemble-daily.sh<br/>by hand only (unscheduled 2026-11-13)<br/>N bettors · majority table → Discord"]
     EBDAILY -.->|"headless claude -p<br/>/ensemble-betting prefetched"| EBSKILL
     MBEXPORT["tools/manualbets-export.py<br/>runs ../ManualBets/tools/export_predictions.py<br/>XGBoost + Kelly + Odds API → .sync/manualbets-export.json (edge 4)"]
@@ -62,13 +62,13 @@ flowchart TB
     direction LR
     RAW[("raw/espn/{nba,ncaab}/**.json.gz<br/>raw landing zone<br/>+ summary_pregame snapshots")]
     DB[("deepsports.duckdb (league-aware keys)<br/>games · box scores · odds + prices · injuries<br/>team_game_context · predictions · paper_bets<br/>NBA 2021-22 → today · NCAAB 2023-24 → today")]
-    CIRCAFS[("circa/screenshots/YYYY-MM-DD/<br/>circa/lines/YYYY-MM-DD.json")]
+    CIRCAFS[("circa|williamhill/screenshots/[early/]YYYY-MM-DD/<br/>circa|williamhill/lines/[early/]YYYY-MM-DD.json")]
     BOOKSFS[("books/circa|williamhill/YYYY-MM-DD.json<br/>books/raw/")]
   end
 
   subgraph APPS["Apps: deepsports serve :8787"]
     direction LR
-    API["api/ FastAPI (nba + ncaab)<br/>live: ESPN + 30s cache<br/>warehouse: standings · predictions · record<br/>circa.py: POST /api/circa/screenshots · GET …/today"]
+    API["api/ FastAPI (nba + ncaab)<br/>live: ESPN + 30s cache<br/>warehouse: standings · predictions · record<br/>circa.py: POST /api/circa/screenshots?book= · GET …/today"]
     WEB["web/ mobile PWA (LAN; frozen,<br/>new UI in ../BetDesk/web)"]
     GLASS["glasses/ Even Hub<br/>G2 plugin"]
     API --> WEB
@@ -179,6 +179,7 @@ flowchart TB
   CIRCA -->|"transcribe"| CLAUDEHL
   DB -->|"read-only: match games"| CIRCA
   CIRCAFS -->|"Circa lines + prices"| MOON
+  CIRCAFS -->|"Circa + WH screenshot lines"| MPICKS
   BOOKSFS -->|"Circa feed lines"| MOON
   BOOKSFS -->|"Circa + WH prices on the top 5"| MPICKS
 

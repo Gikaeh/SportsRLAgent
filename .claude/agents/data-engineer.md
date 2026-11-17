@@ -9,7 +9,8 @@ Scope:
 - DeepSports: `src/deepsports/` (not `analysis/`), `tests/`, `config/`, `tools/`; you also own
   `docs/DATA_SOURCES.md` and `docs/DATA_MODEL.md`. Read `docs/ARCHITECTURE.md` first.
 - ManualBets: `<sport>/data_pipeline/`, `shared/`, `tests/`, `tools/`; basketball and
-  college only.
+  college only. Append-only (root `AGENTS.md` rule 7): add rows or new files; edit or delete
+  what exists only with the owner's permission (propose it via the orchestrator).
 
 Rules (the project docs have the details):
 - Fetch politely and cache: DeepSports through `PoliteClient` (≥1 req/s). If a source blocks

@@ -44,6 +44,8 @@ def png(w: int = 2, h: int = 2) -> bytes:
 def circa_dirs(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "CIRCA_SCREENSHOTS_DIR", tmp_path / "circa" / "screenshots")
     monkeypatch.setattr(config, "CIRCA_LINES_DIR", tmp_path / "circa" / "lines")
+    monkeypatch.setattr(config, "WH_SCREENSHOTS_DIR", tmp_path / "williamhill" / "screenshots")
+    monkeypatch.setattr(config, "WH_LINES_DIR", tmp_path / "williamhill" / "lines")
     inbox = tmp_path / "icloud" / "DeepSports Circa"
     inbox.parent.mkdir()
     monkeypatch.setattr(config, "CIRCA_INBOX", str(inbox))
@@ -312,9 +314,81 @@ def test_api_upload_and_today(client):
     body = r.json()
     assert body["today_count"] == 2 and len(body["saved"]) == 2
     assert body["saved"][0]["bytes"] == len(png()) and "/" not in body["saved"][0]["name"]
-    assert set(body) == {"date", "saved", "today_count"}
+    assert set(body) == {"date", "book", "early", "saved", "today_count"}
+    assert body["book"] == "circa" and body["early"] is False
     t = client.get("/api/circa/screenshots/today").json()
     assert t["count"] == 2 and t["latest_at"] and t["read"] is None
+
+
+def test_api_william_hill_upload_is_separate(client, circa_dirs):
+    r = client.post(
+        "/api/circa/screenshots?book=williamhill", files={"file": ("a.png", png(), "image/png")}
+    )
+    assert r.status_code == 200, r.text
+    assert r.json()["book"] == "williamhill" and r.json()["today_count"] == 1
+    day = storage.today().isoformat()
+    assert len(list((circa_dirs / "williamhill" / "screenshots" / day).glob("*.png"))) == 1
+    assert client.get("/api/circa/screenshots/today").json()["count"] == 0
+    t = client.get("/api/circa/screenshots/today?book=williamhill").json()
+    assert t["count"] == 1 and t["book"] == "williamhill"
+    r = client.post(
+        "/api/circa/screenshots?book=../x", files={"file": ("a.png", png(), "image/png")}
+    )
+    assert r.status_code == 400 and r.json()["error"] == "bad_book"
+    assert client.get("/api/circa/screenshots/today?book=dk").status_code == 400
+    page = client.get("/circa").text
+    assert 'data-book="williamhill"' in page and "?book=" in page
+
+
+def test_read_day_william_hill(circa_dirs):
+    day = storage.today()
+    storage.save_images([png()], day, book="williamhill")
+    (circa_dirs / "icloud" / "DeepSports Circa").mkdir()
+    (circa_dirs / "icloud" / "DeepSports Circa" / "a.png").write_bytes(png())
+    res = reader.read_day(
+        day, extract=lambda i, w: REPLY, candidates=lambda d: [], book="williamhill"
+    )
+    assert res.ok and res.message.startswith(f"williamhill {day}: 1 screenshots, 13 lines")
+    assert "inbox" not in res.message  # the iCloud inbox is Circa's only
+    assert load_lines(day, "williamhill")["files"] == res.data["files"]
+    assert load_lines(day) is None and storage.list_day(day) == []
+    assert reader.status(day, "williamhill")["read"]["lines"] == 13
+    prompt = reader.prompt_for("williamhill", [Path("/x/a.png")])
+    assert "William Hill" in prompt and "Circa" not in prompt and "- /x/a.png" in prompt
+    assert "Circa's board" in reader.prompt_for("circa", [])
+    with pytest.raises(ValueError):
+        storage.day_dir(day, "dk")
+
+
+def test_api_early_upload_is_tomorrows_opening(client, circa_dirs):
+    tomorrow = storage.tomorrow().isoformat()
+    r = client.post(
+        "/api/circa/screenshots?book=williamhill&early=1",
+        files={"file": ("a.png", png(), "image/png")},
+    )
+    assert r.status_code == 200, r.text
+    assert r.json()["early"] is True and r.json()["date"] == tomorrow
+    early_dir = circa_dirs / "williamhill" / "screenshots" / "early" / tomorrow
+    assert len(list(early_dir.glob("*.png"))) == 1
+    # same-day folders untouched
+    assert client.get("/api/circa/screenshots/today?book=williamhill").json()["count"] == 0
+    t = client.get("/api/circa/screenshots/today?book=williamhill&early=1").json()
+    assert t["count"] == 1 and t["early"] is True and t["date"] == tomorrow
+    assert 'data-when="early"' in client.get("/circa").text
+
+
+def test_read_day_early(circa_dirs):
+    tomorrow = storage.tomorrow()
+    storage.save_images([png()], tomorrow, book="circa", early=True)
+    res = reader.read_day(extract=lambda i, w: REPLY, candidates=lambda d: [], early=True)
+    assert res.ok and res.message.startswith(f"circa early {tomorrow}: 1 screenshots")
+    assert "inbox" not in res.message
+    data = load_lines(tomorrow, "circa", early=True)
+    assert data["early"] is True and len(data["lines"]) == 13
+    assert (circa_dirs / "circa" / "lines" / "early" / f"{tomorrow}.json").exists()
+    assert load_lines(tomorrow) is None  # the same-day file the picks read is untouched
+    assert reader.unread(book="circa", early=True) == []
+    assert storage.list_day(tomorrow) == []
 
 
 def test_api_upload_errors(client, monkeypatch):
@@ -406,7 +480,7 @@ def test_save_skips_taken_names(circa_dirs, monkeypatch):
     d = storage.day_dir(day)
     d.mkdir(parents=True)
     (d / "120000-1.png").write_bytes(b"other process")  # taken, but not yet listed by name order
-    monkeypatch.setattr(storage, "list_day", lambda day: [])
+    monkeypatch.setattr(storage, "list_day", lambda *a, **k: [])
     saved = storage.save_images([png()], day)
     assert saved[0]["name"] == "120000-2.png"
     assert (d / "120000-1.png").read_bytes() == b"other process"  # never overwritten
@@ -541,7 +615,7 @@ def test_circa_page_is_self_contained(lan):
     assert r.status_code == 200 and r.headers["content-type"].startswith("text/html")
     html = r.text
     assert '<meta name="apple-mobile-web-app-capable" content="yes">' in html
-    assert "<title>Circa Upload</title>" in html
+    assert "<title>Book Upload</title>" in html
     assert 'type="file" accept="image/*" multiple' in html
     assert not re.search(r"(https?:)?//[a-z0-9.-]+\.[a-z]", html, re.I)  # no external URLs
     assert "X-Circa-Upload-Code" in html and "?code" not in html
@@ -570,3 +644,21 @@ def test_serve_ignores_forwarded_headers(monkeypatch):
     monkeypatch.setattr(uvicorn, "run", lambda app, **kw: seen.update(kw))
     assert cli.main(["serve"]) == 0
     assert seen["proxy_headers"] is False
+
+
+def test_book_shorthand_names_match():
+    from deepsports.circa.match import abbrev_match, side_score
+
+    def team(loc, name, abbr="X"):
+        return {"abbr": abbr, "display_name": f"{loc} {name}", "location": loc, "name": name}
+
+    assert abbrev_match(norm("BOWLING GRN"), norm("Bowling Green"))
+    assert abbrev_match(norm("WILL & MARY"), norm("William & Mary"))
+    assert abbrev_match(norm("NO IOWA"), norm("Northern Iowa"))
+    assert not abbrev_match(norm("IOWA"), norm("Iowa State"))  # word counts differ
+    assert not abbrev_match(norm("NO IOWA"), norm("South Iowa"))
+    assert side_score("JAX ST", team("Jacksonville State", "Gamecocks")) == 2
+    assert side_score("S HOUSTON ST", team("Sam Houston", "Bearkats")) == 2
+    assert side_score("SOUTHERN METHODIST", team("SMU", "Mustangs", "SMU")) == 2
+    assert side_score("CAL BAPTIST", team("California Baptist", "Lancers")) == 1
+    assert side_score("CAL BAPTIST", team("California", "Golden Bears")) == 0

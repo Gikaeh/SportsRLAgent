@@ -15,6 +15,11 @@ Top picks: up to TOP_N of the strong + lean bets, one per game, ranked by the sm
 edges. College spreads with a line beyond BIG_DOG_LINE are left out of the top picks: early-season
 models pull lopsided games toward the middle, so those edges are mostly a model quirk.
 
+Lines (mp-v1.1, 2026-11-16): each side is judged at the best quote for the bettor among the
+slate's DraftKings line and the Circa / William Hill quotes (`books grab`), so a pick's line,
+price, edges and tier are where the owner can bet it. A game posted by an earlier run stays out of
+the top picks, but is listed under "repriced" when its line has since moved in the bettor's favour.
+
 Neither model has beaten the closing line; this is a recommendation list, never a placed bet.
 """
 
@@ -42,7 +47,7 @@ from deepsports.analysis.ensemble_bets import (
 from deepsports.books import LABELS as BOOK_LABELS
 
 RUNS_DIR = config.REPORTS_DIR / "model-picks"
-RULE_VERSION = "mp-v1"
+RULE_VERSION = "mp-v1.1"
 STRONG_PTS = 4.0
 LEAN_PTS = 3.0
 TOP_N = 5
@@ -51,26 +56,10 @@ MARKETS = ("spread", "total")
 MAX_ROWS = 10  # per tier in the Discord message; the full list is in picks.json
 
 
-def _edge(market: str, margin_or_total: float | None, game: Mapping[str, Any]) -> float | None:
-    """Signed edge in points: spread > 0 = home side, total > 0 = over. None if not computable."""
-    m = game["markets"].get(market)
-    if m is None or margin_or_total is None:
-        return None
-    if market == "spread":
-        return margin_or_total + m["home_line"]
-    return margin_or_total - m["line"]
-
-
 def _model_number(model: Mapping[str, Any] | None, market: str) -> float | None:
     if not model:
         return None
     return model.get("home_margin" if market == "spread" else "total")
-
-
-def _side(market: str, edge: float) -> str:
-    if market == "spread":
-        return "home" if edge > 0 else "away"
-    return "over" if edge > 0 else "under"
 
 
 def _best_price(game: Mapping[str, Any], market: str, side: str, line: float) -> dict | None:
@@ -81,41 +70,93 @@ def _best_price(game: Mapping[str, Any], market: str, side: str, line: float) ->
     return {"price": best["price"], "point": best["point"], "book": best["book"]}
 
 
-def find_picks(slate: Mapping[str, Any]) -> list[dict[str, Any]]:
-    """Every strong or lean bet on the slate, best first (pure)."""
+SIDES = {"spread": ("home", "away"), "total": ("over", "under")}
+
+
+def _side_edge(market: str, side: str, number: float | None, line: float) -> float | None:
+    """Edge in points toward `side` at `line` (the line from that side's view)."""
+    if number is None:
+        return None
+    if market == "spread":
+        return (number if side == "home" else -number) + line
+    return number - line if side == "over" else line - number
+
+
+def _book_index(books: Mapping[str, Mapping[str, Any] | None] | None) -> dict[tuple, list]:
+    """(game_id, market, side) -> [(book, line, price)] from `books grab` payloads."""
+    out: dict[tuple, list] = {}
+    for book, data in sorted((books or {}).items()):
+        for q in (data or {}).get("lines", []):
+            if q.get("line") is None or q.get("price") is None:
+                continue
+            try:
+                quote = (book, float(q["line"]), int(q["price"]))
+            except (TypeError, ValueError):
+                continue
+            out.setdefault((str(q.get("game_id")), q.get("market"), q.get("side")), []).append(
+                quote
+            )
+    return out
+
+
+def _quote_key(market: str, side: str, line: float, price: int) -> tuple[float, float]:
+    """Bigger = better for the bettor: the line first, then the price (as `best_book`)."""
+    return (_line_value(market, side, line), profit_on_win(price, 1))
+
+
+def find_picks(
+    slate: Mapping[str, Any], books: Mapping[str, Mapping[str, Any] | None] | None = None
+) -> list[dict[str, Any]]:
+    """Every strong or lean bet on the slate, best first (pure).
+
+    Each side is judged at the best quote for the bettor among the slate's DraftKings line and
+    the `books` quotes (Circa, William Hill): line first, then price, DraftKings on a tie. A
+    pick taken at a book's quote carries `book` plus the DraftKings `dk_line`/`dk_price`."""
+    index = _book_index(books)
     picks = []
     for g in slate["games"]:
         mb_model = (g.get("manualbets") or {}).get("model")
         for market in MARKETS:
-            ds = _edge(market, _model_number(g.get("model"), market), g)
-            mb = _edge(market, _model_number(mb_model, market), g)
-            if ds is None or mb is None or ds == 0 or (ds > 0) != (mb > 0):
+            m = g["markets"].get(market)
+            if m is None:
                 continue
-            low, high = sorted((abs(ds), abs(mb)))
-            if low < LEAN_PTS:
-                continue
-            side = _side(market, ds)
-            m = g["markets"][market]
-            line = m[f"{side}_line"] if market == "spread" else m["line"]
-            pick = {
-                "game_id": g["game_id"],
-                "league": g["league"],
-                "market": market,
-                "side": side,
-                "line": line,
-                "price": m[f"{side}_price"],
-                "stake": 1,
-                "tier": "strong" if low >= STRONG_PTS else "lean",
-                "ds_edge": round(abs(ds), 1),
-                "mb_edge": round(abs(mb), 1),
-                "min_edge": round(low, 1),
-                "early": bool((g.get("manualbets") or {}).get("gated")),
-                "label": label(g, market, side, line),
-            }
-            best = _best_price(g, market, side, line) if market == "spread" else None
-            if best:
-                pick["best"] = best
-            picks.append(pick)
+            for side in SIDES[market]:
+                dk_line = m[f"{side}_line"] if market == "spread" else m["line"]
+                dk_price = m[f"{side}_price"]
+                quotes = [(None, dk_line, dk_price)] if None not in (dk_line, dk_price) else []
+                quotes += index.get((str(g["game_id"]), market, side), [])
+                if not quotes:
+                    continue
+                book, line, price = quotes[0]
+                for q in quotes[1:]:
+                    if _quote_key(market, side, q[1], q[2]) > _quote_key(market, side, line, price):
+                        book, line, price = q
+                ds = _side_edge(market, side, _model_number(g.get("model"), market), line)
+                mb = _side_edge(market, side, _model_number(mb_model, market), line)
+                if ds is None or mb is None or min(ds, mb) < LEAN_PTS:
+                    continue
+                low = min(ds, mb)
+                pick = {
+                    "game_id": g["game_id"],
+                    "league": g["league"],
+                    "market": market,
+                    "side": side,
+                    "line": line,
+                    "price": price,
+                    "stake": 1,
+                    "tier": "strong" if low >= STRONG_PTS else "lean",
+                    "ds_edge": round(ds, 1),
+                    "mb_edge": round(mb, 1),
+                    "min_edge": round(low, 1),
+                    "early": bool((g.get("manualbets") or {}).get("gated")),
+                    "label": label(g, market, side, line),
+                }
+                if book:
+                    pick |= {"book": book, "dk_line": dk_line, "dk_price": dk_price}
+                best = _best_price(g, market, side, line) if market == "spread" else None
+                if best:
+                    pick["best"] = best
+                picks.append(pick)
     picks.sort(key=lambda p: (p["tier"] != "strong", -p["min_edge"]))
     return picks
 
@@ -183,8 +224,20 @@ def _row(p: Mapping[str, Any], games: Mapping[str, Mapping[str, Any]]) -> tuple[
     )
 
 
-def render(slate: Mapping[str, Any], picks: Sequence[Mapping[str, Any]], top: Sequence) -> str:
-    """Discord message: top picks, then the strong and lean tables, then caveats (pure)."""
+def _price_at(p: Mapping[str, Any]) -> str:
+    """'-110' at DraftKings, '-110 Circa' at a book's quote."""
+    book = p.get("book")
+    return f"{p['price']:+d}" + (f" {BOOK_LABELS.get(book, book)}" if book else "")
+
+
+def render(
+    slate: Mapping[str, Any],
+    picks: Sequence[Mapping[str, Any]],
+    top: Sequence,
+    repriced: Sequence[Mapping[str, Any]] = (),
+) -> str:
+    """Discord message: top picks, then the strong and lean tables, then games posted in an
+    earlier run that now have a better line (`repriced`), then caveats (pure)."""
     games = {g["game_id"]: g for g in slate["games"]}
     head = ("Bet", "Odds", "Game", "Tip", "DS", "MB")
     when = datetime.fromisoformat(slate["created_at"]).astimezone(config.LOCAL_TZ)
@@ -198,10 +251,11 @@ def render(slate: Mapping[str, Any], picks: Sequence[Mapping[str, Any]], top: Se
         return "\n".join(out)
     for league, err in (mb.get("errors") or {}).items():
         out.append(f"ManualBets {league.upper()} missing today ({str(err)[:60]}).")
-    if not picks:
+    if not picks and not repriced:
         out.append("No bet today: the two models don't agree 3+ points past any line.")
         return "\n".join(out)
-    out.append(f"Top {len(top)} (1 unit each, one per game):")
+    if picks:
+        out.append(f"Top {len(top)} (1 unit each, one per game):")
     for p in top:
         g = games[p["game_id"]]
         best = p.get("best")
@@ -209,7 +263,7 @@ def render(slate: Mapping[str, Any], picks: Sequence[Mapping[str, Any]], top: Se
         if best and (best["price"] > p["price"] or best["point"] > p["line"]):
             shop = f", best {best['point']:+g} {best['price']:+d} {best['book']}"
         out.append(
-            f"- {p['label']} ({p['price']:+d}) {g['away']['abbr']} @ {g['home']['abbr']}"
+            f"- {p['label']} ({_price_at(p)}) {g['away']['abbr']} @ {g['home']['abbr']}"
             f" {_short_tip(g['tip_local'])}: DS +{p['ds_edge']:g}, MB +{p['mb_edge']:g}{shop}"
             f"{_book_quote(p)}"
         )
@@ -223,6 +277,16 @@ def render(slate: Mapping[str, Any], picks: Sequence[Mapping[str, Any]], top: Se
                 title + (f" (best {MAX_ROWS} of {len(rows)})" if len(rows) > MAX_ROWS else "")
             )
             out += _table([head, *rows[:MAX_ROWS]])
+    if repriced:
+        out.append("Posted earlier, now at a better line (not in the top 5):")
+        for p in repriced:
+            g = games[p["game_id"]]
+            was = f"{p['was_line']:+g}" if p["market"] == "spread" else f"{p['was_line']:g}"
+            out.append(
+                f"- {p['label']} ({_price_at(p)}) {g['away']['abbr']} @ {g['home']['abbr']}"
+                f" {_short_tip(g['tip_local'])}: was {was}; DS +{p['ds_edge']:g},"
+                f" MB +{p['mb_edge']:g}{_book_quote(p)}"
+            )
     notes = []
     if any(p["early"] for p in picks):
         notes.append("* early-season college game (ManualBets withholds its own bets)")
@@ -242,18 +306,54 @@ def render(slate: Mapping[str, Any], picks: Sequence[Mapping[str, Any]], top: Se
 POSTED_HOURS = 36  # longest gap between runs is 30 h (Sunday 08:00 -> Monday 14:00)
 
 
-def posted_games(root: Path, now: datetime, hours: float = POSTED_HOURS) -> set[str]:
-    """game_ids in any run saved in the last `hours` (its picks and top), so a game is only ever
-    posted once even when two runs' windows overlap (e.g. the switch to weekend mornings)."""
-    out: set[str] = set()
+def posted_picks(
+    root: Path, now: datetime, hours: float = POSTED_HOURS
+) -> dict[tuple[str, str, str], float]:
+    """(game_id, market, side) -> the best line (for the bettor) posted for it by any run saved
+    in the last `hours` (its picks, top and repriced lists)."""
+    out: dict[tuple[str, str, str], float] = {}
     for f in root.glob("*/picks.json"):
         try:
             r = json.loads(f.read_text())
             created = datetime.fromisoformat(r["created_at"])
         except (OSError, ValueError, KeyError, TypeError):
             continue
-        if timedelta(0) <= now - created <= timedelta(hours=hours):
-            out |= {str(p["game_id"]) for p in [*r.get("picks", []), *r.get("top", [])]}
+        if not timedelta(0) <= now - created <= timedelta(hours=hours):
+            continue
+        for p in [*r.get("picks", []), *r.get("top", []), *r.get("repriced", [])]:
+            key = (str(p["game_id"]), p["market"], p["side"])
+            line = float(p["line"])
+            if key not in out or _line_value(p["market"], p["side"], line) > _line_value(
+                p["market"], p["side"], out[key]
+            ):
+                out[key] = line
+    return out
+
+
+def posted_games(root: Path, now: datetime, hours: float = POSTED_HOURS) -> set[str]:
+    """game_ids in any run saved in the last `hours`, so a game is only ever in the top picks
+    once even when two runs' windows overlap (e.g. the switch to weekend mornings)."""
+    return {k[0] for k in posted_picks(root, now, hours)}
+
+
+def better_than_posted(
+    picks: Sequence[Mapping[str, Any]], posted: Mapping[tuple[str, str, str], float]
+) -> list[dict[str, Any]]:
+    """Picks on an already-posted game and side whose line now beats the best one posted
+    (strictly, in the bettor's favour), one per game, with `was_line`; big college spreads
+    left out as in `top_picks` (pure)."""
+    out, seen = [], set()
+    for p in sorted(picks, key=lambda p: -p["min_edge"]):
+        was = posted.get((str(p["game_id"]), p["market"], p["side"]))
+        if was is None or p["game_id"] in seen:
+            continue
+        if p["league"] == "ncaab" and p["market"] == "spread" and abs(p["line"]) > BIG_DOG_LINE:
+            continue
+        if _line_value(p["market"], p["side"], float(p["line"])) > _line_value(
+            p["market"], p["side"], was
+        ):
+            out.append(dict(p) | {"was_line": was})
+            seen.add(p["game_id"])
     return out
 
 
@@ -263,13 +363,16 @@ def write_run(
     root: Path = RUNS_DIR,
     books: Mapping[str, Mapping[str, Any] | None] | None = None,
 ) -> tuple[Path, str]:
-    seen = posted_games(root, now)
-    picks = find_picks(slate)
+    posted = posted_picks(root, now)
+    seen = {k[0] for k in posted}
+    picks = find_picks(slate, books)
     repeats = {p["game_id"] for p in picks if str(p["game_id"]) in seen}
+    repriced = better_than_posted([p for p in picks if p["game_id"] in repeats], posted)
     picks = [p for p in picks if p["game_id"] not in repeats]
     top = top_picks(picks)
     if books:
         attach_books(top, books)
+        attach_books(repriced, books)
     run = new_run_dir(now, root)
     (run / "slate.json").write_text(json.dumps(slate, indent=1, default=str))
     payload = {
@@ -277,9 +380,10 @@ def write_run(
         "created_at": slate["created_at"],
         "picks": picks,
         "top": top,
+        "repriced": repriced,
     }
     (run / "picks.json").write_text(json.dumps(payload, indent=1))
-    text = render(slate, picks, top)
+    text = render(slate, picks, top, repriced)
     if repeats:
         n = len(repeats)
         text += f"\n{n} game{'s' if n > 1 else ''} already posted in an earlier run left out."
@@ -392,7 +496,12 @@ def grade_picks(
                     at_book = {**p, "line": bb["line"], "price": bb["price"]}
                     gb = grade_pick(at_book, final) | {"graded_at": bb["book"]}
                     gb["clv"] = pick_clv(at_book, close)
-                    graded += [("top_books", gb), ("top_books_dk", g)]
+                    gdk = g
+                    if p.get("book") and p.get("dk_line") is not None:  # picked at a book's quote
+                        at_dk = {**p, "line": p["dk_line"], "price": p["dk_price"]}
+                        gdk = grade_pick(at_dk, final)
+                        gdk["clv"] = pick_clv(at_dk, close)
+                    graded += [("top_books", gb), ("top_books_dk", gdk)]
                     mine["top_books"].append(gb)
                 lg = leagues.setdefault(p["league"], {k: [] for k in groups})
                 for key, x in graded:

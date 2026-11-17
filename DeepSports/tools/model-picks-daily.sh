@@ -64,6 +64,24 @@ circa_out=$(printf '%s\n' "$circa_raw" | tail -1)
 if [ "$circa_status" -eq 124 ] || [ "$circa_status" -eq 137 ]; then circa_out="timed out after 300 s"; fi
 echo "$(ts) circa read: ${circa_out:-no output} (exit $circa_status)"
 
+# William Hill's real lines from the owner's screenshots (same reader, no iCloud inbox). They win
+# over the Caesars feed in the picks. Non-fatal and capped at 5 min; one log line.
+wh_raw=$(timeout -k 15 300 uv run --frozen deepsports circa read --book williamhill 2>/dev/null)
+wh_status=$?
+wh_out=$(printf '%s\n' "$wh_raw" | tail -1)
+if [ "$wh_status" -eq 124 ] || [ "$wh_status" -eq 137 ]; then wh_out="timed out after 300 s"; fi
+echo "$(ts) wh read: ${wh_out:-no output} (exit $wh_status)"
+
+# Opening screenshots for today's games uploaded after the 21:00 job read the rest (a no-op when
+# there are none or all are read). Non-fatal, capped at 5 min each; one log line each.
+today=$(date +%F)
+for book in circa williamhill; do
+  op_raw=$(timeout -k 15 300 uv run --frozen deepsports circa read --early --date "$today" --book "$book" 2>/dev/null)
+  op_status=$?
+  if [ "$op_status" -eq 124 ] || [ "$op_status" -eq 137 ]; then op_raw="timed out after 300 s"; fi
+  echo "$(ts) $book early read: $(printf '%s\n' "$op_raw" | tail -1) (exit $op_status)"
+done
+
 # One retry after a minute (e.g. a writer briefly held the warehouse lock).
 run_picks() { uv run --frozen deepsports model-picks run --days "$PICKS_DAYS" --manualbets "$MB_ARG"; }
 if ! msg=$(run_picks); then

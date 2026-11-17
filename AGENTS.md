@@ -44,8 +44,8 @@ A new edge is an integration step: propose it, log it, then build it.
    paper trades and the ensemble vote are recommendations or watch-only records.
 2. **No new secret values** in code, docs, logs, commits or chat. Known debt: the Odds API key is
    still a literal in ManualBets' `odd_scraping.py` files (and in git history); moving it to an
-   env var is open work. Never print the key. The `logs/` CSVs hold real stakes: don't quote them
-   outside the repo.
+   env var is open work that needs the owner's OK (rule 7). Never print the key. The `logs/`
+   CSVs hold real stakes: don't quote them outside the repo.
 3. **Bet logs are append-only history.** Never edit or delete past rows in `logs/**`; correct by
    appending. Same for the projects' paper-trade and ensemble records.
 4. **No leakage.** Features use only information available before tip-off; evaluate with
@@ -54,6 +54,12 @@ A new edge is an integration step: propose it, log it, then build it.
    is a claim: re-run its checks before telling the owner it's finished.
 6. **Don't run live data jobs casually.** DeepSports allows one DuckDB writer at a time and its
    warehouse lives on an external drive; scheduled jobs own it (see `DeepSports/CLAUDE.md`).
+7. **ManualBets is append-only without the owner's permission.** Don't edit, rewrite or delete
+   anything that exists under `ManualBets/` (code, models, configs, data, docs); append rows at the
+   end of a file or add new files instead. With the owner's permission for a specific change, that
+   change is allowed: propose it, wait for the yes. Exception: `ManualBets/AGENTS.md` may be edited
+   freely. Running its menus and scripts stays allowed, except options that overwrite its files (e.g.
+   Model Retraining), which need permission too. Owner, 2026-11-16 (`docs/DECISIONS.md`).
 
 ## Git
 - Never commit to `main`. Branch first (`feature/…`, `fix/…`), then open a PR to `main` on
@@ -71,7 +77,8 @@ DeepSports *and* ManualBets**, plus fresh Odds API lines when they help. Don't s
 quota" or because a menu is interactive (drive it with piped input or call its code). Spend the
 shared quota sensibly: request only the sports/markets/books needed and report
 `x-requests-remaining`. The only limits are the non-negotiables above (humans place bets, never
-print the key, append-only logs) and DeepSports' one-writer rule.
+print the key, append-only logs, ManualBets append-only) and DeepSports' one-writer rule. Using
+ManualBets is allowed; changing it needs the owner's permission (rule 7).
 
 ## Working as the orchestrator
 The main session owns the plan and the outcome:

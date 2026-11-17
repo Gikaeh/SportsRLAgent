@@ -1,4 +1,5 @@
-"""Match Circa board lines to warehouse games by team names. Pure, apart from `load_candidates`.
+"""Match book screenshot lines (Circa, William Hill) to warehouse games by team names. Pure,
+apart from `load_candidates`.
 
 Circa's rotation numbers aren't in the warehouse, so they can't name a game by themselves. They
 group the board instead: a game's two teams share the rotation pair (2k-1, 2k), so every line of
@@ -36,6 +37,20 @@ _FIRST_TOKEN = {
 }
 
 
+# Book shorthands that can't be derived word by word (keys and values are `norm` forms).
+_BOOK_ALIASES = {
+    "JAX ST": "JACKSONVILLE ST",
+    "MID TENN ST": "MIDDLE TENNESSEE",
+    "MIDDLE TENN ST": "MIDDLE TENNESSEE",
+    "SOUTH HOUSTON ST": "SAM HOUSTON",  # "S HOUSTON ST" after the first-token rule
+    "SAM HOUSTON ST": "SAM HOUSTON",
+    "SOUTHERN METHODIST": "SMU",
+    "CONNECTICUT": "UCONN",
+    "LOUISIANA ST": "LSU",
+    "VIRGINIA COMMONWEALTH": "VCU",
+}
+
+
 def norm(name: str) -> str:
     s = re.sub(r"[^A-Z0-9 ]", " ", name.upper().replace("&", " ").replace("'", ""))
     toks = s.split()
@@ -59,9 +74,28 @@ def _aliases(team: dict) -> set[str]:
     return out
 
 
+def _subseq(short: str, word: str) -> bool:
+    it = iter(word)
+    return all(ch in it for ch in short)
+
+
+def abbrev_match(c: str, a: str) -> bool:
+    """Word-by-word shorthand of an alias, same number of words, each word equal or a shortening
+    that starts with the same letter: BOWLING GRN ~ BOWLING GREEN, WILL MARY ~ WILLIAM MARY,
+    NO IOWA ~ NORTHERN IOWA, CAL BAPTIST ~ CALIFORNIA BAPTIST."""
+    cw, aw = c.split(), a.split()
+    if len(cw) != len(aw) or c == a:
+        return False
+    return all(
+        x == y or (len(x) >= 2 and x[0] == y[0] and len(x) < len(y) and _subseq(x, y))
+        for x, y in zip(cw, aw, strict=True)
+    )
+
+
 def side_score(circa: str, team: dict) -> float:
-    """2 = an alias matches exactly, 1 = close (prefix or fuzzy), 0 = no match."""
+    """2 = an alias matches exactly, 1 = close (prefix, word shorthand or fuzzy), 0 = no match."""
     c = norm(circa)
+    c = _BOOK_ALIASES.get(c, c)
     aliases = _aliases(team)
     if c in aliases:
         return 2.0
@@ -70,6 +104,7 @@ def side_score(circa: str, team: dict) -> float:
         if (
             len(c) >= 4
             and (a.startswith(c + " ") or c.startswith(a + " "))
+            or abbrev_match(c, a)
             or difflib.SequenceMatcher(None, c, a).ratio() >= 0.86
         ):
             best = max(best, 1.0)

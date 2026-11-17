@@ -18,7 +18,7 @@ diagram in the same change (see CLAUDE.md).
 | `parse_espn.py` | Pure functions turning raw JSON into table rows. No I/O, fully unit-tested on real fixtures. |
 | `parse_pbp.py` | Pure play-by-play parser for cached ESPN summaries (NBA + college): chronological events with repaired cumulative scores, shot values/distances, players. Ported from the edge study; parsed on demand, no warehouse table yet. |
 | `store.py` | DuckDB schema, league-aware keys (`teams` PK = league + team_id), the idempotent `migrate()`, and fast bulk upserts (rows go in as one JSON parameter). Pregame odds (with spread/total prices) are stored only when the line or a price moves. |
-| `circa/` | Circa screenshots (`deepsports circa read\|ingest\|status`, since 2026-11-14, edge 6): `ingest` copies images from the iCloud Drive inbox into today's folder; `read` has headless `claude -p` (Sonnet, Read tool only; `reader.py`) transcribe unread screenshots, validates the lines (`lines.py`, pure), matches them to games by team names and Circa rotation pairs (`match.py`, one brief read-only warehouse open) and writes the day's lines file. `multipart.py` parses the upload body for `api/circa.py`. No DuckDB table. Commands and env vars: PIPELINE.md. |
+| `circa/` | Circa screenshots, and William Hill's since 2026-11-16 (`--book williamhill`, own folder `williamhill/`, no inbox) (`deepsports circa read\|ingest\|status`, since 2026-11-14, edge 6): `ingest` copies images from the iCloud Drive inbox into today's folder; `read` has headless `claude -p` (Sonnet, Read tool only; `reader.py`) transcribe unread screenshots, validates the lines (`lines.py`, pure), matches them to games by team names and Circa rotation pairs (`match.py`, one brief read-only warehouse open) and writes the day's lines file. `multipart.py` parses the upload body for `api/circa.py`. No DuckDB table. Commands and env vars: PIPELINE.md. |
 | `books/` | Book lines from OddsPapi (`deepsports books grab\|status`, since 2026-11-14): `oddspapi.py` fetches one book's NBA + NCAAB odds through `PoliteClient` (key from `~/.config/deepsports/oddspapi-key`, masked in errors) and parses them (pure); `grab.py` orients them to warehouse games with `circa/match.py` and writes one file per book (Circa; William Hill = Caesars' feed). Used by the moon proposal (Circa) and the model-picks top 5 (both). DATA_SOURCES.md, OddsPapi. |
 | `config.py` | Paths, timezones, rate limit. All of them can be overridden with `DEEPSPORTS_*` env vars. |
 
@@ -46,7 +46,7 @@ diagram in the same change (see CLAUDE.md).
 - Scheduled runs (`tools/scheduled-sync.sh`, launchd 08:00/14:00) do every warehouse step themselves
   (update, opening lines for recent finals, predict, paper log; model picks once a day: weekdays 14:00, Saturday and Sunday 08:00, each
   covering the games until the next run). The picks job (`tools/model-picks-daily.sh`)
-  runs `books grab` and `circa read` first, then sends the picks and, as a second Discord message, the To The Moon
+  runs `books grab` and `circa read` (Circa, then WH) first, then sends the picks and, as a second Discord message, the To The Moon
   proposal (`moon propose --tier mix --months 1 --circa auto --format discord`). The scheduled calendar sync was scrapped for now
   (2026-11-13); the skill still runs by hand (`calendar-agent`). Headless Claude's Bash sandbox can't open
   DuckDB on the external drive, so a headless run would need `upcoming --json` exported first.
@@ -74,7 +74,7 @@ diagram in the same change (see CLAUDE.md).
     It never touches DuckDB, so live scores keep working while data jobs run.
   - `warehouse.py` serves standings and team pages through short read-only DuckDB connections, and returns 503
     `warehouse_busy` while a job holds the lock.
-  - `circa.py`: `POST /api/circa/screenshots` (multipart images, size and count capped; the API's one write,
+  - `circa.py`: `POST /api/circa/screenshots[?book=williamhill]` (multipart images, size and count capped; the API's one write,
     from the `/circa` LAN page) and `GET /api/circa/screenshots/today` (counts only).
   - `picks.py`: `GET /api/picks/today`, the newest model-picks run (top 5 with Circa/WH prices; files only,
     no stakes), shown by the Picks button on Today in BetDesk and the LAN app.
@@ -148,9 +148,10 @@ diagram in the same change (see CLAUDE.md).
   dropped (docs/results/2026-11-11-player-impact.md).
 - `model_picks.py`: the daily watch-only picks (since 2026-11-13, replacing the scheduled vote). Reuses the
   ensemble slate and ManualBets attach; a bet qualifies when both models are on the same side of the
-  spread or total, strong at 4+ points past the line each, lean at 3+; top 5, one per game, each shown
-  with Circa's and William Hill's (Caesars feed) line and price from today's `books/` files; games a run in
-  the last 36 h already posted are left out. Runs in
+  spread or total, strong at 4+ points past the line each, lean at 3+, judged at the best quote among
+  DraftKings and Circa's and William Hill's (Caesars feed) lines from today's `books/` files; top 5, one per
+  game, each shown with both books' quotes; games a run in the last 36 h already posted are left out of the
+  top 5 and listed separately when their line has moved the bettor's way. Runs in
   `reports/model-picks/<run>/`, graded with `ensemble_bets.grade_pick`. No warehouse writes, no Claude.
 - `src/deepsports/moon/` (`deepsports moon`, since 2026-11-13; outside `analysis/`): To The Moon (betting).
   Risk tiers (incl. `ticket2` and `mix`, the default) + a seeded Monte Carlo at −vig over `--months`

@@ -787,8 +787,12 @@ def _model_picks(args: argparse.Namespace, db: Store) -> int:
     attach_manualbets(slate, export)
     from deepsports.books import BOOKS
     from deepsports.books import grab as books_grab
+    from deepsports.circa import load_lines
+    from deepsports.moon.circa import merge
 
-    books = {b: books_grab.load(b) for b in BOOKS}  # today's OddsPapi files, if grabbed
+    # Today's OddsPapi files, if grabbed, with the owner's screenshot lines winning per game,
+    # market and side (`circa read --book circa|williamhill`).
+    books = {b: merge(load_lines(None, b), books_grab.load(b)) for b in BOOKS}
     run, text = mp.write_run(slate, now, books=books)
     print(text)
     print(f"run: {run}", file=sys.stderr)

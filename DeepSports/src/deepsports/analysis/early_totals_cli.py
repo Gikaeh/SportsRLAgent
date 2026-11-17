@@ -67,11 +67,24 @@ def append_jsonl(path: Path, rows: Sequence[dict]) -> None:
 
 
 def load_early_lines(game_date: date) -> dict | None:
-    """The night-before Caesars file for the game day (`books.grab.load_early`, named after the
-    game day); the caller keeps only that day's games."""
+    """The game day's night-before William Hill lines: the owner's opening screenshots
+    (`circa read --early --book williamhill`) first, then the Caesars feed (`books.grab.load_early`)
+    for any game and side the screenshots lack (amendment 2026-11-16 in the pre-registration).
+    Each line is tagged `source` screenshot | feed. The caller keeps only that day's games."""
     from deepsports.books import grab
+    from deepsports.circa import load_lines
+    from deepsports.moon.circa import merge
 
-    return grab.load_early(et.BOOK, game_date)
+    def tagged(data: dict | None, source: str) -> dict | None:
+        if data is None:
+            return None
+        lines = [
+            dict(q) | {"source": source} for q in data.get("lines") or [] if isinstance(q, dict)
+        ]
+        return dict(data) | {"lines": lines}
+
+    shots = tagged(load_lines(game_date, et.BOOK, early=True), "screenshot")
+    return merge(shots, tagged(grab.load_early(et.BOOK, game_date), "feed"))
 
 
 GAMES_SQL = """
@@ -157,17 +170,19 @@ def cmd_log(args: argparse.Namespace) -> int:
         fcntl.flock(lk, fcntl.LOCK_EX)
         new = et.new_rows(read_jsonl(p["bets"]), bets)
         append_jsonl(p["bets"], new)
-        have = {"caesars": early is not None, "manualbets": bool(counts["mb_export_ok"])}
+        have = {"wh lines": early is not None, "manualbets": bool(counts["mb_export_ok"])}
         missing = [k for k, ok in have.items() if not ok]
         run |= {"status": "ok" if not missing else "missing " + ",".join(missing),
                 "book_grabbed_at": (early or {}).get("grabbed_at"),
+                "book_read_at": (early or {}).get("read_at"),
+                "line_sources": (early or {}).get("sources"),
                 "mb_created_at": (export or {}).get("created_at"),
                 **counts, "new": len(new)}  # fmt: skip
         append_jsonl(p["runs"], [run])
     note = f" (missing: {', '.join(missing)})" if missing else ""
     print(
         f"early-totals {game_date}: {counts['games']} games,"
-        f" {counts['all_inputs']} with DS+MB+Caesars, {len(bets)} qualify, {len(new)} new{note}"
+        f" {counts['all_inputs']} with DS+MB+WH line, {len(bets)} qualify, {len(new)} new{note}"
     )
     for b in new:
         print(f"  {b['away']} @ {b['home']} {b['side']} {b['line']:g} {b['price']:+d}"

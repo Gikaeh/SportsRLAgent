@@ -1,4 +1,3 @@
-from operator import is_
 from data_pipeline.live_data_updater import LiveDataUpdater
 from betting.betting_recommender import BettingRecommender
 from model.model_retrainer import ModelRetrainer
@@ -97,7 +96,7 @@ def bettingRecommendations():
     #     predictions = recommender.predictGames(prediction_data, game_info)
         
     #     recommendations = recommender.makeBettingRecommendations(predictions=predictions)
-    elif choice == '4':
+    elif choice == '3':
         prediction_data_h2h, prediction_data_spread, prediction_data_total, game_info = updater.getPredictionReadyData(model_type='all')
 
         if prediction_data_h2h.empty:

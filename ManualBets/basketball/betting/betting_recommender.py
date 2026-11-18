@@ -680,7 +680,7 @@ class BettingRecommender:
 
         for file in files:
             if file.exists():
-                df = pd.read_csv(file)
+                df = pd.read_csv(file, dtype={'result': str})
                 results_before = df['result'].fillna('').astype(str)
 
                 for idx, row in df.iterrows():
@@ -778,15 +778,13 @@ class BettingRecommender:
         if archive:
             h2h_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG
             spread_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG
-            total_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG
+            # total_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG
         else:
             h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
             spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
-            total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+            # total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
         
-        files = [h2h_log_file, spread_log_file, total_log_file]
-        if not archive:
-            files.append(Path(self.config.COLLEGE_BETS_LOG))  # one bankroll across NBA and college
+        files = [h2h_log_file, spread_log_file]#, (total_log_file)]
         frames = [pd.read_csv(file) for file in files if file.exists()]
         return bankrollFromLogs(self.config.STARTING_BANKROLL, frames,
                                 None if archive else self.config.BANKROLL_START_DATE)
@@ -797,9 +795,9 @@ class BettingRecommender:
     def getActiveBets(self):
         h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
         spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
-        total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+        # total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
         
-        files = [h2h_log_file, spread_log_file, total_log_file]
+        files = [h2h_log_file, spread_log_file]#, (total_log_file)]
         
         for file in files:
             if file.exists():
@@ -811,13 +809,13 @@ class BettingRecommender:
         if archive:
             h2h_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.H2H_BETS_LOG
             spread_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.SPREAD_BETS_LOG
-            total_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG
+            # total_log_file = Path(self.config.LOG_DIR) / 'archive' / self.config.TOTAL_BETS_LOG
         else:
             h2h_log_file = Path(self.config.LOG_DIR) / self.config.H2H_BETS_LOG
             spread_log_file = Path(self.config.LOG_DIR) / self.config.SPREAD_BETS_LOG
-            total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
+            # total_log_file = Path(self.config.LOG_DIR) / self.config.TOTAL_BETS_LOG
         
-        files = [('h2h', h2h_log_file), ('spread', spread_log_file), ('total', total_log_file)]
+        files = [('h2h', h2h_log_file), ('spread', spread_log_file)]#, ('total', total_log_file)]
         
         for model_type, file in files:
             wins = 0
@@ -839,5 +837,6 @@ class BettingRecommender:
                         money_losses += row['bet_amount']
         
             print("\nModel Win Rates:")
+            print(f"{model_type} Wins: {wins}, Losses: {losses}")
             print(f"{model_type} Win Rate: {wins/(wins + losses)}% ({wins} - {losses})")
             print(f"{model_type} Money Win: {money_wins} | {model_type} Money Loss: {money_losses}")

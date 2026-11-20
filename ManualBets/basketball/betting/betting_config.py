@@ -9,14 +9,32 @@ class BettingConfig:
     BANKROLL_START_DATE = '2026-11-08'  # Older log rows stay as history but don't count
     MIN_BET_AMOUNT = 1        # Bets under this are dropped; stakes are whole dollars
     USE_UNIFIED_BANKROLL = False  # Set to False to use sport-specific bankroll
-    MAX_BET_SIZE_PCT = 0.05   # Maximum 5% of bankroll per bet
-    KELLY_FRACTION = 0.20      # Use 20% Kelly for conservative sizing
-    MAX_RISK_PCT = 0.5        # Maximum 50% total daily exposure
-    
-    # Edge
-    MIN_EDGE_H2H = 0.02 # Minimum 2% devigged edge to place bet (model_prob - fair_market_prob)
-    MIN_EDGE_SPREAD = 3
+    MAX_BET_SIZE_PCT = 0.02   # Kelly mode: maximum 2% of bankroll per bet
+    KELLY_FRACTION = 0.10     # Kelly mode: 1/10 Kelly
+    MAX_RISK_PCT = 0.15       # Maximum 15% total daily exposure
+
+    # Sizing (docs/DECISIONS.md 2026-11-20). Kelly needs a probability that is
+    # close to right; the model's live disagreements lose, so Kelly mode shrinks
+    # the model probability toward the devigged market. Flat mode is the default.
+    SIZING_MODE = 'flat'          # 'flat' or 'kelly'
+    FLAT_STAKE_AMOUNT = 2         # Whole dollars per bet in flat mode
+    MAX_FLAT_STAKE_PCT = 0.05     # Flat mode: never more than 5% of bankroll
+    MODEL_PROB_WEIGHT = 0.25      # Kelly mode: p_eff = 0.25*p_model + 0.75*p_market
+
+    # Edge bands. Edge = model vs line IN POINTS for spread/total
+    # (e.g. predicted margin 8.0 vs line -3.5 = 4.5 points), and model vs
+    # devigged market IN PROBABILITY for h2h. Capping the top of the band
+    # tests the observed winner's curse (biggest claimed edges lost most).
+    ENABLED_MARKETS = ('spread',)   # h2h paused 2026-11-20: 23 bets, 11-12, -$15.47
+    MIN_EDGE_H2H = 0.05
+    MAX_EDGE_H2H = 0.08
+    MIN_EDGE_SPREAD = 1
+    MAX_EDGE_SPREAD = 7.0
+    MIN_EDGE_TOTAL = 8.0
+    MAX_EDGE_TOTAL = 12.0
     MIN_PROBABILITY = 0.55
+    MIN_BET_ODDS = -150       # Do not take prices worse than this (e.g. -160)
+    MAX_ODDS_AGE_MINUTES = 60 # Drop odds rows older than this; stale lines make phantom edges
 
     # Cover-probability model (NOTES.md C1): P(cover) = NormalCDF(edge / sigma),
     # sigma = model's validation residual std, written into
@@ -43,7 +61,7 @@ class BettingConfig:
     # Books to track (for future Phase 3 implementation)
     SHARP_BOOKS = ['BetOnline', 'Pinnacle', 'LowVig']
     SOFT_BOOKS = ['DraftKings', 'FanDuel', 'BetMGM', 'Caesars']
-    NEVADA_BOOKS = ['betmgm', 'caesars']
+    NEVADA_BOOKS = ['draftkings'] #['betmgm', 'caesars']
     
     # Logging — bet journals live at the repo root (../logs), shared read-only with DeepSports.
     LOG_DIR = '../logs/basketball/betting'

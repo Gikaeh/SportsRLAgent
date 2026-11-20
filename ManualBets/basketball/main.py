@@ -1,5 +1,6 @@
 from data_pipeline.live_data_updater import LiveDataUpdater
 from betting.betting_recommender import BettingRecommender
+from betting.betting_config import BettingConfig
 from model.model_retrainer import ModelRetrainer
 from data_pipeline.basketball_data import BasketballData
 from pathlib import Path
@@ -53,24 +54,27 @@ def bettingRecommendations():
     updater = LiveDataUpdater()
 
     print("\nChoose an option to run: ")
-    print("1. H2H")
+    print("1. H2H (paused: negative live record, see docs/DECISIONS.md 2026-11-20)")
     print("2. Spread")
     # print("3. Total")
-    print("3. All")
-    
+    print("3. All enabled markets")
+
     choice = input("\nEnter your choice: ")
-    
+
+    enabled = set(BettingConfig.ENABLED_MARKETS)
+
     if choice == '1':
+        print("\nWARNING: h2h is paused from the daily run (23 graded bets, 11-12, -$15.47).")
         prediction_data, game_info = updater.getPredictionReadyData(model_type='h2h')
 
         if prediction_data.empty:
             print("No games today")
             return
-        
+
         recommender = BettingRecommender(model_path = './models/basketball_h2h_model.json')
-    
+
         predictions = recommender.predictGames(prediction_data, game_info)
-        
+
         recommendations = recommender.makeBettingRecommendations(predictions=predictions)
     elif choice == '2':
         prediction_data, game_info = updater.getPredictionReadyData(model_type='spread')
@@ -78,11 +82,11 @@ def bettingRecommendations():
         if prediction_data.empty:
             print("No games today")
             return
-        
+
         recommender = BettingRecommender(model_path = './models/basketball_spread_model.json')
-    
+
         predictions = recommender.predictGames(prediction_data, game_info)
-        
+
         recommendations = recommender.makeBettingRecommendations(predictions=predictions)
     # elif choice == '3':
     #     prediction_data, game_info = updater.getPredictionReadyData(model_type='total')
@@ -90,36 +94,46 @@ def bettingRecommendations():
     #     if prediction_data.empty:
     #         print("No games today")
     #         return
-        
+
     #     recommender = BettingRecommender(model_path = './models/basketball_total_model.json')
-    
+
     #     predictions = recommender.predictGames(prediction_data, game_info)
-        
+
     #     recommendations = recommender.makeBettingRecommendations(predictions=predictions)
     elif choice == '3':
         prediction_data_h2h, prediction_data_spread, prediction_data_total, game_info = updater.getPredictionReadyData(model_type='all')
 
-        if prediction_data_h2h.empty:
+        if prediction_data_spread.empty:
             print("No games today")
             return
 
-        recommender = BettingRecommender(model_path = './models/basketball_h2h_model.json')
-        predictions = recommender.predictGames(prediction_data_h2h, game_info)
-        recommendations_h2h = recommender.makeBettingRecommendations(predictions=predictions)
-        
-        recommender = BettingRecommender(model_path = './models/basketball_spread_model.json')
-        predictions = recommender.predictGames(prediction_data_spread, game_info)
-        recommendations_spread = recommender.makeBettingRecommendations(predictions=predictions)
-        
+        recommendations = []
+
+        if 'h2h' in enabled:
+            recommender = BettingRecommender(model_path = './models/basketball_h2h_model.json')
+            predictions = recommender.predictGames(prediction_data_h2h, game_info)
+            recommendations += recommender.makeBettingRecommendations(predictions=predictions)
+        else:
+            print("h2h skipped (paused in BettingConfig.ENABLED_MARKETS)")
+
+        if 'spread' in enabled:
+            recommender = BettingRecommender(model_path = './models/basketball_spread_model.json')
+            predictions = recommender.predictGames(prediction_data_spread, game_info)
+            recommendations += recommender.makeBettingRecommendations(predictions=predictions)
+        else:
+            print("spread skipped (not in BettingConfig.ENABLED_MARKETS)")
+
         # recommender = BettingRecommender(model_path = './models/basketball_total_model.json')
         # predictions = recommender.predictGames(prediction_data_total, game_info)
         # recommendations_total = recommender.makeBettingRecommendations(predictions=predictions)
-        
-        recommendations = recommendations_h2h + recommendations_spread #+ recommendations_total
+
+        if not recommendations:
+            print("\nNo recommendations from the enabled markets.")
+            return
     else:
         print("Invalid choice")
         return
-    
+
     recommender.displayRecommendations(recommendations)
 
 def modelRetraining():

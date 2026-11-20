@@ -28,21 +28,12 @@ class BasketballSpreadModel:
             # NOTES.md A6: fetch-time ranks look ahead. Older cached seasons still carry them.
             'home_pts_rank_l10', 'away_pts_rank_l10', 'home_plus_minus_rank_l10', 'away_plus_minus_rank_l10',
         ]
-        self.low_importance_cols = [
-            'away_apg_l10', 'away_fg3_pct_l10', 'away_opp_avg_win_pct_l10', 'away_opp_ppg_l10', 'away_top3_avg_apg', 
-            'away_top3_avg_blk', 'away_top3_avg_rpg', 'away_top3_avg_stl', 'away_top3_avg_tov', 'away_top5_avg_apg', 
-            'away_top5_avg_ppg', 'away_top5_avg_rpg', 'away_top6_avg_apg', 'away_top6_avg_blk', 'away_top6_avg_stl', 
-            'away_wins_l10', 'home_fg3_pct_l10', 'home_fg_pct_l10', 'home_opp_avg_win_pct_l10', 'home_opp_ppg_l10', 
-            'home_ppg_l10', 'home_reb_l10', 'home_top3_avg_rpg', 'home_top3_avg_tov', 'home_top5_avg_blk', 
-            'home_top5_avg_rpg', 'home_top5_avg_stl', 'home_top6_avg_mpg', 'home_top6_avg_ppg', 'home_top6_avg_rpg', 
-            'home_top6_avg_stl', 'home_top6_avg_tov', 'home_total_l10', 'total_l10_diff', 'away_fg_pct_l10', 
-            'away_reb_l10', 'away_stl_l10', 'away_top6_avg_mpg', 'away_total_l10', 'home_apg_l10', 
-            'home_blk_l10', 'home_top5_avg_ppg', 'home_top5_avg_tov', 'home_tov_l10', 'ppg_diff',
-            'away_depth_variance', 'away_top3_avg_ppg', 'away_top5_avg_mpg', 'blk_l10_diff', 'home_top3_avg_ppg', 
-            'home_top5_avg_mpg', 'home_wins_l10', 'opp_avg_win_pct_diff', 'away_top5_avg_tov', 'home_top6_avg_blk', 
-            'stl_l10_diff', 'away_top6_avg_ppg', 'apg_l10_diff', 'away_blk_l10', 'away_top5_avg_stl'
-        ]
-        
+        # 2026-11-20 ablation: the hand prune list was harmful on a chronological
+        # holdout (27 pruned features MAE 11.819 vs 11.711 with all 54). Keep every
+        # non-leakage feature. Details:
+        # docs/results/2026-11-20-nba-spread-feature-ablation.md
+        self.low_importance_cols = []
+
     def getLeakageColumns(self):
         return self.leakage_cols + self.low_importance_cols
 

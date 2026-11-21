@@ -103,8 +103,8 @@ real `data/basketball/injury_data/`.
   spread 38 rows, 36 lines unchanged, 2 better; h2h 17 rows, mean -0.1 probability points.
 - Open: the drop lists still prune strong team-quality features (`home_wins_l10`, `home_plus_minus_l10`,
   `away_opp_ppg_l10`). Re-check them with walk-forward importance before changing.
-- Open: `betting_config.NEVADA_BOOKS` is `['betmgm','caesars']` while the owner says he now bets at
-  DraftKings. If that is the book actually used, the logged price is not the price taken.
+- Resolved 2026-11-21: the owner set `NEVADA_BOOKS = ['draftkings']`, so the logged
+  price is now the book actually used.
 
 - **2026-11-20 feature ablation (spread):** the hand `low_importance_cols` is harmful.
   Same chronological split (train through 2024-02, test 2024-02..2026-11), same params,
@@ -119,3 +119,48 @@ real `data/basketball/injury_data/`.
 - **2026-11-20 shipped:** spread model v6, all 54 non-leakage features, 396 trees, validation MAE
   11.688, metadata `residual_std` 14.8616. `low_importance_cols` is now empty for spread; h2h and
   total keep theirs. Retrain path: `tools/retrain_spread.py`. Old model backed up outside the repo.
+
+## 2026-11-21 - CLV from the warehouse; injury history starts
+
+- `tools/clv.py record --source warehouse` reads the DeepSports `odds_snapshots`
+  closing rows read-only (`NBA_WAREHOUSE_DB`), joins bets by ET date + ESPN codes,
+  and replaces the late-snapshot rows. Sign math covers spread, total and h2h;
+  tested on a synthetic DuckDB. `--source auto` picks the warehouse when the env
+  var is set, otherwise the snapshot path. `--days 0` is all bets.
+- `tools/injuries.py` fetches ESPN's single `/injuries` endpoint (one request,
+  all 30 teams; the feed is current-only and ignores `dates=`). `fetch` writes the
+  current snapshot, a dated archive copy and appends to
+  `injury_data/season_<season>.csv`; `backfill` merges existing archive files.
+- First run: 106 rows backfilled from 2026-11-18, 108 rows today, 84/108 names
+  matched to player IDs. Unmatched names are mostly two-way/rookie players.
+- No historical injury state is available from ESPN; the season list builds
+  forward. That is why the model still uses participation (games played), not reports.
+
+- **2026-11-21 (later):** the owner reverted the warehouse CLV path, the daily injury feed,
+  `tools/feature_ablation.py` and `tools/retrain_spread.py`. The derived `data/training_data/basketball`
+  was deleted and rebuilt by the retrainer's own `prepareAllSeasons` with the new core/rotation
+  features: 30,439 games x 96 columns. The feature work stands.
+
+- **2026-11-21 shipped:** spread model v7, all 86 core/rotation features, 478 trees,
+  validation MAE 11.4865, metadata `residual_std` 14.6982. Ablation: baseline (54) MAE
+  11.7174, +availability (68) 11.5492, +rotation (72) 11.6659, +both (86) 11.5418;
+  paired day-clustered delta +0.1976 [0.1209, 0.2756] for both vs baseline. Availability
+  is the driver; rotation adds a small amount. Details:
+  `docs/results/2026-11-21-nba-availability-ablation.md`.
+
+- **2026-11-21 injury mapping (live only):** `betting/injury_adjustment.py` turns the
+  current ESPN status into an expected participation probability: OUT 0.0, DOUBTFUL 0.25,
+  QUESTIONABLE 0.5, PROBABLE 0.9, otherwise 1.0. For the upcoming game it recomputes the
+  core window as the last 2 completed games plus the expected current game (last 4 + current
+  for the 5-game window), then overwrites `core_missed_last3/5`,
+  `core_minutes_lost_last3` and `core_ppg_lost_last3`. Training is untouched. The live path
+  refreshes `current_injuries.csv` from ESPN's single `/injuries` feed (one request; the old
+  roster loop was 30) and falls back to the saved snapshot on failure. Test:
+  `tests/test_nba_features.py::test_injury_status_mapping`.
+
+- **2026-11-21 three-arm forward log:** the spread `predictGames` path now predicts and logs
+  `raw` (no report), `binary` (OUT = 0, everything else available) and `prior` (OUT 0,
+  DOUBTFUL .25, QUESTIONABLE .5, PROBABLE .9) to
+  `data/basketball/injury_data/forward_predictions.csv`, one row per game per arm with the
+  predicted margin, model version and each team's listed injuries. Recommendations use the
+  `prior` arm. First slate: 6 games x 3 arms = 18 rows, model version 7.

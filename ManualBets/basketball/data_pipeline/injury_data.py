@@ -261,6 +261,45 @@ class InjuryData:
         else:
             return 'OUT'
 
+    def refreshFromEspnFeed(self):
+        """One request: ESPN's league-wide injury feed (all 30 teams).
+
+        The old roster loop made 30 requests. This writes the current snapshot and
+        the dated archive copy, then tries to fill NBA player ids by name.
+        """
+        url = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries"
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+        response = requests.get(url, headers=headers, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+
+        rows = []
+        for team in data.get('injuries', []):
+            team_abbr = self.getTeamAbbreviation(team.get('displayName', ''))
+            if not team_abbr:
+                continue
+            for injury in team.get('injuries', []):
+                athlete = injury.get('athlete', {}) or {}
+                name = athlete.get('displayName', '')
+                if not name:
+                    continue
+                rows.append({
+                    'player_id': 0,
+                    'player_name': name,
+                    'team_abbreviation': team_abbr,
+                    'status': self._mapInjuryStatus(injury.get('status', '')),
+                    'injury_description': injury.get('shortComment') or injury.get('longComment') or '',
+                    'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                })
+        if not rows:
+            return False
+        self._writeSnapshot(pd.DataFrame(rows))
+        try:
+            self.matchPlayerIDs()
+        except Exception:
+            pass
+        return True
+
     # ------------------------------------------------------------ ID matching
 
     def _normalizePlayerName(self, name):

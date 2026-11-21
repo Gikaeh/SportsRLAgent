@@ -8,6 +8,9 @@ from shared.base_data_preparer import BaseTrainingDataPreparer
 
 PLAYER_SLOT_STATS = ['ppg', 'fg_pct', 'mpg', 'apg', 'rpg', 'blk', 'stl', 'tov', 'plus_minus']
 PLAYER_AGG_STATS = ['ppg', 'mpg', 'apg', 'rpg', 'blk', 'stl', 'tov']
+ROTATION_STATS = ['ppg', 'mpg', 'apg', 'rpg', 'blk', 'stl', 'tov']
+ROTATION_WINDOW = 5      # current rotation: last N team games, zero-filled
+AVAILABILITY_WINDOW = 5  # core availability: last N team games
 TEAM_WINDOW_STATS = [
     'wins', 'plus_minus', 'total', 'rolling_sos', 'rolling_srs', 'ppg',
     'opp_ppg', 'ast', 'tov', 'blk', 'stl', 'reb', 'efg_pct', 'fg3_pct',
@@ -283,6 +286,9 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
 
         cached = self.getCachedData('player_rolling', season, source_file=player_file)
         if cached is not None:
+            cached['GAME_DATE'] = pd.to_datetime(cached['GAME_DATE'])
+            if getattr(cached['GAME_DATE'].dtype, 'tz', None) is not None:
+                cached['GAME_DATE'] = cached['GAME_DATE'].dt.tz_localize(None)
             return cached
 
         df = pd.read_csv(player_file)
@@ -291,6 +297,8 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
             raise ValueError(f"Player data file for {season} is empty: {player_file}")
 
         df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'])
+        if getattr(df['GAME_DATE'].dtype, 'tz', None) is not None:
+            df['GAME_DATE'] = df['GAME_DATE'].dt.tz_localize(None)
         df = df.sort_values(['PLAYER_ID', 'GAME_DATE'])
 
         # Calculate rolling averages for each player (shifted to exclude current game)
@@ -328,10 +336,8 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
         return result
     
     def getTopPlayersAsOf(self, player_df, game_date, team_abbr, top_n=5):
-        candidates = player_df[
-            (player_df['TEAM_ABBREVIATION'] == team_abbr) &
-            (player_df['GAME_DATE'] < game_date)
-        ]
+        before = player_df[player_df['GAME_DATE'] < game_date]
+        candidates = before[before['TEAM_ABBREVIATION'] == team_abbr]
         if candidates.empty:
             return pd.DataFrame()
 
@@ -340,14 +346,124 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
             .groupby('PLAYER_ID', as_index=False)
             .tail(1)
         )
+        # NOTES.md A8: a traded player's old-team rows keep him in that team's
+        # top 5 for the rest of the season. Keep only players whose latest row
+        # (any team, before this game) is this team.
+        latest_any = (
+            before.sort_values(['PLAYER_ID', 'GAME_DATE'])
+            .groupby('PLAYER_ID', as_index=False)
+            .tail(1)
+        )
+        current_ids = set(
+            latest_any[latest_any['TEAM_ABBREVIATION'] == team_abbr]['PLAYER_ID'])
+        latest = latest[latest['PLAYER_ID'].isin(current_ids)]
+
         latest = latest.sort_values(
             ['mpg_rolling', 'PLAYER_ID'], ascending=[False, True]
         ).head(top_n)
 
-        return latest[['PLAYER_ID', 'ppg_rolling', 'fg_pct_rolling', 'mpg_rolling', 'plus_minus_rolling', 'apg_rolling', 'rpg_rolling', 'blk_rolling', 'stl_rolling', 'tov_rolling']].reset_index(drop=True)
+        keep = ['PLAYER_ID', 'GAME_DATE', 'ppg_rolling', 'fg_pct_rolling',
+                'mpg_rolling', 'plus_minus_rolling', 'apg_rolling', 'rpg_rolling',
+                'blk_rolling', 'stl_rolling', 'tov_rolling']
+        if 'PLAYER_NAME' in latest.columns:
+            keep.insert(1, 'PLAYER_NAME')
+        return latest[keep].reset_index(drop=True)
+
+    def teamGameDates(self, player_df, game_date, team_abbr):
+        """Completed game dates for one team before `game_date`, oldest first."""
+        before = player_df[
+            (player_df['TEAM_ABBREVIATION'] == team_abbr) &
+            (player_df['GAME_DATE'] < game_date)
+        ]
+        return list(before['GAME_DATE'].drop_duplicates().sort_values())
+
+    def getRotationPlayers(self, player_df, game_date, team_abbr,
+                           window=ROTATION_WINDOW, top_n=5):
+        """Current rotation: last `window` team games, zero-filled per team game.
+
+        A player who missed a game contributes 0 for it, so `rot_*` is per team
+        game, not per game played. That is what lets a replacement pass an
+        injured starter after a few games.
+        """
+        dates = self.teamGameDates(player_df, game_date, team_abbr)[-window:]
+        if not dates:
+            return pd.DataFrame()
+        before = player_df[player_df['GAME_DATE'] < game_date]
+        recent = before[
+            (before['TEAM_ABBREVIATION'] == team_abbr) &
+            (before['GAME_DATE'].isin(dates))
+        ]
+        if recent.empty:
+            return pd.DataFrame()
+
+        latest_any = (
+            before.sort_values(['PLAYER_ID', 'GAME_DATE'])
+            .groupby('PLAYER_ID', as_index=False)
+            .tail(1)
+        )
+        current_ids = set(
+            latest_any[latest_any['TEAM_ABBREVIATION'] == team_abbr]['PLAYER_ID'])
+        recent = recent[recent['PLAYER_ID'].isin(current_ids)]
+
+        n = len(dates)
+        rows = []
+        for pid, grp in recent.groupby('PLAYER_ID'):
+            rows.append({
+                'PLAYER_ID': pid,
+                'PLAYER_NAME': grp['PLAYER_NAME'].iloc[-1] if 'PLAYER_NAME' in grp else pid,
+                'rot_games': len(grp),
+                'rot_ppg': grp['PTS'].sum() / n,
+                'rot_mpg': grp['MIN'].sum() / n,
+                'rot_apg': grp['AST'].sum() / n,
+                'rot_rpg': grp['REB'].sum() / n,
+                'rot_blk': grp['BLK'].sum() / n,
+                'rot_stl': grp['STL'].sum() / n,
+                'rot_tov': grp['TOV'].sum() / n,
+            })
+        frame = pd.DataFrame(rows)
+        frame = frame.sort_values(
+            ['rot_mpg', 'PLAYER_ID'], ascending=[False, True]
+        ).head(top_n)
+        return frame.reset_index(drop=True)
+
+    def getCoreAvailability(self, player_df, game_date, team_abbr, players,
+                            window=AVAILABILITY_WINDOW):
+        """Availability for the core top 5: missed games and days since played.
+
+        Uses only completed team games before `game_date`; no leakage.
+        """
+        if players is None or players.empty:
+            return players
+        team_games = self.teamGameDates(player_df, game_date, team_abbr)
+        last_three = team_games[-3:]
+        last_window = team_games[-window:]
+        before = player_df[
+            (player_df['TEAM_ABBREVIATION'] == team_abbr) &
+            (player_df['GAME_DATE'] < game_date)
+        ]
+
+        rows = []
+        for _, player in players.iterrows():
+            pid = player['PLAYER_ID']
+            played_dates = set(before[before['PLAYER_ID'] == pid]['GAME_DATE'])
+            last_played = max(played_dates) if played_dates else None
+            rows.append({
+                'PLAYER_ID': pid,
+                'days_since': (game_date - last_played).days if last_played is not None else 999,
+                'missed_last3': sum(d not in played_dates for d in last_three),
+                'missed_last5': sum(d not in played_dates for d in last_window),
+                'played_last': int(last_played == team_games[-1])
+                if (team_games and last_played is not None) else 0,
+            })
+        return players.merge(pd.DataFrame(rows), on='PLAYER_ID', how='left')
 
     def addPlayerFeatures(self, matchup_data, season):
         return self.buildPlayerFeatureMatrix(matchup_data, season, use_game_date=True, error_msg=f"No player data found for {season}. Cannot add player features without player data.")
+
+    @staticmethod
+    def _naiveDate(value):
+        ts = pd.to_datetime(value)
+        return ts.tz_localize(None) if getattr(ts, 'tzinfo', None) is not None else ts
 
     def buildPlayerFeatureMatrix(self, matchup_data, season, top_n=5, use_game_date=True, error_msg=None):
         print(f"Adding player features for {season}...")
@@ -358,23 +474,21 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
         if player_df.empty:
             raise ValueError(error_msg or f"No player data found for {season}.")
 
-        latest_player_stats = None
-        if not use_game_date:
-            latest_player_stats = player_df.sort_values('GAME_DATE').groupby('PLAYER_ID').last().reset_index()
-
+        # `use_game_date` is kept for the callers; both training and live now
+        # use the game date so the core/rotation logic cannot drift.
         player_features = []
 
         for idx, row in tqdm(matchup_data.iterrows(), total=len(matchup_data)):
             game_features = {'game_id': row['GAME_ID']}
+            game_date = self._naiveDate(row['GAME_DATE_home'])
 
             for side in ('home', 'away'):
                 team = row[f'TEAM_ABBREVIATION_{side}']
-                if use_game_date:
-                    game_date = pd.to_datetime(row['GAME_DATE_home'])
-                    players = self.getTopPlayersAsOf(player_df, game_date, team, top_n=top_n)
-                else:
-                    players = latest_player_stats[latest_player_stats['TEAM_ABBREVIATION'] == team].copy()
-                    players = players.sort_values('mpg_rolling', ascending=False).head(top_n)
+
+                # Core top 5: season-to-date minutes, per game played. Used for
+                # availability (who is missing), not for production.
+                players = self.getTopPlayersAsOf(player_df, game_date, team, top_n=top_n)
+                players = self.getCoreAvailability(player_df, game_date, team, players)
 
                 for i in range(top_n):
                     prefix = f'{side}_p{i + 1}_'
@@ -382,9 +496,22 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
                         attrs = players.iloc[i]
                         for stat in PLAYER_SLOT_STATS:
                             game_features[f'{prefix}{stat}'] = attrs[f'{stat}_rolling']
+                        for stat in ('days_since', 'missed_last3', 'missed_last5', 'played_last'):
+                            game_features[f'{prefix}{stat}'] = attrs[stat]
                     else:
                         for stat in PLAYER_SLOT_STATS:
                             game_features[f'{prefix}{stat}'] = 0
+                        for stat in ('days_since', 'missed_last3', 'missed_last5', 'played_last'):
+                            game_features[f'{prefix}{stat}'] = 0
+
+                # Current rotation: last N team games, zero-filled, so a
+                # replacement passes an injured starter after a few games.
+                rotation = self.getRotationPlayers(player_df, game_date, team, top_n=top_n)
+                for stat in ROTATION_STATS:
+                    values = rotation[f'rot_{stat}'].tolist() if not rotation.empty else []
+                    game_features[f'{side}_rot5_avg_{stat}'] = (sum(values) / top_n) if values else 0.0
+                game_features[f'{side}_rot5_minutes'] = float(rotation['rot_mpg'].sum()) if not rotation.empty else 0.0
+                game_features[f'{side}_rot5_games'] = int(rotation['rot_games'].sum()) if not rotation.empty else 0
 
             player_features.append(game_features)
 
@@ -397,7 +524,7 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
             for stat in stats:
                 cols = []
                 existing_cols = []
-                
+
                 for i in range(1, top_players + 1):
                     cols.append(f'{side}_p{i}_{stat}')
                 for col in cols:
@@ -406,7 +533,29 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
 
                 matchup_data[f'{side}_top{top_players}_avg_{stat}'] = matchup_data[existing_cols].mean(axis=1)
 
-        return matchup_data        
+            # Core availability aggregates (NOTES.md C4). The core list stays
+            # season-to-date so an injured starter is still visible here.
+            def slots(name):
+                cols = [f'{side}_p{i}_{name}' for i in range(1, top_players + 1)]
+                return [c for c in cols if c in matchup_data.columns]
+
+            if slots('missed_last3'):
+                matchup_data[f'{side}_core_missed_last3'] = matchup_data[slots('missed_last3')].sum(axis=1)
+                matchup_data[f'{side}_core_played_last'] = matchup_data[slots('played_last')].sum(axis=1)
+                matchup_data[f'{side}_core_days_since_mean'] = matchup_data[slots('days_since')].mean(axis=1)
+                matchup_data[f'{side}_core_days_since_max'] = matchup_data[slots('days_since')].max(axis=1)
+                if slots('mpg'):
+                    mpg = matchup_data[slots('mpg')].to_numpy()
+                    missed = matchup_data[slots('missed_last3')].to_numpy()
+                    matchup_data[f'{side}_core_minutes_lost_last3'] = (mpg * missed).sum(axis=1)
+                if slots('ppg'):
+                    ppg = matchup_data[slots('ppg')].to_numpy()
+                    missed = matchup_data[slots('missed_last3')].to_numpy()
+                    matchup_data[f'{side}_core_ppg_lost_last3'] = (ppg * missed).sum(axis=1)
+            if slots('missed_last5'):
+                matchup_data[f'{side}_core_missed_last5'] = matchup_data[slots('missed_last5')].sum(axis=1)
+
+        return matchup_data
 
     def buildMatchupFeatureFrame(self, matchup_data, game_window, top_players):
         metadata = {
@@ -428,6 +577,20 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
         for stat in PLAYER_AGG_STATS:
             rename_map[f'home_top{top_players}_avg_{stat}'] = f'home_top{top_players}_avg_{stat}'
             rename_map[f'away_top{top_players}_avg_{stat}'] = f'away_top{top_players}_avg_{stat}'
+
+        # 2026-11-21: current-rotation production and core availability.
+        for side in ('home', 'away'):
+            for stat in ROTATION_STATS:
+                name = f'{side}_rot5_avg_{stat}'
+                rename_map[name] = name
+            for name in (
+                f'{side}_rot5_minutes', f'{side}_rot5_games',
+                f'{side}_core_missed_last3', f'{side}_core_missed_last5',
+                f'{side}_core_played_last', f'{side}_core_days_since_mean',
+                f'{side}_core_days_since_max', f'{side}_core_minutes_lost_last3',
+                f'{side}_core_ppg_lost_last3',
+            ):
+                rename_map[name] = name
 
         existing_source_cols = [col for col in rename_map.keys() if col in matchup_data.columns]
         feature_frame = matchup_data[existing_source_cols].rename(columns=rename_map)

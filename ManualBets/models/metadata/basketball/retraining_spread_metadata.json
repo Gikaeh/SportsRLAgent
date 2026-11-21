@@ -1,7 +1,7 @@
 {
-  "last_retrain_date": "2026-11-20T12:13:30.423891",
-  "total_games_trained": 30350,
-  "model_version": 6,
+  "last_retrain_date": "2026-11-21T13:27:44.052190",
+  "total_games_trained": 30439,
+  "model_version": 7,
   "retrain_history": [
     {
       "date": "2026-01-07T02:34:00.123647",
@@ -90,7 +90,23 @@
       "trees": 396,
       "hyperparameter_tuning": false,
       "note": "all non-leakage features (2026-11-20 ablation); fixed params; full-data refit"
+    },
+    {
+      "date": "2026-11-21T13:27:44.052190",
+      "games_trained": 30439,
+      "features": 86,
+      "val_mae": 11.486527560025152,
+      "val_rmse": 14.70247629709836,
+      "val_r2": 0.18385510565805263,
+      "val_within_3": 0.16951379763469118,
+      "val_within_5": 0.28252299605781866,
+      "val_within_7": 0.3932325886990802,
+      "val_residual_std": 14.698158200068123,
+      "best_iteration": 454,
+      "trees": 478,
+      "hyperparameter_tuning": false,
+      "note": "core availability + current rotation features; fixed params; full-data refit"
     }
   ],
-  "residual_std": 14.861569155328915
+  "residual_std": 14.698158200068123
 }

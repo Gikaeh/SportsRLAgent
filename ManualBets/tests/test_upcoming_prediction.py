@@ -62,6 +62,8 @@ import betting.betting_recommender as rec_mod
 from betting.betting_recommender import BettingRecommender
 from betting.betting_config import BettingConfig
 
+BOOK = BettingConfig.NEVADA_BOOKS[0]  # the test follows the configured book
+
 rng = np.random.default_rng(42)
 pd.set_option('display.width', 250)
 pd.set_option('display.max_columns', 30)
@@ -104,62 +106,62 @@ assert ((slate['predicted_total'] > 180) & (slate['predicted_total'] < 270)).all
 # ---- Fake books-style odds (real CSV schema, NEVADA books only) ----
 H2H_ODDS = pd.DataFrame([
     {'commence_time': '2026-01-20', 'home_team': 'BOS', 'away_team': 'LAL',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'h2h',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'h2h',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'BOS', 'price': -150},
     {'commence_time': '2026-01-20', 'home_team': 'BOS', 'away_team': 'LAL',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'h2h',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'h2h',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'LAL', 'price': 130},
     {'commence_time': '2026-01-20', 'home_team': 'GSW', 'away_team': 'DAL',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'h2h',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'h2h',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'GSW', 'price': -120},
     {'commence_time': '2026-01-20', 'home_team': 'GSW', 'away_team': 'DAL',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'h2h',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'h2h',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'DAL', 'price': 100},
     {'commence_time': '2026-01-20', 'home_team': 'DEN', 'away_team': 'PHX',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'h2h',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'h2h',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'DEN', 'price': 110},
     {'commence_time': '2026-01-20', 'home_team': 'DEN', 'away_team': 'PHX',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'h2h',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'h2h',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'PHX', 'price': -130},
 ])
 SPREAD_ODDS = pd.DataFrame([
     {'commence_time': '2026-01-20', 'home_team': 'BOS', 'away_team': 'LAL',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'spreads',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'spreads',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'BOS', 'price': -110, 'point': -5.5},
     {'commence_time': '2026-01-20', 'home_team': 'BOS', 'away_team': 'LAL',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'spreads',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'spreads',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'LAL', 'price': -110, 'point': 5.5},
     {'commence_time': '2026-01-20', 'home_team': 'GSW', 'away_team': 'DAL',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'spreads',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'spreads',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'GSW', 'price': -110, 'point': -1.5},
     {'commence_time': '2026-01-20', 'home_team': 'GSW', 'away_team': 'DAL',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'spreads',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'spreads',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'DAL', 'price': -110, 'point': 1.5},
     {'commence_time': '2026-01-20', 'home_team': 'DEN', 'away_team': 'PHX',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'spreads',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'spreads',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'DEN', 'price': -110, 'point': -2.5},
     {'commence_time': '2026-01-20', 'home_team': 'DEN', 'away_team': 'PHX',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'spreads',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'spreads',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'PHX', 'price': -110, 'point': 2.5},
 ])
 TOTAL_ODDS = pd.DataFrame([
     {'commence_time': '2026-01-20', 'home_team': 'DEN', 'away_team': 'PHX',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'totals',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'totals',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'Over', 'price': -110, 'point': 224.5},
     {'commence_time': '2026-01-20', 'home_team': 'DEN', 'away_team': 'PHX',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'totals',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'totals',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'Under', 'price': -110, 'point': 224.5},
     {'commence_time': '2026-01-20', 'home_team': 'BOS', 'away_team': 'LAL',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'totals',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'totals',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'Over', 'price': -110, 'point': 228.5},
     {'commence_time': '2026-01-20', 'home_team': 'BOS', 'away_team': 'LAL',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'totals',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'totals',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'Under', 'price': -110, 'point': 228.5},
     {'commence_time': '2026-01-20', 'home_team': 'GSW', 'away_team': 'DAL',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'totals',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'totals',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'Over', 'price': -110, 'point': 228.5},
     {'commence_time': '2026-01-20', 'home_team': 'GSW', 'away_team': 'DAL',
-     'bookmakers_key': 'betmgm', 'bookmakers_markets_key': 'totals',
+     'bookmakers_key': BOOK, 'bookmakers_markets_key': 'totals',
      'bookmakers_markets_last_update': '2026-01-19', 'name': 'Under', 'price': -110, 'point': 228.5},
 ])
 
@@ -199,7 +201,7 @@ assert not pred_total[['predicted_total', 'confidence']].isna().any().any()
 
 # ---- B2 regression: bestOutcomeRow pairs point+price+book from the SAME row ----
 two_books = pd.DataFrame([
-    {'home_team': 'GSW', 'name': 'GSW', 'point': -4.5, 'price': -110, 'bookmakers_key': 'betmgm'},
+    {'home_team': 'GSW', 'name': 'GSW', 'point': -4.5, 'price': -110, 'bookmakers_key': BOOK},
     {'home_team': 'GSW', 'name': 'GSW', 'point': -5.5, 'price': 100, 'bookmakers_key': 'caesars'},
 ])
 best_gsw = rec_spread.bestOutcomeRow(two_books)

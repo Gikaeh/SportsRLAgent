@@ -29,9 +29,7 @@ Run from `ManualBets/`. Same commands on macOS and Windows. Python >=3.12 (the M
 | Export the slate as JSON for DeepSports' ensemble vote (models, Kelly fractions, best Odds API prices; 2-5 credits; no logging) | `uv run python tools/export_predictions.py --out <file>` |
 | College walk-forward | `uv run python tools/college_walkforward.py --start 2025-11-01 --end 2026-02-01 --out preds.csv` |
 | NBA totals walk-forward vs closing lines (monthly refits, 8-pt edge rule, slate-clustered CIs; reads a warehouse copy via `NBA_WAREHOUSE_DB`; `--params-json` skips tuning) | `uv run python tools/total_walkforward.py --data-dir <nba data dir> --start 2021-10-01 --end 2026-11-11 --out <dir>` |
-| Closing-line value (NBA): fetch a late snapshot, append CLV for bets that have one, summarize | `uv run python tools/clv.py capture` then `record` then `report` (writes `../logs/basketball/betting/clv.csv`) |
-| Feature ablation (NBA spread): current prune vs all features vs data-driven prune, chronological holdout | `uv run python tools/feature_ablation.py` (writes `docs/results/2026-11-20-nba-spread-feature-ablation.*`) |
-| Retrain the NBA spread model with all non-leakage features and save it (fixed params, full-data refit, updates metadata) | `uv run python tools/retrain_spread.py` (`--dry-run` to preview) |
+| Closing-line value (NBA): late snapshots for bets | `uv run python tools/clv.py capture` then `record` then `report` (writes `../logs/basketball/betting/clv.csv`) |
 
 Menus: pick a number; one above the highest option runs every task in order. The NBA menu is
 Betting Recommendations / Betting Update (grade + bankroll) / Active Bets / Model Retraining.

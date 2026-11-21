@@ -133,9 +133,72 @@ class BettingRecommender:
         """NOTES.md B2: best-priced row for one outcome; its point and price
         must come from the SAME book (books can post different lines)."""
         return outcome_df.sort_values('price', ascending=False).iloc[0]
+
+    def spreadModelVersion(self):
+        meta = Path('./models/metadata/basketball/retraining_spread_metadata.json')
+        try:
+            if meta.exists():
+                with open(meta) as f:
+                    return int(json.load(f).get('model_version', 0))
+        except Exception:
+            pass
+        return 0
     
     def predictGames(self, game_features, game_info):
         results = game_info.copy()
+
+        # Serve exactly the features the saved model was trained on, in its
+        # order. The live frame can carry extra columns (e.g. a feature the
+        # training frame lacks); the model must not see them.
+        names = None
+        try:
+            names = self.model.model.get_booster().feature_names
+        except Exception:
+            names = None
+        if names:
+            missing = [c for c in names if c not in game_features.columns]
+            if missing:
+                raise ValueError(f"Live frame is missing model features: {missing}")
+
+        # Spread: predict raw / OUT-only / full-prior arms and log them.
+        if (self.model.getModelType() == 'spread' and hasattr(self, 'preparer')
+                and 'home_core_missed_last3' in game_features.columns):
+            from betting.injury_adjustment import (
+                adjustPredictionFrame, loadInjuries, logForwardPredictions,
+            )
+            self.getOdds('spread')
+            season = self.preparer.getCurrentSeason()
+            injuryData, injuries = loadInjuries(self.preparer, refresh=True)
+            frames = {
+                'raw': game_features,
+                'binary': adjustPredictionFrame(
+                    game_features, self.preparer, season, injury_frame=injuries,
+                    mode='binary', refresh=False, log=False),
+                'prior': adjustPredictionFrame(
+                    game_features, self.preparer, season, injury_frame=injuries,
+                    mode='prior', refresh=False, log=True),
+            }
+            predictions = {}
+            for arm, frame in frames.items():
+                X = frame.reindex(columns=names) if names else frame
+                predictions[arm] = self.model.predict(X)
+
+            results['predicted_margin'] = predictions['prior']
+            results['predicted_cover'] = results.apply(
+                lambda row: row['home_team'] if row['predicted_margin'] > 0 else row['away_team'], axis=1)
+            results['confidence'] = np.minimum(np.abs(predictions['prior']) / 20, 1)
+
+            try:
+                logForwardPredictions(
+                    game_features, predictions, injuryData, injuries,
+                    self.spreadModelVersion(),
+                    Path(self.preparer.data_dir) / 'injury_data' / 'forward_predictions.csv')
+            except Exception as exc:
+                print(f'Forward prediction log failed: {exc}')
+            return results
+
+        if names:
+            game_features = game_features.reindex(columns=names)
 
         if self.model.getModelType() == 'h2h':
             odds_data = self.getOdds('h2h')

@@ -334,3 +334,57 @@ validated fixed params (396 trees, validation MAE 11.688, residual std 14.862) a
 6. Old model backed up outside the repo. h2h and total keep their lists (paused/disabled). The
 betting rules in the entry above are unchanged; only the spread feature-prune part is reversed.
 Tool: `tools/retrain_spread.py`.
+
+## 2026-11-21 - CLV comes from the warehouse close; injuries accumulate daily
+
+CLV is graded against the warehouse's `source='closing'` row (read-only, boundary
+edge 2), not against per-wave Odds API captures. One joining rule (ET date + ESPN
+home/away codes) and zero extra credits; `tools/clv.py record --source warehouse`.
+Live snapshots remain the fallback when the warehouse is unavailable.
+
+ESPN's injury feed is current-only: the `dates=` parameter is ignored, and the
+archive has one day. A report-based model cannot be trained on that history, so
+`tools/injuries.py` captures one day at a time into a season file for next season,
+while the model keeps using participation (games played) features. No hand-tuned
+injury adjustment was added.
+
+## 2026-11-21 (later) - Reverted the warehouse CLV, daily injuries and extra tools
+
+The warehouse CLV path, the daily injury feed, `tools/feature_ablation.py` and
+`tools/retrain_spread.py` were removed at the owner's request. The derived training data is not
+kept as a separate append step: deleting `data/training_data/basketball` and running the
+retrainer's `prepareAllSeasons` rebuilds it from the raw data with the new core/rotation player
+features. The feature definitions and the ablation result stand; the extra tools did not.
+
+## 2026-11-21 - Spread model ships the core-availability and current-rotation features
+
+The rebuilt training frame (30,439 games, 96 columns) was tested with four feature sets on
+one chronological holdout. Baseline 54 features: test MAE 11.7174. Adding core availability
+(68): 11.5492. Adding current rotation (72): 11.6659. Both (86): 11.5418. The paired
+day-clustered delta for both vs baseline is +0.1976 MAE [0.1209, 0.2756]. Availability does
+most of the work; rotation is a small addition. The spread model was retrained on all games
+with the fixed params and saved as version 7 (86 features, 478 trees, validation MAE 11.4865,
+residual std 14.6982). h2h and total are unchanged. Details:
+`docs/results/2026-11-21-nba-availability-ablation.md`.
+
+## 2026-11-21 - Current injuries adjust the core availability features at prediction time
+
+The spread model learned the effect of lost core minutes/points from historical
+participation. At prediction time the upcoming game's report is known, so
+`betting/injury_adjustment.py` maps status to an expected participation probability
+(OUT 0, DOUBTFUL 0.25, QUESTIONABLE 0.5, PROBABLE 0.9) and recomputes the 3/5-game core
+features with the upcoming game treated as the most recent expected game. This is a
+probability on a feature the model already learned, not a hand-tuned point adjustment.
+The live path refreshes the ESPN current feed once per run and falls back to the saved
+snapshot. Training data and the model are unchanged; the adjustment is live-only until
+historical reports are available to validate the window choice.
+
+## 2026-11-21 - Injury adjustment is a three-arm forward comparison
+
+The live spread path logs three predictions per game: `raw` (no injury report), `binary`
+(OUT only, no in-betweens) and `prior` (OUT 0, DOUBTFUL 0.25, QUESTIONABLE 0.5, PROBABLE
+0.9). Recommendations use `prior`. The log is
+`data/basketball/injury_data/forward_predictions.csv` with the predicted margin, model
+version and each team's injuries. This separates two questions: raw vs prior (does injury
+news help at all?) and binary vs prior (do the in-between statuses help?). Grading joins
+the log to actual margins; the line/price can be joined from the bet log or odds snapshot.

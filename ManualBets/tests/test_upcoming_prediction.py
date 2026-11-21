@@ -209,7 +209,7 @@ assert best_gsw['price'] == 100 and best_gsw['point'] == -5.5, (
 # ---- C. REAL make*Recommendations on deterministic predictions + fake odds ----
 # Crafted so two games clear the gates and one misses per market:
 #   H2H:    BOS home 0.65 vs -150/+130 -> BET; GSW 0.51 coin-flip -> none; PHX away 0.60 -> BET
-#   Spread: BOS +9.0 vs -5.5 -> home BET; GSW +0.5 vs -1.5 -> none; DEN -7.0 -> PHX away BET
+#   Spread: BOS +9.0 vs -5.5 -> home BET; GSW +0.5 vs -1.5 -> none; DEN -1.0 -> PHX away BET
 #   Total:  DEN 233.5 vs 224.5 -> Over BET; BOS 226 / GSW 221 vs 228.5 -> none
 det_h2h = pd.DataFrame([
     {'game_id': 9001, 'date': '2026-01-20', 'home_team': 'BOS', 'away_team': 'LAL',
@@ -225,7 +225,7 @@ det_spread = pd.DataFrame([
     {'game_id': 9002, 'date': '2026-01-20', 'home_team': 'GSW', 'away_team': 'DAL',
      'predicted_margin': 0.5, 'confidence': 0.05},
     {'game_id': 9003, 'date': '2026-01-20', 'home_team': 'DEN', 'away_team': 'PHX',
-     'predicted_margin': -7.0, 'confidence': 0.35},
+     'predicted_margin': -1.0, 'confidence': 0.35},
 ])
 det_total = pd.DataFrame([
     {'game_id': 9001, 'date': '2026-01-20', 'home_team': 'BOS', 'away_team': 'LAL',
@@ -255,12 +255,12 @@ def fake_glob(pattern, **kwargs):
     return _glob.glob(pattern, **kwargs)
 
 
-def checkKelly(bet, odds_used, bankroll=40, cap=0.05):
-    # Every recommended bet must carry a valid Kelly stake.
+def checkStake(bet, odds_used, bankroll=40):
+    # Flat mode is the default: a whole-dollar stake no larger than the cap.
     frac = bet['bet_size_fraction']
-    assert 0 < frac <= cap, f'Kelly fraction out of bounds: {frac} in {bet}'
+    assert 0 < frac <= rec_h2h.config.MAX_FLAT_STAKE_PCT + 1e-9, f'stake fraction out of bounds: {frac} in {bet}'
     assert bet['bet_amount'] == round(frac * bankroll), f'stake mismatch in {bet}'
-    assert bet['bet_amount'] > 0, f'stake must be positive in {bet}'
+    assert bet['bet_amount'] == rec_h2h.config.FLAT_STAKE_AMOUNT, f'flat stake mismatch in {bet}'
     assert abs(bet['potential_profit'] - rec_h2h.calculateProfit(bet['bet_amount'], odds_used)) < 1e-9, (
         f'profit mismatch in {bet}')
 
@@ -271,6 +271,8 @@ with mock.patch.object(rec_mod.glob, 'glob', side_effect=fake_glob):
     total_recs = rec_total.makeBettingRecommendations(det_total)
 
 print('=== C. H2H recommendations (fake lines) ===')
+# 2026-11-20: the h2h edge band is 5-8%. BOS (7.0%) and PHX (5.7%) both fit;
+# a claim above 8% would be rejected as the winner's curse.
 assert len(h2h_recs) == 2, f'expected BOS-home + PHX-away bets, got {h2h_recs}'
 h2h_df = pd.DataFrame(h2h_recs)
 print(h2h_df[['matchup', 'bet_side', 'bet_team', 'home_odds', 'away_odds', 'edge',
@@ -278,18 +280,27 @@ print(h2h_df[['matchup', 'bet_side', 'bet_team', 'home_odds', 'away_odds', 'edge
 sides = {(r['bet_team'], r['bet_side']) for r in h2h_recs}
 assert sides == {('BOS', 'home'), ('PHX', 'away')}, f'unexpected h2h sides: {sides}'
 for r in h2h_recs:
-    assert r['edge'] >= 0.02 and r['confidence'] >= 0, f'gate breach in {r}'
+    assert 0.05 <= r['edge'] <= 0.08 and r['confidence'] >= 0, f'gate breach in {r}'
     prob = r['home_model_prob'] if r['bet_side'] == 'home' else r['away_model_prob']
     assert prob >= 0.55, f'prob gate breach in {r}'
-    checkKelly(r, r['home_odds'] if r['bet_side'] == 'home' else r['away_odds'])
+    checkStake(r, r['home_odds'] if r['bet_side'] == 'home' else r['away_odds'])
 
-# Independent Kelly recomputation for the BOS bet (fractional Kelly 0.2, -150):
-# decimal = 100/150 + 1; raw = (p*decimal - 1)/(decimal - 1); frac = min(raw*0.2, cap)
-bos = next(r for r in h2h_recs if r['bet_team'] == 'BOS')
+# Kelly mode still reproduces the formula when explicitly selected. The model
+# probability is blended with the market, so MODEL_PROB_WEIGHT=1 isolates it.
+rec_h2h.config.SIZING_MODE = 'kelly'
+rec_h2h.config.MODEL_PROB_WEIGHT = 1.0
+rec_h2h.current_bankroll = 200  # 1/10 Kelly on a $40 bankroll rounds to $0
+with mock.patch.object(rec_mod.glob, 'glob', side_effect=fake_glob):
+    bos_kelly = [r for r in rec_h2h.makeBettingRecommendations(det_h2h)
+                 if r['bet_team'] == 'BOS'][0]
 dec = 100 / 150 + 1
-expected_frac = min(((0.65 * dec - 1) / (dec - 1)) * 0.20, 0.05)
-assert abs(bos['bet_size_fraction'] - expected_frac) < 1e-9, (
-    f'Kelly formula mismatch: {bos["bet_size_fraction"]} vs {expected_frac}')
+expected_frac = min(((0.65 * dec - 1) / (dec - 1)) * rec_h2h.config.KELLY_FRACTION,
+                    rec_h2h.config.MAX_BET_SIZE_PCT)
+assert abs(bos_kelly['bet_size_fraction'] - expected_frac) < 1e-9, (
+    f'Kelly formula mismatch: {bos_kelly["bet_size_fraction"]} vs {expected_frac}')
+rec_h2h.current_bankroll = 40
+rec_h2h.config.SIZING_MODE = 'flat'
+rec_h2h.config.MODEL_PROB_WEIGHT = 0.25
 
 print('=== C. Spread recommendations (fake lines) ===')
 assert len(spread_recs) == 2, f'expected BOS-home + PHX-away bets, got {spread_recs}'
@@ -300,8 +311,8 @@ print(spread_df[['matchup', 'bet_side', 'bet_team', 'home_spread', 'away_spread'
 sides = {(r['bet_team'], r['bet_side']) for r in spread_recs}
 assert sides == {('BOS', 'home'), ('PHX', 'away')}, f'unexpected spread sides: {sides}'
 for r in spread_recs:
-    assert r['margin_advantage'] >= 3 and r['cover_prob'] >= 0.55, f'gate breach in {r}'
-    checkKelly(r, r['home_odds'] if r['bet_side'] == 'home' else r['away_odds'])
+    assert 3 <= r['margin_advantage'] <= 5 and r['cover_prob'] >= 0.55, f'gate breach in {r}'
+    checkStake(r, r['home_odds'] if r['bet_side'] == 'home' else r['away_odds'])
 
 print('=== C. Total recommendations (fake lines) ===')
 assert len(total_recs) == 1, f'expected only the DEN Over bet, got {total_recs}'
@@ -310,10 +321,10 @@ print(total_df[['matchup', 'bet_side', 'total_line', 'predicted_total', 'total_a
                 'cover_prob', 'bet_size_fraction', 'bet_amount',
                 'potential_profit']].to_string(index=False))
 t = total_recs[0]
-assert t['bet_side'] == 'Over' and t['total_advantage'] >= 8 and t['cover_prob'] >= 0.55
-checkKelly(t, t['over_odds'])
-# Big total edge must hit the MAX_BET_SIZE_PCT cap (proves the cap works):
-assert t['bet_size_fraction'] == 0.05, f'cap not applied: {t["bet_size_fraction"]}'
+assert t['bet_side'] == 'Over' and 8 <= t['total_advantage'] <= 12 and t['cover_prob'] >= 0.55
+checkStake(t, t['over_odds'])
+# Flat mode: the stake is the configured whole-dollar amount, not a Kelly fraction.
+assert t['bet_amount'] == rec_total.config.FLAT_STAKE_AMOUNT, f'unexpected stake: {t["bet_amount"]}'
 
 print('ok: all 3 models predicted; 5 fake-line bets sized by Kelly (2 h2h + 2 spread + 1 total)')
 """

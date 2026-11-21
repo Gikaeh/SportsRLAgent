@@ -88,3 +88,34 @@ history of the fixed items: `git log -p -- basketball/NOTES.md` and `docs/SESSIO
 
 Smoke checks of `injury_data.py` must pass a temporary `data_dir`; the default writes into the
 real `data/basketball/injury_data/`.
+
+## 2026-11-20 - A7 fixed; new decisions and open items
+
+- **A7 fixed** (live features now cover the same window as training): `prepare_data.latestWindowStats`
+  recomputes the last `window` completed games per team and `createUpcomingMatchupData` uses it.
+  Regression: `tests/test_nba_changes.py::test_latest_window_stats_uses_the_most_recent_games`.
+  SRS/SOS still come from the last row's pre-game state (one game behind); the means and every other
+  team feature are current.
+- **h2h paused** from the default run: `BettingConfig.ENABLED_MARKETS = ('spread',)`.
+- **Sizing/selection:** flat `$2` default, Kelly mode shrunk to the market, edge bands and a 60-minute
+  odds-freshness gate. `docs/DECISIONS.md` 2026-11-20.
+- **CLV:** `tools/clv.py` (capture/record/report); first backfill over the Nov 16-19 snapshots:
+  spread 38 rows, 36 lines unchanged, 2 better; h2h 17 rows, mean -0.1 probability points.
+- Open: the drop lists still prune strong team-quality features (`home_wins_l10`, `home_plus_minus_l10`,
+  `away_opp_ppg_l10`). Re-check them with walk-forward importance before changing.
+- Open: `betting_config.NEVADA_BOOKS` is `['betmgm','caesars']` while the owner says he now bets at
+  DraftKings. If that is the book actually used, the logged price is not the price taken.
+
+- **2026-11-20 feature ablation (spread):** the hand `low_importance_cols` is harmful.
+  Same chronological split (train through 2024-02, test 2024-02..2026-11), same params,
+  3 seeds: 27 pruned features MAE 11.819; all 54 non-leakage features MAE 11.711;
+  data-driven 36-feature prune MAE 11.737. Day-clustered paired CI for the gap:
+  +0.058..+0.155 MAE in favour of all features. 14 of the 27 pruned features have
+  positive permutation importance, including `home_wins_l10`, `away_wins_l10`,
+  `home_top5_avg_ppg`, `away_top5_avg_ppg`, `home_top5_avg_blk`.
+  Details: `docs/results/2026-11-20-nba-spread-feature-ablation.md`. Shipped the same
+  day: spread model v6, 54 features (see below).
+
+- **2026-11-20 shipped:** spread model v6, all 54 non-leakage features, 396 trees, validation MAE
+  11.688, metadata `residual_std` 14.8616. `low_importance_cols` is now empty for spread; h2h and
+  total keep theirs. Retrain path: `tools/retrain_spread.py`. Old model backed up outside the repo.

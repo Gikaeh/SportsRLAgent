@@ -290,3 +290,47 @@ disagreements mostly mean the market knows something the features don't.
 Totals stay disabled and thresholds are unchanged. Revisit only with new information (C3 market features, C4
 availability, injuries) and a fresh pre-registration with 2026-27 as the holdout. The tool reads the warehouse
 read-only (boundary edge 2, `../docs/DECISIONS.md` 2026-11-11).
+
+## 2026-11-20 - NBA: h2h paused, market-shrunk sizing, edge bands, A7 fix, CLV
+
+Owner-approved change after the live record review: NBA h2h 23 bets, 11-12, -$15.47, with claimed
+edges averaging 11.4 probability points and landing 47.8%; DeepSports' 4,069-game price simulation
+shows a moneyline edge rule busts at the close, and its calibration study puts the model's weight next
+to the market at about 0. So:
+
+1. `ENABLED_MARKETS = ('spread',)` in `basketball/betting/betting_config.py`. h2h stays runnable from
+   the menu (with a warning) for research, but the "All" run skips it and it is no longer a default bet.
+2. Sizing: `SIZING_MODE = 'flat'` at `$2` (5% cap) is the default. Kelly mode exists but is 1/10 Kelly
+   with a 2% cap and sizes on `p_eff = 0.25*p_model + 0.75*p_market`, not the raw model probability.
+   `MAX_RISK_PCT` 0.50 -> 0.15.
+3. Edge bands: spread 3-5 points, total 8-12, h2h 5-8% probability. Cap the top of the band because the
+   live big-edge buckets did worst (spread 5+ went 13-12, h2h 10-20% went 5-7). No price worse than
+   -150. Odds rows older than 60 minutes are dropped; stale lines make phantom edges.
+4. NOTES.md A7 fixed: live team features now cover the same last-`window` games as training rows
+   (`latestWindowStats`). No leakage: only completed games before tip are used.
+5. Feature pruning is now ignore-list only (columns stay in the training frame): C-R1 exact duplicate,
+   C-R3 one top ladder, averaged percentages, redundant home-away diffs. C-R2 keeps `plus_minus_diff`.
+6. CLV: `tools/clv.py capture|record|report` writes `../logs/basketball/betting/clv.csv` (a new derived
+   file; the bet logs themselves are untouched). CLV is measured against a snapshot taken after the bet
+   and before tip, not against the morning line.
+
+Why: at 20-45 bets nothing is decidable, and the tool had no way to tell skill from luck. CLV is the
+cheapest forward signal. Reversals: re-enable h2h or widen the bands only on a pre-registered sample.
+
+## 2026-11-20 (later) - Spread pruning reversed; model v6 uses all 54 features
+
+The entry above added features to the hand prune list. A same-day ablation then tested that list
+against keeping every feature on a chronological holdout (train through 2024-02, test 2024-02 to
+2026-11-08; fixed params, 3 seeds; `docs/results/2026-11-20-nba-spread-feature-ablation.md`):
+
+- current hand prune (27 features): test MAE 11.819
+- all non-leakage features (54): test MAE 11.711, day-clustered CI for the gap +0.058..+0.155
+- data-driven prune (36): test MAE 11.737
+
+14 of the 27 pruned features had positive permutation importance (`home_wins_l10`,
+`away_wins_l10`, `home_top5_avg_ppg`, `away_top5_avg_ppg`, `home_top5_avg_blk`, ...). So the
+spread `low_importance_cols` is now empty, and the model was retrained on all 30,350 games with the
+validated fixed params (396 trees, validation MAE 11.688, residual std 14.862) and saved as version
+6. Old model backed up outside the repo. h2h and total keep their lists (paused/disabled). The
+betting rules in the entry above are unchanged; only the spread feature-prune part is reversed.
+Tool: `tools/retrain_spread.py`.

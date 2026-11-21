@@ -37,6 +37,7 @@ dist-pack/
 .serena/logs/
 collab/
 .sync/
+.vscode/
 
 # ───────────────────────────── ManualBets ─────────────────────────────
 idea_for_project.txt

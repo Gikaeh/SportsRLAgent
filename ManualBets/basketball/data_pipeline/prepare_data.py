@@ -98,6 +98,58 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
         
         return result
 
+    def latestWindowStats(self, season, window):
+        """Team features for the *next* game, over the last `window` played games.
+
+        NOTES.md A7: createUpcomingMatchupData used to take the last per-team row
+        of calculateTeamWindowStats, whose rolling window is shifted to exclude
+        that row's own game, so live features covered games N-11..N-2 while
+        training covered N-10..N-1. This recomputes the means over the last
+        `window` completed games (N-9..N), matching the training distribution.
+        No leakage: every game used here is completed before tip-off.
+        """
+        team_file = self.team_data_dir / f'{season}_team_stats.csv'
+        if not team_file.exists():
+            raise FileNotFoundError(f"Team data file not found: {team_file}")
+
+        df = pd.read_csv(team_file)
+        if df.empty:
+            raise ValueError(f"Team data file for {season} is empty: {team_file}")
+
+        df['GAME_DATE'] = pd.to_datetime(df['GAME_DATE'])
+        df = df.sort_values(['TEAM_ABBREVIATION', 'GAME_DATE'])
+        df['OPP_PTS'] = df['PTS'] - df['PLUS_MINUS']
+        df['TOT_PTS'] = df['PTS'] + df['OPP_PTS']
+        df = self.addAdvancedGameStats(df)
+        df = self.calculateOpponentStrength(df, window=window)
+
+        rows = []
+        for team, team_df in df.groupby('TEAM_ABBREVIATION'):
+            recent = team_df.tail(window)
+            rows.append({
+                'TEAM_ABBREVIATION': team,
+                'GAME_DATE': recent['GAME_DATE'].iloc[-1],
+                f'wins_l{window}': int((recent['WL'] == 'W').sum()),
+                f'plus_minus_l{window}': recent['PLUS_MINUS'].mean(),
+                f'total_l{window}': recent['TOT_PTS'].mean(),
+                f'rolling_sos_l{window}': recent[f'rolling_sos_l{window}'].iloc[-1],
+                f'rolling_srs_l{window}': recent[f'rolling_srs_l{window}'].iloc[-1],
+                f'ppg_l{window}': recent['PTS'].mean(),
+                f'opp_ppg_l{window}': recent['OPP_PTS'].mean(),
+                f'efg_pct_l{window}': recent['EFG_PCT'].mean(),
+                f'fg3_pct_l{window}': recent['FG3_PCT'].mean(),
+                f'reb_l{window}': recent['REB'].mean(),
+                f'ast_l{window}': recent['AST'].mean(),
+                f'tov_l{window}': recent['TOV'].mean(),
+                f'blk_l{window}': recent['BLK'].mean(),
+                f'stl_l{window}': recent['STL'].mean(),
+                f'pace_l{window}': recent['PACE'].mean(),
+                f'off_rating_l{window}': recent['OFF_RATING'].mean(),
+                f'def_rating_l{window}': recent['DEF_RATING'].mean(),
+                f'net_rating_l{window}': recent['NET_RATING'].mean(),
+            })
+        return pd.DataFrame(rows)
+
     def addAdvancedGameStats(self, df):
         required = ['FGA', 'FTA', 'OREB', 'DREB', 'TOV', 'FGM', 'FG3M']
         if not all(col in df.columns for col in required):
@@ -489,19 +541,8 @@ class NBATrainingDataPreparer(BaseTrainingDataPreparer):
         team_df = pd.read_csv(team_file)
         team_df['GAME_DATE'] = pd.to_datetime(team_df['GAME_DATE'])
         
-        print(f"Calculating L{game_window} stats for {current_season}...")
-        window_stats = self.calculateTeamWindowStats(current_season, window=game_window)
-        
-        print(f"Calculating rest days for {current_season}...")
-        team_rest = self.calculateRestDays(team_df[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID']].copy())
-        
-        team_features = window_stats.merge(
-            team_rest[['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID', 'rest_days', 'is_back_to_back']],
-            on=['TEAM_ABBREVIATION', 'GAME_DATE', 'GAME_ID'],
-            how='left'
-        )
-        
-        latest_team_stats = team_features.sort_values('GAME_DATE').groupby('TEAM_ABBREVIATION').last().reset_index()
+        print(f"Calculating L{game_window} stats for {current_season} (as of the next game)...")
+        latest_team_stats = self.latestWindowStats(current_season, window=game_window)
         
         matchup_rows = []
         

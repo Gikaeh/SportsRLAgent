@@ -167,3 +167,12 @@ and may be edited freely. Running ManualBets' menus and scripts stays allowed (2
 options that overwrite its files, such as Model Retraining, which also need the owner's OK. Moving the
 Odds API key out of `odd_scraping.py` is now one of those approval items. Pointers in
 `ManualBets/AGENTS.md` and the `data-engineer` and `data-analyst` agents.
+
+### 2026-11-19: Night-before personal bets must qualify at William Hill's line
+Owner decision. **What:** a night-before college total (et-v1 rule: DS and MB agree, avg 4+ pts past the
+line) is bet only if it qualifies at **William Hill's** line. Circa is used, at small stakes, only when it
+offers a better number on a bet that already qualifies at William Hill; games that qualify only at Circa's
+line are skipped. Applies from the 2026-11-19 evening picks on. The pre-registered et-v1 forward test
+already qualifies on WH lines and is unchanged. **Why:** graded personal et-v1 bets Nov 15-18: WH 18-3
+(+1.0 pt avg vs DK close), Circa 4-14 (-0.8); Circa's "better" number was usually an off-market line the
+close moved past (`DeepSports/docs/results/2026-11-19-et-v1-book-split.md`). Revisit at ~100 bets.

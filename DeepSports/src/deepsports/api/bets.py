@@ -49,7 +49,10 @@ def _label(row: dict[str, str], kind: str) -> str | None:
 
 
 def open_bets(directory: Path | None = None) -> dict[str, list[str]]:
-    """{game_id: [labels]} for bet rows with no result yet. Missing files are skipped."""
+    """{game_id: [labels]} for bet rows with no result and no later settling row.
+
+    Missing files are skipped.
+    """
     base = directory or logs_dir()
     files = [(base / "basketball" / "betting" / n, "nba") for n in NBA_LOGS]
     files.append((base / "college_basketball" / "betting" / "bets.csv", "college"))
@@ -60,11 +63,22 @@ def open_bets(directory: Path | None = None) -> dict[str, list[str]]:
                 rows = list(csv.DictReader(f))
         except OSError:
             continue
+        # Logs are append-only, so a bet settled later (e.g. a cashout) keeps its open row and gets
+        # a new row with a result. A row with a result closes one earlier open row with the same
+        # game, label and book.
+        pending: dict[tuple[str, str, str], list[str]] = {}
         for row in rows:
-            if (row.get("result") or "").strip():
-                continue
             label = _label(row, kind)
             game_id = (row.get("game_id") or "").strip()
-            if label and game_id:
-                found.setdefault(game_id, []).append(label)
+            if not (label and game_id):
+                continue
+            key = (game_id, label, (row.get("book") or "").strip().lower())
+            if (row.get("result") or "").strip():
+                if pending.get(key):
+                    pending[key].pop()
+                continue
+            pending.setdefault(key, []).append(label)
+        for (game_id, _, _), labels in pending.items():
+            if labels:
+                found.setdefault(game_id, []).extend(labels)
     return found

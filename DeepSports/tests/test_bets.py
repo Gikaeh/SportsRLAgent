@@ -49,3 +49,17 @@ def test_open_bets_labels_and_skips_graded(tmp_path):
 
 def test_missing_logs_are_empty(tmp_path):
     assert bets.open_bets(tmp_path) == {}
+
+
+def test_later_settling_row_closes_open_bet(tmp_path):
+    col = tmp_path / "college_basketball" / "betting"
+    col.mkdir(parents=True)
+    (col / "bets.csv").write_text(
+        "game_id,date,matchup,market,bet,line,odds,book,result\n"
+        "9,d,SEMO @ STMN,total,over,149.5,-110,williamhill,\n"
+        "10,d,A @ B,total,under,150,-110,williamhill,\n"
+        "10,d,A @ B,total,under,150,-110,circa,\n"
+        "9,d,SEMO @ STMN,total,over,149.5,-110,williamhill,CASHOUT\n"
+        "10,d,A @ B,total,under,150,-110,circa,CASHOUT\n"
+    )
+    assert bets.open_bets(tmp_path) == {"10": ["Under 150"]}

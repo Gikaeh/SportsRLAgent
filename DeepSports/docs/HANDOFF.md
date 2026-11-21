@@ -46,6 +46,24 @@ Next: `deepsports moon grade` + `status` after the 08:00 sync. Owner: check the 
 (`circa status`, the lines file; the test reply fixture is synthetic); if `circa ingest` says `inbox blocked`,
 give uv's Python Full Disk Access; deploying BetDesk is still the owner's (`../BetDesk/docs/SETUP.md`).
 
+## Next session (after 2026-11-19)
+Historical data plan (ROADMAP, Data; budget in `docs/research/historical-data-plan.md`):
+- Loaded 2026-11-19 (job `/Volumes/ExFATStorag/DeepSports/jobs/ncaab-history-2021-23.sh`, log next to it): college
+  2021-22 (6,387 games, closing lines 92%) + 2022-23 (6,261 games, 94%); `check` clean. ESPN has only closing lines
+  (DraftKings) for these seasons, no openers, so they can't test et-v1 vs the opener.
+- Done (uncommitted): `deepsports torvik` (Barttorvik 2014-15 → 2024-25 via cbbdata; row D includes day D's games,
+  join on <= D-1; no 2025-26+, owner: leave it); `deepsports odds-api-history plan|probe|pull|status|live` (built, not run).
+- Rebuilt 2026-11-20: DS + MB college walk-forward 2021-12 → 2025-10 (`docs/results/2026-11-20-college-walkforward-older-seasons.md`).
+  et-v1's cell wins 57.0% vs the opener in 2025-26 only; 2023-24 52.6%, 2024-25 51.2%, all CIs span 0. et-v1's forward test continues.
+  Follow-up (same doc): the line moves ~1 pt toward the models' side every season, so the edge depends on timing.
+  Live et-v1 so far (32 bets with opener + close): 21:00 WH line = ESPN opener on average, open->close move only +0.03.
+- Open question: how much of the move is gone by 18:00-21:00 (owner, 2026-11-20). The Odds API month answers it; option:
+  also log the line at screenshot-read time.
+- Next: owner decides whether the Odds API month is still worth it given that result. If yes, the owner buys the
+  month with **their own new key** (not ManualBets' key) into `~/.config/deepsports/oddsapi.key` (mode 600).
+  Recommended scope: 10 named books (`--bookmakers`), college totals+spreads 21:00 + 09:00 PT, NBA night-before only
+  (~51K of 100K credits); probe first. Then commit on a branch (`feature/historical-data`) + PR.
+
 ## Known gaps / gotchas
 - ESPN gaps (warnings in `deepsports check`): 8 NBA playoff summaries 404; 29 NBA team-games and ~430 college
   team-games (mostly 2023-24 player boxes, plus 7 listed D1-vs-non-D1 boxes >2 pts off; ids in

@@ -109,6 +109,27 @@ class PoliteClient:
             raise FetchError(f"{url} params={params}: HTTP {resp.status_code}")
         raise FetchError(f"{url}: retries exhausted")  # pragma: no cover
 
+    def get_bytes(self, url: str, params: dict[str, Any] | None = None) -> bytes:
+        """Fetch a binary body (e.g. Parquet) with the same throttle and retries; no caching
+        (the caller saves the file). Errors never quote the params, which may hold a key."""
+        for attempt in range(self.max_retries + 1):
+            self._throttle()
+            self.network_requests += 1
+            try:
+                resp = self.client.get(url, params=params)
+            except httpx.TransportError as e:
+                if attempt == self.max_retries:
+                    raise FetchError(f"{url}: {type(e).__name__}") from e
+                self._backoff(attempt, None)
+                continue
+            if resp.status_code == 200:
+                return resp.content
+            if resp.status_code in RETRY_STATUS and attempt < self.max_retries:
+                self._backoff(attempt, resp.headers.get("Retry-After"))
+                continue
+            raise FetchError(f"{url}: HTTP {resp.status_code}")
+        raise FetchError(f"{url}: retries exhausted")  # pragma: no cover
+
     def _backoff(self, attempt: int, retry_after: str | None) -> None:
         delay = 2.0 ** (attempt + 1)
         if retry_after and retry_after.isdigit():

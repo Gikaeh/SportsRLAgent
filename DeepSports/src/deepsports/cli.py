@@ -212,6 +212,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     sub.add_parser(
+        "torvik",
+        help="Barttorvik T-Rank daily archive from cbbdata: fetch|map|status (files only;"
+        " `deepsports torvik -h`)",
+        add_help=False,
+    )
+
+    sub.add_parser(
+        "odds-api-history",
+        help="The Odds API historical snapshots: plan|probe|pull|status|live (files only;"
+        " `deepsports odds-api-history -h`)",
+        add_help=False,
+    )
+
+    sub.add_parser(
         "early-totals",
         help="night-before college totals forward test et-v1: log|grade|status (watch-only;"
         " `deepsports early-totals -h`)",
@@ -250,6 +264,14 @@ def main(argv: list[str] | None = None) -> int:
         from deepsports.books.cli import main as books_main
 
         return books_main(argv[1:])
+    if argv[:1] == ["torvik"]:  # its own parser; cbbdata + files, never DuckDB
+        from deepsports.torvik_cli import main as torvik_main
+
+        return torvik_main(argv[1:])
+    if argv[:1] == ["odds-api-history"]:  # its own parser; The Odds API + files, never DuckDB
+        from deepsports.oddsapi_cli import main as oddsapi_main
+
+        return oddsapi_main(argv[1:])
     if argv[:1] == ["early-totals"]:  # its own parser; files + brief read-only opens
         from deepsports.analysis.early_totals_cli import main as early_main
 

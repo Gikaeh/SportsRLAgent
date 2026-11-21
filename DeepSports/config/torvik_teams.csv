@@ -1,0 +1,380 @@
+torvik_team,espn_team_id,espn_name,match,first_season,last_season
+Abilene Christian,2000,Abilene Christian Wildcats,auto,2015,2025
+Air Force,2005,Air Force Falcons,auto,2015,2025
+Akron,2006,Akron Zips,auto,2015,2025
+Alabama,333,Alabama Crimson Tide,auto,2015,2025
+Alabama A&M,2010,Alabama A&M Bulldogs,auto,2015,2025
+Alabama St.,2011,Alabama State Hornets,auto,2015,2025
+Albany,399,UAlbany Great Danes,manual,2015,2025
+Alcorn St.,2016,Alcorn State Braves,auto,2015,2025
+American,44,American University Eagles,auto,2015,2025
+Appalachian St.,2026,App State Mountaineers,manual,2015,2025
+Arizona,12,Arizona Wildcats,auto,2015,2025
+Arizona St.,9,Arizona State Sun Devils,auto,2015,2025
+Arkansas,8,Arkansas Razorbacks,auto,2015,2025
+Arkansas Little Rock,2031,Little Rock Trojans,manual,2015,2016
+Arkansas Pine Bluff,2029,Arkansas-Pine Bluff Golden Lions,manual,2015,2025
+Arkansas St.,2032,Arkansas State Red Wolves,auto,2015,2025
+Army,349,Army Black Knights,auto,2015,2025
+Auburn,2,Auburn Tigers,auto,2015,2025
+Austin Peay,2046,Austin Peay Governors,auto,2015,2025
+BYU,252,BYU Cougars,auto,2015,2025
+Ball St.,2050,Ball State Cardinals,auto,2015,2025
+Baylor,239,Baylor Bears,auto,2015,2025
+Bellarmine,91,Bellarmine Knights,auto,2021,2025
+Belmont,2057,Belmont Bruins,auto,2015,2025
+Bethune Cookman,2065,Bethune-Cookman Wildcats,manual,2015,2025
+Binghamton,2066,Binghamton Bearcats,auto,2015,2025
+Boise St.,68,Boise State Broncos,auto,2015,2025
+Boston College,103,Boston College Eagles,auto,2015,2025
+Boston University,104,Boston University Terriers,auto,2015,2025
+Bowling Green,189,Bowling Green Falcons,auto,2015,2025
+Bradley,71,Bradley Braves,auto,2015,2025
+Brown,225,Brown Bears,auto,2015,2025
+Bryant,2803,Bryant Bulldogs,auto,2015,2025
+Bucknell,2083,Bucknell Bison,auto,2015,2025
+Buffalo,2084,Buffalo Bulls,auto,2015,2025
+Butler,2086,Butler Bulldogs,auto,2015,2025
+Cal Baptist,2856,California Baptist Lancers,manual,2019,2025
+Cal Poly,13,Cal Poly Mustangs,auto,2015,2025
+Cal St. Bakersfield,2934,Cal State Bakersfield Roadrunners,auto,2015,2025
+Cal St. Fullerton,2239,Cal State Fullerton Titans,auto,2015,2025
+Cal St. Northridge,2463,Cal State Northridge Matadors,auto,2015,2025
+California,25,California Golden Bears,auto,2015,2025
+Campbell,2097,Campbell Fighting Camels,auto,2015,2025
+Canisius,2099,Canisius Golden Griffins,auto,2015,2025
+Central Arkansas,2110,Central Arkansas Bears,auto,2015,2025
+Central Connecticut,2115,Central Connecticut Blue Devils,auto,2015,2025
+Central Michigan,2117,Central Michigan Chippewas,auto,2015,2025
+Charleston,232,Charleston Cougars,auto,2025,2025
+Charleston Southern,2127,Charleston Southern Buccaneers,auto,2015,2025
+Charlotte,2429,Charlotte 49ers,auto,2015,2025
+Chattanooga,236,Chattanooga Mocs,auto,2015,2025
+Chicago St.,2130,Chicago State Cougars,auto,2015,2025
+Cincinnati,2132,Cincinnati Bearcats,auto,2015,2025
+Clemson,228,Clemson Tigers,auto,2015,2025
+Cleveland St.,325,Cleveland State Vikings,auto,2015,2025
+Coastal Carolina,324,Coastal Carolina Chanticleers,auto,2015,2025
+Colgate,2142,Colgate Raiders,auto,2015,2025
+College of Charleston,232,Charleston Cougars,manual,2015,2024
+Colorado,38,Colorado Buffaloes,auto,2015,2025
+Colorado St.,36,Colorado State Rams,auto,2015,2025
+Columbia,171,Columbia Lions,auto,2015,2025
+Connecticut,41,UConn Huskies,manual,2015,2025
+Coppin St.,2154,Coppin State Eagles,auto,2015,2025
+Cornell,172,Cornell Big Red,auto,2015,2025
+Creighton,156,Creighton Bluejays,auto,2015,2025
+Dartmouth,159,Dartmouth Big Green,auto,2015,2025
+Davidson,2166,Davidson Wildcats,auto,2015,2025
+Dayton,2168,Dayton Flyers,auto,2015,2025
+DePaul,305,DePaul Blue Demons,auto,2015,2025
+Delaware,48,Delaware Blue Hens,auto,2015,2025
+Delaware St.,2169,Delaware State Hornets,auto,2015,2025
+Denver,2172,Denver Pioneers,auto,2015,2025
+Detroit,2174,Detroit Mercy Titans,manual,2015,2024
+Detroit Mercy,2174,Detroit Mercy Titans,auto,2025,2025
+Dixie St.,3101,Utah Tech Trailblazers,manual,2021,2022
+Drake,2181,Drake Bulldogs,auto,2015,2025
+Drexel,2182,Drexel Dragons,auto,2015,2025
+Duke,150,Duke Blue Devils,auto,2015,2025
+Duquesne,2184,Duquesne Dukes,auto,2015,2025
+East Carolina,151,East Carolina Pirates,auto,2015,2025
+East Tennessee St.,2193,East Tennessee State Buccaneers,auto,2015,2025
+Eastern Illinois,2197,Eastern Illinois Panthers,auto,2015,2025
+Eastern Kentucky,2198,Eastern Kentucky Colonels,auto,2015,2025
+Eastern Michigan,2199,Eastern Michigan Eagles,auto,2015,2025
+Eastern Washington,331,Eastern Washington Eagles,auto,2015,2025
+Elon,2210,Elon Phoenix,auto,2015,2025
+Evansville,339,Evansville Purple Aces,auto,2015,2025
+FIU,2229,Florida International Panthers,auto,2015,2025
+Fairfield,2217,Fairfield Stags,auto,2015,2025
+Fairleigh Dickinson,161,Fairleigh Dickinson Knights,auto,2015,2025
+Florida,57,Florida Gators,auto,2015,2025
+Florida A&M,50,Florida A&M Rattlers,auto,2015,2025
+Florida Atlantic,2226,Florida Atlantic Owls,auto,2015,2025
+Florida Gulf Coast,526,Florida Gulf Coast Eagles,auto,2015,2025
+Florida St.,52,Florida State Seminoles,auto,2015,2025
+Fordham,2230,Fordham Rams,auto,2015,2025
+Fort Wayne,2870,Purdue Fort Wayne Mastodons,manual,2017,2024
+Fresno St.,278,Fresno State Bulldogs,auto,2015,2025
+Furman,231,Furman Paladins,auto,2015,2025
+Gardner Webb,2241,Gardner-Webb Runnin' Bulldogs,manual,2015,2025
+George Mason,2244,George Mason Patriots,auto,2015,2025
+George Washington,45,George Washington Revolutionaries,auto,2015,2025
+Georgetown,46,Georgetown Hoyas,auto,2015,2025
+Georgia,61,Georgia Bulldogs,auto,2015,2025
+Georgia Southern,290,Georgia Southern Eagles,auto,2015,2025
+Georgia St.,2247,Georgia State Panthers,auto,2015,2025
+Georgia Tech,59,Georgia Tech Yellow Jackets,auto,2015,2025
+Gonzaga,2250,Gonzaga Bulldogs,auto,2015,2025
+Grambling St.,2755,Grambling Tigers,manual,2015,2025
+Grand Canyon,2253,Grand Canyon Lopes,auto,2015,2025
+Green Bay,2739,Green Bay Phoenix,auto,2015,2025
+Hampton,2261,Hampton Pirates,auto,2015,2025
+Hartford,42,Hartford Hawks,auto,2015,2023
+Harvard,108,Harvard Crimson,auto,2015,2025
+Hawaii,62,Hawai'i Rainbow Warriors,auto,2015,2025
+High Point,2272,High Point Panthers,auto,2015,2025
+Hofstra,2275,Hofstra Pride,auto,2015,2025
+Holy Cross,107,Holy Cross Crusaders,auto,2015,2025
+Houston,248,Houston Cougars,auto,2015,2025
+Houston Baptist,2277,Houston Christian Huskies,manual,2015,2022
+Houston Christian,2277,Houston Christian Huskies,auto,2023,2025
+Howard,47,Howard Bison,auto,2015,2025
+IPFW,2870,Purdue Fort Wayne Mastodons,manual,2015,2016
+IU Indy,85,IU Indianapolis Jaguars,auto,2025,2025
+IUPUI,85,IU Indianapolis Jaguars,manual,2015,2024
+Idaho,70,Idaho Vandals,auto,2015,2025
+Idaho St.,304,Idaho State Bengals,auto,2015,2025
+Illinois,356,Illinois Fighting Illini,auto,2015,2025
+Illinois Chicago,82,UIC Flames,manual,2015,2025
+Illinois St.,2287,Illinois State Redbirds,auto,2015,2025
+Incarnate Word,2916,Incarnate Word Cardinals,auto,2015,2025
+Indiana,84,Indiana Hoosiers,auto,2015,2025
+Indiana St.,282,Indiana State Sycamores,auto,2015,2025
+Iona,314,Iona Gaels,auto,2015,2025
+Iowa,2294,Iowa Hawkeyes,auto,2015,2025
+Iowa St.,66,Iowa State Cyclones,auto,2015,2025
+Jackson St.,2296,Jackson State Tigers,auto,2015,2025
+Jacksonville,294,Jacksonville Dolphins,auto,2015,2025
+Jacksonville St.,55,Jacksonville State Gamecocks,auto,2015,2025
+James Madison,256,James Madison Dukes,auto,2015,2025
+Kansas,2305,Kansas Jayhawks,auto,2015,2025
+Kansas St.,2306,Kansas State Wildcats,auto,2015,2025
+Kennesaw St.,338,Kennesaw State Owls,auto,2015,2025
+Kent St.,2309,Kent State Golden Flashes,auto,2015,2025
+Kentucky,96,Kentucky Wildcats,auto,2015,2025
+LIU,112358,Long Island University Sharks,manual,2025,2025
+LIU Brooklyn,112358,Long Island University Sharks,manual,2015,2024
+LSU,99,LSU Tigers,auto,2015,2025
+La Salle,2325,La Salle Explorers,auto,2015,2025
+Lafayette,322,Lafayette Leopards,auto,2015,2025
+Lamar,2320,Lamar Cardinals,auto,2015,2025
+Le Moyne,2330,Le Moyne Dolphins,auto,2024,2025
+Lehigh,2329,Lehigh Mountain Hawks,auto,2015,2025
+Liberty,2335,Liberty Flames,auto,2015,2025
+Lindenwood,2815,Lindenwood Lions,auto,2023,2025
+Lipscomb,288,Lipscomb Bisons,auto,2015,2025
+Little Rock,2031,Little Rock Trojans,auto,2017,2025
+Long Beach St.,299,Long Beach State Beach,auto,2015,2025
+Longwood,2344,Longwood Lancers,auto,2015,2025
+Louisiana,309,Louisiana Ragin' Cajuns,auto,2025,2025
+Louisiana Lafayette,309,Louisiana Ragin' Cajuns,manual,2015,2024
+Louisiana Monroe,2433,UL Monroe Warhawks,manual,2015,2025
+Louisiana Tech,2348,Louisiana Tech Bulldogs,auto,2015,2025
+Louisville,97,Louisville Cardinals,auto,2015,2025
+Loyola Chicago,2350,Loyola Chicago Ramblers,auto,2015,2025
+Loyola MD,2352,Loyola Maryland Greyhounds,auto,2015,2025
+Loyola Marymount,2351,Loyola Marymount Lions,auto,2015,2025
+Maine,311,Maine Black Bears,auto,2015,2025
+Manhattan,2363,Manhattan Jaspers,auto,2015,2025
+Marist,2368,Marist Red Foxes,auto,2015,2025
+Marquette,269,Marquette Golden Eagles,auto,2015,2025
+Marshall,276,Marshall Thundering Herd,auto,2015,2025
+Maryland,120,Maryland Terrapins,auto,2015,2025
+Maryland Eastern Shore,2379,Maryland Eastern Shore Hawks,auto,2015,2025
+Massachusetts,113,Massachusetts Minutemen,auto,2015,2025
+McNeese St.,2377,McNeese Cowboys,manual,2015,2025
+Memphis,235,Memphis Tigers,auto,2015,2025
+Mercer,2382,Mercer Bears,auto,2015,2025
+Mercyhurst,2385,Mercyhurst Lakers,auto,2025,2025
+Merrimack,2771,Merrimack Warriors,auto,2020,2025
+Miami FL,2390,Miami Hurricanes,manual,2015,2025
+Miami OH,193,Miami (OH) RedHawks,auto,2015,2025
+Michigan,130,Michigan Wolverines,auto,2015,2025
+Michigan St.,127,Michigan State Spartans,auto,2015,2025
+Middle Tennessee,2393,Middle Tennessee Blue Raiders,auto,2015,2025
+Milwaukee,270,Milwaukee Panthers,auto,2015,2025
+Minnesota,135,Minnesota Golden Gophers,auto,2015,2025
+Mississippi,145,Ole Miss Rebels,manual,2015,2025
+Mississippi St.,344,Mississippi State Bulldogs,auto,2015,2025
+Mississippi Valley St.,2400,Mississippi Valley State Delta Devils,auto,2015,2025
+Missouri,142,Missouri Tigers,auto,2015,2025
+Missouri St.,2623,Missouri State Bears,auto,2015,2025
+Monmouth,2405,Monmouth Hawks,auto,2015,2025
+Montana,149,Montana Grizzlies,auto,2015,2025
+Montana St.,147,Montana State Bobcats,auto,2015,2025
+Morehead St.,2413,Morehead State Eagles,auto,2015,2025
+Morgan St.,2415,Morgan State Bears,auto,2015,2025
+Mount St. Mary's,116,Mount St. Mary's Mountaineers,auto,2015,2025
+Murray St.,93,Murray State Racers,auto,2015,2025
+N.C. State,152,NC State Wolfpack,auto,2025,2025
+NJIT,2885,NJIT Highlanders,auto,2015,2025
+Navy,2426,Navy Midshipmen,auto,2015,2025
+Nebraska,158,Nebraska Cornhuskers,auto,2015,2025
+Nebraska Omaha,2437,Omaha Mavericks,manual,2015,2025
+Nevada,2440,Nevada Wolf Pack,auto,2015,2025
+New Hampshire,160,New Hampshire Wildcats,auto,2015,2025
+New Mexico,167,New Mexico Lobos,auto,2015,2025
+New Mexico St.,166,New Mexico State Aggies,auto,2015,2025
+New Orleans,2443,LSU New Orleans Privateers,manual,2015,2025
+Niagara,315,Niagara Purple Eagles,auto,2015,2025
+Nicholls St.,2447,Nicholls Colonels,manual,2015,2025
+Norfolk St.,2450,Norfolk State Spartans,auto,2015,2025
+North Alabama,2453,North Alabama Lions,auto,2019,2025
+North Carolina,153,North Carolina Tar Heels,auto,2015,2025
+North Carolina A&T,2448,North Carolina A&T Aggies,auto,2015,2025
+North Carolina Central,2428,North Carolina Central Eagles,auto,2015,2025
+North Carolina St.,152,NC State Wolfpack,manual,2015,2024
+North Dakota,155,North Dakota Fighting Hawks,auto,2015,2025
+North Dakota St.,2449,North Dakota State Bison,auto,2015,2025
+North Florida,2454,North Florida Ospreys,auto,2015,2025
+North Texas,249,North Texas Mean Green,auto,2015,2025
+Northeastern,111,Northeastern Huskies,auto,2015,2025
+Northern Arizona,2464,Northern Arizona Lumberjacks,auto,2015,2025
+Northern Colorado,2458,Northern Colorado Bears,auto,2015,2025
+Northern Illinois,2459,Northern Illinois Huskies,auto,2015,2025
+Northern Iowa,2460,Northern Iowa Panthers,auto,2015,2025
+Northern Kentucky,94,Northern Kentucky Norse,auto,2015,2025
+Northwestern,77,Northwestern Wildcats,auto,2015,2025
+Northwestern St.,2466,Northwestern State Demons,auto,2015,2025
+Notre Dame,87,Notre Dame Fighting Irish,auto,2015,2025
+Oakland,2473,Oakland Golden Grizzlies,auto,2015,2025
+Ohio,195,Ohio Bobcats,auto,2015,2025
+Ohio St.,194,Ohio State Buckeyes,auto,2015,2025
+Oklahoma,201,Oklahoma Sooners,auto,2015,2025
+Oklahoma St.,197,Oklahoma State Cowboys,auto,2015,2025
+Old Dominion,295,Old Dominion Monarchs,auto,2015,2025
+Oral Roberts,198,Oral Roberts Golden Eagles,auto,2015,2025
+Oregon,2483,Oregon Ducks,auto,2015,2025
+Oregon St.,204,Oregon State Beavers,auto,2015,2025
+Pacific,279,Pacific Tigers,auto,2015,2025
+Penn,219,Pennsylvania Quakers,auto,2015,2025
+Penn St.,213,Penn State Nittany Lions,auto,2015,2025
+Pepperdine,2492,Pepperdine Waves,auto,2015,2025
+Pittsburgh,221,Pittsburgh Panthers,auto,2015,2025
+Portland,2501,Portland Pilots,auto,2015,2025
+Portland St.,2502,Portland State Vikings,auto,2015,2025
+Prairie View A&M,2504,Prairie View A&M Panthers,auto,2015,2025
+Presbyterian,2506,Presbyterian Blue Hose,auto,2015,2025
+Princeton,163,Princeton Tigers,auto,2015,2025
+Providence,2507,Providence Friars,auto,2015,2025
+Purdue,2509,Purdue Boilermakers,auto,2015,2025
+Purdue Fort Wayne,2870,Purdue Fort Wayne Mastodons,auto,2025,2025
+Queens,2511,Queens University Royals,auto,2023,2025
+Quinnipiac,2514,Quinnipiac Bobcats,auto,2015,2025
+Radford,2515,Radford Highlanders,auto,2015,2025
+Rhode Island,227,Rhode Island Rams,auto,2015,2025
+Rice,242,Rice Owls,auto,2015,2025
+Richmond,257,Richmond Spiders,auto,2015,2025
+Rider,2520,Rider Broncs,auto,2015,2025
+Robert Morris,2523,Robert Morris Colonials,auto,2015,2025
+Rutgers,164,Rutgers Scarlet Knights,auto,2015,2025
+SIU Edwardsville,2565,SIU Edwardsville Cougars,auto,2015,2025
+SMU,2567,SMU Mustangs,auto,2015,2025
+Sacramento St.,16,Sacramento State Hornets,auto,2015,2025
+Sacred Heart,2529,Sacred Heart Pioneers,auto,2015,2025
+Saint Francis,2598,Saint Francis Red Wolves,auto,2025,2025
+Saint Joseph's,2603,Saint Joseph's Hawks,auto,2015,2025
+Saint Louis,139,Saint Louis Billikens,auto,2015,2025
+Saint Mary's,2608,Saint Mary's Gaels,auto,2015,2025
+Saint Peter's,2612,Saint Peter's Peacocks,auto,2015,2025
+Sam Houston St.,2534,Sam Houston Bearkats,manual,2015,2025
+Samford,2535,Samford Bulldogs,auto,2015,2025
+San Diego,301,San Diego Toreros,auto,2015,2025
+San Diego St.,21,San Diego State Aztecs,auto,2015,2025
+San Francisco,2539,San Francisco Dons,auto,2015,2025
+San Jose St.,23,San José State Spartans,manual,2015,2025
+Santa Clara,2541,Santa Clara Broncos,auto,2015,2025
+Savannah St.,,,none,2015,2019
+Seattle,2547,Seattle U Redhawks,manual,2015,2025
+Seton Hall,2550,Seton Hall Pirates,auto,2015,2025
+Siena,2561,Siena Saints,auto,2015,2025
+South Alabama,6,South Alabama Jaguars,auto,2015,2025
+South Carolina,2579,South Carolina Gamecocks,auto,2015,2025
+South Carolina St.,2569,South Carolina State Bulldogs,auto,2015,2025
+South Dakota,233,South Dakota Coyotes,auto,2015,2025
+South Dakota St.,2571,South Dakota State Jackrabbits,auto,2015,2025
+South Florida,58,South Florida Bulls,auto,2015,2025
+Southeast Missouri St.,2546,Southeast Missouri State Redhawks,auto,2015,2025
+Southeastern Louisiana,2545,SE Louisiana Lions,manual,2015,2025
+Southern,2582,Southern Jaguars,auto,2015,2025
+Southern Illinois,79,Southern Illinois Salukis,auto,2015,2025
+Southern Indiana,88,Southern Indiana Screaming Eagles,auto,2023,2025
+Southern Miss,2572,Southern Miss Golden Eagles,auto,2015,2025
+Southern Utah,253,Southern Utah Thunderbirds,auto,2015,2025
+St. Bonaventure,179,St. Bonaventure Bonnies,auto,2015,2025
+St. Francis NY,2597,St. Francis Brooklyn Terriers,manual,2015,2023
+St. Francis PA,2598,Saint Francis Red Wolves,manual,2015,2024
+St. John's,2599,St. John's Red Storm,auto,2015,2025
+St. Thomas,2900,St. Thomas Tommies,auto,2022,2025
+Stanford,24,Stanford Cardinal,auto,2015,2025
+Stephen F. Austin,2617,Stephen F. Austin Lumberjacks,auto,2015,2025
+Stetson,56,Stetson Hatters,auto,2015,2025
+Stonehill,284,Stonehill Skyhawks,auto,2023,2025
+Stony Brook,2619,Stony Brook Seawolves,auto,2015,2025
+Syracuse,183,Syracuse Orange,auto,2015,2025
+TCU,2628,TCU Horned Frogs,auto,2015,2025
+Tarleton St.,2627,Tarleton State Texans,auto,2021,2025
+Temple,218,Temple Owls,auto,2015,2025
+Tennessee,2633,Tennessee Volunteers,auto,2015,2025
+Tennessee Martin,2630,UT Martin Skyhawks,manual,2015,2025
+Tennessee St.,2634,Tennessee State Tigers,auto,2015,2025
+Tennessee Tech,2635,Tennessee Tech Golden Eagles,auto,2015,2025
+Texas,251,Texas Longhorns,auto,2015,2025
+Texas A&M,245,Texas A&M Aggies,auto,2015,2025
+Texas A&M Commerce,2837,East Texas A&M Lions,manual,2023,2025
+Texas A&M Corpus Chris,357,Texas A&M-Corpus Christi Islanders,manual,2015,2025
+Texas Southern,2640,Texas Southern Tigers,auto,2015,2025
+Texas St.,326,Texas State Bobcats,auto,2015,2025
+Texas Tech,2641,Texas Tech Red Raiders,auto,2015,2025
+The Citadel,2643,The Citadel Bulldogs,auto,2015,2025
+Toledo,2649,Toledo Rockets,auto,2015,2025
+Towson,119,Towson Tigers,auto,2015,2025
+Troy,2653,Troy Trojans,auto,2015,2025
+Tulane,2655,Tulane Green Wave,auto,2015,2025
+Tulsa,202,Tulsa Golden Hurricane,auto,2015,2025
+UAB,5,UAB Blazers,auto,2015,2025
+UC Davis,302,UC Davis Aggies,auto,2015,2025
+UC Irvine,300,UC Irvine Anteaters,auto,2015,2025
+UC Riverside,27,UC Riverside Highlanders,auto,2015,2025
+UC San Diego,28,UC San Diego Tritons,auto,2021,2025
+UC Santa Barbara,2540,UC Santa Barbara Gauchos,auto,2015,2025
+UCF,2116,UCF Knights,auto,2015,2025
+UCLA,26,UCLA Bruins,auto,2015,2025
+UMBC,2378,UMBC Retrievers,auto,2015,2025
+UMKC,140,Kansas City Roos,manual,2015,2025
+UMass Lowell,2349,UMass Lowell River Hawks,auto,2015,2025
+UNC Asheville,2427,UNC Asheville Bulldogs,auto,2015,2025
+UNC Greensboro,2430,UNC Greensboro Spartans,auto,2015,2025
+UNC Wilmington,350,UNC Wilmington Seahawks,auto,2015,2025
+UNLV,2439,UNLV Rebels,auto,2015,2025
+USC,30,USC Trojans,auto,2015,2025
+USC Upstate,2908,South Carolina Upstate Spartans,manual,2015,2025
+UT Arlington,250,UT Arlington Mavericks,auto,2015,2025
+UT Rio Grande Valley,292,UT Rio Grande Valley Vaqueros,auto,2015,2025
+UTEP,2638,UTEP Miners,auto,2015,2025
+UTSA,2636,UTSA Roadrunners,auto,2015,2025
+Utah,254,Utah Utes,auto,2015,2025
+Utah St.,328,Utah State Aggies,auto,2015,2025
+Utah Tech,3101,Utah Tech Trailblazers,auto,2023,2025
+Utah Valley,3084,Utah Valley Wolverines,auto,2015,2025
+VCU,2670,VCU Rams,auto,2015,2025
+VMI,2678,VMI Keydets,auto,2015,2025
+Valparaiso,2674,Valparaiso Beacons,auto,2015,2025
+Vanderbilt,238,Vanderbilt Commodores,auto,2015,2025
+Vermont,261,Vermont Catamounts,auto,2015,2025
+Villanova,222,Villanova Wildcats,auto,2015,2025
+Virginia,258,Virginia Cavaliers,auto,2015,2025
+Virginia Tech,259,Virginia Tech Hokies,auto,2015,2025
+Wagner,2681,Wagner Seahawks,auto,2015,2025
+Wake Forest,154,Wake Forest Demon Deacons,auto,2015,2025
+Washington,264,Washington Huskies,auto,2015,2025
+Washington St.,265,Washington State Cougars,auto,2015,2025
+Weber St.,2692,Weber State Wildcats,auto,2015,2025
+West Georgia,2698,West Georgia Wolves,auto,2025,2025
+West Virginia,277,West Virginia Mountaineers,auto,2015,2025
+Western Carolina,2717,Western Carolina Catamounts,auto,2015,2025
+Western Illinois,2710,Western Illinois Leathernecks,auto,2015,2025
+Western Kentucky,98,Western Kentucky Hilltoppers,auto,2015,2025
+Western Michigan,2711,Western Michigan Broncos,auto,2015,2025
+Wichita St.,2724,Wichita State Shockers,auto,2015,2025
+William & Mary,2729,William & Mary Tribe,auto,2015,2025
+Winthrop,2737,Winthrop Eagles,auto,2015,2025
+Wisconsin,275,Wisconsin Badgers,auto,2015,2025
+Wofford,2747,Wofford Terriers,auto,2015,2025
+Wright St.,2750,Wright State Raiders,auto,2015,2025
+Wyoming,2751,Wyoming Cowboys,auto,2015,2025
+Xavier,2752,Xavier Musketeers,auto,2015,2025
+Yale,43,Yale Bulldogs,auto,2015,2025
+Youngstown St.,2754,Youngstown State Penguins,auto,2015,2025

@@ -197,6 +197,64 @@ is ~2 requests and the 21:00 evening grab (`books grab --early`, William Hill/Ca
   starting within 6 h; unmatched fixtures are dropped. A spread market's handicap is participant 1's line.
 Screenshots stay the fallback and win over the feed where both have a line (moon `--circa auto`).
 
+## Collected, not in the warehouse yet: cbbdata (Barttorvik T-Rank daily archive, since 2026-11-19)
+`deepsports torvik fetch|map|status` (`src/deepsports/sources/cbbdata.py`, `torvik_cli.py`; files only, never
+DuckDB). One request per season: `GET https://www.cbbdata.com/api/torvik/ratings/archive?year=<season end
+year>&key=<key>` returns Parquet, one row per D1 team per rating day (rank, team, conf, record, barthag,
+adj_o, adj_d, adj_tempo, wab, their ranks, projected records, date, year). ~3 MB a season.
+- **Key:** free, from cbbdata's sign-up; read from `~/.config/deepsports/cbbdata.key` (mode 600). It is a query
+  parameter, so httpx URL logging is off, errors never quote it, and file names don't contain it.
+- **Fetching:** `PoliteClient.get_bytes` (≥1 s between requests, retries). Raw files under
+  `data/raw/cbbdata/torvik_archive/<year>.parquet`; past seasons are cached forever (an empty one is
+  retried), the current season is refetched on every run.
+- **Coverage (checked 2026-11-19):** 2015 (2014-15) to 2025 (2024-25), 347-364 teams, 134-232 days a season
+  (2025 runs to 2025-06-30). **2026 and 2027 come back empty**, and so does the plain `/torvik/ratings`
+  for those years: cbbdata stopped updating after 2024-25 (GitHub `andreweatherman/cbbdata`, last push
+  2024-10-31; open issue "No Bart Torvik Data for 2025-26 Season", 2025-11-11). 2025-26 and today need
+  another source (barttorvik.com itself, below).
+- **Date semantics (checked 2026-11-19 against cached ESPN finals, 2021-22, 2023-24, 2024-25):** a row dated
+  D already includes the games of ESPN game day D. For isolated games on D, the record moves on row D in
+  ~99.7% of cases (e.g. 2022: 9,632 of 9,662) and tempo moves ~0.18 on row D against ~0.05 on row D+1. So it
+  is an end-of-day snapshot. **Leak-free join for a game on day D: the latest row with `as_of_date <= D - 1`.**
+- **Team map:** `config/torvik_teams.csv` (Barttorvik name → ESPN `team_id`; `torvik map` appends new names
+  and keeps reviewed rows). 379 names: 339 matched automatically on normalized location or short name, 39 by
+  hand (`MANUAL_MATCHES`: renames like IPFW/Fort Wayne → Purdue Fort Wayne, Dixie St. → Utah Tech,
+  Houston Baptist → Houston Christian, LIU Brooklyn → LIU). Unmatched: Savannah St. (2015-2019, left D1
+  before our ESPN cache). Checked against ESPN game dates: 1,082 of 1,084 team-seasons agree on ≥90% of
+  record changes (the two at 88% are 2025 Grambling and Lamar).
+- **Terms:** none published. The R package's site (`cbbdata.aweatherman.com`) lists an MIT licence for the
+  package, a free key, and "updated every 15 minutes during the season"; there is no API terms page, no
+  stated rate limit and no attribution rule. The data is Barttorvik's: credit T-Rank (barttorvik.com) when
+  results are shared.
+- **barttorvik.com directly:** plain clients get HTTP 403 at the CDN, robots.txt included (checked
+  2026-11-19), so it needs a browser-like approach the owner hasn't agreed to. The toRvik R package reads
+  a GitHub mirror that stops in 2023.
+
+## Planned (paid month): The Odds API historical odds
+`deepsports odds-api-history plan|probe|pull|status|live` (`src/deepsports/sources/oddsapi_history.py`,
+`oddsapi_cli.py`; files only, never DuckDB; built 2026-11-19, not run at scale). Step 6 of
+`docs/research/historical-data-plan.md`: one month of the 100K-credit plan, buy, pull, cancel.
+- **Endpoint:** `GET https://api.the-odds-api.com/v4/historical/sports/{basketball_ncaab|basketball_nba}/odds`
+  `?regions=..&markets=totals,spreads&oddsFormat=american&date=<ISO8601>` returns the snapshot at or
+  before `date` as `{timestamp, previous_timestamp, next_timestamp, data: [events]}` (events shaped
+  like the live `/odds` list: `id, commence_time, home_team, away_team, bookmakers[].markets[].outcomes[]`
+  with `name, price, point`; market-level `last_update`). Snapshots every 10 min from June 2020, every
+  5 min from September 2022.
+- **Cost:** 10 credits per market per region per call; an empty `data` costs nothing. `bookmakers=`
+  (any region's books) replaces `regions`, and every 10 books bill as one region. `GET /v4/sports` is
+  free and carries the usage headers (`x-requests-remaining|used|last`), which `pull` reads first.
+- **Access:** paid plans only. On the free key the historical endpoint answers HTTP 401 "Historical odds
+  are only available on paid usage plans" (checked 2026-11-19); the live endpoint works (1 credit).
+- **Key:** env `ODDS_API_KEY` or `~/.config/deepsports/oddsapi.key` (mode 600). A query parameter, so
+  request URLs are never logged and error messages never quote params. (ManualBets keeps its own copy
+  as a literal; new code never reads it.)
+- **Default plan (2026-11-19):** college 2021-22 → 2025-26 (2020-21 skipped) + NBA 2021-22 → 2025-26,
+  21:00 PT the night before and 09:00 PT game-day morning: 3,624 snapshots. Totals+spreads with
+  `us,eu` = 144,960 credits (over the 100K plan); with ≤10 `--bookmakers` (e.g. Pinnacle + 9 US books)
+  = 72,480. College totals alone: `us` 14,980, `us,eu` 29,960.
+- **Fixtures:** `tests/fixtures/oddsapi_live_ncaab_totals_us_20261119.json` (real, trimmed) and
+  `oddsapi_historical_ncaab_synthetic.json` (synthetic, the documented historical shape).
+
 ## Tried and not used
 | Source | Result (2026-11-03) | Decision |
 |---|---|---|

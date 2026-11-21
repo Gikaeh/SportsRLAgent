@@ -55,6 +55,24 @@ ODDSPAPI_KEY_FILE = Path(
     )
 )
 
+# cbbdata (https://www.cbbdata.com): Barttorvik T-Rank daily archive, one Parquet per season
+# under RAW_DIR/cbbdata/torvik_archive/<season end year>.parquet. The key lives only in this file
+# (mode 600); it is a query parameter, so never log request URLs.
+CBBDATA_KEY_FILE = Path(
+    os.environ.get(
+        "DEEPSPORTS_CBBDATA_KEY_FILE", Path.home() / ".config" / "deepsports" / "cbbdata.key"
+    )
+)
+
+# The Odds API historical pull (src/deepsports/sources/oddsapi_history.py): raw snapshots under
+# RAW_DIR/oddsapi/historical/. The key comes from env ODDS_API_KEY or this file (mode 600); it is
+# a query parameter, so never log request URLs.
+ODDS_API_KEY_FILE = Path(
+    os.environ.get(
+        "DEEPSPORTS_ODDS_API_KEY_FILE", Path.home() / ".config" / "deepsports" / "oddsapi.key"
+    )
+)
+
 # The user's timezone, used for calendar output.
 LOCAL_TZ = ZoneInfo(os.environ.get("DEEPSPORTS_TZ", "America/Los_Angeles"))
 # ESPN's `dates=YYYYMMDD` scoreboard parameter is a US/Eastern game day.

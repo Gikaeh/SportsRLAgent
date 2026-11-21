@@ -1,0 +1,275 @@
+[
+ {
+  "id": "57ce51731aa0e3325c489d30a2b2e7ed",
+  "sport_key": "basketball_ncaab",
+  "sport_title": "NCAAB",
+  "commence_time": "2026-11-19T22:00:00Z",
+  "home_team": "Notre Dame Fighting Irish",
+  "away_team": "Auburn Tigers",
+  "bookmakers": [
+   {
+    "key": "fanduel",
+    "title": "FanDuel",
+    "last_update": "2026-11-19T21:24:16Z",
+    "markets": [
+     {
+      "key": "totals",
+      "last_update": "2026-11-19T21:24:15Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": -110,
+        "point": 151.5
+       },
+       {
+        "name": "Under",
+        "price": -110,
+        "point": 151.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "draftkings",
+    "title": "DraftKings",
+    "last_update": "2026-11-19T21:24:27Z",
+    "markets": [
+     {
+      "key": "totals",
+      "last_update": "2026-11-19T21:24:26Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": -110,
+        "point": 151.5
+       },
+       {
+        "name": "Under",
+        "price": -110,
+        "point": 151.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "bovada",
+    "title": "Bovada",
+    "last_update": "2026-11-19T21:22:38Z",
+    "markets": [
+     {
+      "key": "totals",
+      "last_update": "2026-11-19T21:22:38Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": -105,
+        "point": 152.5
+       },
+       {
+        "name": "Under",
+        "price": -115,
+        "point": 152.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "betrivers",
+    "title": "BetRivers",
+    "last_update": "2026-11-19T21:24:29Z",
+    "markets": [
+     {
+      "key": "totals",
+      "last_update": "2026-11-19T21:24:29Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": -110,
+        "point": 151.5
+       },
+       {
+        "name": "Under",
+        "price": -113,
+        "point": 151.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "betmgm",
+    "title": "BetMGM",
+    "last_update": "2026-11-19T21:24:11Z",
+    "markets": [
+     {
+      "key": "totals",
+      "last_update": "2026-11-19T21:24:11Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": -110,
+        "point": 151.5
+       },
+       {
+        "name": "Under",
+        "price": -110,
+        "point": 151.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "betonlineag",
+    "title": "BetOnline.ag",
+    "last_update": "2026-11-19T21:23:45Z",
+    "markets": [
+     {
+      "key": "totals",
+      "last_update": "2026-11-19T21:23:39Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": -111,
+        "point": 151.5
+       },
+       {
+        "name": "Under",
+        "price": -109,
+        "point": 151.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "lowvig",
+    "title": "LowVig.ag",
+    "last_update": "2026-11-19T21:24:00Z",
+    "markets": [
+     {
+      "key": "totals",
+      "last_update": "2026-11-19T21:23:58Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": -109,
+        "point": 151.5
+       },
+       {
+        "name": "Under",
+        "price": -107,
+        "point": 151.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "betus",
+    "title": "BetUS",
+    "last_update": "2026-11-19T21:23:56Z",
+    "markets": [
+     {
+      "key": "totals",
+      "last_update": "2026-11-19T21:23:56Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": -110,
+        "point": 151.5
+       },
+       {
+        "name": "Under",
+        "price": -110,
+        "point": 151.5
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "8f88d57c43c67df9c1beb816e0c11d5c",
+  "sport_key": "basketball_ncaab",
+  "sport_title": "NCAAB",
+  "commence_time": "2026-11-20T20:00:00Z",
+  "home_team": "Virginia Tech Hokies",
+  "away_team": "Northwestern Wildcats",
+  "bookmakers": [
+   {
+    "key": "betonlineag",
+    "title": "BetOnline.ag",
+    "last_update": "2026-11-19T21:23:45Z",
+    "markets": [
+     {
+      "key": "totals",
+      "last_update": "2026-11-19T21:23:41Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": -105,
+        "point": 143.5
+       },
+       {
+        "name": "Under",
+        "price": -115,
+        "point": 143.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "lowvig",
+    "title": "LowVig.ag",
+    "last_update": "2026-11-19T21:24:00Z",
+    "markets": [
+     {
+      "key": "totals",
+      "last_update": "2026-11-19T21:24:00Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": -103,
+        "point": 143.5
+       },
+       {
+        "name": "Under",
+        "price": -113,
+        "point": 143.5
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "key": "draftkings",
+    "title": "DraftKings",
+    "last_update": "2026-11-19T21:24:28Z",
+    "markets": [
+     {
+      "key": "totals",
+      "last_update": "2026-11-19T21:24:27Z",
+      "outcomes": [
+       {
+        "name": "Over",
+        "price": -105,
+        "point": 143.5
+       },
+       {
+        "name": "Under",
+        "price": -115,
+        "point": 143.5
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+]

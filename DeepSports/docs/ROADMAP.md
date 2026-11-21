@@ -97,7 +97,20 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
 
 ### Data
 - [ ] Optional (owner): fill missing college closing moneylines from ESPN BET's core-API close where DraftKings is `OFF` (61 games in 2025-26 Nov–Jan; offline from cache)
-- [ ] Owner decision: paid multi-sportsbook odds API (the-odds-api.com)?
+- [ ] **Historical data plan** (owner OK'd the plan 2026-11-19, starts 2026-11-20; details and budget in
+      [research/historical-data-plan.md](research/historical-data-plan.md)), in order:
+  - [x] ESPN backfill of college 2021-22 + 2022-23 (2026-11-19; closing lines only, ESPN has no openers for them)
+  - [x] Barttorvik daily T-Rank archive 2014-15 → 2024-25 via cbbdata (`deepsports torvik`, 2026-11-19; row D
+        includes day D's games, so join on `as_of_date <= D - 1`; DATA_SOURCES.md). Warehouse table not built yet
+  - [ ] Barttorvik 2025-26 + current season: cbbdata has none; barttorvik.com needs browser-like headers.
+        Owner (2026-11-19): leave it unless the ratings help in the backtest
+  - [ ] Offline from the cached summaries: officials, conference-game flag, play-by-play pace and shot-mix rates
+  - [ ] College arena coordinates → travel and altitude
+  - [x] Rebuild DS + MB walk-forward numbers for the older seasons (2026-11-20; et-v1's cell shows no edge in
+        2021-25, [results](results/2026-11-20-college-walkforward-older-seasons.md)). Owner: still buy the Odds API month?
+  - [ ] Owner buys one month of The Odds API's 100K plan ($59): probe night-before coverage (~100 credits),
+        then pull timestamped college totals (+ spreads, NBA) from `us` and `eu` (Pinnacle), cache, cancel
+  - [ ] Backtest et-v1 against the timestamped 21:00 DraftKings and Pinnacle lines
 
 ### Integration with ManualBets
 - [ ] Merge step by step into one data source and one app; each step is proposed and logged in `../docs/DECISIONS.md` before it's built

@@ -80,6 +80,15 @@ shared quota sensibly: request only the sports/markets/books needed and report
 print the key, append-only logs, ManualBets append-only) and DeepSports' one-writer rule. Using
 ManualBets is allowed; changing it needs the owner's permission (rule 7).
 
+## Reading line moves (agents have gotten this backwards before)
+To call a move "with" or "against" a bet, ask: **would a new bettor on the same side get a worse
+number than the owner did?** If yes, the move is *with* the owner (positive CLV).
+- **Over:** line went UP → with. Line went DOWN → against. (O137.5, now 135.5 → against.)
+- **Under:** line went DOWN → with. Line went UP → against. (U149.5, now 146.5 → with.)
+- **Spread:** the owner's side now costs more (fav -3 → -5, dog +6 → +4) → with.
+In every row, write the side, the line at bet time and the line now, and check each row again
+before you send.
+
 ## Working as the orchestrator
 The main session owns the plan and the outcome:
 - **Plan** against the project's roadmap (DeepSports `docs/ROADMAP.md`, ManualBets

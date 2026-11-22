@@ -166,16 +166,22 @@ class BettingRecommender:
             from betting.injury_adjustment import (
                 adjustPredictionFrame, loadInjuries, logForwardPredictions,
             )
+            # The leakage drop removes date/teams; the adjuster and log need them.
+            context = game_features.copy()
+            for column in ('game_id', 'date', 'home_team', 'away_team'):
+                if column not in context.columns and column in game_info.columns:
+                    context[column] = game_info[column].to_numpy()
+
             self.getOdds('spread')
             season = self.preparer.getCurrentSeason()
             injuryData, injuries = loadInjuries(self.preparer, refresh=True)
             frames = {
-                'raw': game_features,
+                'raw': context,
                 'binary': adjustPredictionFrame(
-                    game_features, self.preparer, season, injury_frame=injuries,
+                    context, self.preparer, season, injury_frame=injuries,
                     mode='binary', refresh=False, log=False),
                 'prior': adjustPredictionFrame(
-                    game_features, self.preparer, season, injury_frame=injuries,
+                    context, self.preparer, season, injury_frame=injuries,
                     mode='prior', refresh=False, log=True),
             }
             predictions = {}
@@ -190,7 +196,7 @@ class BettingRecommender:
 
             try:
                 logForwardPredictions(
-                    game_features, predictions, injuryData, injuries,
+                    context, predictions, injuryData, injuries,
                     self.spreadModelVersion(),
                     Path(self.preparer.data_dir) / 'injury_data' / 'forward_predictions.csv')
             except Exception as exc:

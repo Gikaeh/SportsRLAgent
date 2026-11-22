@@ -164,3 +164,11 @@ real `data/basketball/injury_data/`.
   `data/basketball/injury_data/forward_predictions.csv`, one row per game per arm with the
   predicted margin, model version and each team's listed injuries. Recommendations use the
   `prior` arm. First slate: 6 games x 3 arms = 18 rows, model version 7.
+
+- **2026-11-22 injury mapping fixes:** ESPN returns QUESTIONABLE/DAY-TO-DAY while the
+  comment says "probable". `_mapInjuryStatus` now takes the description and maps that to
+  PROBABLE (0.9), while an OUT/DOUBTFUL status is never upgraded. Re-fetching produced
+  OUT 80 / QUESTIONABLE 26 / PROBABLE 4. `matchPlayerIDs` now builds its name map from all
+  27 player files, so players who have not appeared this season match by prior-season rows:
+  104 matched, 6 unmatched (rookies/two-way with no NBA rows; the adjuster falls back to
+  names).

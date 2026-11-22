@@ -246,20 +246,25 @@ class InjuryData:
             traceback.print_exc()
             return False
 
-    def _mapInjuryStatus(self, status):
-        status_upper = status.upper()
+    def _mapInjuryStatus(self, status, description=''):
+        status_upper = str(status).upper()
+        text = f"{status_upper} {str(description).lower()}"
+        # Never upgrade an OUT/DOUBTFUL from a comment like "likely out".
         if 'OUT' in status_upper:
             return 'OUT'
-        elif 'DOUBT' in status_upper:
+        if 'DOUBT' in status_upper:
             return 'DOUBTFUL'
-        elif 'QUESTION' in status_upper:
-            return 'QUESTIONABLE'
-        elif 'PROB' in status_upper:
+        # ESPN often returns QUESTIONABLE/DAY-TO-DAY and puts "probable" in the
+        # comment instead of a separate status.
+        if 'probable' in text:
             return 'PROBABLE'
-        elif 'DAY' in status_upper:
+        if 'QUESTION' in status_upper:
             return 'QUESTIONABLE'
-        else:
-            return 'OUT'
+        if 'PROB' in status_upper:
+            return 'PROBABLE'
+        if 'DAY' in status_upper:
+            return 'QUESTIONABLE'
+        return 'OUT'
 
     def refreshFromEspnFeed(self):
         """One request: ESPN's league-wide injury feed (all 30 teams).
@@ -283,12 +288,13 @@ class InjuryData:
                 name = athlete.get('displayName', '')
                 if not name:
                     continue
+                comment = injury.get('shortComment') or injury.get('longComment') or ''
                 rows.append({
                     'player_id': 0,
                     'player_name': name,
                     'team_abbreviation': team_abbr,
-                    'status': self._mapInjuryStatus(injury.get('status', '')),
-                    'injury_description': injury.get('shortComment') or injury.get('longComment') or '',
+                    'status': self._mapInjuryStatus(injury.get('status', ''), comment),
+                    'injury_description': comment,
                     'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 })
         if not rows:
@@ -317,9 +323,16 @@ class InjuryData:
                 print("No player data files found to match IDs")
                 return False
 
-            latest_file = player_files[-1]
-            print(f"Matching player IDs using: {latest_file.name}")
-            player_df = pd.read_csv(latest_file)
+            print(f"Matching player IDs using {len(player_files)} player files")
+            frames = []
+            for path in player_files:
+                try:
+                    frames.append(pd.read_csv(path, usecols=['PLAYER_ID', 'PLAYER_NAME']))
+                except (ValueError, pd.errors.EmptyDataError):
+                    continue
+            if not frames:
+                return False
+            player_df = pd.concat(frames, ignore_index=True).dropna(subset=['PLAYER_ID', 'PLAYER_NAME'])
 
             player_lookup = player_df[['PLAYER_ID', 'PLAYER_NAME']].drop_duplicates()
             player_lookup['PLAYER_NAME_NORMALIZED'] = player_lookup['PLAYER_NAME'].apply(self._normalizePlayerName)

@@ -805,3 +805,21 @@ games, 2021-22 is dropped (WH 57.6%, DK 54.5% at T from Dec 1) and 2022-23 .. 20
 This is provisional: phase 2 recomputes the rule on the pre-registered denominator (games with both model
 numbers), which this lines-only step did not open. Open for an Amendment before scoring: whether C5's 2022-23
 fit uses 2021-22 games if that season is dropped from grading. Doc: `docs/results/2026-11-23-et-v2-sanity.md`.
+
+### 2026-11-23: et-v2 phase 2 scored: none of the 9 candidates pass, so no et-v2
+**Why:** this is the pre-registered backtest of et-v2 (`2026-11-23-et-v2-preregistration.md`, `3970720`) on the
+Odds API history. **Amendment 1** (`0458f6b`) was committed before any outcome was loaded:
+- the 60% rule on games with both model numbers drops 2021-22 (WH 57.8%, DK 54.8%) and grades 2022-23 .. 2025-26
+  at `williamhill_us`;
+- C5's fit may use 2021-22 games with a WH line at T, because grading coverage doesn't limit which earlier games
+  inform a rule and there is no leakage;
+- quotes are matched per snapshot, pre-game only, and gp and the D-1 flag come from the warehouse games table.
+
+**Outcome:** no rule passes. Every rule fails the every-season test, and none survives Holm (smallest p 0.165).
+- C0, et-v1's cell at the 21:00 WH line, has pooled ROI -3.9% (CI -7.2 to -0.7) on 3,470 bets, losing in 3 of
+  4 seasons, including the 2025-26 tuning season.
+- C4 (+0.6%) and K2 (+3.6%) are positive pooled but below the volume floor and mixed by season.
+
+Per the pre-registration, **et-v1 continues unchanged** toward its 300-bet verdict, and there is no v2 from this
+data. Filters noticed afterwards (unders drain every rule, market-momentum rules) are exploratory and would need
+a new pre-registration plus forward data. Doc: `docs/results/2026-11-23-et-v2-results.md`.

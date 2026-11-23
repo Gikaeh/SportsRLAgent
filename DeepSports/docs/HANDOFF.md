@@ -46,7 +46,7 @@ Next: `deepsports moon grade` + `status` after the 08:00 sync. Owner: check the 
 (`circa status`, the lines file; the test reply fixture is synthetic); if `circa ingest` says `inbox blocked`,
 give uv's Python Full Disk Access; deploying BetDesk is still the owner's (`../BetDesk/docs/SETUP.md`).
 
-## Next session (state at 2026-11-23 ~02:00 PT)
+## Next session (state at 2026-11-23, after et-v2 phase 2)
 **et-v2 work is in progress.** et-v1 is unchanged and frozen: live 40-32-1 at the last grade, verdict at 300 bets.
 - **Research 2026-11-22.** Results are in `docs/results/2026-11-22-*`:
   - edge size barely predicts which pick wins;
@@ -59,9 +59,9 @@ give uv's Python Full Disk Access; deploying BetDesk is still the owner's (`../B
   - Event match rate 99.35%. Line agreement is fine (WH vs DraftKings at T: mean absolute 0.23).
   - By the 60% rule, 2021-22 is dropped and 2022-23 to 2025-26 are graded at `williamhill_us`.
   - That rule is **provisional**: it was measured on all D1 games. The pre-registration says games with both model numbers, so recompute it on that subset before scoring.
-- **Next: phase 2, score the 9 candidates exactly as pre-registered.** Use `src/deepsports/analysis/et_v2_lines.py`. Match per snapshot, and use only events that start after the snapshot.
-  - First write a dated Amendment for the open points: the subset coverage rule, and whether C5's fit may use 2021-22 games if that season is dropped. State that no outcomes have been seen yet.
-  - C4 and K2 will have low volume: WH covers only 4-48% of games at 15:00.
+- **Phase 2 is scored: none of the 9 pass, so there is no et-v2** (`docs/results/2026-11-23-et-v2-results.md`, branch `research/et-v2-scoring`, Amendment 1 `0458f6b` written before outcomes).
+  - C0 (et-v1's cell at the 21:00 WH line) is -3.9% ROI on 3,470 bets and loses in 3 of 4 seasons. et-v1 continues unchanged.
+  - Exploratory only: unders drain every rule; the market-momentum rules C4/K2 are the only positive ones. Either needs a new pre-registration plus forward data.
 - **Odds API credits: 41,680 left, usable until about 2026-12-23.** The owner wants them used. Proposed: an NBA 2022-23 to 2025-26 pull, totals and spreads at 21:00 + 09:00, about 34K, plus small live nightly college pulls. **Needs the owner's yes first.**
 - **To do:**
   - Grade the Nov 23 bets in `logs/college_basketball/betting/bets.csv`: 13 WH and 2 Circa, plus a $0.25 13-leg parlay and a $3 2-leg Circa parlay.

@@ -176,3 +176,17 @@ line are skipped. Applies from the 2026-11-19 evening picks on. The pre-register
 already qualifies on WH lines and is unchanged. **Why:** graded personal et-v1 bets Nov 15-18: WH 18-3
 (+1.0 pt avg vs DK close), Circa 4-14 (-0.8); Circa's "better" number was usually an off-market line the
 close moved past (`DeepSports/docs/results/2026-11-19-et-v1-book-split.md`). Revisit at ~100 bets.
+
+### 2026-11-23: To The Moon becomes the nightly lotto card (`lotto-v2`)
+Owner decision: small stakes for a big payout, several tickets a night even if each is a fraction of a dollar;
+test it, don't assume it. **What:** `deepsports moon lotto` builds, after the 21:00 et-v1 log, a card from
+tomorrow's et-v1 legs (college totals at William Hill's night-before line, so the 2026-11-19 WH rule holds), ranked
+by average edge: a $1 test ticket of legs 1-7 plus $0.25 7-leg spread tickets (18 from legs 1-9, each leaving out a
+different pair; 8 with 8 legs), at most $5.50 a night, different games only. Sent to Discord, logged once per date
+to `reports/moon/lotto/cards.jsonl` (append-only, notional) and graded from finals (`moon lotto grade`); placed
+tickets go in `logs/moon/bets.csv` as tier `lotto`. The 14:00 `mix` proposal message is retired; `moon propose` and
+the tiers stay runnable by hand. **Why:** a same-day investigation (`DeepSports/docs/results/2026-11-23-lotto-
+investigation.md`) found et-v1's same-night legs swept far above chance in 2022-23 to 2024-25 but not in 2021-22 or
+2025-26, with no per-leg edge; spreads, moneylines and NBA showed nothing. So the card is entertainment money and
+the forward test of that clustering, pre-registered in `DeepSports/docs/results/2026-11-23-lotto-v2-
+preregistration.md`. Spreads and moneylines are dropped from betting research (no edge, no clustering).

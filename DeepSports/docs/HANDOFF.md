@@ -38,6 +38,9 @@ reports in `docs/results/`. Model v1.1i (pre-tip injury reports) has no backtest
 points (2026-11-11) were dropped: no edge, ratings not face-valid; the code stays as research tooling.
 
 ## To The Moon (betting)
+**Since 2026-11-23 moon is the nightly lotto card** (root `docs/DECISIONS.md` 2026-11-23): the 21:00 job turns tomorrow's
+et-v1 legs into a $1 top-7 test ticket + 18 x $0.25 7-leg spread tickets (rule `lotto-v2`, pre-registered) → Discord + `reports/moon/lotto/cards.jsonl`; `deepsports moon lotto grade`.
+The 14:00 `mix` proposal message is retired; the text below describes it (still runnable by hand).
 `deepsports moon` (guide `docs/TO_THE_MOON.md`; why: root `docs/DECISIONS.md` 2026-11-13/14): proposals from the
 model-picks run, repriced at Circa's lines: OddsPapi's Circa feed (`deepsports books grab`, since 2026-11-14) plus the
 owner's screenshots (the `/circa` page on home Wi-Fi or the iCloud inbox; docs/PIPELINE.md, Circa), screenshots winning, sent to Discord with the picks (weekdays 14:00, weekends 08:00); the owner places every bet and logs it in the
@@ -63,7 +66,14 @@ give uv's Python Full Disk Access; deploying BetDesk is still the owner's (`../B
 - **Phase 2 is scored: none of the 9 pass, so there is no et-v2** (`docs/results/2026-11-23-et-v2-results.md`, branch `research/et-v2-scoring`, Amendment 1 `0458f6b` written before outcomes).
   - C0 (et-v1's cell at the 21:00 WH line) is -3.9% ROI on 3,470 bets and loses in 3 of 4 seasons. et-v1 continues unchanged.
   - Exploratory only: unders drain every rule; the market-momentum rules C4/K2 are the only positive ones. Either needs a new pre-registration plus forward data.
-- **Odds API credits: 41,676 left (2026-11-23), usable until about 2026-12-23.** The live capture uses ~2.6K through Dec 24. Owner (2026-11-23): college is the focus; an NBA 2022-23 to 2025-26 pull (~34K) only if a pre-registered NBA question exists by ~Dec 10-15, otherwise let the credits lapse.
+- **Lotto + betting-type investigation (2026-11-23):** `docs/results/2026-11-23-lotto-investigation.md`, `-overs-vs-unders.md`.
+  No parlay or side edge survives a check on new seasons; spreads and moneylines dropped. Lotto card = `lotto-v2`
+  (pre-registered sweep test, verdict at 150 qualifying nights).
+- **NBA night-before pull (owner OK 2026-11-23):** pre-registered `nt-v1` (`docs/results/2026-11-23-nba-totals-preregistration.md`,
+  commits f8ce5bc + 6bda7aa on branch `research/nba-totals-preregistration`) before the pull; totals only, 10 books,
+  -1@21:00 / 0@09:00 / 0@15:00, 2023-24 to 2025-26 (~19K credits; log `work/nba-totals-prereg-2026-11-23/pull.log`).
+  2026-27 to date is pulled later (its plan includes future days). Next: score nt-v1 exactly as written.
+- **Odds API credits:** about 22K left after the NBA pull, usable until about 2026-12-23; the live capture needs ~2.6K.
 - **To do:**
   - Grade the Nov 23 bets after the 2026-11-24 08:00 sync (games tip tonight) in `logs/college_basketball/betting/bets.csv`: 13 WH and 2 Circa, plus a $0.25 13-leg parlay and a $3 2-leg Circa parlay.
 

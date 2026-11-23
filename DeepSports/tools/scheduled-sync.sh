@@ -99,7 +99,7 @@ status=0
 # Models-only picks (watch-only; replaced the ensemble-agent vote 2026-11-13), once a day:
 # weekdays on the 14:00 run; Saturday and Sunday on the 08:00 run instead, since weekend games tip
 # from ~9 AM and Circa posts the day's college lines ~7 AM (owner, 2026-11-14). Once a day keeps one
-# picks run and one moon proposal per day. Non-fatal; posts its own Discord message.
+# picks run per day. Non-fatal; posts its own Discord message.
 # The vote can still be run by hand: tools/ensemble-daily.sh.
 hour=$((10#$(date +%H)))
 dow=$(date +%u)  # 6 = Saturday, 7 = Sunday

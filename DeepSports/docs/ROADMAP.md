@@ -113,6 +113,8 @@ at the end links to the dated results; the "why" for each step is in DECISIONS.m
   - [ ] Owner buys one month of The Odds API's 100K plan ($59): probe night-before coverage (~100 credits),
         then pull timestamped college totals (+ spreads, NBA) from `us` and `eu` (Pinnacle), cache, cancel
   - [ ] Backtest et-v1 against the timestamped 21:00 DraftKings and Pinnacle lines
+  - [ ] Score the et-v2 candidates exactly as pre-registered before the pull
+        ([pre-registration](results/2026-11-23-et-v2-preregistration.md)); sanity report first, deviations as amendments
 
 ### Integration with ManualBets
 - [ ] Merge step by step into one data source and one app; each step is proposed and logged in `../docs/DECISIONS.md` before it's built

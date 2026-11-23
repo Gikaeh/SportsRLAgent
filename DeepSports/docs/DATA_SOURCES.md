@@ -62,11 +62,13 @@ returns one item per sportsbook with `open`/`close`/`current` blocks and explici
   stats), so player points fall short of the team total (e.g. 401579052 SELA: players 67, score 77).
   Team totals and scores are right. 2024-25 has 1 such game. `deepsports check` reports them as
   known gaps (`has_noid`); don't use 2023-24 college player rows for team-level sums.
-- **7 college team-games are known points gaps (checked 2026-11-05; `deepsports check` warns on exactly these
+- **11 college team-games are known points gaps (checked 2026-11-05, 4 added 2026-11-23; `deepsports check` warns on exactly these
   team-games via `quality.KNOWN_POINTS_MISMATCH`, any other mismatch > 2 still fails),** all D1 vs non-D1 games
   where ESPN's own raw box disagrees with the score by more than 2 (e.g. 401597895 JWNC: players 15,
   score 61; 401722338 HAW: players 110, score 96): 401597895, 401597922, 401608976 (2023-24);
-  401720664, 401722030, 401722338, 401727325 (2024-25). Upstream; the stored rows match the raw data.
+  401720664, 401722030, 401722338, 401727325 (2024-25); 401377086 (both teams: ESPN lists one player on both boxes), 401483337, 401491692 (2021-22, 2022-23).
+  Upstream; the stored rows match the raw data. A stored box that ESPN later corrected (an early, incomplete
+  box, e.g. 401925079 on 2026-11-14) is not a known gap: refetch it with `deepsports boxscores --league ncaab --game ID`.
 
 What's available but not parsed yet (it's already in the raw zone for completed games):
 play-by-play, win probability, season series, quarter linescores.

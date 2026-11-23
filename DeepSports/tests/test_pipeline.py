@@ -337,8 +337,8 @@ def test_quality_known_points_mismatch_list():
     from deepsports.quality import KNOWN_POINTS_MISMATCH
 
     ids = {"401597895", "401597922", "401608976", "401720664", "401722030", "401722338",
-           "401727325"}  # fmt: skip
-    assert {g for g, _ in KNOWN_POINTS_MISMATCH} == ids and len(KNOWN_POINTS_MISMATCH) == 7
+           "401727325", "401377086", "401483337", "401491692"}  # fmt: skip
+    assert {g for g, _ in KNOWN_POINTS_MISMATCH} == ids and len(KNOWN_POINTS_MISMATCH) == 11
 
 
 def test_games_needing_core_odds_since_window(db):
@@ -350,3 +350,35 @@ def test_games_needing_core_odds_since_window(db):
     assert db.games_needing_core_odds(include_opening=True, since=after) == []
     got = db.games_needing_core_odds(include_opening=True, since=starts[-1])
     assert [r[1] for r in got] == [starts[-1]] * len(got) and got
+
+
+def test_collect_boxscores_game_ids_refetch_past_the_cache(tmp_path, db):
+    """`boxscores --game ID` replaces a stale stored box even though the game is complete."""
+    games, _ = parse_scoreboard(load("espn_scoreboard_final.json"))
+    db.upsert_games(games)
+    fixture = load("espn_summary_final.json")
+    stale = json.loads(json.dumps(fixture))
+    for team in stale["boxscore"]["players"]:
+        for a in team["statistics"][0]["athletes"]:
+            a["stats"] = []  # ESPN's early box: players listed, no stats yet
+    served = {"box": stale}
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        return httpx.Response(200, json=served["box"])
+
+    src = EspnNba(make_client(tmp_path, handler))
+    pipeline.collect_boxscores(src, db)  # fetches the stale box for every game lacking one
+    n_first = len(calls)
+
+    def total():
+        return db.con.execute(
+            "SELECT coalesce(sum(pts), 0) FROM player_game_stats WHERE game_id = '401909907'"
+        ).fetchone()[0]
+
+    assert total() == 0
+    served["box"] = fixture  # ESPN corrects the box later
+    pipeline.collect_boxscores(src, db, game_ids=["401909907"])
+    assert len(calls) == n_first + 1  # refetched although the cached summary is final
+    assert total() == 112 + 117

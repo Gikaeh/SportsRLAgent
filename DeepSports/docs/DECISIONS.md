@@ -753,3 +753,15 @@ Caesars pull came back empty (0 lines for 2026-11-16), and they have WH's openin
 the book Caesars stood in for, and no et-v1 bet had been logged yet, so the pre-registration is amended
 (its "Amendment 2026-11-16"): screenshot lines first, the Caesars feed for gaps, `line_source` on each bet.
 `books-evening.sh` now reads WH openers before the et-v1 log (Circa's after; recorded only).
+
+### 2026-11-22: venue altitude for college totals: proposed as watch-only `ncaab-v1.1alt`, not a change to `ncaab-v1`
+**Why:** the situational study found games at >= 1,200 m venues beat both models and the close; the owner
+approved testing altitude as a feature. **What:** walk-forward 2021-22 -> 2025-26 with the frozen v1 path,
+6 variants (4 feature sets, 2 post-hoc offsets). Altitude halves the model's under-shoot at high venues but
+total MAE gains are tiny and not significant (fails the MAE bar); the et-v1 cell gains +0.4 win pts / +0.8%
+ROI paired (all three opener seasons), from ~45 swapped bets a season. Approved by the owner 2026-11-22: variant
+`gd` (venue elevation + km climbed + km dropped, total model only) as hidden watch-only `ncaab-v1.1alt`, with a
+shadow `et-v1-alt` log beside et-v1 and a verdict at the end of the 2026-27 regular season. `ncaab-v1`,
+`models/ncaab_v1`, et-v1 and the live predict pipeline are unchanged; et-v1 keeps `ncaab-v1` until its
+300-bet verdict. Feature code: `src/deepsports/analysis/altitude.py` (tested). Result:
+`docs/results/2026-11-22-altitude-feature.md`.

@@ -1,4 +1,4 @@
-"""`deepsports early-totals log|grade|status`: the `et-v1` night-before college totals forward test.
+"""`deepsports early-totals log|grade|status|context`: the `et-v1` night-before totals forward test.
 
 Watch-only (never places or sizes a bet). Rule and pass/fail are pre-registered in
 docs/results/2026-11-15-early-totals-preregistration.md; logic in `analysis/early_totals.py`.
@@ -7,6 +7,10 @@ Files under `<REPORTS_DIR>/early-totals/` (append-only, no stakes):
 - `bets.jsonl`: one row per qualifying bet; the first row per (rule version, game) is the bet.
 - `runs.jsonl`: one row per `log` run (also nights with no bet, missing inputs or a busy warehouse).
 - `grade.json`: the latest `grade` output (derived; rewritten each time).
+- `context.jsonl`: market context of each et-v1 / et-v1-alt bet (opener, DraftKings at bet time,
+  Caesars feed, WH and Circa screenshots; `analysis/early_totals_context.py`), written by its own
+  `context --log` step after the 21:00 log and the Circa read; first row per (rule version, game)
+  frozen. Describe-only: et-v1's files, output and exit code never depend on it.
 - `alt/`: the same three files for the `et-v1-alt` shadow (`analysis/early_totals_alt.py`), logged
   by the same `log` run after et-v1 (`--no-alt` skips it) and graded with `grade --alt`. A shadow
   failure prints to stderr and never changes et-v1's files, output or exit code.
@@ -32,12 +36,14 @@ import duckdb
 from deepsports import config
 from deepsports.analysis import early_totals as et
 from deepsports.analysis import early_totals_alt as eta
+from deepsports.analysis import early_totals_context as etc
 from deepsports.store import PREDICTION_RESULTS_SQL
 
 OUT_DIR = config.REPORTS_DIR / "early-totals"
 MB_EXPORT = config.ROOT / ".sync" / "manualbets-export.json"
 BUSY_EXIT = 3
 ALT_SUBDIR = "alt"
+CONTEXT_FILE = "context.jsonl"
 
 
 def _paths(out_dir: Path) -> dict[str, Path]:
@@ -388,6 +394,125 @@ def cmd_grade_alt(args: argparse.Namespace) -> int:
     return 0
 
 
+# ---------- market context (describe-only; its own command, never part of `log`) ----------
+
+SNAPS_SQL = """
+SELECT game_id, source, provider, captured_at, over_under FROM odds_snapshots
+WHERE source IN ('opening', 'pregame') AND over_under IS NOT NULL AND game_id IN ({ids})
+"""
+
+
+def load_snaps(con: duckdb.DuckDBPyConnection, game_ids: Sequence[str]) -> dict[str, list[dict]]:
+    """Opening + pregame snapshot rows per game."""
+    if not game_ids:
+        return {}
+    sql = SNAPS_SQL.format(ids=", ".join("?" for _ in game_ids))
+    out: dict[str, list[dict]] = {}
+    for gid, src, prov, cap, ou in con.execute(sql, list(game_ids)).fetchall():
+        out.setdefault(gid, []).append(
+            {"source": src, "provider": prov, "captured_at": cap, "over_under": ou}
+        )
+    return out
+
+
+def _all_bets(out_dir: Path) -> list[dict]:
+    v1 = read_jsonl(_paths(out_dir)["bets"])
+    alt = read_jsonl(_paths(out_dir / ALT_SUBDIR)["bets"])
+    return [b for b in v1 if b.get("rule_version") == et.RULE_VERSION] + [
+        b for b in alt if b.get("rule_version") == eta.ALT_RULE_VERSION
+    ]
+
+
+def day_lines(game_date: date) -> tuple[dict | None, dict | None, dict | None]:
+    """(WH screenshots, Caesars feed, Circa screenshots): a game day's night-before payloads."""
+    from deepsports.books import grab
+    from deepsports.circa import load_lines
+
+    return (load_lines(game_date, et.BOOK, early=True), grab.load_early(et.BOOK, game_date),
+            load_lines(game_date, "circa", early=True))  # fmt: skip
+
+
+def cmd_context_log(args: argparse.Namespace) -> int:
+    """Append a context row for each logged bet that lacks one: one game day's bets (default
+    tomorrow), or with --backfill every logged bet (rows flagged backfilled)."""
+    from deepsports.circa.storage import require_mounted
+
+    now = datetime.now(UTC)
+    out_dir = require_mounted(Path(args.out_dir))
+    path = out_dir / CONTEXT_FILE
+    bets = _all_bets(out_dir)
+    label = "backfill"
+    if not args.backfill:
+        day = args.date or (now.astimezone(config.LOCAL_TZ).date() + timedelta(days=1))
+        label = day.isoformat()
+        bets = [b for b in bets if b.get("game_date") == label]
+    todo = etc.missing(bets, read_jsonl(path))
+    if not todo:
+        print(f"early-totals context {label}: 0 bets need a row")
+        return 0
+    db = _open(args.lock_wait)
+    if db is None:
+        print(f"early-totals context {label}: warehouse busy (a writer holds the lock);"
+              " nothing written")  # fmt: skip
+        return BUSY_EXIT
+    try:
+        snaps = load_snaps(db.con, sorted({str(b["game_id"]) for b in todo}))
+    finally:
+        db.close()
+    lines = {d: day_lines(date.fromisoformat(d)) for d in sorted({b["game_date"] for b in todo})}
+    rows, errors = [], 0
+    for b in todo:
+        try:
+            rows.append(etc.context_row(b, snaps.get(str(b["game_id"]), []),
+                                        *lines[b["game_date"]], now, args.backfill))  # fmt: skip
+        except Exception as e:  # one bad bet never blocks the others
+            errors += 1
+            print(f"early-totals context: {b.get('rule_version')} {b.get('game_id')}: {e!r}",
+                  file=sys.stderr)  # fmt: skip
+    with (out_dir / ".lock").open("a") as lk:
+        fcntl.flock(lk, fcntl.LOCK_EX)
+        new = etc.missing(rows, read_jsonl(path))
+        append_jsonl(path, new)
+    dk = sum(r["dk_total"] is not None for r in new)
+    ci = sum(r["circa_total"] is not None for r in new)
+    err = f", {errors} errors" if errors else ""
+    print(f"early-totals context {label}: {len(new)} rows written"
+          f" (DK at bet time {dk}, Circa {ci}{err})")  # fmt: skip
+    return 0
+
+
+def cmd_context(args: argparse.Namespace) -> int:
+    """Describe-only view: win % / CLV split by momentum and by Circa vs WH. Prints only."""
+    from deepsports.analysis.ensemble_bets import load_finals
+    from deepsports.analysis.model_picks import load_closes
+
+    if args.log or args.backfill:
+        return cmd_context_log(args)
+    out_dir = Path(args.out_dir)
+    rule = eta.ALT_RULE_VERSION if args.alt else et.RULE_VERSION
+    bets = [b for b in _all_bets(out_dir) if b["rule_version"] == rule]
+    rows = read_jsonl(out_dir / CONTEXT_FILE)
+    ids = sorted({str(b["game_id"]) for b in bets})
+    db = _open(args.lock_wait)
+    if db is None:
+        print("early-totals context: warehouse busy (a writer holds the lock); try again later")
+        return BUSY_EXIT
+    try:
+        finals = load_finals(db.con, ids)
+        closes = load_closes(db.con, ids)
+        snaps = load_snaps(db.con, ids)
+    finally:
+        db.close()
+    openers = {}
+    for g in ids:
+        op = etc.market_at(snaps.get(g, []), None)["opener_total"]
+        if op is not None:
+            openers[g] = op
+    s = etc.summarize(_grade_rows(bets, finals, closes), rows, openers, rule)
+    print(json.dumps(s, indent=1, default=str) if args.json else etc.render(s))
+    return 0
+
+
 def cmd_status(args: argparse.Namespace) -> int:
     if args.alt:
         p = _paths(Path(args.out_dir) / ALT_SUBDIR)
@@ -427,11 +552,23 @@ def build_parser() -> argparse.ArgumentParser:
     gr.add_argument("--json", action="store_true")
     st = sub.add_parser("status", help="files only: bets logged and the last runs")
     st.add_argument("--runs", type=int, default=5)
-    for s in (gr, st):
+    cx = sub.add_parser(
+        "context",
+        help="bets' market context: --log/--backfill write rows, else a describe-only split",
+    )
+    cx.add_argument("--log", action="store_true", help="write rows for one game day's bets")
+    cx.add_argument(
+        "--backfill", action="store_true", help="rows for every logged bet lacking one (backfilled)"
+    )
+    cx.add_argument(
+        "--date", type=date.fromisoformat, help="game day for --log (default: tomorrow)"
+    )
+    cx.add_argument("--json", action="store_true")
+    for s in (gr, st, cx):
         s.add_argument("--alt", action="store_true", help="the et-v1-alt shadow (paired vs et-v1)")
-    for s in (lg, gr, st):
+    for s in (lg, gr, st, cx):
         s.add_argument("--out-dir", default=str(OUT_DIR))
-    for s in (lg, gr):
+    for s in (lg, gr, cx):
         s.add_argument("--lock-wait", type=float, default=20.0, help="seconds to wait for a writer")
     return ap
 
@@ -443,4 +580,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     except config.DataDirUnavailable as e:
         print(f"early-totals: {e}", file=sys.stderr)
         return 2
-    return {"log": cmd_log, "grade": cmd_grade, "status": cmd_status}[args.cmd](args)
+    return {"log": cmd_log, "grade": cmd_grade, "status": cmd_status, "context": cmd_context}[
+        args.cmd
+    ](args)

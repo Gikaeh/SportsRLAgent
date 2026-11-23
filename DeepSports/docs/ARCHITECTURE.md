@@ -61,6 +61,9 @@ diagram in the same change (see CLAUDE.md).
   forward test (`analysis/early_totals.py`; rule in docs/results/2026-11-15-early-totals-preregistration.md),
   and in the same command its altitude shadow `et-v1-alt` (`analysis/early_totals_alt.py`, the `ncaab-v1.1alt`
   total in place of `ncaab-v1`'s; own files under `reports/early-totals/alt/`, never touching et-v1's).
+  After Circa's night-before read, `early-totals context --log` (`analysis/early_totals_context.py`, its own
+  process) records each bet's market context (opener, DraftKings at the bet line's time, Caesars feed, WH +
+  Circa screenshots) in `reports/early-totals/context.jsonl`; describe-only.
   Watch-only, append-only records under `reports/early-totals/`, no stakes.
 - Line capture (`tools/odds-snapshot.sh`, launchd `com.deepsports.odds` every 30 min at :15/:45):
   `deepsports odds-snapshot` fetches today's and tomorrow's scoreboards (NBA + college) and writes

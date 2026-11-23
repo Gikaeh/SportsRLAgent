@@ -299,6 +299,31 @@ closing line, positive = the close moved toward the bet; spread/total only, NULL
 per-rule record, ROI with a day-clustered bootstrap CI, drawdown and CLV
 (`deepsports paper report`).
 
+## Files outside the warehouse
+
+### `reports/early-totals/context.jsonl`
+Market context of each logged `et-v1` and `et-v1-alt` bet (`analysis/early_totals_context.py`,
+written by `deepsports early-totals context --log|--backfill`; docs/PIPELINE.md). Append-only, one
+JSON object per line, key (`rule_version`, `game_id`); the first row per key is frozen. No stakes.
+Describe-only: no rule reads it.
+| Field | Notes |
+|---|---|
+| `context_version` | 1 |
+| `rule_version`, `game_id`, `game_date`, `side`, `line`, `line_source` | Copied from the bet row |
+| `written_at`, `backfilled` | When the row was written; `true` for `--backfill` rows (bets logged before the step existed) |
+| `bet_time`, `bet_time_from` | When the bet line was seen: the WH screenshot `book_read_at` (screenshot lines), else the Caesars feed `book_grabbed_at`, else `logged_at` |
+| `opener_total`, `opener_provider` | ESPN opener (`odds_snapshots` `opening`, latest row). NULL the night before: the warehouse fetches opening rows only once the game is final |
+| `first_pregame_total`, `first_pregame_at` | First `pregame` capture at or before `bet_time` (the opener's stand-in; equal to it in ~90% of games) |
+| `dk_total`, `dk_provider`, `dk_captured_at`, `dk_age_min` | Latest `pregame` capture (ESPN scoreboard, DraftKings) at or before `bet_time`, and its age in minutes |
+| `feed_total`, `feed_price`, `feed_grabbed_at` | Caesars night-before feed (`books/williamhill/early/`) for the bet's side |
+| `wh_shot_total`, `wh_shot_price`, `wh_read_at` | WH night-before screenshot (`williamhill/lines/early/`) for the bet's side |
+| `circa_total`, `circa_price`, `circa_read_at` | Circa night-before screenshot (`circa/lines/early/`) for the bet's side; it can be read after `bet_time` |
+| `momentum`, `momentum_from` | s × (`dk_total` - opener), s = +1 over / -1 under; > 0 = the market moved toward the pick. Base: `opening` if known, else `first_pregame` |
+| `wh_minus_dk`, `wh_better_than_dk` | `line` - `dk_total`; s × (`dk_total` - `line`) (> 0 = the bet line beat DraftKings) |
+| `circa_minus_wh`, `circa_better_than_wh` | `circa_total` - `line`; s × (`line` - `circa_total`) (> 0 = Circa's number was better for the pick) |
+Totals outside the league's sane range are ignored. The `context` view re-bases `momentum` on the
+ESPN opener once the warehouse has it (a fixed pre-bet number, fetched after the game).
+
 ## Migrations
 `Store` compares every existing table's columns and primary key with `TABLES` in store.py. When
 they differ (a warehouse written by older code), the first **writer** open rebuilds those tables

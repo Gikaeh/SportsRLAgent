@@ -235,7 +235,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser(
         "early-totals",
-        help="night-before college totals forward test et-v1: log|grade|status (watch-only;"
+        help="night-before college totals forward test et-v1: log|grade|status|context (watch-only;"
         " `deepsports early-totals -h`)",
         add_help=False,
     )

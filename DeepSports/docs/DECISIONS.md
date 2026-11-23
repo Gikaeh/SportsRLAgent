@@ -792,3 +792,16 @@ our favor) and 2 combinations (C1+C6, C3+C4), graded at the 21:00 WH price over 
 > 0 in every season with >= 100 bets and pooled win % above break-even after Holm across all 9; practical only
 with >= 150 bets a season. If none pass, et-v1 continues and there is no v2. et-v1 and its live test are
 unchanged. Doc: `docs/results/2026-11-23-et-v2-preregistration.md`; deviations go in its Amendment section.
+
+### 2026-11-23: et-v2 phase 1, lines-only sanity checks (before grading)
+**Why:** the pre-registration requires the data checks on lines only, committed before any candidate is scored.
+**What:** coverage, timestamps, event matching, line agreement and drops on the 2,916 Odds API snapshots, read
+with the new `analysis/et_v2_lines.py` (reused by phase 2). Outcomes were not loaded. Findings and choices:
+(1) snapshots include in-play games, so only events starting after the snapshot time count as quotes;
+(2) the first match pass was 96.1%; vendor names of renamed schools (Fort Wayne, Appalachian St, UMKC, Houston
+Baptist, Texas A&M-Commerce, Dixie State, ...) were added as aliases, giving 99.35%; (3) no line-agreement pair
+is near the 2-pt bug threshold (WH vs DraftKings at T: mean abs 0.23); (4) under the 60% rule, computed on all D1
+games, 2021-22 is dropped (WH 57.6%, DK 54.5% at T from Dec 1) and 2022-23 .. 2025-26 grade at `williamhill_us`.
+This is provisional: phase 2 recomputes the rule on the pre-registered denominator (games with both model
+numbers), which this lines-only step did not open. Open for an Amendment before scoring: whether C5's 2022-23
+fit uses 2021-22 games if that season is dropped from grading. Doc: `docs/results/2026-11-23-et-v2-sanity.md`.

@@ -46,23 +46,27 @@ Next: `deepsports moon grade` + `status` after the 08:00 sync. Owner: check the 
 (`circa status`, the lines file; the test reply fixture is synthetic); if `circa ingest` says `inbox blocked`,
 give uv's Python Full Disk Access; deploying BetDesk is still the owner's (`../BetDesk/docs/SETUP.md`).
 
-## Next session (after 2026-11-19)
-Historical data plan (ROADMAP, Data; budget in `docs/research/historical-data-plan.md`):
-- Loaded 2026-11-19 (job `/Volumes/ExFATStorag/DeepSports/jobs/ncaab-history-2021-23.sh`, log next to it): college
-  2021-22 (6,387 games, closing lines 92%) + 2022-23 (6,261 games, 94%); `check` clean. ESPN has only closing lines
-  (DraftKings) for these seasons, no openers, so they can't test et-v1 vs the opener.
-- Done (uncommitted): `deepsports torvik` (Barttorvik 2014-15 → 2024-25 via cbbdata; row D includes day D's games,
-  join on <= D-1; no 2025-26+, owner: leave it); `deepsports odds-api-history plan|probe|pull|status|live` (built, not run).
-- Rebuilt 2026-11-20: DS + MB college walk-forward 2021-12 → 2025-10 (`docs/results/2026-11-20-college-walkforward-older-seasons.md`).
-  et-v1's cell wins 57.0% vs the opener in 2025-26 only; 2023-24 52.6%, 2024-25 51.2%, all CIs span 0. et-v1's forward test continues.
-  Follow-up (same doc): the line moves ~1 pt toward the models' side every season, so the edge depends on timing.
-  Live et-v1 so far (32 bets with opener + close): 21:00 WH line = ESPN opener on average, open->close move only +0.03.
-- Open question: how much of the move is gone by 18:00-21:00 (owner, 2026-11-20). The Odds API month answers it; option:
-  also log the line at screenshot-read time.
-- Next: owner decides whether the Odds API month is still worth it given that result. If yes, the owner buys the
-  month with **their own new key** (not ManualBets' key) into `~/.config/deepsports/oddsapi.key` (mode 600).
-  Recommended scope: 10 named books (`--bookmakers`), college totals+spreads 21:00 + 09:00 PT, NBA night-before only
-  (~51K of 100K credits); probe first. Then commit on a branch (`feature/historical-data`) + PR.
+## Next session (state at 2026-11-23 ~02:00 PT)
+**et-v2 work is in progress.** et-v1 is unchanged and frozen: live 40-32-1 at the last grade, verdict at 300 bets.
+- **Research 2026-11-22.** Results are in `docs/results/2026-11-22-*`:
+  - edge size barely predicts which pick wins;
+  - no situational factor explains wins, but altitude held;
+  - college injuries add nothing;
+  - live CLV from bet time is about 0.
+- **Merged** (PRs #40-#44): the venue table, the watch-only altitude shadow `ncaab-v1.1alt` / `et-v1-alt` (first logs from the 21:00 run on 11-23), the et-v2 pre-registration (`docs/results/2026-11-23-et-v2-preregistration.md`, commit 3970720) and the market context log.
+- **Odds API historical pull is done.** The owner's own key is at `~/.config/deepsports/oddsapi.key`. It holds 2,916 college snapshots, 2021-22 to 2025-26, at -1@15:00, -1@18:00, -1@21:00 and 0@09:00 PT, from 10 books, totals and spreads. They live in `data/raw/oddsapi/historical/` on the external drive, which is the only copy (the owner is OK with that).
+- **Phase 1, the lines-only sanity report, is done** (`docs/results/2026-11-23-et-v2-sanity.md`, branch `research/et-v2-sanity`; check its PR):
+  - Event match rate 99.35%. Line agreement is fine (WH vs DraftKings at T: mean absolute 0.23).
+  - By the 60% rule, 2021-22 is dropped and 2022-23 to 2025-26 are graded at `williamhill_us`.
+  - That rule is **provisional**: it was measured on all D1 games. The pre-registration says games with both model numbers, so recompute it on that subset before scoring.
+- **Next: phase 2, score the 9 candidates exactly as pre-registered.** Use `src/deepsports/analysis/et_v2_lines.py`. Match per snapshot, and use only events that start after the snapshot.
+  - First write a dated Amendment for the open points: the subset coverage rule, and whether C5's fit may use 2021-22 games if that season is dropped. State that no outcomes have been seen yet.
+  - C4 and K2 will have low volume: WH covers only 4-48% of games at 15:00.
+- **Odds API credits: 41,680 left, usable until about 2026-12-23.** The owner wants them used. Proposed: an NBA 2022-23 to 2025-26 pull, totals and spreads at 21:00 + 09:00, about 34K, plus small live nightly college pulls. **Needs the owner's yes first.**
+- **To do:**
+  - Grade the Nov 23 bets in `logs/college_basketball/betting/bets.csv`: 13 WH and 2 Circa, plus a $0.25 13-leg parlay and a $3 2-leg Circa parlay.
+  - Clean up the merged agent worktrees under `.claude/worktrees/`.
+  - Fix the pre-existing `deepsports check` failure (6 team-games where player points don't sum to the score).
 
 ## Known gaps / gotchas
 - ESPN gaps (warnings in `deepsports check`): 8 NBA playoff summaries 404; 29 NBA team-games and ~430 college

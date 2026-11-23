@@ -50,3 +50,9 @@ also reported for every season as secondary, descriptive results.
 Monthly refits are staler than the live daily model, which makes the test conservative. `williamhill_us` is
 Caesars' out-of-state feed, not WH NV. NBA totals may post late, so -1@21:00 coverage is uncertain; the coverage
 fallback above handles it.
+
+## Amendment 1 (2026-11-23, before the pull; only 13 probe snapshots on disk, none graded)
+Probe snapshots (8 game days) showed WH NBA totals on most days, but the probe's coverage print lists at most 8 books,
+so a missing WH couldn't be ruled out. Added rule: if a season's WH coverage is below 60% at both -1@21:00 and
+0@09:00, that season is graded at `draftkings` at -1@21:00 (or 0@09:00 by the same 60% rule), and is reported as a
+DraftKings season. Nothing else changes.

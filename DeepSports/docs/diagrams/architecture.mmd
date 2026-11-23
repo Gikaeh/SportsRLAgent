@@ -43,12 +43,13 @@ flowchart TB
     MBEXPORT -->|"ssh + scp: NBA"| RPI
     ODDSJOB["tools/odds-snapshot.sh<br/>launchd every 30 min (:15 · :45)<br/>skips if the writer lock is held"]
     PRETIPJOB["tools/pretip.sh<br/>launchd every 30 min (:20 · :50)<br/>NBA games tipping in 5-100 min<br/>skips if the writer lock is held"]
+    OALIVEJOB["tools/oddsapi-live.sh<br/>launchd 09:00 + every 30 min 12:00-21:30<br/>~84 credits/day · until 2026-12-24 · reserve 2000<br/>files only, never a writer<br/>18:30 · 19:00 · 19:30 → momentum-freeze"]
     SYNCF -->|read| SYNC
   end
 
   subgraph PIPE["Data collection: src/deepsports"]
     direction LR
-    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|table|grade · model-picks run|grade ·<br/>moon · circa read|ingest|status · books grab|status · torvik fetch|map|status ·<br/>venues fetch|build|status · odds-api-history plan|probe|pull|status ·<br/>early-totals · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
+    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|table|grade · model-picks run|grade ·<br/>moon · circa read|ingest|status · books grab|status · torvik fetch|map|status ·<br/>venues fetch|build|status · odds-api-history plan|probe|pull|status|live ·<br/>momentum-freeze · early-totals · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
     PIPELINE --> SRC["sources/espn.py<br/>EspnBasketball(league)<br/>site + core endpoints"] --> HTTP["http.py PoliteClient<br/>1 req/s · retry/backoff"]
     PIPELINE --> PARSE["parse_espn.py<br/>pure raw → rows"] --> STORE["store.py<br/>schema + upserts"]
     QUAL["quality.py<br/>data checks"]
@@ -56,8 +57,9 @@ flowchart TB
     BOOKSM["books/ · books grab|status (--early)<br/>OddsPapi: Circa + Caesars (as William Hill)<br/>~3 requests/day · match to games (brief read-only open)"]
     ETOT["analysis/early_totals · early-totals log|grade|status|context<br/>pre-registered et-v1: college totals vs night-before Caesars<br/>+ shadow et-v1-alt (early_totals_alt, ncaab-v1.1alt total; grade --alt)<br/>+ market context per bet (early_totals_context, describe-only)<br/>reports/early-totals/ + alt/ + context.jsonl (append-only, no stakes)"]
     TORVIK["sources/cbbdata.py · torvik_cli.py<br/>torvik fetch|map|status · Barttorvik daily ratings<br/>Parquet per season · pure parser · team map<br/>files only, no DuckDB (table planned)"]
-    OAH["sources/oddsapi_history.py · oddsapi_cli.py<br/>odds-api-history plan|probe|pull|status<br/>night-before + morning snapshots · credit reserve<br/>pure parser · files only, no DuckDB (table planned)"]
+    OAH["sources/oddsapi_history.py · oddsapi_cli.py<br/>odds-api-history plan|probe|pull|status|live<br/>night-before + morning snapshots · credit reserve<br/>live capture: college + NBA, 10 books, 30-min slots<br/>pure parsers (+ sources/oddsapi_live.py) · files only, no DuckDB (table planned)"]
     VENUES["venue_geo.py · venues_cli.py · sources/geonames.py<br/>venues fetch|build|status · offline after 2 downloads<br/>backfill games.venue_id from cached scoreboards<br/>geocode city → lat/lon · elevation · IANA tz"]
+    MFREEZE["momentum_freeze.py · momentum-freeze<br/>tomorrow's college DS predictions (read-only open)<br/>+ copy of .sync/manualbets-export.json<br/>write-once, momentum forward test inputs at T"]
     CIRCA["circa/ · circa read|ingest|status<br/>iCloud inbox ingest · headless Claude transcribes<br/>validate lines · match to games (brief read-only open)<br/>no DuckDB table"]
   end
 
@@ -67,7 +69,8 @@ flowchart TB
     DB[("deepsports.duckdb (league-aware keys)<br/>games · box scores · odds + prices · injuries<br/>venues · team_home_venues · team_game_context<br/>predictions · paper_bets<br/>NBA 2021-22 → today · NCAAB 2021-22 → today")]
     CIRCAFS[("circa|williamhill/screenshots/[early/]YYYY-MM-DD/<br/>circa|williamhill/lines/[early/]YYYY-MM-DD.json")]
     BOOKSFS[("books/circa|williamhill/YYYY-MM-DD.json<br/>books/raw/")]
-    OAHFS[("raw/oddsapi/historical/sport/markets/regions/<br/>UTC-stamp.json.gz + ledger.jsonl")]
+    OAHFS[("raw/oddsapi/historical/sport/markets/regions/<br/>UTC-stamp.json.gz + ledger.jsonl<br/>raw/oddsapi/live/sport/UTC-slot.json.gz + ledger.jsonl")]
+    MFREEZEFS[("reports/momentum-forward/frozen/D/HHMM/<br/>ds_predictions.json · manualbets-export.json + meta")]
     GEOFS[("raw/geonames/cities500.zip · US.zip<br/>GeoNames gazetteer dumps")]
     TORVIKFS[("raw/cbbdata/torvik_archive/YYYY.parquet<br/>2015-2025 · config/torvik_teams.csv")]
   end
@@ -129,7 +132,7 @@ flowchart TB
     ODDSPAPI[[OddsPapi v4<br/>free tier 250 req/month]]
     GEONAMES[[GeoNames dumps<br/>download.geonames.org · keyless · CC BY]]
     CBBDATA[[cbbdata API<br/>Barttorvik archive · free key<br/>stops at 2024-25]]
-    ODDSAPI[["The Odds API v4 historical<br/>paid month planned (100K credits)"]]
+    ODDSAPI[["The Odds API v4 historical + live<br/>owner's paid month (100K credits, to ~2026-12-23)"]]
     CLAUDEHL[[headless claude -p<br/>Sonnet · Read only]]
   end
 
@@ -195,8 +198,12 @@ flowchart TB
   TORVIKFS -.->|"planned: torvik_ratings table,<br/>as_of_date ≤ D-1 features"| DB
   MPDAILY -->|"books grab"| CLI
   CLI --> OAH
-  OAH -.->|"historical/odds?date=T (paid month)"| ODDSAPI
-  OAH -->|"snapshot per timestamp"| OAHFS
+  OAH -->|"historical/odds?date=T · sports/odds (live)"| ODDSAPI
+  OAH -->|"snapshot per timestamp · live per slot"| OAHFS
+  OALIVEJOB -->|"odds-api-history live"| CLI
+  OALIVEJOB -->|"18:30 · 19:00 · 19:30"| MFREEZE
+  DB -->|"read-only: predictions"| MFREEZE
+  MFREEZE -->|"write-once"| MFREEZEFS
   OAHFS -.->|"planned: odds_api_lines table"| DB
   USER -->|"screenshots"| ICLOUD
   USER -->|"screenshots (/circa page, home Wi-Fi)"| API
@@ -211,5 +218,5 @@ flowchart TB
   BOOKSFS -->|"Circa + WH prices on the top 5"| MPICKS
 
   classDef planned stroke-dasharray: 5 5
-  class NONE,ODDSAPI planned
+  class NONE planned
   BETTOR -.->|"curl -s (read only)"| API

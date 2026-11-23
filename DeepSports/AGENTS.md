@@ -38,6 +38,8 @@ a copy or wait). Cross-cutting changes go back to the orchestrator.
 | read API + web server | `deepsports serve` (`src/deepsports/api/`) |
 | scheduled sync | `tools/scheduled-sync.sh` + `tools/launchd/` |
 | 30-min pregame line capture | `deepsports odds-snapshot` + `tools/odds-snapshot.sh` (launchd `com.deepsports.odds`) |
+| The Odds API live line capture (owner's key, college + NBA totals/spreads, 10 books, ~84 credits/day, until 2026-12-24; files only) | `deepsports odds-api-history live` + `tools/oddsapi-live.sh` (launchd `com.deepsports.oddsapi-live`, 09:00 + every 30 min 12:00-21:30); rows via `src/deepsports/sources/oddsapi_live.py` |
+| momentum forward-test freeze (read-only, write-once: tomorrow's college DS predictions + MB export copy at 18:30/19:00/19:30) | `deepsports momentum-freeze` (`src/deepsports/momentum_freeze.py`), run by `tools/oddsapi-live.sh` |
 | pre-tip injury refresh + v1.1i predictions | `deepsports pretip` + `tools/pretip.sh` (launchd `com.deepsports.pretip`, :20/:50) |
 | diagram renderer | `tools/diagram.sh` |
 | paper-trade log (watch-only) | `deepsports paper log \| report` (`src/deepsports/analysis/paper.py`) |

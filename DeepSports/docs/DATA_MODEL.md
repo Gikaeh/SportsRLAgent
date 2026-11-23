@@ -324,6 +324,27 @@ Describe-only: no rule reads it.
 Totals outside the league's sane range are ignored. The `context` view re-bases `momentum` on the
 ESPN opener once the warehouse has it (a fixed pre-bet number, fetched after the game).
 
+### `reports/momentum-forward/frozen/<D>/<HHMM>/`
+Model inputs of the momentum forward test frozen at T (`momentum_freeze.py`, `deepsports momentum-freeze`,
+run by `tools/oddsapi-live.sh` after the 18:30, 19:00 and 19:30 PT captures; pre-registration
+`docs/results/2026-11-23-momentum-forward-preregistration.md`). `D` = the game day (tomorrow, Pacific, when
+run), `HHMM` = the local 30-min slot. **Write-once:** a file that exists is never replaced (a re-run in the
+same slot skips it); nothing is ever appended or edited. No stakes.
+| File | Contents |
+|---|---|
+| `ds_predictions.json` | `{frozen_at (UTC ISO), game_day, versions: [ncaab-v1, ncaab-v1-early, ncaab-v1.1alt], games: [{game_id, start_time_utc, state, predictions: [{game_id, model_version, pred_total, created_at}]}]}`: every college game (season type 2/3) whose Eastern or Pacific date is D, with its current `predictions` rows (`model='v1'`) for those versions; `predictions` may be empty. Graders keep only rows with `created_at` <= T |
+| `manualbets-export.json` | Byte copy of `DeepSports/.sync/manualbets-export.json` at T (the MB total is `ncaab.games[].model.total`) |
+| `manualbets-export.meta.json` | `{source, mtime (UTC ISO), size, sha256, created_at (the export's own), copied_at}` |
+A missing file means that part failed at T (one line in `oddsapi-live.log`: warehouse busy after one retry, or
+no export).
+
+### `data/raw/oddsapi/live/<sport>/<UTC slot>.json.gz`
+The Odds API live capture (`deepsports odds-api-history live`; DATA_SOURCES.md). Envelope `{timestamp,
+snapshot_ts (both = the request time, UTC), sport, markets, scope, credits_last, credits_remaining, data:
+[events as the API returns them, every upcoming event incl. next-day games]}`; one file per league per 30-min
+slot, never replaced. `live/ledger.jsonl`: one line per call (`fetched_at`, `snapshot_ts`, `slot`, `sport`,
+`markets`, `scope`, `file`, `events`, `rows`, `last`, `used`, `remaining`). Rows: `sources/oddsapi_live.py`.
+
 ## Migrations
 `Store` compares every existing table's columns and primary key with `TABLES` in store.py. When
 they differ (a warehouse written by older code), the first **writer** open rebuilds those tables

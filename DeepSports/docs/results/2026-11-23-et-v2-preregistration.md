@@ -122,3 +122,6 @@ The sanity report is written and committed before the grading script is run.
 ## Commit record
 This document was committed before the Odds API pull; its commit hash is recorded on the line below in a
 follow-up commit.
+
+Pre-registration commit: `3970720d8be88f83f59a04fb196ebac245b557db` (branch `research/et-v2-preregistration`,
+2026-11-23, before any Odds API historical snapshot was pulled).

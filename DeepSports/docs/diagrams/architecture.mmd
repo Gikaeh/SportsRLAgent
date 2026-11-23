@@ -48,7 +48,7 @@ flowchart TB
 
   subgraph PIPE["Data collection: src/deepsports"]
     direction LR
-    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|table|grade · model-picks run|grade ·<br/>moon · circa read|ingest|status · books grab|status · torvik fetch|map|status ·<br/>odds-api-history plan|probe|pull|status ·<br/>early-totals · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
+    CLI["cli.py --league nba|ncaab<br/>update · backfill · odds-history · odds-snapshot · pretip · migrate ·<br/>predict · paper log|report · injuries-backfill · prices-backfill ·<br/>ensemble-bets context|tally|table|grade · model-picks run|grade ·<br/>moon · circa read|ingest|status · books grab|status · torvik fetch|map|status ·<br/>venues fetch|build|status · odds-api-history plan|probe|pull|status ·<br/>early-totals · upcoming · check · serve"] --> PIPELINE["pipeline.py<br/>idempotent jobs"]
     PIPELINE --> SRC["sources/espn.py<br/>EspnBasketball(league)<br/>site + core endpoints"] --> HTTP["http.py PoliteClient<br/>1 req/s · retry/backoff"]
     PIPELINE --> PARSE["parse_espn.py<br/>pure raw → rows"] --> STORE["store.py<br/>schema + upserts"]
     QUAL["quality.py<br/>data checks"]
@@ -57,16 +57,18 @@ flowchart TB
     ETOT["analysis/early_totals · early-totals log|grade|status<br/>pre-registered et-v1: college totals vs night-before Caesars<br/>reports/early-totals/ (append-only, no stakes)"]
     TORVIK["sources/cbbdata.py · torvik_cli.py<br/>torvik fetch|map|status · Barttorvik daily ratings<br/>Parquet per season · pure parser · team map<br/>files only, no DuckDB (table planned)"]
     OAH["sources/oddsapi_history.py · oddsapi_cli.py<br/>odds-api-history plan|probe|pull|status<br/>night-before + morning snapshots · credit reserve<br/>pure parser · files only, no DuckDB (table planned)"]
+    VENUES["venue_geo.py · venues_cli.py · sources/geonames.py<br/>venues fetch|build|status · offline after 2 downloads<br/>backfill games.venue_id from cached scoreboards<br/>geocode city → lat/lon · elevation · IANA tz"]
     CIRCA["circa/ · circa read|ingest|status<br/>iCloud inbox ingest · headless Claude transcribes<br/>validate lines · match to games (brief read-only open)<br/>no DuckDB table"]
   end
 
   subgraph DATA["Storage: /Volumes/ExFATStorag/DeepSports (data/ → …/data)"]
     direction LR
     RAW[("raw/espn/{nba,ncaab}/**.json.gz<br/>raw landing zone<br/>+ summary_pregame snapshots")]
-    DB[("deepsports.duckdb (league-aware keys)<br/>games · box scores · odds + prices · injuries<br/>team_game_context · predictions · paper_bets<br/>NBA 2021-22 → today · NCAAB 2023-24 → today")]
+    DB[("deepsports.duckdb (league-aware keys)<br/>games · box scores · odds + prices · injuries<br/>venues · team_home_venues · team_game_context<br/>predictions · paper_bets<br/>NBA 2021-22 → today · NCAAB 2023-24 → today")]
     CIRCAFS[("circa|williamhill/screenshots/[early/]YYYY-MM-DD/<br/>circa|williamhill/lines/[early/]YYYY-MM-DD.json")]
     BOOKSFS[("books/circa|williamhill/YYYY-MM-DD.json<br/>books/raw/")]
     OAHFS[("raw/oddsapi/historical/sport/markets/regions/<br/>UTC-stamp.json.gz + ledger.jsonl")]
+    GEOFS[("raw/geonames/cities500.zip · US.zip<br/>GeoNames gazetteer dumps")]
     TORVIKFS[("raw/cbbdata/torvik_archive/YYYY.parquet<br/>2015-2025 · config/torvik_teams.csv")]
   end
 
@@ -123,6 +125,7 @@ flowchart TB
     DISCORD[[Discord webhook]]
     ICLOUD[[iCloud Drive<br/>DeepSports Circa inbox]]
     ODDSPAPI[[OddsPapi v4<br/>free tier 250 req/month]]
+    GEONAMES[[GeoNames dumps<br/>download.geonames.org · keyless · CC BY]]
     CBBDATA[[cbbdata API<br/>Barttorvik archive · free key<br/>stops at 2024-25]]
     ODDSAPI[["The Odds API v4 historical<br/>paid month planned (100K credits)"]]
     CLAUDEHL[[headless claude -p<br/>Sonnet · Read only]]
@@ -132,7 +135,7 @@ flowchart TB
   DA -.-> NEXT
   FE -.-> APPS
   SYNC -->|"interactive: update · upcoming --json"| CLI
-  SCHED -->|"update · predict · paper log · upcoming --json"| CLI
+  SCHED -->|"update · venues build · predict · paper log · upcoming --json"| CLI
   SCHED -.->|"export (unscheduled 2026-11-13)"| SYNCF
   ODDSJOB -->|"odds-snapshot: today + tomorrow<br/>pregame lines + prices only"| CLI
   PRETIPJOB -->|"pretip: fresh ESPN summary per game<br/>→ injury_captures · injury_reports<br/>→ predictions v1.1i"| CLI
@@ -177,6 +180,11 @@ flowchart TB
   BOOKSM -->|"odds-by-tournaments"| ODDSPAPI
   BOOKSM -->|"lines per book"| BOOKSFS
   CLI --> TORVIK
+  CLI --> VENUES
+  VENUES -->|"fetch: 2 zips, once"| GEONAMES
+  VENUES -->|"cached dumps"| GEOFS
+  RAW -->|"cached scoreboards: venue ids"| VENUES
+  VENUES -->|"venues · games.venue_id"| DB
   TORVIK -->|"ratings/archive?year=Y"| CBBDATA
   TORVIK -->|"Parquet per season + team map"| TORVIKFS
   TORVIKFS -.->|"planned: torvik_ratings table,<br/>as_of_date ≤ D-1 features"| DB

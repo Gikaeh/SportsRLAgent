@@ -197,6 +197,29 @@ is ~2 requests and the 21:00 evening grab (`books grab --early`, William Hill/Ca
   starting within 6 h; unmatched fixtures are dropped. A spread market's handicap is participant 1's line.
 Screenshots stay the fallback and win over the feed where both have a line (moon `--circa auto`).
 
+## In use: GeoNames gazetteer (venue coordinates, elevation, time zone; since 2026-11-22)
+`deepsports venues fetch|build|status` (`src/deepsports/sources/geonames.py`, `venue_geo.py`, `venues_cli.py`).
+- **What:** the free GeoNames dumps at `https://download.geonames.org/export/dump/`: `cities500.zip` (every
+  populated place in the world with >= 500 people, ~14 MB) and `US.zip` (every US feature, ~71 MB; only
+  populated places are used, for small college towns and campus CDPs). Each place has WGS84 coordinates, an
+  elevation (often empty) and a DEM value (SRTM3/GTOPO30, m) at the point, and an IANA time zone.
+- **Access:** keyless, plain HTTPS download, no browser-like headers. Two requests in total through
+  `PoliteClient.get_bytes`, saved to `data/raw/geonames/`; re-downloaded only with `venues fetch --refresh`.
+  Everything after that is offline. (GeoNames' web services need a username; the dumps don't.)
+- **Licence:** CC BY 4.0. Credit "GeoNames (geonames.org)" when venue geography is shared.
+- **Matching (2026-11-22):** ESPN gives a venue's city and state (USPS code, province code or country name),
+  never coordinates or a zip code. A venue gets the most populous GeoNames place with that name (or an
+  alternate name) in that state/country. Reviewed overrides in `geonames.py`: `Maui, HI` → Lahaina (ESPN's
+  city for the Lahaina Civic Center), `Morehead, KY` → Morehead State's town (the more populous western-KY
+  Morehead is wrong), NBA's state-less `San Juan` → San Juan PR, and venue 2014 (Clune Arena, ESPN city
+  Colorado Springs) → the Air Force Academy CDP. 571 of 579 college venues match on name, 5 on an
+  alternate name, 3 by override. Arena-level points were checked and dropped: only 68 of 579 arena names
+  appear in GeoNames.
+- **Precision:** city level. Elevations agree with known arena elevations to within ~150 m (Laramie 2,184,
+  Flagstaff 2,104, Air Force 2,069, Boulder 1,624, Denver 1,609, Fort Collins 1,525, Albuquerque 1,511,
+  Provo 1,387, Reno 1,373, Salt Lake City 1,299, Lawrence 263). The USGS Elevation Point Query Service
+  was not needed (without arena coordinates it would only re-measure the same city points).
+
 ## Collected, not in the warehouse yet: cbbdata (Barttorvik T-Rank daily archive, since 2026-11-19)
 `deepsports torvik fetch|map|status` (`src/deepsports/sources/cbbdata.py`, `torvik_cli.py`; files only, never
 DuckDB). One request per season: `GET https://www.cbbdata.com/api/torvik/ratings/archive?year=<season end

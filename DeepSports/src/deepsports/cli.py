@@ -219,6 +219,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     sub.add_parser(
+        "venues",
+        help="venue coordinates, elevation and time zone from GeoNames: fetch|build|status"
+        " (`deepsports venues -h`)",
+        add_help=False,
+    )
+
+    sub.add_parser(
         "odds-api-history",
         help="The Odds API historical snapshots: plan|probe|pull|status|live (files only;"
         " `deepsports odds-api-history -h`)",
@@ -268,6 +275,10 @@ def main(argv: list[str] | None = None) -> int:
         from deepsports.torvik_cli import main as torvik_main
 
         return torvik_main(argv[1:])
+    if argv[:1] == ["venues"]:  # its own parser; GeoNames files + one short writer session
+        from deepsports.venues_cli import main as venues_main
+
+        return venues_main(argv[1:])
     if argv[:1] == ["odds-api-history"]:  # its own parser; The Odds API + files, never DuckDB
         from deepsports.oddsapi_cli import main as oddsapi_main
 

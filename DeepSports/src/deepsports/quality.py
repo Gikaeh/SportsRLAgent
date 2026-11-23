@@ -111,7 +111,28 @@ def run_checks(db: Store) -> list[Check]:
             )
         )
     checks += injury_coverage(db)
+    checks += venue_coverage(db)
     return checks
+
+
+def venue_coverage(db: Store) -> list[Check]:
+    """Soft: college games whose venue has no coordinates, elevation or time zone (a new venue
+    since the last `deepsports venues build`, or a city GeoNames can't match)."""
+    if not db.has_table("venues"):  # read-only open of a warehouse not yet migrated
+        return [Check("college venue geography", 0, "venues table not created yet", False)]
+    games, missing = db.con.execute("""
+        SELECT count(*), count(*) FILTER (WHERE v.lat IS NULL OR v.elevation_m IS NULL
+                                             OR v.tz IS NULL)
+        FROM games g LEFT JOIN venues v USING (venue_id) WHERE g.league = 'ncaab'""").fetchone()
+    return [
+        Check(
+            "college venue geography",
+            missing,
+            f"{games - missing}/{games} games with venue coordinates, elevation and time zone"
+            " (fix: `deepsports venues build`)",
+            False,
+        )
+    ]
 
 
 def _label(league: str, season: int) -> str:

@@ -114,13 +114,21 @@ def fetch_pregame_odds(
     return rows, stats
 
 
-def collect_boxscores(src: EspnBasketball, db: Store, limit: int | None = None) -> RunStats:
+def collect_boxscores(
+    src: EspnBasketball,
+    db: Store,
+    limit: int | None = None,
+    game_ids: list[str] | None = None,
+) -> RunStats:
+    """Box scores for final games that lack them. With `game_ids`, refetch exactly those games,
+    bypassing the cache (for a stored box that ESPN has since corrected)."""
     stats = RunStats()
-    for game_id in db.games_missing_boxscores(limit, league=src.league):
+    refresh = game_ids is not None
+    for game_id in game_ids or db.games_missing_boxscores(limit, league=src.league):
         if game_id in KNOWN_NO_BOXSCORE:  # ESPN 404s these; don't re-request every run
             continue
         try:
-            raw = src.summary(game_id)
+            raw = src.summary(game_id, refresh=refresh)
         except FetchError as e:
             log.error("summary %s: %s", game_id, e)
             stats.errors.append(f"summary {game_id}: {e}")

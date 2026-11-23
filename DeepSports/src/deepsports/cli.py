@@ -59,6 +59,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     b = sub.add_parser("boxscores", help="fetch box scores for final games that lack them")
     b.add_argument("--limit", type=int)
+    b.add_argument(
+        "--game",
+        action="append",
+        metavar="ID",
+        help="refetch this game's box score, ignoring the cache (repeatable)",
+    )
     league_arg(b)
 
     u = sub.add_parser(
@@ -378,7 +384,7 @@ def _collect_commands(args: argparse.Namespace, db: Store) -> int:
     elif args.command == "schedule":
         stats = pipeline.collect_schedule(src, db, args.start, args.end, refresh=args.refresh)
     elif args.command == "boxscores":
-        stats = pipeline.collect_boxscores(src, db, args.limit)
+        stats = pipeline.collect_boxscores(src, db, args.limit, game_ids=args.game)
     elif args.command == "update":
         # NBA: snapshot every game's injury report. College: followed teams only (keeps the
         # request count small; ESPN currently lists no college injuries anyway).

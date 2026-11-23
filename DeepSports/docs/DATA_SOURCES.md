@@ -278,6 +278,32 @@ adj_o, adj_d, adj_tempo, wab, their ranks, projected records, date, year). ~3 MB
 - **Fixtures:** `tests/fixtures/oddsapi_live_ncaab_totals_us_20261119.json` (real, trimmed) and
   `oddsapi_historical_ncaab_synthetic.json` (synthetic, the documented historical shape).
 
+## The Odds API live capture (owner's key, until about 2026-12-23)
+`deepsports odds-api-history live`, run by launchd `com.deepsports.oddsapi-live`
+(`tools/oddsapi-live.sh`; owner-approved 2026-11-23). Forward-test lines through the day.
+- **Key:** the owner's own paid-month key in `~/.config/deepsports/oddsapi.key` (mode 600; not
+  ManualBets' key). About 41.6K credits left on 2026-11-23, valid until about 2026-12-23. A missing,
+  expired or exhausted key (HTTP 401/403) is one log line and exit 0.
+- **Endpoint:** `GET /v4/sports/{basketball_ncaab|basketball_nba}/odds?bookmakers=..&markets=totals,spreads&oddsFormat=american`
+  (bare event list, same event shape as historical; no `commenceTimeFrom/To`, so every upcoming event,
+  next-day games included). `GET /v4/sports` first (free) for the remaining-credits header.
+- **Books (one billing region):** draftkings, fanduel, betmgm, williamhill_us, betrivers, espnbet,
+  bovada, betonlineag, lowvig, pinnacle.
+- **Schedule and budget:** 09:00 PT and every 30 min 12:00-21:30 PT = 21 runs × 2 leagues × 2 credits
+  = **84 credits/day** (~2,600 for the month). Guards: `--reserve 2000` (a league is skipped when its
+  call would leave fewer), `--until 2026-12-24` (Pacific date; nothing runs after it), one file per
+  league per 30-min slot (a re-run in the same slot spends nothing).
+- **Storage:** `data/raw/oddsapi/live/<sport>/<UTC slot>.json.gz` = `{timestamp, snapshot_ts (both the
+  request time), sport,
+  markets, scope, credits_last, credits_remaining, data: [events]}`; `live/ledger.jsonl` one line per
+  call (`snapshot_ts, slot, sport, events, rows, last, used, remaining`). Contract: DATA_MODEL.md. Used by the
+  momentum forward test (pre-registered 2026-11-23), whose model inputs `deepsports momentum-freeze` freezes at
+  18:30/19:00/19:30 PT. Files only, no table yet. The 2026-11-19
+  key check is in the older layout `live/basketball_ncaab/totals/us/<stamp>.json.gz` (bare list).
+- **Parser:** `sources/oddsapi_live.py` (`read_live_file`, `live_rows`, pure): one row per event × book ×
+  market × outcome with `side` (over/under, home/away). Not matched to ESPN game ids yet (the et-v2
+  matcher, PR #45, wasn't on main when this was built).
+
 ## Tried and not used
 | Source | Result (2026-11-03) | Decision |
 |---|---|---|

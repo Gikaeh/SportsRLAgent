@@ -234,6 +234,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     sub.add_parser(
+        "momentum-freeze",
+        help="freeze tomorrow's college model inputs (DS predictions + MB export) for the"
+        " momentum forward test (read-only, write-once; `deepsports momentum-freeze -h`)",
+        add_help=False,
+    )
+
+    sub.add_parser(
         "early-totals",
         help="night-before college totals forward test et-v1: log|grade|status|context (watch-only;"
         " `deepsports early-totals -h`)",
@@ -284,6 +291,10 @@ def main(argv: list[str] | None = None) -> int:
         from deepsports.oddsapi_cli import main as oddsapi_main
 
         return oddsapi_main(argv[1:])
+    if argv[:1] == ["momentum-freeze"]:  # its own parser; one read-only open + files
+        from deepsports.momentum_freeze import main as freeze_main
+
+        return freeze_main(argv[1:])
     if argv[:1] == ["early-totals"]:  # its own parser; files + brief read-only opens
         from deepsports.analysis.early_totals_cli import main as early_main
 

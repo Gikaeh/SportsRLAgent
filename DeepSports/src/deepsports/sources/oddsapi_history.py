@@ -42,7 +42,21 @@ SPORTS = {"ncaab": "basketball_ncaab", "nba": "basketball_nba"}
 HIST_COST = 10  # credits per market per region per historical snapshot
 LIVE_COST = 1
 RAW_SUBDIR = Path("oddsapi") / "historical"
+LIVE_SUBDIR = Path("oddsapi") / "live"
 LEDGER_NAME = "ledger.jsonl"
+# Scheduled live capture (owner-approved 2026-11-23): 10 books bill as one region.
+LIVE_BOOKMAKERS = (
+    "draftkings",
+    "fanduel",
+    "betmgm",
+    "williamhill_us",
+    "betrivers",
+    "espnbet",
+    "bovada",
+    "betonlineag",
+    "lowvig",
+    "pinnacle",
+)
 PT = ZoneInfo("America/Los_Angeles")
 # Season = end year (2022 = 2021-22). Defaults skip COVID 2020-21.
 DEFAULT_SEASONS = {"ncaab": [2022, 2023, 2024, 2025, 2026], "nba": [2022, 2023, 2024, 2025, 2026]}
@@ -58,7 +72,12 @@ log = logging.getLogger(__name__)
 
 
 class OddsApiError(RuntimeError):
-    """A fetch failed. The message never contains the key or the request URL's query."""
+    """A fetch failed. The message never contains the key or the request URL's query.
+    `status` is the HTTP status when the API answered (401 = missing/expired key or no credits)."""
+
+    def __init__(self, message: str, status: int | None = None) -> None:
+        super().__init__(message)
+        self.status = status
 
 
 @dataclass(frozen=True)
@@ -197,6 +216,13 @@ def cost(
     return HIST_COST * len(markets) * region_units(regions, bookmakers) * n_snapshots
 
 
+def live_cost(
+    markets: Sequence[str], regions: Sequence[str], bookmakers: Sequence[str] | None = None
+) -> int:
+    """Credits for one live /odds call: 1 per market per billing region."""
+    return LIVE_COST * len(markets) * region_units(regions, bookmakers)
+
+
 def scope_label(regions: Sequence[str], bookmakers: Sequence[str] | None = None) -> str:
     """Cache folder name for the book selection: 'us,eu' or 'books=draftkings,pinnacle'."""
     if bookmakers:
@@ -257,22 +283,63 @@ def write_cached(path: Path, data: Any) -> None:
     tmp.replace(path)
 
 
-def ledger_path(raw_dir: Path | None = None) -> Path:
-    return (raw_dir or config.RAW_DIR) / RAW_SUBDIR / LEDGER_NAME
+def ledger_path(raw_dir: Path | None = None, subdir: Path = RAW_SUBDIR) -> Path:
+    return (raw_dir or config.RAW_DIR) / subdir / LEDGER_NAME
 
 
-def append_ledger(entry: Mapping[str, Any], raw_dir: Path | None = None) -> None:
-    p = ledger_path(raw_dir)
+def append_ledger(
+    entry: Mapping[str, Any], raw_dir: Path | None = None, subdir: Path = RAW_SUBDIR
+) -> None:
+    p = ledger_path(raw_dir, subdir)
     p.parent.mkdir(parents=True, exist_ok=True)
     with open(p, "a", encoding="utf-8") as fh:
         fh.write(json.dumps(entry, sort_keys=True) + "\n")
 
 
-def read_ledger(raw_dir: Path | None = None) -> list[dict[str, Any]]:
-    p = ledger_path(raw_dir)
+def read_ledger(raw_dir: Path | None = None, subdir: Path = RAW_SUBDIR) -> list[dict[str, Any]]:
+    p = ledger_path(raw_dir, subdir)
     if not p.exists():
         return []
     return [json.loads(line) for line in p.read_text().splitlines() if line.strip()]
+
+
+# ---------------------------------------------------------------- live capture files
+
+
+def live_slot(ts: datetime, minutes: int = 30) -> datetime:
+    """The capture slot a run belongs to: `ts` in UTC floored to `minutes`. The file name uses
+    the slot, so a second run in the same slot finds the file and spends nothing."""
+    ts = ts.astimezone(UTC).replace(second=0, microsecond=0)
+    return ts - timedelta(minutes=ts.minute % minutes)
+
+
+def live_path(sport: str, slot: datetime, raw_dir: Path | None = None) -> Path:
+    """RAW_DIR/oddsapi/live/<sport>/<UTC slot stamp>.json.gz"""
+    return (raw_dir or config.RAW_DIR) / LIVE_SUBDIR / sport / f"{file_stamp(slot)}.json.gz"
+
+
+def live_envelope(
+    data: list[dict[str, Any]],
+    fetched_at: datetime,
+    sport: str,
+    markets: Sequence[str],
+    regions: Sequence[str],
+    bookmakers: Sequence[str] | None,
+    credits: Credits,
+) -> dict[str, Any]:
+    """What a capture file holds: the bare live list under "data" (every upcoming event the API
+    returns, next-day games included: no commenceTime filter), the request time as "timestamp"
+    and "snapshot_ts" (so `parse_snapshot` reads it like a historical response) and the request."""
+    return {
+        "timestamp": iso(fetched_at),
+        "snapshot_ts": iso(fetched_at),
+        "sport": sport,
+        "markets": ",".join(markets),
+        "scope": scope_label(regions, bookmakers),
+        "credits_last": credits.last,
+        "credits_remaining": credits.remaining,
+        "data": data,
+    }
 
 
 # ---------------------------------------------------------------- fetch
@@ -304,7 +371,9 @@ def _get(client: PoliteClient, url: str, params: dict[str, Any]) -> tuple[Any, C
         key = params.get("apiKey")
         if key:
             detail = detail.replace(str(key), "***")
-        raise OddsApiError(f"{url}: HTTP {resp.status_code} {detail}".rstrip())
+        raise OddsApiError(
+            f"{url}: HTTP {resp.status_code} {detail}".rstrip(), status=resp.status_code
+        )
     raise OddsApiError(f"{url}: retries exhausted")  # pragma: no cover
 
 

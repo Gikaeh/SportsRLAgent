@@ -792,3 +792,48 @@ our favor) and 2 combinations (C1+C6, C3+C4), graded at the 21:00 WH price over 
 > 0 in every season with >= 100 bets and pooled win % above break-even after Holm across all 9; practical only
 with >= 150 bets a season. If none pass, et-v1 continues and there is no v2. et-v1 and its live test are
 unchanged. Doc: `docs/results/2026-11-23-et-v2-preregistration.md`; deviations go in its Amendment section.
+
+### 2026-11-23: et-v2 phase 1, lines-only sanity checks (before grading)
+**Why:** the pre-registration requires the data checks on lines only, committed before any candidate is scored.
+**What:** coverage, timestamps, event matching, line agreement and drops on the 2,916 Odds API snapshots, read
+with the new `analysis/et_v2_lines.py` (reused by phase 2). Outcomes were not loaded. Findings and choices:
+(1) snapshots include in-play games, so only events starting after the snapshot time count as quotes;
+(2) the first match pass was 96.1%; vendor names of renamed schools (Fort Wayne, Appalachian St, UMKC, Houston
+Baptist, Texas A&M-Commerce, Dixie State, ...) were added as aliases, giving 99.35%; (3) no line-agreement pair
+is near the 2-pt bug threshold (WH vs DraftKings at T: mean abs 0.23); (4) under the 60% rule, computed on all D1
+games, 2021-22 is dropped (WH 57.6%, DK 54.5% at T from Dec 1) and 2022-23 .. 2025-26 grade at `williamhill_us`.
+This is provisional: phase 2 recomputes the rule on the pre-registered denominator (games with both model
+numbers), which this lines-only step did not open. Open for an Amendment before scoring: whether C5's 2022-23
+fit uses 2021-22 games if that season is dropped from grading. Doc: `docs/results/2026-11-23-et-v2-sanity.md`.
+
+### 2026-11-23: et-v2 phase 2 scored: none of the 9 candidates pass, so no et-v2
+**Why:** this is the pre-registered backtest of et-v2 (`2026-11-23-et-v2-preregistration.md`, `3970720`) on the
+Odds API history. **Amendment 1** (`0458f6b`) was committed before any outcome was loaded:
+- the 60% rule on games with both model numbers drops 2021-22 (WH 57.8%, DK 54.8%) and grades 2022-23 .. 2025-26
+  at `williamhill_us`;
+- C5's fit may use 2021-22 games with a WH line at T, because grading coverage doesn't limit which earlier games
+  inform a rule and there is no leakage;
+- quotes are matched per snapshot, pre-game only, and gp and the D-1 flag come from the warehouse games table.
+
+**Outcome:** no rule passes. Every rule fails the every-season test, and none survives Holm (smallest p 0.165).
+- C0, et-v1's cell at the 21:00 WH line, has pooled ROI -3.9% (CI -7.2 to -0.7) on 3,470 bets, losing in 3 of
+  4 seasons, including the 2025-26 tuning season.
+- C4 (+0.6%) and K2 (+3.6%) are positive pooled but below the volume floor and mixed by season.
+
+Per the pre-registration, **et-v1 continues unchanged** toward its 300-bet verdict, and there is no v2 from this
+data. Filters noticed afterwards (unders drain every rule, market-momentum rules) are exploratory and would need
+a new pre-registration plus forward data. Doc: `docs/results/2026-11-23-et-v2-results.md`.
+
+### 2026-11-23: momentum leads from et-v2 pre-registered for a live forward test
+**Why:** et-v2 passed nothing, but its only positive rules were the market-momentum ones (C4, K2; K2 overs +9.4%
+on 350), and DraftKings lost less than WH. Those were seen after outcomes, so they need new data; the live Odds
+API job (every 30 min 12:00-21:30 + 09:00 PT, 10 books, until ~2026-12-23) supplies it. Fixing the rules before
+the first capture keeps the test from being tuned on it. **What:** T = the 19:00 PT capture on D-1 (the middle of
+the owner's 18:00-20:00 WH betting window); base cell = et-v1's rule at T's `williamhill_us` line with DS/MB as
+of T (frozen at T, because `predictions` is upserted and the MB export is overwritten); O = the first D-1 capture
+quoting the game at or before T - 60 min, WH else DraftKings. H1 momentum >= 0, H2 H1 + overs, H3 the H1 bets at
+the best of the 10 books; et-v1-at-T is a reference arm. Primary ROI with day-clustered bootstrap, Holm across 3.
+Verdict once, at H1 n = 400 or D = 2027-03-07; one month (~180-250 H1 bets) can only detect ~+20% ROI, so the
+owner decides the continuation source by 2026-12-16 (renewed key, or OddsPapi + ESPN DK, H3 then stops).
+Pass -> a watch-only `mom-v1` rule version; real money only by the owner. et-v1 is unchanged.
+Doc: `docs/results/2026-11-23-momentum-forward-preregistration.md`.

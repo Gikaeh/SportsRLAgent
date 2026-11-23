@@ -42,6 +42,12 @@ for league in nba ncaab; do
   fi
 done
 
+# Venue geography (offline, ~20 s): geocode venues new to `games` (neutral sites, new arenas)
+# into the venues table from the GeoNames files on the drive. Non-fatal; capped at 5 min.
+if ! timeout -k 15 300 uv run deepsports venues build; then
+  echo "$(ts) venues build reported errors (continuing)"
+fi
+
 # Opening lines (ESPN core API, 1 request per game) for games that went final in the last 4 days
 # and have no opening row yet. Core responses are cached forever, so a game ESPN has no opening
 # line for costs a cache read, not a request, on later runs. Non-fatal; capped at 300 games / 15 min.

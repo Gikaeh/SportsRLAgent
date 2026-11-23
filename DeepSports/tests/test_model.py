@@ -301,7 +301,8 @@ def test_games_on_the_same_evening_do_not_see_each_other():
     s.con.execute(
         "INSERT INTO games SELECT 'g1', league, season_year, season_type, "
         "start_time_utc + INTERVAL 1 HOUR, status, state, completed, '3', '1', 100, 100 + 2, "
-        "venue, venue_city, neutral_site, attendance, broadcasts, updated_at FROM games"
+        "venue, venue_city, venue_id, venue_state, neutral_site, attendance, broadcasts, "
+        "updated_at FROM games"
     )
     _, g1 = build_features(s.con)
     assert g1["features"]["form_net_diff"] == 0

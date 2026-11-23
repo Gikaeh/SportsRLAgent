@@ -107,6 +107,7 @@ One row per game, updated in place as it goes scheduled → in progress → fina
 | `home_team_id`, `away_team_id` | → `teams` (`league`, `team_id`) |
 | `home_score`, `away_score` | NULL until the game starts |
 | `venue`, `venue_city`, `neutral_site`, `attendance`, `broadcasts` | `broadcasts` is a comma-separated list of every TV/stream listing (national and regional). Neutral sites are common in college (ESPN's home/away is nominal there) |
+| `venue_id`, `venue_state` | ESPN venue id (→ `venues`; stable across arena renames) and ESPN's address "state": a USPS code in the US, a province code (`PQ`, `ON`) or a country name abroad (`Bahamas`, `Mexico`, `England`). Added 2026-11-22; older rows were backfilled from cached scoreboards by `deepsports venues build`. NULL only for NBA Cup knockout games whose venue ESPN hasn't set |
 
 ### `team_game_stats`
 PK (`game_id`, `team_id`). `league` (the game's league; join `teams` on `league` + `team_id`), `home_away`, `fgm/fga`, `fg3m/fg3a`, `ftm/fta`, `oreb/dreb/reb`,
@@ -206,6 +207,27 @@ Static, seeded from `src/deepsports/venues.py` on every writer open: `city` (PK,
 `games.venue_city`), `lat`, `lon`. The 30 home cities plus Inglewood, Austin, Las Vegas,
 Mexico City, Paris, Berlin, London.
 
+### `venues`
+One row per ESPN venue in `games` (both leagues), rebuilt in place by `deepsports venues build` (offline,
+idempotent; source: GeoNames, DATA_SOURCES.md). Geography is the venue **city's** point, not the arena's
+(a few km off; elevation within ~150 m for campus arenas above their city, e.g. Utah). One venue override
+places Air Force's Clune Arena at the Academy (2,069 m) instead of Colorado Springs (1,832 m).
+| Column | Notes |
+|---|---|
+| `venue_id` | PK, = `games.venue_id` |
+| `name`, `city`, `state` | As ESPN lists them on the venue's latest game (`state` as in `games.venue_state`) |
+| `country` | ISO 3166-1 alpha-2 (`US`, `BS`, `MX`, `PR`, `VI`, `CA`, `GB`, `IE`, ...) |
+| `lat`, `lon` | WGS84 degrees |
+| `elevation_m` | GeoNames' elevation for the place, else its DEM (SRTM) value at the point |
+| `tz` | IANA time zone (`America/Denver`, `America/Phoenix`, `Pacific/Honolulu`, ...) |
+| `geonameid`, `geo_place` | The GeoNames place matched |
+| `geo_match` | `name`, `alternate` (an alternate name, e.g. ESPN "New York" = "New York City"), `override` / `venue_override` (reviewed by hand in `sources/geonames.py`), `big_city` (no state given: the most populous city of that name, >= 500k); or why it failed (`no city`, `no state`, `unknown region`, `no match`) with NULL geography |
+| `games`, `neutral_games`, `first_game_utc`, `last_game_utc` | Games at the venue in `games` |
+| `updated_at` | Build time |
+
+Coverage (2026-11-22): 599 venues, 598 geocoded (the one miss: an NBA "Venetian Arena" with no city);
+all 579 college venues and 100% of college games 2021-22 → 2026-27 have coordinates, elevation and time zone.
+
 ### `ingest_runs`
 One row per collection command: `started_at`, `finished_at`, `command`,
 `network_requests`, `games_upserted`, `boxscores_upserted`, `errors`, `notes`.
@@ -229,9 +251,16 @@ only the team's **earlier games in the same season**, so it's leak-free for both
 | `back_to_back` | `rest_days = 1` (false for the first game) |
 | `games_last_7_days` | Team games on the 7 calendar days before this game's date (this game excluded) |
 | `road_trip_length` | Consecutive away games including this one; 0 at home. Uses ESPN's home/away designation, also at neutral sites |
-| `travel_km` | Great-circle km from the previous game's venue city; NULL for the first game or an unknown city (most college cities) |
+| `travel_km` | Great-circle km from the previous game's venue; NULL for the season's first game or a venue without coordinates. NBA: arena points from `venue_cities` by city (unchanged). College (since 2026-11-22): `venues` by `venue_id` (city points), ~97% filled |
 
 Note: the view also counts the NBA Cup final, so a few team-seasons have 83 regular-season rows.
+
+### `team_home_venues`
+Each team's home venue per season: (`league`, `team_id`, `season_year`) → `venue_id`, `home_games`, `share`.
+The venue of most of the team's non-neutral home games (postponed/canceled games skipped, ties go to the
+venue used last); `share` = its fraction of those games (BYU 2025-26: 0.88). Teams with no home game
+(non-D1) have no row. Join `venues` for the home elevation and time zone; with `games` → `venues` this gives
+venue elevation, team-home elevation, travel and time zones crossed.
 
 ### `prediction_results`
 Grading: one row per final game and (`model`, `model_version`), using the latest prediction with

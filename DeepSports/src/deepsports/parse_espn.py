@@ -205,6 +205,10 @@ def parse_scoreboard(
                 "away_score": _num(away.get("score")) if started else None,
                 "venue": venue.get("fullName"),
                 "venue_city": (venue.get("address") or {}).get("city"),
+                # ESPN's venue id (stable across arena renames) and the address "state": a USPS
+                # code in the US, a province code or a country name elsewhere ("Bahamas")
+                "venue_id": venue.get("id"),
+                "venue_state": (venue.get("address") or {}).get("state"),
                 "neutral_site": bool(comp.get("neutralSite")),
                 "attendance": comp.get("attendance") or None,
                 "broadcasts": ", ".join(tv) or None,
@@ -214,6 +218,25 @@ def parse_scoreboard(
             for o in comp.get("odds") or []:
                 odds.append(_scoreboard_odds(e["id"], o, captured_at))
     return games, odds
+
+
+def parse_scoreboard_venues(raw: dict) -> list[dict[str, Any]]:
+    """Just the venue fields of each scoreboard event (game_id, venue_id, venue_state, venue,
+    venue_city), for re-parsing cached scoreboards offline (`deepsports venues build`)."""
+    rows = []
+    for e in raw.get("events", []):
+        venue = e["competitions"][0].get("venue") or {}
+        addr = venue.get("address") or {}
+        rows.append(
+            {
+                "game_id": e["id"],
+                "venue_id": venue.get("id"),
+                "venue_state": addr.get("state"),
+                "venue": venue.get("fullName"),
+                "venue_city": addr.get("city"),
+            }
+        )
+    return rows
 
 
 def _scoreboard_odds(game_id: str, o: dict, captured_at: datetime) -> dict[str, Any]:

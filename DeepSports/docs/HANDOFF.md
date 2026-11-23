@@ -21,11 +21,11 @@ Rebuild clients: `(cd web && npm run build)`, `(cd glasses && npm run build)`; E
   `scp jaeminbbq@172.16.0.61:/Users/jaeminbbq/Projects/SportsRLAgent/DeepSports/glasses/deepsports-glasses.ehpk .`
 - **Data:** `data/` → `/Volumes/ExFATStorag/DeepSports/data` (DuckDB + raw ESPN cache). Backup before the
   league migration: `/Volumes/ExFATStorag/DeepSports/backups/`. Reports: `/Volumes/ExFATStorag/DeepSports/reports/`.
-- **Warehouse:** NBA 2021-22 → today (7,267 games, closing lines ~100%); college (men's D1) 2023-24 → today
-  (19,899 games; ~92% of all final games have a closing line, D1-vs-D1 ~100%, but per field D1-vs-D1 is
+- **Warehouse:** NBA 2021-22 → today (7,267 games, closing lines ~100%); college (men's D1) 2021-22 → today
+  (19,899 games in 2023-24 → 2025-26, plus 2021-22 and 2022-23 loaded 2026-11-19, below; ~92% of all final games have a closing line, D1-vs-D1 ~100%, but per field D1-vs-D1 is
   spread 99-100%, total ~100%, moneyline 96-98%: ESPN/DraftKings shows the moneyline as "OFF", mostly on
   20+ point spreads; see DATA_SOURCES.md); pre-tip injury snapshots from 2026-11-03 on; predictions for the
-  next 14 days (NBA v1.0 + v1.1, + v1.1i for games with an injury report; college `ncaab-v1`, `ncaab-v1p`, opt-in `ncaab-v1-early`).
+  next 14 days (NBA v1.0 + v1.1, + v1.1i for games with an injury report; college `ncaab-v1`, `ncaab-v1p`, opt-in `ncaab-v1-early`, hidden altitude shadow `ncaab-v1.1alt`).
 - **Followed:** NBA LAL, LAC, GS, BOS; college Nevada (NEV). See `config/calendar.toml`.
 - **Code:** the `DeepSports/` folder of `Gikaeh/SportsRLAgent`; feature branch + PR to `main` (git rules in `../AGENTS.md`).
 
@@ -83,6 +83,8 @@ Historical data plan (ROADMAP, Data; budget in `docs/research/historical-data-pl
 ## Next steps
 1. Waiting on data: `ncaab-v1p` vs `ncaab-v1` record (a few hundred gated games; early-gate re-test after
    2027-01-31); injury-impact model once pre-tip snapshots accumulate; paper-trade review at season end.
+   Altitude shadow (2026-11-22, branch `feature/ncaab-alt-shadow`): hidden `ncaab-v1.1alt` (sync predict step) +
+   `et-v1-alt` logged by the 21:00 run to `reports/early-totals/alt/`; `early-totals grade --alt`; verdict after 2027-03-14.
 2. Opening-line timing: 30-min pregame captures (since 2026-11-06) will give real posting times; re-test opening
    totals forward once a few hundred bets exist.
 3. v1.1i vs v1.1 paired review once a few hundred NBA games with a pre-tip report are graded.

@@ -86,7 +86,7 @@ MIN_REQUEST_INTERVAL = float(os.environ.get("DEEPSPORTS_MIN_INTERVAL", "1.0"))
 # Prediction versions that are written and graded (their own record via
 # /api/predictions/record?model_version=...) but never shown on game cards, the glasses or the
 # calendar, which keep the league's display version.
-HIDDEN_MODEL_VERSIONS = ("ncaab-v1p",)
+HIDDEN_MODEL_VERSIONS = ("ncaab-v1p", "ncaab-v1.1alt")
 # Versions never shown in the calendar export (`upcoming --json`): the hidden ones plus the
 # injury-aware NBA v1.1i, which the app shows labelled but the calendar keeps on v1.1
 # (docs/DECISIONS.md 2026-11-10).

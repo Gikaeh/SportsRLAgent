@@ -58,7 +58,9 @@ diagram in the same change (see CLAUDE.md).
   DuckDB on the external drive, so a headless run would need `upcoming --json` exported first.
 - Evening book grab (`tools/books-evening.sh`, launchd `com.deepsports.books-evening` at 21:00): `books grab --early`
   (tomorrow's Caesars lines into `books/williamhill/early/`), then `early-totals log`, the pre-registered `et-v1`
-  forward test (`analysis/early_totals.py`; rule in docs/results/2026-11-15-early-totals-preregistration.md).
+  forward test (`analysis/early_totals.py`; rule in docs/results/2026-11-15-early-totals-preregistration.md),
+  and in the same command its altitude shadow `et-v1-alt` (`analysis/early_totals_alt.py`, the `ncaab-v1.1alt`
+  total in place of `ncaab-v1`'s; own files under `reports/early-totals/alt/`, never touching et-v1's).
   Watch-only, append-only records under `reports/early-totals/`, no stakes.
 - Line capture (`tools/odds-snapshot.sh`, launchd `com.deepsports.odds` every 30 min at :15/:45):
   `deepsports odds-snapshot` fetches today's and tomorrow's scoreboards (NBA + college) and writes
@@ -130,6 +132,11 @@ diagram in the same change (see CLAUDE.md).
   Live since 2026-11-06: `live_rows` (same features as the study's prior arm, plus scheduled games) feeds
   `ncaab-v1p` (>= 5 games, graded beside `ncaab-v1`, hidden from cards/glasses/calendar via
   `config.HIDDEN_MODEL_VERSIONS`) and `ncaab-v1-early`, from one fit per run.
+- `altitude.py` + `ncaab-v1.1alt` (since 2026-11-23, watch-only): venue elevation and km climbed/dropped vs
+  each team's home arena (from `venues` / `games.venue_id`) added to `ncaab-v1`'s total model only; frozen
+  `models/ncaab_v1_1alt/config.json` (pins v1's config by hash), hidden like `ncaab-v1p`, predicted by the
+  scheduled sync after the other college versions. Read only by the `et-v1-alt` shadow; verdict after the
+  2026-27 regular season (docs/results/2026-11-22-altitude-feature.md).
 - `betting/` (ported from the DeepSeek edge study): `grading.py` grades spread/total/moneyline bets
   (refunded pushes, -110 default, ROI with a day-clustered bootstrap CI, CLV, price sensitivity,
   drawdown); `audit.py` drops bets on >3x-median open→close moves and lists the biggest-edge wins;

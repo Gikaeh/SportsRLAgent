@@ -80,6 +80,12 @@ fi
 if ! uv run deepsports predict --league ncaab --model-version ncaab-v1p,ncaab-v1-early; then
   echo "$(ts) predict --league ncaab prior model (v1p, early) reported errors (continuing)"
 fi
+# Watch-only altitude shadow ncaab-v1.1alt (ncaab-v1 + venue altitude in the total model; DECISIONS
+# 2026-11-22): hidden like ncaab-v1p, read only by the 21:00 et-v1-alt shadow log. Needs the venues
+# table (venues build above); failure is non-fatal and never touches ncaab-v1.
+if ! uv run deepsports predict --league ncaab --model-version ncaab-v1.1alt; then
+  echo "$(ts) predict --league ncaab ncaab-v1.1alt (altitude shadow) reported errors (continuing)"
+fi
 
 # Forward paper-trade log (watch-only, no money): the frozen rules in analysis/paper.py log
 # today's qualifying bets from the predictions above and the latest pregame lines. Insert-only.

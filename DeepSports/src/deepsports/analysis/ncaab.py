@@ -346,11 +346,21 @@ VERSIONS = (MODEL_VERSION, PRIOR_VERSION, EARLY_VERSION)
 # are unchanged; produce it with predict_upcoming_calibrated.
 CALIBRATED_VERSION = "ncaab-v1c"
 CALIBRATED_WIN_C = 0.1
+# Watch-only altitude shadow (owner-approved 2026-11-22, pre-registration in docs/results/
+# 2026-11-22-altitude-feature.md): ncaab-v1 exactly (same rows, gate, win and margin models),
+# except the total model adds the altitude features listed in its frozen config. Hidden like
+# ncaab-v1p (config.HIDDEN_MODEL_VERSIONS). Accepted by name only: not in VERSIONS, so
+# `--model-version all` is unchanged; the scheduled sync names it.
+ALT_VERSION = "ncaab-v1.1alt"
+ALT_CONFIG_PATH = config.ROOT / "models" / "ncaab_v1_1alt" / "config.json"
+SHADOW_VERSIONS = (ALT_VERSION,)
+ACCEPTED_VERSIONS = (*VERSIONS, *SHADOW_VERSIONS)
 VERSION_MIN_GAMES = {
     MODEL_VERSION: MIN_GAMES_TO_PREDICT,
     PRIOR_VERSION: MIN_GAMES_TO_PREDICT,
     EARLY_VERSION: EARLY_MIN_GAMES,
     CALIBRATED_VERSION: MIN_GAMES_TO_PREDICT,
+    ALT_VERSION: MIN_GAMES_TO_PREDICT,
 }
 PRIOR_MODEL_VERSIONS = (PRIOR_VERSION, EARLY_VERSION)  # one fit per run serves both gates
 SKIP_NON_D1 = "non_d1"
@@ -359,6 +369,36 @@ SKIP_FEW_GAMES = "few_games"
 
 def load_config(path: Path = CONFIG_PATH) -> dict[str, Any]:
     return json.loads(Path(path).read_text())
+
+
+def load_alt_config(path: Path = ALT_CONFIG_PATH, base_path: Path = CONFIG_PATH) -> dict[str, Any]:
+    """The frozen `ncaab-v1.1alt` config. Refuses to run if ncaab-v1's frozen config no longer
+    matches the hash recorded at creation (the shadow must stay "v1 + altitude")."""
+    import hashlib
+
+    from deepsports.analysis.altitude import ALTITUDE_FEATURES
+
+    cfg = load_config(path)
+    digest = hashlib.sha256(Path(base_path).read_bytes()).hexdigest()
+    if digest != cfg["base_config_sha256"]:
+        raise ValueError(f"{base_path} changed since {ALT_VERSION} was frozen")
+    extra = list(cfg["total_extra_features"])
+    unknown = [f for f in extra if f not in ALTITUDE_FEATURES]
+    if unknown or cfg.get("changed_targets") != ["total"]:
+        raise ValueError(f"bad {ALT_VERSION} config: features {unknown}, targets changed")
+    return cfg
+
+
+def attach_altitude(
+    rows: list[dict[str, Any]], feats: dict[str, dict[str, float]], names: list[str]
+) -> list[dict[str, Any]]:
+    """Copies of `rows` (own `features` dict, so the input rows are never changed) with the
+    altitude features `names` added; games without a venue get NaN (the imputer fills them)."""
+    out = []
+    for r in rows:
+        f = feats.get(r["game_id"], {})
+        out.append({**r, "features": {**r["features"], **{k: f.get(k, math.nan) for k in names}}})
+    return out
 
 
 def live_rows(con: duckdb.DuckDBPyConnection, cfg: dict[str, Any]) -> list[dict[str, Any]]:
@@ -414,12 +454,14 @@ def _version_predictions(
     train_ok: Callable[[dict[str, Any], dict[str, Any]], bool],
     versions: list[str],
     win_c: float = 1.0,
+    total_extra: tuple[str, ...] = (),
 ) -> dict[str, list[dict[str, Any]]]:
     """Fit one model (per target: `choice[target]` feature set, training rows where
     `train_ok(row, choice[target])`) on every completed D1-vs-D1 row, once, and predict every
     scheduled row that at least one of `versions` predicts. Each version gets one row per
     scheduled game with its own gate (VERSION_MIN_GAMES) as `skip_reason`. `win_c` is the
-    logistic win model's inverse L2 strength (1.0 = ModelV1's default)."""
+    logistic win model's inverse L2 strength (1.0 = ModelV1's default). `total_extra` features
+    are appended to the total model's list only (the win and margin fits are unchanged)."""
     done = [r for r in rows if r["state"] == "post" and r["d1"]]
     upcoming = [r for r in rows if r["state"] == "pre"]
     reasons = {v: [skip_reason(r, VERSION_MIN_GAMES[v]) for r in upcoming] for v in versions}
@@ -430,10 +472,14 @@ def _version_predictions(
     if todo:
         fitted: dict[tuple, list[dict[str, float]]] = {}
         for tgt, c in choice.items():
+            extra = total_extra if tgt == "total" else ()
             fk = (c["feature_set"], int(c["min_games"]), c.get("mode"))
+            if extra:
+                fk = (*fk, extra)
             if fk not in fitted:
                 train = [r for r in done if train_ok(r, c)]
                 m = make_model(c["feature_set"])
+                m.total_features = [*m.total_features, *extra]
                 m.win_c = win_c
                 fitted[fk] = m.fit(train).predict(todo)
             preds[key[tgt]] = [p[key[tgt]] for p in fitted[fk]]
@@ -476,21 +522,41 @@ def predict_upcoming_versions(
     - `ncaab-v1p` / `ncaab-v1-early`: the cross-season prior model (frozen
       `models/ncaab_prior/config.json`: Elo carry-over, ridge prior from last season,
       `prior_rows` training filter), fit once and shared by both versions.
+    - `ncaab-v1.1alt` (shadow, SHADOW_VERSIONS): ncaab-v1's rows and gate, with the frozen
+      `models/ncaab_v1_1alt/config.json` altitude features added to the total model only
+      (needs the `venues` table and `games.venue_id`).
 
     Every model trains on all completed D1-vs-D1 games of all seasons. Market blend weights are
     not applied (no closing line exists before tip). Returns version -> rows with
     PREDICTION_KEYS plus `skip_reason` (prediction fields None when set)."""
-    unknown = [v for v in versions if v not in VERSIONS]
+    unknown = [v for v in versions if v not in ACCEPTED_VERSIONS]
     if unknown:
-        raise ValueError(f"unknown college model version(s) {unknown} (use {', '.join(VERSIONS)})")
+        raise ValueError(
+            f"unknown college model version(s) {unknown} (use {', '.join(ACCEPTED_VERSIONS)})"
+        )
     out: dict[str, list[dict[str, Any]]] = {}
     v1 = cfg or load_config()
+    v1_rows = None
+    if MODEL_VERSION in versions or ALT_VERSION in versions:
+        v1_rows = live_rows(con, v1)
     if MODEL_VERSION in versions:
         out |= _version_predictions(
-            live_rows(con, v1),
+            v1_rows,
             v1["choice"],
             lambda r, c: r["rt_n"] >= int(c["min_games"]),
             [MODEL_VERSION],
+        )
+    if ALT_VERSION in versions:
+        from deepsports.analysis.altitude import load_altitude_features
+
+        acfg = load_alt_config()
+        extra = list(acfg["total_extra_features"])
+        out |= _version_predictions(
+            attach_altitude(v1_rows, load_altitude_features(con, LEAGUE), extra),
+            v1["choice"],
+            lambda r, c: r["rt_n"] >= int(c["min_games"]),
+            [ALT_VERSION],
+            total_extra=tuple(extra),
         )
     pv = [v for v in versions if v in PRIOR_MODEL_VERSIONS]
     if pv:

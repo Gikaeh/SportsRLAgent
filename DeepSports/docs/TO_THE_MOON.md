@@ -6,6 +6,25 @@ actually place. **Watch-only: you place every bet yourself.** Nothing here place
 Code: `src/deepsports/moon/`. Decisions: root `docs/DECISIONS.md` (2026-11-13, "To The Moon (betting)"). Numbers:
 `docs/results/2026-11-13-moon-risk-ladder.md`.
 
+## Now: the nightly lotto card (2026-11-23, root `docs/DECISIONS.md`)
+Moon is now **small-stake parlays for a big payout** (rule `lotto-v2`, pre-registered in
+`docs/results/2026-11-23-lotto-v2-preregistration.md`). After the 21:00 et-v1 log, `moon lotto` ranks tomorrow's et-v1
+legs (college totals at William Hill's night-before line) by average edge and builds:
+- the **test ticket**: legs 1-7, $1 (nights with 7+ legs; under 7, no card);
+- **spread tickets**, $0.25 each, 7 legs: with 9+ legs, 18 tickets from legs 1-9, each leaving out a different pair
+  (every leg sits out 4); with 8 legs, 8 tickets that each leave out one leg. At most $5.50 a night.
+The card goes to Discord and is logged once per game date to `<REPORTS_DIR>/moon/lotto/cards.jsonl` (append-only,
+notional stakes), so `moon lotto grade` scores every card, and the pre-registered sweep test, whether or not you
+played it. Log the tickets you actually place with
+`log parlay --tier lotto --book WilliamHill --leg ... --stake 1 --price ...` (the price WH paid).
+
+A 7-leg ticket at −110 returns about $91 per $1 and hits 1 in 128 at coin-flip legs, keeping about $0.72 of each $1 on
+average. History (`docs/results/2026-11-23-lotto-investigation.md`): et-v1's legs have no per-leg edge; their
+same-night sweeps ran well above chance in 2022-23 to 2024-25 but not in 2021-22 or 2025-26. Entertainment money. Legs are different games (no same-game parlays);
+check WH's own parlay payout, which can be below the product of the leg prices.
+
+The `mix` tier below is no longer sent daily (the 14:00 proposal message was retired); its commands still work.
+
 ## The one thing to know
 No model here beats the closing line, so **every bet loses the vig on average**: −4.55% per −110 bet, and parlays
 compound it (−13% for a 3-leg). With negative expected value, the way to maximize your chance of hitting a target is
@@ -18,6 +37,8 @@ repo root, or `DEEPSPORTS_MOON_LEDGER`).
 
 | Command | What it does |
 |---|---|
+| `lotto [--date D] [--format text\|discord] [--dry-run]` | Tonight's lotto card for game date D (default tomorrow) from et-v1's legs; logs the first card per date |
+| `lotto grade` | Settles every logged card's tickets from warehouse finals (read-only); hits and $ for test and spread tickets, and the pre-registered sweep test |
 | `tiers [--budget 75 --target 1000] [--months 1]` | The risk ladder: every tier simulated side by side, best tier highlighted. `--months 1` = this month only (default 12); also on `sim` and `propose` |
 | `sim --tier bold [--edge 0.02] [--no-cash-out] [--json]` | One tier in detail; `--edge` adds a HYPOTHETICAL run next to the −vig one |
 | `propose [--tier mix] [--months 1] [--circa auto\|PATH\|off] [--format text\|discord] [--date YYYY-MM-DD] [--balance X] [--run DIR]` | Today's bet(s) for a tier, from the latest models-only picks run, repriced at Circa's lines when a lines file exists; `--format discord` is the short phone text |

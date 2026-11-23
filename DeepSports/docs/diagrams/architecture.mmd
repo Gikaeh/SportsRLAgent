@@ -31,7 +31,7 @@ flowchart TB
     SCHED["tools/scheduled-sync.sh<br/>launchd 08:00 · 14:00"]
     SYNCF[".sync/upcoming*.json"]
     SCHED -.->|"unscheduled 2026-11-13<br/>(skill runs by hand)"| SYNC
-    MPDAILY["tools/model-picks-daily.sh<br/>weekdays 14:00 · Sat/Sun 08:00<br/>export ≤20 min → books grab → circa read (Circa, WH) → model-picks run<br/>→ moon propose --tier mix --circa auto<br/>picks (or blocked alert) + moon proposal → Discord"]
+    MPDAILY["tools/model-picks-daily.sh<br/>weekdays 14:00 · Sat/Sun 08:00<br/>export ≤20 min → books grab → circa read (Circa, WH) → model-picks run<br/>picks (or blocked alert) → Discord"]
     SCHED --> MPDAILY
     BEVENING["tools/books-evening.sh<br/>launchd 21:00<br/>books grab --early (Caesars, tomorrow)<br/>→ circa read --early --book williamhill<br/>→ early-totals log (et-v1: WH screenshots, else feed;<br/>then shadow et-v1-alt)<br/>→ circa read --early (Circa, recorded)<br/>→ early-totals context --log (market context)"]
     EBDAILY["tools/ensemble-daily.sh<br/>by hand only (unscheduled 2026-11-13)<br/>N bettors · majority table → Discord"]
@@ -118,7 +118,7 @@ flowchart TB
     MPICKS["model_picks.py<br/>DeepSports + ManualBets vs line · strong/lean · top 5<br/>watch-only; runs in reports/model-picks/"]
     EBETS -->|"slate · grading"| MPICKS
     MBCTX --> MPICKS
-    MOON["src/deepsports/moon · deepsports moon<br/>risk ladder + sim (--months) · tiers incl. ticket2, mix (default)<br/>proposals from the picks run · circa.py repricing ·<br/>append-only ledger ../logs/moon/bets.csv (edge 5)<br/>watch-only; the owner places every bet"]
+    MOON["src/deepsports/moon · deepsports moon<br/>lotto card (lotto-v2): et-v1 legs → $1 top-7 + $0.25 7-leg spread tickets, cards.jsonl · lotto grade<br/>risk ladder + sim · tiers (mix, by hand)<br/>proposals from the picks run · circa.py repricing ·<br/>append-only ledger ../logs/moon/bets.csv (edge 5)<br/>watch-only; the owner places every bet"]
     MPICKS -->|"picks run"| MOON
   end
 
@@ -178,8 +178,10 @@ flowchart TB
   BETDESK --> USER
   MOON -->|"terminal"| USER
   EBDAILY -->|"picks table · blocked alerts"| DISCORD
-  MPDAILY -->|"picks · moon proposal"| DISCORD
-  MPDAILY -->|"circa read · moon propose"| CLI
+  MPDAILY -->|"picks"| DISCORD
+  MPDAILY -->|"circa read"| CLI
+  BEVENING -->|"moon lotto"| MOON
+  BEVENING -->|"lotto card"| DISCORD
   CLI --> CIRCA
   CLI --> BOOKSM
   BEVENING -->|"books grab --early · early-totals log"| CLI

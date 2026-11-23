@@ -54,8 +54,8 @@ diagram in the same change (see CLAUDE.md).
 - Scheduled runs (`tools/scheduled-sync.sh`, launchd 08:00/14:00) do every warehouse step themselves
   (update, opening lines for recent finals, predict, paper log; model picks once a day: weekdays 14:00, Saturday and Sunday 08:00, each
   covering the games until the next run). The picks job (`tools/model-picks-daily.sh`)
-  runs `books grab` and `circa read` (Circa, then WH) first, then sends the picks and, as a second Discord message, the To The Moon
-  proposal (`moon propose --tier mix --months 1 --circa auto --format discord`). The scheduled calendar sync was scrapped for now
+  runs `books grab` and `circa read` (Circa, then WH) first, then sends the picks (the To The Moon proposal message was retired
+  2026-11-23; the 21:00 job sends the lotto card). The scheduled calendar sync was scrapped for now
   (2026-11-13); the skill still runs by hand (`calendar-agent`). Headless Claude's Bash sandbox can't open
   DuckDB on the external drive, so a headless run would need `upcoming --json` exported first.
 - Evening book grab (`tools/books-evening.sh`, launchd `com.deepsports.books-evening` at 21:00): `books grab --early`
@@ -177,6 +177,8 @@ diagram in the same change (see CLAUDE.md).
   Circa's lines (screenshots, plus OddsPapi's Circa feed; screenshots win) when a lines file exists (`circa.py`: a worse line or price drops the leg), and an
   append-only ledger of the owner's real bets at
   `../logs/moon/bets.csv` (`ledger.py`, edge 5; grading reads finals read-only and appends result rows).
+  `lotto.py` (since 2026-11-23, the default play): the nightly parlay card from et-v1's legs (rule lotto-v2: $1 top-7 test
+  ticket + $0.25 7-leg spread tickets), logged to `reports/moon/lotto/cards.jsonl` and sent by `tools/books-evening.sh`; `moon lotto grade`.
   Not served by the API. Guide: [TO_THE_MOON.md](TO_THE_MOON.md).
 - `ensemble_bets.py` + `/ensemble-betting` skill + `bettor` agent: a watch-only vote (by hand only since 2026-11-13). `ensemble-bets
   context` builds a slate (games tipping 1 h to N days out with a pregame line: lines + prices, line

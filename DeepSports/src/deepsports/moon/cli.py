@@ -1,6 +1,7 @@
 """`python -m deepsports.moon`: To The Moon (betting) in the terminal. Watch-only.
 
-Subcommands: tiers, sim, propose, log, status, grade. Guide: docs/TO_THE_MOON.md.
+Subcommands: lotto (the nightly parlay card), tiers, sim, propose, log, status, grade.
+Guide: docs/TO_THE_MOON.md.
 Entry point for wiring elsewhere: `main(argv) -> int`.
 """
 
@@ -16,7 +17,7 @@ from typing import Any
 
 from deepsports import config
 from deepsports.moon import circa as circa_mod
-from deepsports.moon import ledger, picks, sim
+from deepsports.moon import ledger, lotto, picks, sim
 from deepsports.moon import tiers as tiers_mod
 
 # The owner's plan: straights + a parlay out of each month's deposit (2026-11-14 results file
@@ -367,6 +368,41 @@ def cmd_grade(args) -> int:
     return 0
 
 
+# ---------- lotto ----------
+
+
+def cmd_lotto(args) -> int:
+    from datetime import datetime, timedelta
+
+    if args.action == "grade":
+        from deepsports.analysis.ensemble_bets import load_finals
+        from deepsports.store import Store
+
+        cards = lotto.read_jsonl(args.cards or lotto.cards_path())
+        finals: dict = {}
+        ids = lotto.game_ids(cards)
+        if ids:
+            st = Store(read_only=True, lock_wait=args.lock_wait)
+            try:
+                finals = load_finals(st.con, ids)
+            finally:
+                st.close()
+        print(lotto.render_grade(lotto.grade_cards(cards, finals)))
+        return 0
+    now = datetime.now(config.LOCAL_TZ)
+    day = args.date or (now.date() + timedelta(days=1)).isoformat()
+    path = args.cards or lotto.cards_path()
+    card, new = lotto.get_or_make(
+        day,
+        et_rows=lotto.read_jsonl(args.et_bets or lotto.et_bets_path()),
+        cards=lotto.read_jsonl(path),
+    )
+    if new and card["tickets"] and not args.dry_run:
+        lotto.append_card(card, path)
+    print(lotto.render(card, args.format))
+    return 0
+
+
 # ---------- parser ----------
 
 
@@ -378,6 +414,17 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--ledger", type=Path, default=None,
                     help=f"ledger CSV (default {config.MOON_LEDGER_PATH})")  # fmt: skip
     sub = ap.add_subparsers(dest="cmd", required=True)
+
+    p = sub.add_parser("lotto", help="the nightly parlay card from et-v1's legs, or grade it")
+    p.add_argument("action", nargs="?", choices=["card", "grade"], default="card")
+    p.add_argument("--date", default=None, help="game date YYYY-MM-DD (default: tomorrow)")
+    p.add_argument("--format", choices=["text", "discord"], default="text")
+    p.add_argument("--dry-run", action="store_true", help="show the card without logging it")
+    p.add_argument("--cards", type=Path, default=None, help="cards file (default: reports)")
+    p.add_argument("--et-bets", dest="et_bets", type=Path, default=None,
+                   help="et-v1 bets.jsonl (default: reports)")  # fmt: skip
+    p.add_argument("--lock-wait", type=float, default=60.0)
+    p.set_defaults(fn=cmd_lotto)
 
     p = sub.add_parser("tiers", help="the risk ladder for a budget and target")
     _common(p)

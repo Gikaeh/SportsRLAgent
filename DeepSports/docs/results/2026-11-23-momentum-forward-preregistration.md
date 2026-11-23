@@ -117,3 +117,4 @@ fail does not show that a small one is absent. Backtest sizes for scale: C4 +0.6
 dependence). Live DS/MB are daily refits, sharper than the et-v2 walk-forward numbers.
 
 ## Commit record (committed before any capture from the new live job existed; hash added in a follow-up commit)
+Pre-registration commit: `11b833705f3f557454345f0fcfd25a230736b9fa` (branch `research/momentum-forward-preregistration`, 2026-11-23).

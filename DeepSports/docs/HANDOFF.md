@@ -85,6 +85,7 @@ Historical data plan (ROADMAP, Data; budget in `docs/research/historical-data-pl
    2027-01-31); injury-impact model once pre-tip snapshots accumulate; paper-trade review at season end.
    Altitude shadow (2026-11-22, branch `feature/ncaab-alt-shadow`): hidden `ncaab-v1.1alt` (sync predict step) +
    `et-v1-alt` logged by the 21:00 run to `reports/early-totals/alt/`; `early-totals grade --alt`; verdict after 2027-03-14.
+   Bet market context (2026-11-23, branch `feature/et-context-log`): `early-totals context --log` at the end of the 21:00 run → `reports/early-totals/context.jsonl`; run `early-totals context --backfill` once after merge (Nov 17+ bets); `early-totals context` prints the describe-only split.
 2. Opening-line timing: 30-min pregame captures (since 2026-11-06) will give real posting times; re-test opening
    totals forward once a few hundred bets exist.
 3. v1.1i vs v1.1 paired review once a few hundred NBA games with a pre-tip report are graded.

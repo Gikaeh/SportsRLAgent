@@ -50,4 +50,10 @@ echo "$(ts) early-totals log: ${et_out:-no output} (exit $et_status)"
 
 early_read circa
 
+# Market context of tonight's et-v1 / et-v1-alt bets (opener, DraftKings at the bet line's time,
+# Caesars feed, WH + Circa screenshots) to reports/early-totals/context.jsonl. Describe-only, its
+# own process after the Circa read, so it can never change et-v1's files or exit code. Non-fatal.
+cx_out=$(timeout -k 15 120 uv run --frozen deepsports early-totals context --log 2>/dev/null | tail -1)
+echo "$(ts) early-totals context: ${cx_out:-no output}"
+
 exit 0

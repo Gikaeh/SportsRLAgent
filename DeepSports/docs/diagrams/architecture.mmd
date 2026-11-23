@@ -33,7 +33,7 @@ flowchart TB
     SCHED -.->|"unscheduled 2026-11-13<br/>(skill runs by hand)"| SYNC
     MPDAILY["tools/model-picks-daily.sh<br/>weekdays 14:00 · Sat/Sun 08:00<br/>export ≤20 min → books grab → circa read (Circa, WH) → model-picks run<br/>→ moon propose --tier mix --circa auto<br/>picks (or blocked alert) + moon proposal → Discord"]
     SCHED --> MPDAILY
-    BEVENING["tools/books-evening.sh<br/>launchd 21:00<br/>books grab --early (Caesars, tomorrow)<br/>→ circa read --early --book williamhill<br/>→ early-totals log (et-v1: WH screenshots, else feed;<br/>then shadow et-v1-alt)<br/>→ circa read --early (Circa, recorded)"]
+    BEVENING["tools/books-evening.sh<br/>launchd 21:00<br/>books grab --early (Caesars, tomorrow)<br/>→ circa read --early --book williamhill<br/>→ early-totals log (et-v1: WH screenshots, else feed;<br/>then shadow et-v1-alt)<br/>→ circa read --early (Circa, recorded)<br/>→ early-totals context --log (market context)"]
     EBDAILY["tools/ensemble-daily.sh<br/>by hand only (unscheduled 2026-11-13)<br/>N bettors · majority table → Discord"]
     EBDAILY -.->|"headless claude -p<br/>/ensemble-betting prefetched"| EBSKILL
     MBEXPORT["tools/manualbets-export.py<br/>runs ../ManualBets/tools/export_predictions.py<br/>XGBoost + Kelly + Odds API → .sync/manualbets-export.json (edge 4)"]
@@ -54,7 +54,7 @@ flowchart TB
     QUAL["quality.py<br/>data checks"]
     PBP["parse_pbp.py<br/>pure play-by-play parser<br/>(on demand, no table)"]
     BOOKSM["books/ · books grab|status (--early)<br/>OddsPapi: Circa + Caesars (as William Hill)<br/>~3 requests/day · match to games (brief read-only open)"]
-    ETOT["analysis/early_totals · early-totals log|grade|status<br/>pre-registered et-v1: college totals vs night-before Caesars<br/>+ shadow et-v1-alt (early_totals_alt, ncaab-v1.1alt total; grade --alt)<br/>reports/early-totals/ + alt/ (append-only, no stakes)"]
+    ETOT["analysis/early_totals · early-totals log|grade|status|context<br/>pre-registered et-v1: college totals vs night-before Caesars<br/>+ shadow et-v1-alt (early_totals_alt, ncaab-v1.1alt total; grade --alt)<br/>+ market context per bet (early_totals_context, describe-only)<br/>reports/early-totals/ + alt/ + context.jsonl (append-only, no stakes)"]
     TORVIK["sources/cbbdata.py · torvik_cli.py<br/>torvik fetch|map|status · Barttorvik daily ratings<br/>Parquet per season · pure parser · team map<br/>files only, no DuckDB (table planned)"]
     OAH["sources/oddsapi_history.py · oddsapi_cli.py<br/>odds-api-history plan|probe|pull|status<br/>night-before + morning snapshots · credit reserve<br/>pure parser · files only, no DuckDB (table planned)"]
     VENUES["venue_geo.py · venues_cli.py · sources/geonames.py<br/>venues fetch|build|status · offline after 2 downloads<br/>backfill games.venue_id from cached scoreboards<br/>geocode city → lat/lon · elevation · IANA tz"]

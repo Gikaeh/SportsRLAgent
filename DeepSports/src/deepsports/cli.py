@@ -123,8 +123,9 @@ def build_parser() -> argparse.ArgumentParser:
         "--model-version",
         help="nba: v1.0 (default), v1.1 or v1.1i (injury-aware); "
         "ncaab: ncaab-v1 (default, >=5 games per team), "
-        "ncaab-v1p (prior model, >=5 games) or ncaab-v1-early (prior model, >=1 game); "
-        "comma-separated for several, ncaab: all",
+        "ncaab-v1p (prior model, >=5 games) or ncaab-v1-early (prior model, >=1 game), "
+        "ncaab-v1.1alt (hidden altitude shadow, by name only); "
+        "comma-separated for several, ncaab: all (not the shadow)",
     )
     pr.add_argument("--days", type=int, default=14, help="predict games in the next N days")
 
@@ -642,15 +643,15 @@ def _predict(args: argparse.Namespace, db: Store) -> int:
     spec = args.model_version or DEFAULT_VERSIONS[args.league]
     versions = [v.strip() for v in spec.split(",") if v.strip()]
     if args.league == "ncaab":
-        from deepsports.analysis.ncaab import VERSIONS
+        from deepsports.analysis.ncaab import ACCEPTED_VERSIONS, VERSIONS
 
         if versions == ["all"]:
             versions = list(VERSIONS)
-        bad = [v for v in versions if v not in VERSIONS]
+        bad = [v for v in versions if v not in ACCEPTED_VERSIONS]
         if bad or not versions:
             msg = (
                 f"error: unknown college model version {', '.join(bad) or spec!r} "
-                f"(use {', '.join(VERSIONS)} or all)"
+                f"(use {', '.join(ACCEPTED_VERSIONS)} or all)"
             )
             print(msg, file=sys.stderr)
             return 2

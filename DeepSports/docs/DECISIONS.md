@@ -765,3 +765,18 @@ shadow `et-v1-alt` log beside et-v1 and a verdict at the end of the 2026-27 regu
 `models/ncaab_v1`, et-v1 and the live predict pipeline are unchanged; et-v1 keeps `ncaab-v1` until its
 300-bet verdict. Feature code: `src/deepsports/analysis/altitude.py` (tested). Result:
 `docs/results/2026-11-22-altitude-feature.md`.
+
+**Same day, built (branch `feature/ncaab-alt-shadow`):** `ncaab-v1.1alt` = `ncaab-v1`'s rows, gate, win and
+margin fits, with `venue_elev_km`, `alt_gain_sum`, `alt_drop_sum` appended to the total model only; frozen
+`models/ncaab_v1_1alt/config.json` pins v1's config by SHA-256 (the alt refuses to run if v1's changes). Hidden
+(`HIDDEN_MODEL_VERSIONS`), accepted by name only so `predict --model-version all` is unchanged; the scheduled sync
+predicts it after the other college versions, non-fatal. `et-v1-alt` runs inside `early-totals log` after et-v1
+has written its files (`--no-alt` skips it; any shadow error goes to stderr and `alt/runs.jsonl`, never into
+et-v1's files, stdout or exit code; a golden test pins et-v1's output). Choices the pre-registration left open:
+(1) where et-v1 uses `ncaab-v1-early`, the shadow uses it too (the alt only replaces `ncaab-v1`); (2) a missing
+alt row, or one more than 1 h older than the v1 row (its predict step failed), falls back to the v1 number, so
+a failed step can only make the rules agree, never differ; (3) "paired nights" = game days with an alt run row
+that isn't busy/error; (4) the MAE and bias metrics use `prediction_results` (latest pre-tip row per version,
+2026-27 games with both versions), so they score the model as predicted closest to tip, not the 21:00 number;
+(5) the verdict counts games through 2027-03-14 (Selection Sunday). Alternative considered: a separate 21:00
+job for the shadow; rejected, since the pre-registration asks for the same run and inputs.

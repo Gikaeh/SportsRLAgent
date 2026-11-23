@@ -33,7 +33,7 @@ flowchart TB
     SCHED -.->|"unscheduled 2026-11-13<br/>(skill runs by hand)"| SYNC
     MPDAILY["tools/model-picks-daily.sh<br/>weekdays 14:00 · Sat/Sun 08:00<br/>export ≤20 min → books grab → circa read (Circa, WH) → model-picks run<br/>→ moon propose --tier mix --circa auto<br/>picks (or blocked alert) + moon proposal → Discord"]
     SCHED --> MPDAILY
-    BEVENING["tools/books-evening.sh<br/>launchd 21:00<br/>books grab --early (Caesars, tomorrow)<br/>→ circa read --early --book williamhill<br/>→ early-totals log (et-v1: WH screenshots, else feed)<br/>→ circa read --early (Circa, recorded)"]
+    BEVENING["tools/books-evening.sh<br/>launchd 21:00<br/>books grab --early (Caesars, tomorrow)<br/>→ circa read --early --book williamhill<br/>→ early-totals log (et-v1: WH screenshots, else feed;<br/>then shadow et-v1-alt)<br/>→ circa read --early (Circa, recorded)"]
     EBDAILY["tools/ensemble-daily.sh<br/>by hand only (unscheduled 2026-11-13)<br/>N bettors · majority table → Discord"]
     EBDAILY -.->|"headless claude -p<br/>/ensemble-betting prefetched"| EBSKILL
     MBEXPORT["tools/manualbets-export.py<br/>runs ../ManualBets/tools/export_predictions.py<br/>XGBoost + Kelly + Odds API → .sync/manualbets-export.json (edge 4)"]
@@ -54,7 +54,7 @@ flowchart TB
     QUAL["quality.py<br/>data checks"]
     PBP["parse_pbp.py<br/>pure play-by-play parser<br/>(on demand, no table)"]
     BOOKSM["books/ · books grab|status (--early)<br/>OddsPapi: Circa + Caesars (as William Hill)<br/>~3 requests/day · match to games (brief read-only open)"]
-    ETOT["analysis/early_totals · early-totals log|grade|status<br/>pre-registered et-v1: college totals vs night-before Caesars<br/>reports/early-totals/ (append-only, no stakes)"]
+    ETOT["analysis/early_totals · early-totals log|grade|status<br/>pre-registered et-v1: college totals vs night-before Caesars<br/>+ shadow et-v1-alt (early_totals_alt, ncaab-v1.1alt total; grade --alt)<br/>reports/early-totals/ + alt/ (append-only, no stakes)"]
     TORVIK["sources/cbbdata.py · torvik_cli.py<br/>torvik fetch|map|status · Barttorvik daily ratings<br/>Parquet per season · pure parser · team map<br/>files only, no DuckDB (table planned)"]
     OAH["sources/oddsapi_history.py · oddsapi_cli.py<br/>odds-api-history plan|probe|pull|status<br/>night-before + morning snapshots · credit reserve<br/>pure parser · files only, no DuckDB (table planned)"]
     VENUES["venue_geo.py · venues_cli.py · sources/geonames.py<br/>venues fetch|build|status · offline after 2 downloads<br/>backfill games.venue_id from cached scoreboards<br/>geocode city → lat/lon · elevation · IANA tz"]
@@ -64,7 +64,7 @@ flowchart TB
   subgraph DATA["Storage: /Volumes/ExFATStorag/DeepSports (data/ → …/data)"]
     direction LR
     RAW[("raw/espn/{nba,ncaab}/**.json.gz<br/>raw landing zone<br/>+ summary_pregame snapshots")]
-    DB[("deepsports.duckdb (league-aware keys)<br/>games · box scores · odds + prices · injuries<br/>venues · team_home_venues · team_game_context<br/>predictions · paper_bets<br/>NBA 2021-22 → today · NCAAB 2023-24 → today")]
+    DB[("deepsports.duckdb (league-aware keys)<br/>games · box scores · odds + prices · injuries<br/>venues · team_home_venues · team_game_context<br/>predictions · paper_bets<br/>NBA 2021-22 → today · NCAAB 2021-22 → today")]
     CIRCAFS[("circa|williamhill/screenshots/[early/]YYYY-MM-DD/<br/>circa|williamhill/lines/[early/]YYYY-MM-DD.json")]
     BOOKSFS[("books/circa|williamhill/YYYY-MM-DD.json<br/>books/raw/")]
     OAHFS[("raw/oddsapi/historical/sport/markets/regions/<br/>UTC-stamp.json.gz + ledger.jsonl")]
@@ -93,8 +93,10 @@ flowchart TB
     FEAT --> ENS
     NCAAB["ncaab.py<br/>college v1 (ncaab-v1): Elo + ridge ratings<br/>predict --league ncaab · ≥5-game gate"]
     NPRIOR["ncaab_prior.py<br/>prior model: Elo carry 0.75 + last-season ridge prior<br/>one fit → ncaab-v1p (≥5, graded, hidden)<br/>+ ncaab-v1-early (≥1, opt-in)"]
+    NALT["altitude.py → ncaab-v1.1alt<br/>ncaab-v1 + venue elevation · km climbed/dropped<br/>(total model only) · hidden, watch-only shadow"]
     FEAT --> NCAAB
     NCAAB --> NPRIOR
+    NCAAB --> NALT
     BET["betting/ grading · audit · loaders<br/>ROI + day bootstrap CI · CLV · 3x-move audit"]
     FTEST["feature_test.py<br/>feature-injection walk-forward"]
     PAPER["paper.py + fatigue.py<br/>3 frozen watch-only rules<br/>ncaab-total-t7 · nba-total-t4 · nba-load-under"]
@@ -152,6 +154,9 @@ flowchart TB
   RAW -.->|"conference flags"| NCAAB
   NCAAB -->|"predictions ncaab-v1"| DB
   NPRIOR -->|"predictions ncaab-v1p / -early"| DB
+  DB -->|"venues · games.venue_id"| NALT
+  NALT -->|"predictions ncaab-v1.1alt"| DB
+  DB -->|"read-only: games · predictions (v1, early, v1.1alt)"| ETOT
   MODEL -->|"predictions table"| DB
   PREDV["prediction_results view<br/>graded pre-tip predictions"]
   DB --> PREDV --> API

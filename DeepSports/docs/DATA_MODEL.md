@@ -179,6 +179,10 @@ this season). `ncaab-v1p` is the college prior model (`src/deepsports/analysis/n
 `models/ncaab_prior/config.json`) on the same gate: graded, never displayed (`HIDDEN_MODEL_VERSIONS`).
 `ncaab-v1-early` covers D1 games where each team has >= 1 game (opt-in in the web app; never on the
 calendar); since 2026-11-06 09:00 UTC it comes from the prior model (before: college v1).
+`ncaab-v1.1alt` (from 2026-11-23) is a watch-only altitude shadow: `ncaab-v1` with venue elevation
+and km climbed/dropped in the total model (frozen `models/ncaab_v1_1alt/config.json`), same gate,
+hidden (`HIDDEN_MODEL_VERSIONS`); its `features_json` adds `venue_elev_km`, `alt_gain_sum`,
+`alt_drop_sum`. Its only reader is the `et-v1-alt` shadow log (files, docs/PIPELINE.md).
 Written daily by `deepsports predict` (docs/PIPELINE.md). **No history:** each run overwrites the
 row for a (game, model, version) with a fresh `created_at`, and only games that haven't tipped off
 are ever written, so the stored row is the latest pre-tip prediction. A new model version gets its

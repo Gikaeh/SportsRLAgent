@@ -7,6 +7,9 @@ Files under `<REPORTS_DIR>/early-totals/` (append-only, no stakes):
 - `bets.jsonl`: one row per qualifying bet; the first row per (rule version, game) is the bet.
 - `runs.jsonl`: one row per `log` run (also nights with no bet, missing inputs or a busy warehouse).
 - `grade.json`: the latest `grade` output (derived; rewritten each time).
+- `alt/`: the same three files for the `et-v1-alt` shadow (`analysis/early_totals_alt.py`), logged
+  by the same `log` run after et-v1 (`--no-alt` skips it) and graded with `grade --alt`. A shadow
+  failure prints to stderr and never changes et-v1's files, output or exit code.
 
 The warehouse is opened read-only with a short lock wait; if a writer holds it the command prints
 one line and exits 3 without logging a bet.
@@ -28,10 +31,13 @@ import duckdb
 
 from deepsports import config
 from deepsports.analysis import early_totals as et
+from deepsports.analysis import early_totals_alt as eta
+from deepsports.store import PREDICTION_RESULTS_SQL
 
 OUT_DIR = config.REPORTS_DIR / "early-totals"
 MB_EXPORT = config.ROOT / ".sync" / "manualbets-export.json"
 BUSY_EXIT = 3
+ALT_SUBDIR = "alt"
 
 
 def _paths(out_dir: Path) -> dict[str, Path]:
@@ -125,6 +131,25 @@ def load_games(con: duckdb.DuckDBPyConnection, game_date: date) -> list[dict[str
     return games
 
 
+ALT_PREDS_SQL = """
+SELECT game_id, model_version, pred_total, created_at FROM predictions
+WHERE model = 'v1' AND model_version = ? AND created_at <= ? AND game_id IN ({ids})
+QUALIFY row_number() OVER (PARTITION BY game_id ORDER BY created_at DESC) = 1
+"""
+
+
+def load_alt_predictions(
+    con: duckdb.DuckDBPyConnection, game_ids: Sequence[str], now: datetime
+) -> dict[str, dict[str, Any]]:
+    """Latest ncaab-v1.1alt row per game made at or before `now`."""
+    if not game_ids:
+        return {}
+    sql = ALT_PREDS_SQL.format(ids=", ".join("?" for _ in game_ids))
+    rows = con.execute(sql, [eta.ALT_DS_VERSION, now, *game_ids]).fetchall()
+    cols = ("game_id", "model_version", "pred_total", "created_at")
+    return {r[0]: dict(zip(cols, r, strict=True)) for r in rows}
+
+
 def _open(lock_wait: float):
     from deepsports.store import Store, is_lock_conflict
 
@@ -159,10 +184,18 @@ def cmd_log(args: argparse.Namespace) -> int:
     if db is None:
         append_jsonl(p["runs"], [run | {"status": "busy"}])
         print(f"early-totals {game_date}: warehouse busy (a writer holds the lock); nothing logged")
+        if not args.no_alt:
+            _shadow(_alt_busy, out_dir, run)
         return BUSY_EXIT
+    alt_preds: dict | Exception = {}
     try:
         games = load_games(db.con, game_date)
         preds = load_predictions(db.con, et.LEAGUE, [g["game_id"] for g in games], now)
+        if not args.no_alt:
+            try:
+                alt_preds = load_alt_predictions(db.con, [g["game_id"] for g in games], now)
+            except Exception as e:  # the shadow never breaks et-v1
+                alt_preds = e
     finally:
         db.close()
     bets, counts = et.find_bets(games, preds, export, early, now, game_date.isoformat())
@@ -187,7 +220,60 @@ def cmd_log(args: argparse.Namespace) -> int:
     for b in new:
         print(f"  {b['away']} @ {b['home']} {b['side']} {b['line']:g} {b['price']:+d}"
               f" (DS +{b['ds_edge']:.1f}, MB +{b['mb_edge']:.1f})")  # fmt: skip
+    if not args.no_alt:
+        inputs = (games, preds, alt_preds, export, early, now, game_date, bets, run)
+        _shadow(_alt_log, out_dir, inputs)
     return 0
+
+
+# ---------- et-v1-alt shadow (runs after et-v1; its failures stay out of et-v1's path) ----------
+
+
+def _shadow(fn, out_dir: Path, payload) -> None:
+    try:
+        fn(out_dir / ALT_SUBDIR, payload)
+    except Exception as e:
+        print(f"early-totals {eta.ALT_RULE_VERSION}: shadow failed ({e!r}); et-v1 unaffected",
+              file=sys.stderr)  # fmt: skip
+
+
+def _alt_run(run: dict) -> dict:
+    return {"rule_version": eta.ALT_RULE_VERSION, "ran_at": run["ran_at"],
+            "game_date": run["game_date"]}  # fmt: skip
+
+
+def _alt_busy(alt_dir: Path, run: dict) -> None:
+    alt_dir.mkdir(parents=True, exist_ok=True)
+    append_jsonl(_paths(alt_dir)["runs"], [_alt_run(run) | {"status": "busy"}])
+
+
+def _alt_log(alt_dir: Path, payload) -> None:
+    games, preds, alt_preds, export, early, now, game_date, v1_bets, v1_run = payload
+    alt_dir.mkdir(parents=True, exist_ok=True)
+    p = _paths(alt_dir)
+    run = _alt_run(v1_run)
+    if isinstance(alt_preds, Exception):
+        append_jsonl(p["runs"], [run | {"status": f"error: {alt_preds!r}"}])
+        raise alt_preds
+    bets, counts = eta.find_alt_bets(
+        games, preds, alt_preds, export, early, now, game_date.isoformat()
+    )
+    with p["lock"].open("a") as lk:
+        fcntl.flock(lk, fcntl.LOCK_EX)
+        new = et.new_rows(read_jsonl(p["bets"]), bets)
+        append_jsonl(p["bets"], new)
+        append_jsonl(p["runs"], [run | {"status": v1_run.get("status"), **counts,
+                                        "new": len(new)}])  # fmt: skip
+    diff = eta.differences(v1_bets, bets)
+    what = ", ".join(f"{d['game_id']} {d['kind']}" for d in diff) or "none"
+    print(
+        f"early-totals {eta.ALT_RULE_VERSION} {game_date}: {len(bets)} qualify, {len(new)} new"
+        f" (alt DS on {counts['ds_alt']} games, v1 fallback {counts['ds_fallback_v1']});"
+        f" differs from et-v1 on: {what}"
+    )
+    for b in new:
+        print(f"  {b['away']} @ {b['home']} {b['side']} {b['line']:g} {b['price']:+d}"
+              f" (DS +{b['ds_edge']:.1f}, MB +{b['mb_edge']:.1f})")  # fmt: skip
 
 
 def cmd_grade(args: argparse.Namespace) -> int:
@@ -195,6 +281,8 @@ def cmd_grade(args: argparse.Namespace) -> int:
     from deepsports.analysis.model_picks import load_closes
     from deepsports.books import grab
 
+    if args.alt:
+        return cmd_grade_alt(args)
     p = _paths(Path(args.out_dir))
     bets = [b for b in read_jsonl(p["bets"]) if b.get("rule_version") == et.RULE_VERSION]
     ids = sorted({str(b["game_id"]) for b in bets})
@@ -228,7 +316,90 @@ def cmd_grade(args: argparse.Namespace) -> int:
     return 0
 
 
+MODELS_SQL = f"""
+SELECT r.game_id, r.start_time_utc, r.model_version, r.pred_total, r.actual_total, v.elevation_m
+FROM ({PREDICTION_RESULTS_SQL}) r
+JOIN games g ON g.game_id = r.game_id
+LEFT JOIN venues v ON v.venue_id = g.venue_id
+WHERE r.league = 'ncaab' AND r.model = 'v1' AND r.model_version IN (?, ?)
+  AND g.season_year = ? AND r.pred_total IS NOT NULL
+"""
+
+
+def load_model_rows(con: duckdb.DuckDBPyConnection) -> list[dict[str, Any]]:
+    """Graded 2026-27 college games with both a pre-tip ncaab-v1 and ncaab-v1.1alt total:
+    {game_id, day (local), elevation_m, actual, v1, alt}."""
+    by_game: dict[str, dict[str, Any]] = {}
+    params = [eta.BASE_DS_VERSION, eta.ALT_DS_VERSION, eta.SEASON_YEAR]
+    for gid, start, version, pred, actual, elev in con.execute(MODELS_SQL, params).fetchall():
+        day = start.astimezone(config.LOCAL_TZ).date().isoformat()
+        g = by_game.setdefault(
+            gid, {"game_id": gid, "elevation_m": elev, "actual": actual, "day": day}
+        )
+        g["v1" if version == eta.BASE_DS_VERSION else "alt"] = float(pred)
+    return [g for g in by_game.values() if "v1" in g and "alt" in g]
+
+
+def _grade_rows(bets, finals, closes) -> list[dict[str, Any]]:
+    return [
+        et.grade_bet(
+            b,
+            finals.get(str(b["game_id"])),
+            (closes.get(str(b["game_id"])) or {}).get("over_under"),
+        )  # fmt: skip
+        for b in bets
+    ]
+
+
+def cmd_grade_alt(args: argparse.Namespace) -> int:
+    """The et-v1-alt shadow vs et-v1 on paired nights, plus ncaab-v1.1alt vs ncaab-v1 totals.
+    Reads both logs; writes only `alt/grade.json`."""
+    from deepsports.analysis.ensemble_bets import load_finals
+    from deepsports.analysis.model_picks import load_closes
+
+    p, pa = _paths(Path(args.out_dir)), _paths(Path(args.out_dir) / ALT_SUBDIR)
+    v1 = [b for b in read_jsonl(p["bets"]) if b.get("rule_version") == et.RULE_VERSION]
+    alt = [b for b in read_jsonl(pa["bets"]) if b.get("rule_version") == eta.ALT_RULE_VERSION]
+    ran = [(r["game_date"], str(r.get("status", ""))) for r in read_jsonl(pa["runs"])]
+    paired = {d for d, st in ran if st != "busy" and not st.startswith("error")}
+    ids = sorted({str(b["game_id"]) for b in v1 + alt})
+    db = _open(args.lock_wait)
+    if db is None:
+        print("early-totals grade: warehouse busy (a writer holds the lock); try again later")
+        return BUSY_EXIT
+    try:
+        finals = load_finals(db.con, ids)
+        closes = load_closes(db.con, ids)
+        try:
+            models = load_model_rows(db.con)
+        except duckdb.Error:  # no venues table / older warehouse
+            models = None
+    finally:
+        db.close()
+    today = datetime.now(UTC).astimezone(config.LOCAL_TZ).date()
+    summary = eta.summarize(
+        _grade_rows(v1, finals, closes), _grade_rows(alt, finals, closes), paired, models, today
+    )
+    if pa["grade"].parent.exists():
+        tmp = pa["grade"].with_suffix(".json.tmp")
+        tmp.write_text(json.dumps({"summary": summary}, indent=1, default=str))
+        os.replace(tmp, pa["grade"])
+    print(json.dumps(summary, indent=1, default=str) if args.json else eta.render(summary))
+    return 0
+
+
 def cmd_status(args: argparse.Namespace) -> int:
+    if args.alt:
+        p = _paths(Path(args.out_dir) / ALT_SUBDIR)
+        bets = [b for b in read_jsonl(p["bets"]) if b.get("rule_version") == eta.ALT_RULE_VERSION]
+        days = sorted({b["game_date"] for b in bets})
+        span = f", game days {days[0]} to {days[-1]}" if days else ""
+        print(f"early-totals {eta.ALT_RULE_VERSION} (shadow): {len(bets)} bets logged{span}"
+              f" (verdict after {eta.VERDICT_AFTER.isoformat()})")  # fmt: skip
+        for r in read_jsonl(p["runs"])[-args.runs :]:
+            print(f"  {r.get('ran_at')} for {r.get('game_date')}: {r.get('status')},"
+                  f" {r.get('bets', 0)} qualify, {r.get('new', 0)} new")  # fmt: skip
+        return 0
     p = _paths(Path(args.out_dir))
     bets = [b for b in read_jsonl(p["bets"]) if b.get("rule_version") == et.RULE_VERSION]
     runs = read_jsonl(p["runs"])
@@ -251,10 +422,13 @@ def build_parser() -> argparse.ArgumentParser:
     lg = sub.add_parser("log", help="log tomorrow's qualifying bets (idempotent; run at 21:00)")
     lg.add_argument("--date", type=date.fromisoformat, help="game day (default: tomorrow, local)")
     lg.add_argument("--manualbets", default=str(MB_EXPORT), help="ManualBets export JSON")
+    lg.add_argument("--no-alt", action="store_true", help="skip the et-v1-alt shadow log")
     gr = sub.add_parser("grade", help="CLV + W/L/P of every logged bet vs the pre-registered test")
     gr.add_argument("--json", action="store_true")
     st = sub.add_parser("status", help="files only: bets logged and the last runs")
     st.add_argument("--runs", type=int, default=5)
+    for s in (gr, st):
+        s.add_argument("--alt", action="store_true", help="the et-v1-alt shadow (paired vs et-v1)")
     for s in (lg, gr, st):
         s.add_argument("--out-dir", default=str(OUT_DIR))
     for s in (lg, gr):

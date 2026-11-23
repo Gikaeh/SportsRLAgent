@@ -48,5 +48,7 @@ a copy or wait). Cross-cutting changes go back to the orchestrator.
 | Circa screenshots: upload API, iCloud inbox, Claude read into lines (watch-only) | `deepsports circa read\|ingest\|status` (`src/deepsports/circa/`, `src/deepsports/api/circa.py`) |
 | Circa + William Hill lines from OddsPapi (watch-only; Caesars' feed stands in for WH) | `deepsports books grab\|status` (`src/deepsports/books/`), run by `tools/model-picks-daily.sh` |
 | night-before Caesars grab + et-v1 early-totals forward test (watch-only) | `deepsports books grab --early` + `deepsports early-totals log\|grade\|status` (`src/deepsports/analysis/early_totals.py`), run by `tools/books-evening.sh` (launchd `com.deepsports.books-evening`, 21:00) |
+| et-v1-alt altitude shadow of et-v1 (watch-only; `ncaab-v1.1alt` total, logged by the same 21:00 run) | `deepsports early-totals grade --alt` / `status --alt` (`src/deepsports/analysis/early_totals_alt.py`; files under `reports/early-totals/alt/`) |
+| venue geography: GeoNames download, venue backfill + geocode (elevation, tz), coverage | `deepsports venues fetch\|build\|status` (`src/deepsports/venues_cli.py`, `venue_geo.py`, `sources/geonames.py`; `build` run by `tools/scheduled-sync.sh`) |
 | cash-out check ("check cashouts"): P(win) and fair cash-out value for open bets in the 2nd half (read-only, heuristic, by hand) | `uv run python tools/cashout.py [--all]` |
 | ensemble betting (watch-only vote, by hand) | `deepsports ensemble-bets context\|tally\|grade` (`src/deepsports/analysis/ensemble_bets.py`) |

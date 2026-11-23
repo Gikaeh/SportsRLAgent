@@ -780,3 +780,15 @@ that isn't busy/error; (4) the MAE and bias metrics use `prediction_results` (la
 2026-27 games with both versions), so they score the model as predicted closest to tip, not the 21:00 number;
 (5) the verdict counts games through 2027-03-14 (Selection Sunday). Alternative considered: a separate 21:00
 job for the shadow; rejected, since the pre-registration asks for the same run and inputs.
+
+### 2026-11-23: et-v2 candidates pre-registered before the Odds API pull
+**Why:** et-v1's backtest edge is measured against untimestamped ESPN openers, live CLV from the bet line is
+~0, and its cell won only 52.6% / 51.2% in 2023-24 / 2024-25. The owner is buying one month of The Odds API's
+history; fixing every rule before the pull keeps the backtest from being tuned on it. **What:** 7 candidates
+(C0 = et-v1 re-scored at the 21:00 PT `williamhill_us` line; C1 altitude DS total; C2 early-season avg >= 8 with
+< 10 games; C3 Pinnacle at or past WH on our side; C4 opener -> 21:00 move toward the pick >= 0; C5 edge shrunk
+by factors fitted on earlier seasons only, s >= 1.5; C6 skip when WH is >= 1 pt off the other books' median in
+our favor) and 2 combinations (C1+C6, C3+C4), graded at the 21:00 WH price over 2021-22 .. 2025-26. Pass = ROI
+> 0 in every season with >= 100 bets and pooled win % above break-even after Holm across all 9; practical only
+with >= 150 bets a season. If none pass, et-v1 continues and there is no v2. et-v1 and its live test are
+unchanged. Doc: `docs/results/2026-11-23-et-v2-preregistration.md`; deviations go in its Amendment section.

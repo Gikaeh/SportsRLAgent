@@ -1,0 +1,17 @@
+{
+ "model_version": "ncaab-v1.1alt",
+ "league": "ncaab",
+ "status": "watch-only shadow, hidden (config.HIDDEN_MODEL_VERSIONS); never displayed",
+ "base_version": "ncaab-v1",
+ "base_config": "models/ncaab_v1/config.json",
+ "base_config_sha256": "4f98d431d74ffb544826df5ca0435e2cfc20b203070264e17f7fb09d38bda124",
+ "changed_targets": ["total"],
+ "total_extra_features": ["venue_elev_km", "alt_gain_sum", "alt_drop_sum"],
+ "feature_module": "deepsports.analysis.altitude",
+ "variant": "gd",
+ "shadow_rule": "et-v1-alt",
+ "preregistration": "docs/results/2026-11-22-altitude-feature.md",
+ "decision": "docs/DECISIONS.md 2026-11-22 (owner-approved)",
+ "verdict": "end of the 2026-27 regular season (Selection Sunday 2027-03-14), no early stop",
+ "frozen_at": "2026-11-22T00:00:00-08:00"
+}

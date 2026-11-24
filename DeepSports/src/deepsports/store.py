@@ -60,6 +60,8 @@ TABLES: dict[str, str] = {
     away_score INTEGER,
     venue VARCHAR,
     venue_city VARCHAR,
+    venue_id VARCHAR,                  -- ESPN venue id -> venues (NULL on rows not backfilled)
+    venue_state VARCHAR,               -- ESPN address state: USPS code, province or country
     neutral_site BOOLEAN,
     attendance INTEGER,
     broadcasts VARCHAR,
@@ -189,6 +191,27 @@ TABLES: dict[str, str] = {
     lat DOUBLE NOT NULL,
     lon DOUBLE NOT NULL
     """,
+    # Every ESPN venue in `games` (both leagues), geocoded to its city by `deepsports venues
+    # build` from the GeoNames gazetteer (sources/geonames.py). Rebuilt in place, idempotent.
+    "venues": """
+    venue_id VARCHAR PRIMARY KEY,      -- ESPN venue id (= games.venue_id)
+    name VARCHAR,                      -- ESPN name on the latest game there
+    city VARCHAR,
+    state VARCHAR,                     -- as ESPN writes it: USPS code, province or country name
+    country VARCHAR,                   -- ISO 3166-1 alpha-2 (GeoNames), NULL if unmatched
+    lat DOUBLE,                        -- the city's point (GeoNames), not the arena's
+    lon DOUBLE,
+    elevation_m INTEGER,               -- GeoNames elevation, else its DEM (SRTM) at the point
+    tz VARCHAR,                        -- IANA time zone, e.g. America/Denver
+    geonameid INTEGER,
+    geo_place VARCHAR,                 -- the GeoNames place matched
+    geo_match VARCHAR,                 -- how matched (name, alternate, override ...) or why not
+    games INTEGER NOT NULL,            -- games at the venue in `games`
+    neutral_games INTEGER NOT NULL,
+    first_game_utc TIMESTAMPTZ,
+    last_game_utc TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ NOT NULL
+    """,
 }
 # Tables whose team references became league-scoped in the 2026-11 migration.
 LEAGUE_SCOPED = (
@@ -220,10 +243,10 @@ WITH g AS (
       AND (league, away_team_id) IN (SELECT league, team_id FROM teams)
 ),
 tg AS (
-    SELECT league, game_id, season_year, season_type, start_time_utc, venue_city,
+    SELECT league, game_id, season_year, season_type, start_time_utc, venue_city, venue_id,
            home_team_id AS team_id, away_team_id AS opponent_id, TRUE AS is_home FROM g
     UNION ALL
-    SELECT league, game_id, season_year, season_type, start_time_utc, venue_city,
+    SELECT league, game_id, season_year, season_type, start_time_utc, venue_city, venue_id,
            away_team_id AS team_id, home_team_id AS opponent_id, FALSE AS is_home FROM g
 ),
 d AS (
@@ -234,6 +257,7 @@ w AS (
     SELECT *,
         lag(game_date) OVER ts AS prev_date,
         lag(venue_city) OVER ts AS prev_city,
+        lag(venue_id) OVER ts AS prev_venue_id,
         count(*) OVER (
             PARTITION BY league, team_id, season_year ORDER BY game_date
             RANGE BETWEEN INTERVAL 7 DAY PRECEDING AND INTERVAL 1 DAY PRECEDING
@@ -256,16 +280,48 @@ SELECT
         ORDER BY w.start_time_utc, w.game_id ROWS UNBOUNDED PRECEDING
     ) END AS road_trip_length,
     round(2 * 6371 * asin(sqrt(
-        pow(sin(radians(b.lat - a.lat) / 2), 2)
-        + cos(radians(a.lat)) * cos(radians(b.lat)) * pow(sin(radians(b.lon - a.lon) / 2), 2)
+        pow(sin(radians(b_lat - a_lat) / 2), 2)
+        + cos(radians(a_lat)) * cos(radians(b_lat)) * pow(sin(radians(b_lon - a_lon) / 2), 2)
     )), 1) AS travel_km,
     w.league
-FROM w
-LEFT JOIN venue_cities a ON a.city = w.prev_city
-LEFT JOIN venue_cities b ON b.city = w.venue_city
+FROM (
+    -- NBA: arena coordinates by city (venue_cities); college: the venue's city by ESPN venue id
+    SELECT w.*,
+        CASE WHEN w.league = 'nba' THEN a.lat ELSE va.lat END AS a_lat,
+        CASE WHEN w.league = 'nba' THEN a.lon ELSE va.lon END AS a_lon,
+        CASE WHEN w.league = 'nba' THEN b.lat ELSE vb.lat END AS b_lat,
+        CASE WHEN w.league = 'nba' THEN b.lon ELSE vb.lon END AS b_lon
+    FROM w
+    LEFT JOIN venue_cities a ON a.city = w.prev_city
+    LEFT JOIN venue_cities b ON b.city = w.venue_city
+    LEFT JOIN venues va ON va.venue_id = w.prev_venue_id
+    LEFT JOIN venues vb ON vb.venue_id = w.venue_id
+) w
 )
 SELECT * FROM ctx
 WHERE (league, team_id) IN (SELECT league, team_id FROM teams WHERE listed);
+
+-- Each team's home venue per season: the venue of most of its non-neutral home games (season
+-- types 1-3, 5; postponed/canceled games skipped; ties go to the later venue). A school that
+-- moved arenas mid-season keeps the one it used most. Teams with no home game have no row.
+CREATE OR REPLACE VIEW team_home_venues AS
+WITH h AS (
+    SELECT league, home_team_id AS team_id, season_year, venue_id,
+           count(*) AS home_games, max(start_time_utc) AS last_home_game
+    FROM games
+    WHERE NOT coalesce(neutral_site, false) AND venue_id IS NOT NULL
+      AND status NOT IN ('STATUS_POSTPONED', 'STATUS_CANCELED')
+    GROUP BY ALL
+),
+r AS (
+    SELECT *, sum(home_games) OVER (PARTITION BY league, team_id, season_year) AS all_home,
+           row_number() OVER (PARTITION BY league, team_id, season_year
+                              ORDER BY home_games DESC, last_home_game DESC) AS rk
+    FROM h
+)
+SELECT league, team_id, season_year, venue_id, home_games,
+       round(home_games / all_home, 3) AS share
+FROM r WHERE rk = 1;
 """
 # Per-league sanity limits for closing lines: (max |spread|, total low, total high). Guards
 # against obviously bad lines (e.g. a decimal price parsed as a total). College lines are real
@@ -404,7 +460,13 @@ VIEWS += (
     "\n-- Paper-trade grading: per logged bet on a final game, the result, profit and CLV.\n"
     "CREATE OR REPLACE VIEW paper_results AS" + PAPER_RESULTS_SQL + ";\n"
 )
-VIEW_NAMES = ("pregame_injuries", "team_game_context", "prediction_results", "paper_results")
+VIEW_NAMES = (
+    "pregame_injuries",
+    "team_game_context",
+    "team_home_venues",
+    "prediction_results",
+    "paper_results",
+)
 
 
 def _create_sql(table: str, as_name: str | None = None) -> str:
@@ -978,6 +1040,6 @@ class Store:
     def counts(self) -> dict[str, int]:
         tables = ["teams", "games", "team_game_stats", "player_game_stats", "odds_snapshots"]
         # absent until a writer applies SCHEMA
-        optional = ["injury_reports", "predictions", "paper_bets"]
+        optional = ["injury_reports", "predictions", "paper_bets", "venues"]
         tables += [t for t in optional if self.has_table(t)]
         return {t: self.con.execute(f"SELECT count(*) FROM {t}").fetchone()[0] for t in tables}

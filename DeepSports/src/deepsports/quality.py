@@ -21,7 +21,10 @@ KNOWN_NO_BOXSCORE = frozenset(
 KNOWN_POINTS_MISMATCH = frozenset(
     {("401597895", "3169"), ("401597922", "2893"), ("401608976", "2726"),
      ("401720664", "2491"), ("401722030", "130198"), ("401722338", "62"),
-     ("401727325", "2565")}
+     ("401727325", "2565"),
+     # 2021-22 / 2022-23 (loaded 2026-11-19), checked 2026-11-23; 401377086 lists one player
+     # on both teams, so one row per player per game can't match either score
+     ("401377086", "61"), ("401377086", "77"), ("401483337", "2197"), ("401491692", "110031")}
 )  # fmt: skip
 
 
@@ -111,7 +114,28 @@ def run_checks(db: Store) -> list[Check]:
             )
         )
     checks += injury_coverage(db)
+    checks += venue_coverage(db)
     return checks
+
+
+def venue_coverage(db: Store) -> list[Check]:
+    """Soft: college games whose venue has no coordinates, elevation or time zone (a new venue
+    since the last `deepsports venues build`, or a city GeoNames can't match)."""
+    if not db.has_table("venues"):  # read-only open of a warehouse not yet migrated
+        return [Check("college venue geography", 0, "venues table not created yet", False)]
+    games, missing = db.con.execute("""
+        SELECT count(*), count(*) FILTER (WHERE v.lat IS NULL OR v.elevation_m IS NULL
+                                             OR v.tz IS NULL)
+        FROM games g LEFT JOIN venues v USING (venue_id) WHERE g.league = 'ncaab'""").fetchone()
+    return [
+        Check(
+            "college venue geography",
+            missing,
+            f"{games - missing}/{games} games with venue coordinates, elevation and time zone"
+            " (fix: `deepsports venues build`)",
+            False,
+        )
+    ]
 
 
 def _label(league: str, season: int) -> str:

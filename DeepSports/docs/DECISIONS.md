@@ -753,3 +753,87 @@ Caesars pull came back empty (0 lines for 2026-11-16), and they have WH's openin
 the book Caesars stood in for, and no et-v1 bet had been logged yet, so the pre-registration is amended
 (its "Amendment 2026-11-16"): screenshot lines first, the Caesars feed for gaps, `line_source` on each bet.
 `books-evening.sh` now reads WH openers before the et-v1 log (Circa's after; recorded only).
+
+### 2026-11-22: venue altitude for college totals: proposed as watch-only `ncaab-v1.1alt`, not a change to `ncaab-v1`
+**Why:** the situational study found games at >= 1,200 m venues beat both models and the close; the owner
+approved testing altitude as a feature. **What:** walk-forward 2021-22 -> 2025-26 with the frozen v1 path,
+6 variants (4 feature sets, 2 post-hoc offsets). Altitude halves the model's under-shoot at high venues but
+total MAE gains are tiny and not significant (fails the MAE bar); the et-v1 cell gains +0.4 win pts / +0.8%
+ROI paired (all three opener seasons), from ~45 swapped bets a season. Approved by the owner 2026-11-22: variant
+`gd` (venue elevation + km climbed + km dropped, total model only) as hidden watch-only `ncaab-v1.1alt`, with a
+shadow `et-v1-alt` log beside et-v1 and a verdict at the end of the 2026-27 regular season. `ncaab-v1`,
+`models/ncaab_v1`, et-v1 and the live predict pipeline are unchanged; et-v1 keeps `ncaab-v1` until its
+300-bet verdict. Feature code: `src/deepsports/analysis/altitude.py` (tested). Result:
+`docs/results/2026-11-22-altitude-feature.md`.
+
+**Same day, built (branch `feature/ncaab-alt-shadow`):** `ncaab-v1.1alt` = `ncaab-v1`'s rows, gate, win and
+margin fits, with `venue_elev_km`, `alt_gain_sum`, `alt_drop_sum` appended to the total model only; frozen
+`models/ncaab_v1_1alt/config.json` pins v1's config by SHA-256 (the alt refuses to run if v1's changes). Hidden
+(`HIDDEN_MODEL_VERSIONS`), accepted by name only so `predict --model-version all` is unchanged; the scheduled sync
+predicts it after the other college versions, non-fatal. `et-v1-alt` runs inside `early-totals log` after et-v1
+has written its files (`--no-alt` skips it; any shadow error goes to stderr and `alt/runs.jsonl`, never into
+et-v1's files, stdout or exit code; a golden test pins et-v1's output). Choices the pre-registration left open:
+(1) where et-v1 uses `ncaab-v1-early`, the shadow uses it too (the alt only replaces `ncaab-v1`); (2) a missing
+alt row, or one more than 1 h older than the v1 row (its predict step failed), falls back to the v1 number, so
+a failed step can only make the rules agree, never differ; (3) "paired nights" = game days with an alt run row
+that isn't busy/error; (4) the MAE and bias metrics use `prediction_results` (latest pre-tip row per version,
+2026-27 games with both versions), so they score the model as predicted closest to tip, not the 21:00 number;
+(5) the verdict counts games through 2027-03-14 (Selection Sunday). Alternative considered: a separate 21:00
+job for the shadow; rejected, since the pre-registration asks for the same run and inputs.
+
+### 2026-11-23: et-v2 candidates pre-registered before the Odds API pull
+**Why:** et-v1's backtest edge is measured against untimestamped ESPN openers, live CLV from the bet line is
+~0, and its cell won only 52.6% / 51.2% in 2023-24 / 2024-25. The owner is buying one month of The Odds API's
+history; fixing every rule before the pull keeps the backtest from being tuned on it. **What:** 7 candidates
+(C0 = et-v1 re-scored at the 21:00 PT `williamhill_us` line; C1 altitude DS total; C2 early-season avg >= 8 with
+< 10 games; C3 Pinnacle at or past WH on our side; C4 opener -> 21:00 move toward the pick >= 0; C5 edge shrunk
+by factors fitted on earlier seasons only, s >= 1.5; C6 skip when WH is >= 1 pt off the other books' median in
+our favor) and 2 combinations (C1+C6, C3+C4), graded at the 21:00 WH price over 2021-22 .. 2025-26. Pass = ROI
+> 0 in every season with >= 100 bets and pooled win % above break-even after Holm across all 9; practical only
+with >= 150 bets a season. If none pass, et-v1 continues and there is no v2. et-v1 and its live test are
+unchanged. Doc: `docs/results/2026-11-23-et-v2-preregistration.md`; deviations go in its Amendment section.
+
+### 2026-11-23: et-v2 phase 1, lines-only sanity checks (before grading)
+**Why:** the pre-registration requires the data checks on lines only, committed before any candidate is scored.
+**What:** coverage, timestamps, event matching, line agreement and drops on the 2,916 Odds API snapshots, read
+with the new `analysis/et_v2_lines.py` (reused by phase 2). Outcomes were not loaded. Findings and choices:
+(1) snapshots include in-play games, so only events starting after the snapshot time count as quotes;
+(2) the first match pass was 96.1%; vendor names of renamed schools (Fort Wayne, Appalachian St, UMKC, Houston
+Baptist, Texas A&M-Commerce, Dixie State, ...) were added as aliases, giving 99.35%; (3) no line-agreement pair
+is near the 2-pt bug threshold (WH vs DraftKings at T: mean abs 0.23); (4) under the 60% rule, computed on all D1
+games, 2021-22 is dropped (WH 57.6%, DK 54.5% at T from Dec 1) and 2022-23 .. 2025-26 grade at `williamhill_us`.
+This is provisional: phase 2 recomputes the rule on the pre-registered denominator (games with both model
+numbers), which this lines-only step did not open. Open for an Amendment before scoring: whether C5's 2022-23
+fit uses 2021-22 games if that season is dropped from grading. Doc: `docs/results/2026-11-23-et-v2-sanity.md`.
+
+### 2026-11-23: et-v2 phase 2 scored: none of the 9 candidates pass, so no et-v2
+**Why:** this is the pre-registered backtest of et-v2 (`2026-11-23-et-v2-preregistration.md`, `3970720`) on the
+Odds API history. **Amendment 1** (`0458f6b`) was committed before any outcome was loaded:
+- the 60% rule on games with both model numbers drops 2021-22 (WH 57.8%, DK 54.8%) and grades 2022-23 .. 2025-26
+  at `williamhill_us`;
+- C5's fit may use 2021-22 games with a WH line at T, because grading coverage doesn't limit which earlier games
+  inform a rule and there is no leakage;
+- quotes are matched per snapshot, pre-game only, and gp and the D-1 flag come from the warehouse games table.
+
+**Outcome:** no rule passes. Every rule fails the every-season test, and none survives Holm (smallest p 0.165).
+- C0, et-v1's cell at the 21:00 WH line, has pooled ROI -3.9% (CI -7.2 to -0.7) on 3,470 bets, losing in 3 of
+  4 seasons, including the 2025-26 tuning season.
+- C4 (+0.6%) and K2 (+3.6%) are positive pooled but below the volume floor and mixed by season.
+
+Per the pre-registration, **et-v1 continues unchanged** toward its 300-bet verdict, and there is no v2 from this
+data. Filters noticed afterwards (unders drain every rule, market-momentum rules) are exploratory and would need
+a new pre-registration plus forward data. Doc: `docs/results/2026-11-23-et-v2-results.md`.
+
+### 2026-11-23: momentum leads from et-v2 pre-registered for a live forward test
+**Why:** et-v2 passed nothing, but its only positive rules were the market-momentum ones (C4, K2; K2 overs +9.4%
+on 350), and DraftKings lost less than WH. Those were seen after outcomes, so they need new data; the live Odds
+API job (every 30 min 12:00-21:30 + 09:00 PT, 10 books, until ~2026-12-23) supplies it. Fixing the rules before
+the first capture keeps the test from being tuned on it. **What:** T = the 19:00 PT capture on D-1 (the middle of
+the owner's 18:00-20:00 WH betting window); base cell = et-v1's rule at T's `williamhill_us` line with DS/MB as
+of T (frozen at T, because `predictions` is upserted and the MB export is overwritten); O = the first D-1 capture
+quoting the game at or before T - 60 min, WH else DraftKings. H1 momentum >= 0, H2 H1 + overs, H3 the H1 bets at
+the best of the 10 books; et-v1-at-T is a reference arm. Primary ROI with day-clustered bootstrap, Holm across 3.
+Verdict once, at H1 n = 400 or D = 2027-03-07; one month (~180-250 H1 bets) can only detect ~+20% ROI, so the
+owner decides the continuation source by 2026-12-16 (renewed key, or OddsPapi + ESPN DK, H3 then stops).
+Pass -> a watch-only `mom-v1` rule version; real money only by the owner. et-v1 is unchanged.
+Doc: `docs/results/2026-11-23-momentum-forward-preregistration.md`.

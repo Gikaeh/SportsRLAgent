@@ -59,6 +59,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     b = sub.add_parser("boxscores", help="fetch box scores for final games that lack them")
     b.add_argument("--limit", type=int)
+    b.add_argument(
+        "--game",
+        action="append",
+        metavar="ID",
+        help="refetch this game's box score, ignoring the cache (repeatable)",
+    )
     league_arg(b)
 
     u = sub.add_parser(
@@ -123,8 +129,9 @@ def build_parser() -> argparse.ArgumentParser:
         "--model-version",
         help="nba: v1.0 (default), v1.1 or v1.1i (injury-aware); "
         "ncaab: ncaab-v1 (default, >=5 games per team), "
-        "ncaab-v1p (prior model, >=5 games) or ncaab-v1-early (prior model, >=1 game); "
-        "comma-separated for several, ncaab: all",
+        "ncaab-v1p (prior model, >=5 games) or ncaab-v1-early (prior model, >=1 game), "
+        "ncaab-v1.1alt (hidden altitude shadow, by name only); "
+        "comma-separated for several, ncaab: all (not the shadow)",
     )
     pr.add_argument("--days", type=int, default=14, help="predict games in the next N days")
 
@@ -219,6 +226,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     sub.add_parser(
+        "venues",
+        help="venue coordinates, elevation and time zone from GeoNames: fetch|build|status"
+        " (`deepsports venues -h`)",
+        add_help=False,
+    )
+
+    sub.add_parser(
         "odds-api-history",
         help="The Odds API historical snapshots: plan|probe|pull|status|live (files only;"
         " `deepsports odds-api-history -h`)",
@@ -226,8 +240,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     sub.add_parser(
+        "momentum-freeze",
+        help="freeze tomorrow's college model inputs (DS predictions + MB export) for the"
+        " momentum forward test (read-only, write-once; `deepsports momentum-freeze -h`)",
+        add_help=False,
+    )
+
+    sub.add_parser(
         "early-totals",
-        help="night-before college totals forward test et-v1: log|grade|status (watch-only;"
+        help="night-before college totals forward test et-v1: log|grade|status|context (watch-only;"
         " `deepsports early-totals -h`)",
         add_help=False,
     )
@@ -268,10 +289,18 @@ def main(argv: list[str] | None = None) -> int:
         from deepsports.torvik_cli import main as torvik_main
 
         return torvik_main(argv[1:])
+    if argv[:1] == ["venues"]:  # its own parser; GeoNames files + one short writer session
+        from deepsports.venues_cli import main as venues_main
+
+        return venues_main(argv[1:])
     if argv[:1] == ["odds-api-history"]:  # its own parser; The Odds API + files, never DuckDB
         from deepsports.oddsapi_cli import main as oddsapi_main
 
         return oddsapi_main(argv[1:])
+    if argv[:1] == ["momentum-freeze"]:  # its own parser; one read-only open + files
+        from deepsports.momentum_freeze import main as freeze_main
+
+        return freeze_main(argv[1:])
     if argv[:1] == ["early-totals"]:  # its own parser; files + brief read-only opens
         from deepsports.analysis.early_totals_cli import main as early_main
 
@@ -355,7 +384,7 @@ def _collect_commands(args: argparse.Namespace, db: Store) -> int:
     elif args.command == "schedule":
         stats = pipeline.collect_schedule(src, db, args.start, args.end, refresh=args.refresh)
     elif args.command == "boxscores":
-        stats = pipeline.collect_boxscores(src, db, args.limit)
+        stats = pipeline.collect_boxscores(src, db, args.limit, game_ids=args.game)
     elif args.command == "update":
         # NBA: snapshot every game's injury report. College: followed teams only (keeps the
         # request count small; ESPN currently lists no college injuries anyway).
@@ -631,15 +660,15 @@ def _predict(args: argparse.Namespace, db: Store) -> int:
     spec = args.model_version or DEFAULT_VERSIONS[args.league]
     versions = [v.strip() for v in spec.split(",") if v.strip()]
     if args.league == "ncaab":
-        from deepsports.analysis.ncaab import VERSIONS
+        from deepsports.analysis.ncaab import ACCEPTED_VERSIONS, VERSIONS
 
         if versions == ["all"]:
             versions = list(VERSIONS)
-        bad = [v for v in versions if v not in VERSIONS]
+        bad = [v for v in versions if v not in ACCEPTED_VERSIONS]
         if bad or not versions:
             msg = (
                 f"error: unknown college model version {', '.join(bad) or spec!r} "
-                f"(use {', '.join(VERSIONS)} or all)"
+                f"(use {', '.join(ACCEPTED_VERSIONS)} or all)"
             )
             print(msg, file=sys.stderr)
             return 2

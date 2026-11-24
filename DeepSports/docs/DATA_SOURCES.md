@@ -62,11 +62,13 @@ returns one item per sportsbook with `open`/`close`/`current` blocks and explici
   stats), so player points fall short of the team total (e.g. 401579052 SELA: players 67, score 77).
   Team totals and scores are right. 2024-25 has 1 such game. `deepsports check` reports them as
   known gaps (`has_noid`); don't use 2023-24 college player rows for team-level sums.
-- **7 college team-games are known points gaps (checked 2026-11-05; `deepsports check` warns on exactly these
+- **11 college team-games are known points gaps (checked 2026-11-05, 4 added 2026-11-23; `deepsports check` warns on exactly these
   team-games via `quality.KNOWN_POINTS_MISMATCH`, any other mismatch > 2 still fails),** all D1 vs non-D1 games
   where ESPN's own raw box disagrees with the score by more than 2 (e.g. 401597895 JWNC: players 15,
   score 61; 401722338 HAW: players 110, score 96): 401597895, 401597922, 401608976 (2023-24);
-  401720664, 401722030, 401722338, 401727325 (2024-25). Upstream; the stored rows match the raw data.
+  401720664, 401722030, 401722338, 401727325 (2024-25); 401377086 (both teams: ESPN lists one player on both boxes), 401483337, 401491692 (2021-22, 2022-23).
+  Upstream; the stored rows match the raw data. A stored box that ESPN later corrected (an early, incomplete
+  box, e.g. 401925079 on 2026-11-14) is not a known gap: refetch it with `deepsports boxscores --league ncaab --game ID`.
 
 What's available but not parsed yet (it's already in the raw zone for completed games):
 play-by-play, win probability, season series, quarter linescores.
@@ -197,6 +199,29 @@ is ~2 requests and the 21:00 evening grab (`books grab --early`, William Hill/Ca
   starting within 6 h; unmatched fixtures are dropped. A spread market's handicap is participant 1's line.
 Screenshots stay the fallback and win over the feed where both have a line (moon `--circa auto`).
 
+## In use: GeoNames gazetteer (venue coordinates, elevation, time zone; since 2026-11-22)
+`deepsports venues fetch|build|status` (`src/deepsports/sources/geonames.py`, `venue_geo.py`, `venues_cli.py`).
+- **What:** the free GeoNames dumps at `https://download.geonames.org/export/dump/`: `cities500.zip` (every
+  populated place in the world with >= 500 people, ~14 MB) and `US.zip` (every US feature, ~71 MB; only
+  populated places are used, for small college towns and campus CDPs). Each place has WGS84 coordinates, an
+  elevation (often empty) and a DEM value (SRTM3/GTOPO30, m) at the point, and an IANA time zone.
+- **Access:** keyless, plain HTTPS download, no browser-like headers. Two requests in total through
+  `PoliteClient.get_bytes`, saved to `data/raw/geonames/`; re-downloaded only with `venues fetch --refresh`.
+  Everything after that is offline. (GeoNames' web services need a username; the dumps don't.)
+- **Licence:** CC BY 4.0. Credit "GeoNames (geonames.org)" when venue geography is shared.
+- **Matching (2026-11-22):** ESPN gives a venue's city and state (USPS code, province code or country name),
+  never coordinates or a zip code. A venue gets the most populous GeoNames place with that name (or an
+  alternate name) in that state/country. Reviewed overrides in `geonames.py`: `Maui, HI` → Lahaina (ESPN's
+  city for the Lahaina Civic Center), `Morehead, KY` → Morehead State's town (the more populous western-KY
+  Morehead is wrong), NBA's state-less `San Juan` → San Juan PR, and venue 2014 (Clune Arena, ESPN city
+  Colorado Springs) → the Air Force Academy CDP. 571 of 579 college venues match on name, 5 on an
+  alternate name, 3 by override. Arena-level points were checked and dropped: only 68 of 579 arena names
+  appear in GeoNames.
+- **Precision:** city level. Elevations agree with known arena elevations to within ~150 m (Laramie 2,184,
+  Flagstaff 2,104, Air Force 2,069, Boulder 1,624, Denver 1,609, Fort Collins 1,525, Albuquerque 1,511,
+  Provo 1,387, Reno 1,373, Salt Lake City 1,299, Lawrence 263). The USGS Elevation Point Query Service
+  was not needed (without arena coordinates it would only re-measure the same city points).
+
 ## Collected, not in the warehouse yet: cbbdata (Barttorvik T-Rank daily archive, since 2026-11-19)
 `deepsports torvik fetch|map|status` (`src/deepsports/sources/cbbdata.py`, `torvik_cli.py`; files only, never
 DuckDB). One request per season: `GET https://www.cbbdata.com/api/torvik/ratings/archive?year=<season end
@@ -254,6 +279,32 @@ adj_o, adj_d, adj_tempo, wab, their ranks, projected records, date, year). ~3 MB
   = 72,480. College totals alone: `us` 14,980, `us,eu` 29,960.
 - **Fixtures:** `tests/fixtures/oddsapi_live_ncaab_totals_us_20261119.json` (real, trimmed) and
   `oddsapi_historical_ncaab_synthetic.json` (synthetic, the documented historical shape).
+
+## The Odds API live capture (owner's key, until about 2026-12-23)
+`deepsports odds-api-history live`, run by launchd `com.deepsports.oddsapi-live`
+(`tools/oddsapi-live.sh`; owner-approved 2026-11-23). Forward-test lines through the day.
+- **Key:** the owner's own paid-month key in `~/.config/deepsports/oddsapi.key` (mode 600; not
+  ManualBets' key). About 41.6K credits left on 2026-11-23, valid until about 2026-12-23. A missing,
+  expired or exhausted key (HTTP 401/403) is one log line and exit 0.
+- **Endpoint:** `GET /v4/sports/{basketball_ncaab|basketball_nba}/odds?bookmakers=..&markets=totals,spreads&oddsFormat=american`
+  (bare event list, same event shape as historical; no `commenceTimeFrom/To`, so every upcoming event,
+  next-day games included). `GET /v4/sports` first (free) for the remaining-credits header.
+- **Books (one billing region):** draftkings, fanduel, betmgm, williamhill_us, betrivers, espnbet,
+  bovada, betonlineag, lowvig, pinnacle.
+- **Schedule and budget:** 09:00 PT and every 30 min 12:00-21:30 PT = 21 runs × 2 leagues × 2 credits
+  = **84 credits/day** (~2,600 for the month). Guards: `--reserve 2000` (a league is skipped when its
+  call would leave fewer), `--until 2026-12-24` (Pacific date; nothing runs after it), one file per
+  league per 30-min slot (a re-run in the same slot spends nothing).
+- **Storage:** `data/raw/oddsapi/live/<sport>/<UTC slot>.json.gz` = `{timestamp, snapshot_ts (both the
+  request time), sport,
+  markets, scope, credits_last, credits_remaining, data: [events]}`; `live/ledger.jsonl` one line per
+  call (`snapshot_ts, slot, sport, events, rows, last, used, remaining`). Contract: DATA_MODEL.md. Used by the
+  momentum forward test (pre-registered 2026-11-23), whose model inputs `deepsports momentum-freeze` freezes at
+  18:30/19:00/19:30 PT. Files only, no table yet. The 2026-11-19
+  key check is in the older layout `live/basketball_ncaab/totals/us/<stamp>.json.gz` (bare list).
+- **Parser:** `sources/oddsapi_live.py` (`read_live_file`, `live_rows`, pure): one row per event × book ×
+  market × outcome with `side` (over/under, home/away). Not matched to ESPN game ids yet (the et-v2
+  matcher, PR #45, wasn't on main when this was built).
 
 ## Tried and not used
 | Source | Result (2026-11-03) | Decision |

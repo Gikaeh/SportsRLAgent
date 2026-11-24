@@ -96,18 +96,6 @@ fi
 echo "$msg"
 $NOTIFY --kind info "$msg" || true
 
-# Second message: today's To The Moon proposal (watch-only; the owner places any bet by hand).
-# Uses Circa's lines when read above. Falls back to the plain proposal if the newer flags fail;
-# never fails this script.
-moon_msg=$(timeout -k 15 300 uv run --frozen deepsports moon propose --tier mix --months 1 \
-  --circa auto --format discord) || {
-  echo "$(ts) moon propose (mix, circa) failed; falling back"
-  moon_msg=$(timeout -k 15 300 uv run --frozen deepsports moon propose --months 1) || moon_msg=""
-}
-if [ -n "$moon_msg" ]; then
-  echo "$moon_msg"
-  $NOTIFY --kind info "$moon_msg" || true
-else
-  echo "$(ts) moon propose failed; no proposal message"
-fi
+# The To The Moon `mix` proposal message was retired 2026-11-23 (root docs/DECISIONS.md): moon is now
+# the nightly lotto card, sent by tools/books-evening.sh. `deepsports moon propose` stays runnable by hand.
 echo "=== $(ts) model picks end"

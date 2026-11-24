@@ -107,6 +107,7 @@ One row per game, updated in place as it goes scheduled → in progress → fina
 | `home_team_id`, `away_team_id` | → `teams` (`league`, `team_id`) |
 | `home_score`, `away_score` | NULL until the game starts |
 | `venue`, `venue_city`, `neutral_site`, `attendance`, `broadcasts` | `broadcasts` is a comma-separated list of every TV/stream listing (national and regional). Neutral sites are common in college (ESPN's home/away is nominal there) |
+| `venue_id`, `venue_state` | ESPN venue id (→ `venues`; stable across arena renames) and ESPN's address "state": a USPS code in the US, a province code (`PQ`, `ON`) or a country name abroad (`Bahamas`, `Mexico`, `England`). Added 2026-11-22; older rows were backfilled from cached scoreboards by `deepsports venues build`. NULL only for NBA Cup knockout games whose venue ESPN hasn't set |
 
 ### `team_game_stats`
 PK (`game_id`, `team_id`). `league` (the game's league; join `teams` on `league` + `team_id`), `home_away`, `fgm/fga`, `fg3m/fg3a`, `ftm/fta`, `oreb/dreb/reb`,
@@ -178,6 +179,10 @@ this season). `ncaab-v1p` is the college prior model (`src/deepsports/analysis/n
 `models/ncaab_prior/config.json`) on the same gate: graded, never displayed (`HIDDEN_MODEL_VERSIONS`).
 `ncaab-v1-early` covers D1 games where each team has >= 1 game (opt-in in the web app; never on the
 calendar); since 2026-11-06 09:00 UTC it comes from the prior model (before: college v1).
+`ncaab-v1.1alt` (from 2026-11-23) is a watch-only altitude shadow: `ncaab-v1` with venue elevation
+and km climbed/dropped in the total model (frozen `models/ncaab_v1_1alt/config.json`), same gate,
+hidden (`HIDDEN_MODEL_VERSIONS`); its `features_json` adds `venue_elev_km`, `alt_gain_sum`,
+`alt_drop_sum`. Its only reader is the `et-v1-alt` shadow log (files, docs/PIPELINE.md).
 Written daily by `deepsports predict` (docs/PIPELINE.md). **No history:** each run overwrites the
 row for a (game, model, version) with a fresh `created_at`, and only games that haven't tipped off
 are ever written, so the stored row is the latest pre-tip prediction. A new model version gets its
@@ -206,6 +211,27 @@ Static, seeded from `src/deepsports/venues.py` on every writer open: `city` (PK,
 `games.venue_city`), `lat`, `lon`. The 30 home cities plus Inglewood, Austin, Las Vegas,
 Mexico City, Paris, Berlin, London.
 
+### `venues`
+One row per ESPN venue in `games` (both leagues), rebuilt in place by `deepsports venues build` (offline,
+idempotent; source: GeoNames, DATA_SOURCES.md). Geography is the venue **city's** point, not the arena's
+(a few km off; elevation within ~150 m for campus arenas above their city, e.g. Utah). One venue override
+places Air Force's Clune Arena at the Academy (2,069 m) instead of Colorado Springs (1,832 m).
+| Column | Notes |
+|---|---|
+| `venue_id` | PK, = `games.venue_id` |
+| `name`, `city`, `state` | As ESPN lists them on the venue's latest game (`state` as in `games.venue_state`) |
+| `country` | ISO 3166-1 alpha-2 (`US`, `BS`, `MX`, `PR`, `VI`, `CA`, `GB`, `IE`, ...) |
+| `lat`, `lon` | WGS84 degrees |
+| `elevation_m` | GeoNames' elevation for the place, else its DEM (SRTM) value at the point |
+| `tz` | IANA time zone (`America/Denver`, `America/Phoenix`, `Pacific/Honolulu`, ...) |
+| `geonameid`, `geo_place` | The GeoNames place matched |
+| `geo_match` | `name`, `alternate` (an alternate name, e.g. ESPN "New York" = "New York City"), `override` / `venue_override` (reviewed by hand in `sources/geonames.py`), `big_city` (no state given: the most populous city of that name, >= 500k); or why it failed (`no city`, `no state`, `unknown region`, `no match`) with NULL geography |
+| `games`, `neutral_games`, `first_game_utc`, `last_game_utc` | Games at the venue in `games` |
+| `updated_at` | Build time |
+
+Coverage (2026-11-22): 599 venues, 598 geocoded (the one miss: an NBA "Venetian Arena" with no city);
+all 579 college venues and 100% of college games 2021-22 → 2026-27 have coordinates, elevation and time zone.
+
 ### `ingest_runs`
 One row per collection command: `started_at`, `finished_at`, `command`,
 `network_requests`, `games_upserted`, `boxscores_upserted`, `errors`, `notes`.
@@ -229,9 +255,16 @@ only the team's **earlier games in the same season**, so it's leak-free for both
 | `back_to_back` | `rest_days = 1` (false for the first game) |
 | `games_last_7_days` | Team games on the 7 calendar days before this game's date (this game excluded) |
 | `road_trip_length` | Consecutive away games including this one; 0 at home. Uses ESPN's home/away designation, also at neutral sites |
-| `travel_km` | Great-circle km from the previous game's venue city; NULL for the first game or an unknown city (most college cities) |
+| `travel_km` | Great-circle km from the previous game's venue; NULL for the season's first game or a venue without coordinates. NBA: arena points from `venue_cities` by city (unchanged). College (since 2026-11-22): `venues` by `venue_id` (city points), ~97% filled |
 
 Note: the view also counts the NBA Cup final, so a few team-seasons have 83 regular-season rows.
+
+### `team_home_venues`
+Each team's home venue per season: (`league`, `team_id`, `season_year`) → `venue_id`, `home_games`, `share`.
+The venue of most of the team's non-neutral home games (postponed/canceled games skipped, ties go to the
+venue used last); `share` = its fraction of those games (BYU 2025-26: 0.88). Teams with no home game
+(non-D1) have no row. Join `venues` for the home elevation and time zone; with `games` → `venues` this gives
+venue elevation, team-home elevation, travel and time zones crossed.
 
 ### `prediction_results`
 Grading: one row per final game and (`model`, `model_version`), using the latest prediction with
@@ -265,6 +298,52 @@ closing line, positive = the close moved toward the bet; spread/total only, NULL
 `deepsports.analysis.paper.paper_report(con)` regrades the rows with `analysis.betting` for the
 per-rule record, ROI with a day-clustered bootstrap CI, drawdown and CLV
 (`deepsports paper report`).
+
+## Files outside the warehouse
+
+### `reports/early-totals/context.jsonl`
+Market context of each logged `et-v1` and `et-v1-alt` bet (`analysis/early_totals_context.py`,
+written by `deepsports early-totals context --log|--backfill`; docs/PIPELINE.md). Append-only, one
+JSON object per line, key (`rule_version`, `game_id`); the first row per key is frozen. No stakes.
+Describe-only: no rule reads it.
+| Field | Notes |
+|---|---|
+| `context_version` | 1 |
+| `rule_version`, `game_id`, `game_date`, `side`, `line`, `line_source` | Copied from the bet row |
+| `written_at`, `backfilled` | When the row was written; `true` for `--backfill` rows (bets logged before the step existed) |
+| `bet_time`, `bet_time_from` | When the bet line was seen: the WH screenshot `book_read_at` (screenshot lines), else the Caesars feed `book_grabbed_at`, else `logged_at` |
+| `opener_total`, `opener_provider` | ESPN opener (`odds_snapshots` `opening`, latest row). NULL the night before: the warehouse fetches opening rows only once the game is final |
+| `first_pregame_total`, `first_pregame_at` | First `pregame` capture at or before `bet_time` (the opener's stand-in; equal to it in ~90% of games) |
+| `dk_total`, `dk_provider`, `dk_captured_at`, `dk_age_min` | Latest `pregame` capture (ESPN scoreboard, DraftKings) at or before `bet_time`, and its age in minutes |
+| `feed_total`, `feed_price`, `feed_grabbed_at` | Caesars night-before feed (`books/williamhill/early/`) for the bet's side |
+| `wh_shot_total`, `wh_shot_price`, `wh_read_at` | WH night-before screenshot (`williamhill/lines/early/`) for the bet's side |
+| `circa_total`, `circa_price`, `circa_read_at` | Circa night-before screenshot (`circa/lines/early/`) for the bet's side; it can be read after `bet_time` |
+| `momentum`, `momentum_from` | s × (`dk_total` - opener), s = +1 over / -1 under; > 0 = the market moved toward the pick. Base: `opening` if known, else `first_pregame` |
+| `wh_minus_dk`, `wh_better_than_dk` | `line` - `dk_total`; s × (`dk_total` - `line`) (> 0 = the bet line beat DraftKings) |
+| `circa_minus_wh`, `circa_better_than_wh` | `circa_total` - `line`; s × (`line` - `circa_total`) (> 0 = Circa's number was better for the pick) |
+Totals outside the league's sane range are ignored. The `context` view re-bases `momentum` on the
+ESPN opener once the warehouse has it (a fixed pre-bet number, fetched after the game).
+
+### `reports/momentum-forward/frozen/<D>/<HHMM>/`
+Model inputs of the momentum forward test frozen at T (`momentum_freeze.py`, `deepsports momentum-freeze`,
+run by `tools/oddsapi-live.sh` after the 18:30, 19:00 and 19:30 PT captures; pre-registration
+`docs/results/2026-11-23-momentum-forward-preregistration.md`). `D` = the game day (tomorrow, Pacific, when
+run), `HHMM` = the local 30-min slot. **Write-once:** a file that exists is never replaced (a re-run in the
+same slot skips it); nothing is ever appended or edited. No stakes.
+| File | Contents |
+|---|---|
+| `ds_predictions.json` | `{frozen_at (UTC ISO), game_day, versions: [ncaab-v1, ncaab-v1-early, ncaab-v1.1alt], games: [{game_id, start_time_utc, state, predictions: [{game_id, model_version, pred_total, created_at}]}]}`: every college game (season type 2/3) whose Eastern or Pacific date is D, with its current `predictions` rows (`model='v1'`) for those versions; `predictions` may be empty. Graders keep only rows with `created_at` <= T |
+| `manualbets-export.json` | Byte copy of `DeepSports/.sync/manualbets-export.json` at T (the MB total is `ncaab.games[].model.total`) |
+| `manualbets-export.meta.json` | `{source, mtime (UTC ISO), size, sha256, created_at (the export's own), copied_at}` |
+A missing file means that part failed at T (one line in `oddsapi-live.log`: warehouse busy after one retry, or
+no export).
+
+### `data/raw/oddsapi/live/<sport>/<UTC slot>.json.gz`
+The Odds API live capture (`deepsports odds-api-history live`; DATA_SOURCES.md). Envelope `{timestamp,
+snapshot_ts (both = the request time, UTC), sport, markets, scope, credits_last, credits_remaining, data:
+[events as the API returns them, every upcoming event incl. next-day games]}`; one file per league per 30-min
+slot, never replaced. `live/ledger.jsonl`: one line per call (`fetched_at`, `snapshot_ts`, `slot`, `sport`,
+`markets`, `scope`, `file`, `events`, `rows`, `last`, `used`, `remaining`). Rows: `sources/oddsapi_live.py`.
 
 ## Migrations
 `Store` compares every existing table's columns and primary key with `TABLES` in store.py. When

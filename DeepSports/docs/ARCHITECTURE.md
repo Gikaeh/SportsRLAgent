@@ -21,14 +21,18 @@ diagram in the same change (see CLAUDE.md).
 | `circa/` | Circa screenshots, and William Hill's since 2026-11-16 (`--book williamhill`, own folder `williamhill/`, no inbox) (`deepsports circa read\|ingest\|status`, since 2026-11-14, edge 6): `ingest` copies images from the iCloud Drive inbox into today's folder; `read` has headless `claude -p` (Sonnet, Read tool only; `reader.py`) transcribe unread screenshots, validates the lines (`lines.py`, pure), matches them to games by team names and Circa rotation pairs (`match.py`, one brief read-only warehouse open) and writes the day's lines file. `multipart.py` parses the upload body for `api/circa.py`. No DuckDB table. Commands and env vars: PIPELINE.md. |
 | `books/` | Book lines from OddsPapi (`deepsports books grab\|status`, since 2026-11-14): `oddspapi.py` fetches one book's NBA + NCAAB odds through `PoliteClient` (key from `~/.config/deepsports/oddspapi-key`, masked in errors) and parses them (pure); `grab.py` orients them to warehouse games with `circa/match.py` and writes one file per book (Circa; William Hill = Caesars' feed). Used by the moon proposal (Circa) and the model-picks top 5 (both). DATA_SOURCES.md, OddsPapi. |
 | `sources/cbbdata.py` + `torvik_cli.py` | Barttorvik T-Rank daily archive from cbbdata (`deepsports torvik fetch\|map\|status`, since 2026-11-19): fetches one Parquet per season through `PoliteClient.get_bytes` (key from `~/.config/deepsports/cbbdata.key`, never logged), parses it with an in-memory DuckDB (pure, no warehouse), and maps Barttorvik names to ESPN ids in `config/torvik_teams.csv`. Seasons 2015-2025; no table yet. A row dated D includes D's games: join on `as_of_date <= D - 1`. DATA_SOURCES.md, cbbdata. |
-| `sources/oddsapi_history.py` + `oddsapi_cli.py` | The Odds API historical snapshots (`deepsports odds-api-history plan\|probe\|pull\|status\|live`, built 2026-11-19 for the paid month): plans night-before (21:00 PT) + morning (09:00 PT) timestamps from the ESPN scoreboard cache with the credit cost, pulls them resumably through `PoliteClient`'s throttle with a credit reserve, caches each response and a credit ledger, and parses a snapshot into book/market/outcome rows (pure). Key from env `ODDS_API_KEY` or `~/.config/deepsports/oddsapi.key`. Files only; no table yet. DATA_SOURCES.md, The Odds API. |
+| `sources/oddsapi_history.py` + `oddsapi_cli.py` | The Odds API historical snapshots (`deepsports odds-api-history plan\|probe\|pull\|status\|live`, built 2026-11-19 for the paid month): plans night-before (21:00 PT) + morning (09:00 PT) timestamps from the ESPN scoreboard cache with the credit cost, pulls them resumably through `PoliteClient`'s throttle with a credit reserve, caches each response and a credit ledger, and parses a snapshot into book/market/outcome rows (pure). Key from env `ODDS_API_KEY` or `~/.config/deepsports/oddsapi.key`. Files only; no table yet. Since 2026-11-23 `live` is also a scheduled capture (launchd `com.deepsports.oddsapi-live`, `tools/oddsapi-live.sh`: 09:00 + every 30 min 12:00-21:30 PT, college + NBA totals/spreads, 10 books, ~84 credits/day, reserve and end-date guards); `sources/oddsapi_live.py` turns a capture file into line rows (pure). DATA_SOURCES.md, The Odds APIDATA_SOURCES.md, The Odds API. Research helpers on the cached college snapshots (pre-game totals per book, event -> ESPN `game_id` matching with vendor-rename aliases) for the et-v2 backtest: `analysis/et_v2_lines.py`; the backtest scoring rules (C0-C6, K1, K2, bootstrap, Holm): `analysis/et_v2_score.py`. |
+| `momentum_freeze.py` | `deepsports momentum-freeze` (since 2026-11-23): at the 18:30/19:00/19:30 PT capture slots, freezes the momentum forward test's model inputs (tomorrow's college `predictions` rows for ncaab-v1, -v1-early, -v1.1alt via one read-only open, plus a byte copy of `.sync/manualbets-export.json`) write-once under `reports/momentum-forward/frozen/<D>/<HHMM>/`. Never a writer. DATA_MODEL.md, "Files outside the warehouse". |
+| `sources/geonames.py` + `venue_geo.py` + `venues_cli.py` | Venue geography (`deepsports venues fetch\|build\|status`, since 2026-11-22): `fetch` downloads the GeoNames gazetteer dumps once (2 requests, `PoliteClient.get_bytes`); `build` (offline, writer, ~20 s) backfills `games.venue_id`/`venue_state` from cached scoreboards for rows that predate them, geocodes every venue's (city, state) to a GeoNames place (pure matcher with reviewed overrides) and replaces the `venues` table (lat/lon, elevation, IANA time zone). Run after `update` by the scheduled sync. Feeds college `travel_km` and the `team_home_venues` view. DATA_SOURCES.md, GeoNames. |
 | `config.py` | Paths, timezones, rate limit. All of them can be overridden with `DEEPSPORTS_*` env vars. |
 
 ### 2. Storage (`data/` → `/Volumes/ExFATStorag/DeepSports/data`, git-ignored)
 - **Raw landing zone:** `data/raw/espn/<league>/{scoreboard/YYYYMMDD, summary/<game_id>, teams}.json.gz`
   (`nba`, `ncaab`; plus `summary_pregame/` injury snapshots and `core_odds/`), and
   `data/raw/cbbdata/torvik_archive/<season>.parquet` (Barttorvik daily ratings, files only).
-  `data/raw/oddsapi/historical/<sport>/<markets>/<regions>/<UTC stamp>.json.gz` (The Odds API snapshots, files only).
+  `data/raw/geonames/{cities500,US}.zip` (GeoNames gazetteer dumps, read by `venues build`).
+  `data/raw/oddsapi/historical/<sport>/<markets>/<regions>/<UTC stamp>.json.gz` (The Odds API snapshots, files only)
+  and `data/raw/oddsapi/live/<sport>/<UTC 30-min slot>.json.gz` + `live/ledger.jsonl` (live capture, files only).
   It's an exact copy of what the source returned, so parsers can be fixed and re-run without refetching.
 - **Circa files** (`/Volumes/ExFATStorag/DeepSports/circa/`, `config.CIRCA_*`): `screenshots/<date>/` (local
   day) and `lines/<date>.json` (contract in API.md, "Circa").
@@ -50,13 +54,18 @@ diagram in the same change (see CLAUDE.md).
 - Scheduled runs (`tools/scheduled-sync.sh`, launchd 08:00/14:00) do every warehouse step themselves
   (update, opening lines for recent finals, predict, paper log; model picks once a day: weekdays 14:00, Saturday and Sunday 08:00, each
   covering the games until the next run). The picks job (`tools/model-picks-daily.sh`)
-  runs `books grab` and `circa read` (Circa, then WH) first, then sends the picks and, as a second Discord message, the To The Moon
-  proposal (`moon propose --tier mix --months 1 --circa auto --format discord`). The scheduled calendar sync was scrapped for now
+  runs `books grab` and `circa read` (Circa, then WH) first, then sends the picks (the To The Moon proposal message was retired
+  2026-11-23; the 21:00 job sends the lotto card). The scheduled calendar sync was scrapped for now
   (2026-11-13); the skill still runs by hand (`calendar-agent`). Headless Claude's Bash sandbox can't open
   DuckDB on the external drive, so a headless run would need `upcoming --json` exported first.
 - Evening book grab (`tools/books-evening.sh`, launchd `com.deepsports.books-evening` at 21:00): `books grab --early`
   (tomorrow's Caesars lines into `books/williamhill/early/`), then `early-totals log`, the pre-registered `et-v1`
-  forward test (`analysis/early_totals.py`; rule in docs/results/2026-11-15-early-totals-preregistration.md).
+  forward test (`analysis/early_totals.py`; rule in docs/results/2026-11-15-early-totals-preregistration.md),
+  and in the same command its altitude shadow `et-v1-alt` (`analysis/early_totals_alt.py`, the `ncaab-v1.1alt`
+  total in place of `ncaab-v1`'s; own files under `reports/early-totals/alt/`, never touching et-v1's).
+  After Circa's night-before read, `early-totals context --log` (`analysis/early_totals_context.py`, its own
+  process) records each bet's market context (opener, DraftKings at the bet line's time, Caesars feed, WH +
+  Circa screenshots) in `reports/early-totals/context.jsonl`; describe-only.
   Watch-only, append-only records under `reports/early-totals/`, no stakes.
 - Line capture (`tools/odds-snapshot.sh`, launchd `com.deepsports.odds` every 30 min at :15/:45):
   `deepsports odds-snapshot` fetches today's and tomorrow's scoreboards (NBA + college) and writes
@@ -128,6 +137,11 @@ diagram in the same change (see CLAUDE.md).
   Live since 2026-11-06: `live_rows` (same features as the study's prior arm, plus scheduled games) feeds
   `ncaab-v1p` (>= 5 games, graded beside `ncaab-v1`, hidden from cards/glasses/calendar via
   `config.HIDDEN_MODEL_VERSIONS`) and `ncaab-v1-early`, from one fit per run.
+- `altitude.py` + `ncaab-v1.1alt` (since 2026-11-23, watch-only): venue elevation and km climbed/dropped vs
+  each team's home arena (from `venues` / `games.venue_id`) added to `ncaab-v1`'s total model only; frozen
+  `models/ncaab_v1_1alt/config.json` (pins v1's config by hash), hidden like `ncaab-v1p`, predicted by the
+  scheduled sync after the other college versions. Read only by the `et-v1-alt` shadow; verdict after the
+  2026-27 regular season (docs/results/2026-11-22-altitude-feature.md).
 - `betting/` (ported from the DeepSeek edge study): `grading.py` grades spread/total/moneyline bets
   (refunded pushes, -110 default, ROI with a day-clustered bootstrap CI, CLV, price sensitivity,
   drawdown); `audit.py` drops bets on >3x-median open→close moves and lists the biggest-edge wins;
@@ -163,6 +177,8 @@ diagram in the same change (see CLAUDE.md).
   Circa's lines (screenshots, plus OddsPapi's Circa feed; screenshots win) when a lines file exists (`circa.py`: a worse line or price drops the leg), and an
   append-only ledger of the owner's real bets at
   `../logs/moon/bets.csv` (`ledger.py`, edge 5; grading reads finals read-only and appends result rows).
+  `lotto.py` (since 2026-11-23, the default play): the nightly parlay card from et-v1's legs (rule lotto-v2: $1 top-7 test
+  ticket + $0.25 7-leg spread tickets), logged to `reports/moon/lotto/cards.jsonl` and sent by `tools/books-evening.sh`; `moon lotto grade`.
   Not served by the API. Guide: [TO_THE_MOON.md](TO_THE_MOON.md).
 - `ensemble_bets.py` + `/ensemble-betting` skill + `bettor` agent: a watch-only vote (by hand only since 2026-11-13). `ensemble-bets
   context` builds a slate (games tipping 1 h to N days out with a pregame line: lines + prices, line

@@ -136,8 +136,9 @@ def legacy_path(tmp_path):
     return path
 
 
-# The v1 warehouse also predates the odds price columns (2026-11-06).
-MIGRATED = (*LEAGUE_SCOPED, "odds_snapshots")
+# The v1 warehouse also predates the odds price columns (2026-11-06) and games.venue_id
+# (2026-11-22).
+MIGRATED = (*LEAGUE_SCOPED, "odds_snapshots", "games")
 
 
 def test_read_only_commands_work_on_unmigrated_warehouse(legacy_path):

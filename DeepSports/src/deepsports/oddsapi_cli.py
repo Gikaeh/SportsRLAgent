@@ -1,18 +1,24 @@
-"""`deepsports odds-api-history plan|probe|pull|status|live`: The Odds API historical snapshots.
+"""`deepsports odds-api-history plan|probe|pull|status|live`: The Odds API historical snapshots
+and the scheduled live capture.
 
 Files only, never DuckDB: gzipped responses under
 RAW_DIR/oddsapi/historical/<sport>/<markets>/<regions>/<UTC stamp>.json.gz plus a credit ledger
 (ledger.jsonl) beside them. Game days come from the ESPN scoreboard cache (or season windows when
 a season isn't cached). `pull` is resumable (cached timestamps are skipped), stops before the
 account's remaining credits fall below --reserve, and fetches the first --times entry for every
-game day before the next one, so a short run still completes the night-before snapshots."""
+game day before the next one, so a short run still completes the night-before snapshots.
+
+`live` (launchd com.deepsports.oddsapi-live, tools/oddsapi-live.sh) saves one envelope per league
+per 30-minute slot to RAW_DIR/oddsapi/live/<sport>/<UTC slot>.json.gz with its own ledger
+(oddsapi/live/ledger.jsonl). It prints one line, spends nothing when the slot is already saved,
+and exits 0 without fetching when past --until, under --reserve, without a key, with a rejected
+key, or when the data dir is unavailable."""
 
 from __future__ import annotations
 
 import argparse
 import logging
 import sys
-from collections import Counter
 from datetime import UTC, date, datetime
 from typing import Any
 
@@ -22,6 +28,8 @@ from deepsports.sources import oddsapi_history as oah
 
 log = logging.getLogger(__name__)
 DEFAULT_TIMES = "-1@21:00,0@09:00"
+LIVE_UNTIL = date(2026, 12, 24)  # the owner's key's month ends about 2026-12-23
+LIVE_RESERVE = 2000
 
 
 def _csv(s: str) -> list[str]:
@@ -76,12 +84,34 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("status", help="cached snapshots per sport/markets/regions + credits used")
 
     lv = sub.add_parser(
-        "live", help="one live /odds call (1 credit per market x region) to check the key"
+        "live",
+        help="capture live lines now (1 credit per market x region per league; one output line)",
     )
-    lv.add_argument("--league", choices=sorted(oah.SPORTS), default="ncaab")
-    lv.add_argument("--markets", type=_csv, default=["totals"])
-    lv.add_argument("--regions", type=_csv, default=["us"])
-    lv.add_argument("--bookmakers", type=_csv, default=None)
+    lv.add_argument(
+        "--league", choices=sorted(oah.SPORTS), action="append", help="default: ncaab and nba"
+    )
+    lv.add_argument("--markets", type=_csv, default=["totals", "spreads"])
+    lv.add_argument(
+        "--bookmakers",
+        type=_csv,
+        default=None,
+        help=f"default: the {len(oah.LIVE_BOOKMAKERS)} capture books (one billing region)",
+    )
+    lv.add_argument("--regions", type=_csv, default=None, help="regions instead of the books")
+    lv.add_argument(
+        "--reserve",
+        type=int,
+        default=LIVE_RESERVE,
+        help=f"skip a league when it would leave fewer credits (default {LIVE_RESERVE})",
+    )
+    lv.add_argument(
+        "--until",
+        type=date.fromisoformat,
+        default=LIVE_UNTIL,
+        help=f"do nothing after this Pacific date (default {LIVE_UNTIL})",
+    )
+    lv.add_argument("--slot-minutes", type=int, default=30, help="file slot width (default 30)")
+    lv.add_argument("--force", action="store_true", help="refetch a slot that is already saved")
     return p
 
 
@@ -296,28 +326,86 @@ def _cmd_probe(args: argparse.Namespace) -> int:
     return _run(args, picks, reserve=args.reserve, max_credits=args.max_credits, on_snapshot=show)
 
 
-def _cmd_live(args: argparse.Namespace) -> int:
-    key = oah.read_key()
+def _live_scope(args: argparse.Namespace) -> tuple[list[str], list[str] | None]:
+    """(regions, bookmakers): --regions alone means regions; otherwise the capture books."""
+    if args.regions and not args.bookmakers:
+        return args.regions, None
+    return ["us"], args.bookmakers or list(oah.LIVE_BOOKMAKERS)
+
+
+def _cmd_live(args: argparse.Namespace, now: datetime | None = None) -> int:
+    """One output line. Exit 0 unless a fetch failed for a reason other than the key."""
+    now = now or datetime.now(UTC)
+    head = f"oddsapi live {oah.iso(now)}:"
+    if now.astimezone(oah.PT).date() > args.until:
+        print(f"{head} skipped, past --until {args.until}")
+        return 0
+    regions, books = _live_scope(args)
+    per = oah.live_cost(args.markets, regions, books)
+    slot = oah.live_slot(now, args.slot_minutes)
+    leagues = args.league or ["ncaab", "nba"]
+    todo = [lg for lg in leagues if args.force or not oah.live_path(oah.SPORTS[lg], slot).exists()]
+    if not todo:
+        print(f"{head} slot {oah.file_stamp(slot)} already saved for {','.join(leagues)}")
+        return 0
+    try:
+        key = oah.read_key()
+    except oah.OddsApiError as e:
+        print(f"{head} skipped, {e}")
+        return 0
     client = PoliteClient()
-    sport = oah.SPORTS[args.league]
-    now = datetime.now(UTC)
-    data, credits = oah.fetch_live(client, key, sport, args.markets, args.regions, args.bookmakers)
-    path = (
-        config.RAW_DIR
-        / "oddsapi"
-        / "live"
-        / sport
-        / ",".join(args.markets)
-        / oah.scope_label(args.regions, args.bookmakers)
-        / f"{oah.file_stamp(now)}.json.gz"
-    )
-    oah.write_cached(path, data)
-    rows = oah.parse_snapshot(data, now)
-    books = Counter(r["book"] for r in rows)
-    print(f"{sport}: {len(data)} events, {len(rows)} rows, books {dict(books)}")
-    print(f"saved {path}")
-    print(_report(credits))
-    return 0
+    try:
+        remaining = oah.check_quota(client, key).remaining
+    except oah.OddsApiError as e:
+        if e.status in (401, 403):
+            print(f"{head} skipped, key rejected (HTTP {e.status}: missing, expired or no credits)")
+            return 0
+        print(f"{head} error checking quota: {e}")
+        return 1
+    parts, status, spent = [], 0, 0
+    for lg in todo:
+        sport = oah.SPORTS[lg]
+        if remaining is not None and remaining - per < args.reserve:
+            parts.append(f"{lg} skipped (reserve {args.reserve}, {remaining} left)")
+            continue
+        fetched_at = datetime.now(UTC)  # the request time: taken right before the call
+        try:
+            data, credits = oah.fetch_live(client, key, sport, args.markets, regions, books)
+        except oah.OddsApiError as e:
+            if e.status in (401, 403):
+                parts.append(f"{lg} skipped, key rejected (HTTP {e.status})")
+                break
+            parts.append(f"{lg} error {e}")
+            status = 1
+            continue
+        path = oah.live_path(sport, slot)
+        oah.write_cached(
+            path, oah.live_envelope(data, fetched_at, sport, args.markets, regions, books, credits)
+        )
+        n_rows = len(oah.parse_snapshot(data, fetched_at))
+        oah.append_ledger(
+            {
+                "fetched_at": oah.iso(fetched_at),
+                "snapshot_ts": oah.iso(fetched_at),  # request time (pre-registration 2026-11-23)
+                "slot": oah.iso(slot),
+                "sport": sport,
+                "markets": ",".join(args.markets),
+                "scope": oah.scope_label(regions, books),
+                "file": path.name,
+                "events": len(data),
+                "rows": n_rows,
+                "last": credits.last,
+                "used": credits.used,
+                "remaining": credits.remaining,
+            },
+            subdir=oah.LIVE_SUBDIR,
+        )
+        spent += credits.last if credits.last is not None else per
+        if credits.remaining is not None:
+            remaining = credits.remaining
+        parts.append(f"{lg} {len(data)} events {n_rows} rows")
+    print(f"{head} {'; '.join(parts)}; spent {spent}, remaining {remaining}")
+    return status
 
 
 def _cmd_status() -> int:
@@ -349,6 +437,9 @@ def main(argv: list[str]) -> int:
     try:
         config.require_data_dir()
     except config.DataDirUnavailable as e:
+        if args.cmd == "live":  # scheduled: one line, not a failure
+            print(f"oddsapi live: skipped, data dir unavailable ({e})")
+            return 0
         print(f"error: {e}", file=sys.stderr)
         return 2
     try:
@@ -364,3 +455,8 @@ def main(argv: list[str]) -> int:
     except oah.OddsApiError as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
+    except OSError as e:  # e.g. the drive went away mid-run
+        if args.cmd == "live":
+            print(f"oddsapi live: error {type(e).__name__}: {e}")
+            return 1
+        raise

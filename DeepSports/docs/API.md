@@ -78,6 +78,16 @@ type GameResult = { id: string; date: string; opponent: string; home: boolean;
 - `/api/standings` and `/api/teams/{abbr}` have no `refresh_seconds`; the web app refreshes them every 10 minutes.
 - CORS: any origin may `GET` (for the G2 glasses WebView).
 
+## Parlays (2026-11-23)
+`GET /api/parlays` → `{parlays: Parlay[], live, refresh_seconds}`: the owner's parlays from the To The Moon ledger
+(`../logs/moon/bets.csv`, read-only; voided rows dropped) that are ungraded, or graded but placed today (PT), newest
+first. `Parlay = {id, placed_at, book, tier, price (American odds of the ticket), status ("alive" | "won" | "lost" |
+"push", or the graded result), won, lost, push, pending, legs}`; `legs` in tip order, each `{game_id, label ("Over
+145.5"), matchup ("Away Team @ Home Team" from the scoreboard, or null), away_abbr, home_abbr (or null), start_time, state, status_text, away_score,
+home_score, status ("won" | "lost" | "push" | "pending"), note ("130 pts, needs 11 more")}`. A live total is decided
+early when it can't change (an over already past the line = won, an under past it = lost). Games are looked up on
+the scoreboards from 2 days back to 2 ahead. **Never the stake or payout.** Code: `src/deepsports/api/parlays.py`.
+
 ## Open bets (2026-11-09)
 `GET /api/bets` → `{games: GameCard[], live, refresh_seconds}`: every game (NBA and college, yesterday to
 tomorrow ET) that has an open owner bet in the SportsRLAgent bet logs, each with `bets: string[]` labels.

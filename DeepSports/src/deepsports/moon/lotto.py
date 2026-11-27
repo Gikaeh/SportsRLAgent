@@ -56,8 +56,24 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(x) for x in path.read_text().splitlines() if x.strip()]
 
 
-def legs_for(et_rows: Iterable[Mapping[str, Any]], game_date: str) -> list[dict[str, Any]]:
-    """The night's et-v1 legs, one per game (first row per game is the bet), strongest first."""
+def app_names(lines_payload: Mapping[str, Any] | None) -> dict[str, tuple[str, str]]:
+    """game_id -> (away, home) as the book's app shows them, from a screenshot lines file
+    (`circa.reader.lines_path`, e.g. William Hill's early file). Empty when there is none."""
+    out: dict[str, tuple[str, str]] = {}
+    for x in (lines_payload or {}).get("lines", []):
+        if x.get("game_id") and x.get("away") and x.get("home"):
+            out.setdefault(str(x["game_id"]), (x["away"], x["home"]))
+    return out
+
+
+def legs_for(
+    et_rows: Iterable[Mapping[str, Any]],
+    game_date: str,
+    names: Mapping[str, tuple[str, str]] | None = None,
+) -> list[dict[str, Any]]:
+    """The night's et-v1 legs, one per game (first row per game is the bet), strongest first.
+    `names` (game_id -> app away/home) adds the names the owner sees in the book's app."""
+    names = names or {}
     seen: dict[str, Mapping[str, Any]] = {}
     for r in et_rows:
         if r.get("rule_version") == SOURCE and r.get("game_date") == game_date:
@@ -74,6 +90,8 @@ def legs_for(et_rows: Iterable[Mapping[str, Any]], game_date: str) -> list[dict[
             "price": int(r.get("price") or DEFAULT_PRICE),
             "away": r.get("away"),
             "home": r.get("home"),
+            "app_away": names.get(r["game_id"], (None, None))[0],
+            "app_home": names.get(r["game_id"], (None, None))[1],
             "tip_utc": r.get("tip_utc"),
             "avg_edge": float(r["avg_edge"]),
         }
@@ -139,12 +157,13 @@ def get_or_make(
     et_rows: Sequence[Mapping[str, Any]],
     cards: Sequence[Mapping[str, Any]],
     now: datetime | None = None,
+    names: Mapping[str, tuple[str, str]] | None = None,
 ) -> tuple[dict[str, Any], bool]:
     """(card, is_new). An existing card for the date is returned unchanged (first one wins)."""
     for c in cards:
         if c.get("rule") == RULE and c.get("game_date") == game_date:
             return dict(c), False
-    return build_card(legs_for(et_rows, game_date), game_date, now), True
+    return build_card(legs_for(et_rows, game_date, names), game_date, now), True
 
 
 def append_card(card: Mapping[str, Any], path: Path | None = None) -> Path:
@@ -240,8 +259,10 @@ def _local_tip(tip: str | None) -> str:
 
 
 def leg_text(lg: Mapping[str, Any]) -> str:
-    side = "O" if lg["side"] == "over" else "U"
-    return (f"{lg['away']} @ {lg['home']} {side}{lg['line']:g} {lg['price']:+d} "
+    side = "Over" if lg["side"] == "over" else "Under"
+    away = lg.get("app_away") or lg["away"]
+    home = lg.get("app_home") or lg["home"]
+    return (f"{away} @ {home} {side} {lg['line']:g} {lg['price']:+d} "
             f"({_local_tip(lg.get('tip_utc'))})")  # fmt: skip
 
 

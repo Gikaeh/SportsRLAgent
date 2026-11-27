@@ -98,8 +98,8 @@ diagram in the same change (see CLAUDE.md).
   Frozen since 2026-11-10 (LAN + glasses build); new UI work happens in `../BetDesk/web`, whose Cloudflare
   Worker reads this API live through a Cloudflare Tunnel on this Mac, GET only (`../BetDesk/CLAUDE.md`).
   Open `http://<mac-lan-ip>:8787` on the phone.
-- **G2 glasses plugin** (`glasses/`, served at `/glasses/`): an Even Hub plugin that polls `/api/scoreboard`
-  and draws text on the G2. SDK calls sit behind `src/even.ts`; formatting is pure and tested. See glasses/README.md and
+- **G2 glasses plugin** (`glasses/`, served at `/glasses/`): an Even Hub plugin that polls `/api/bets` and
+  `/api/parlays` (the owner's open bets and parlays, since 2026-11-27) and draws text on the G2. SDK calls sit behind `src/even.ts`; formatting is pure and tested. See glasses/README.md and
   [research/even-realities-g2.md](research/even-realities-g2.md).
 
 ### 5. Analysis and models (`src/deepsports/analysis/`, guide: [analysis/README.md](../analysis/README.md))

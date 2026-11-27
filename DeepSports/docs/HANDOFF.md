@@ -37,6 +37,14 @@ reports in `docs/results/`. Model v1.1i (pre-tip injury reports) has no backtest
 2026-11-03) and is graded live, paired with v1.1 on the same games. Player impact ratings / injury impact in
 points (2026-11-11) were dropped: no edge, ratings not face-valid; the code stays as research tooling.
 
+## Parlay tracker (2026-11-23)
+**Glasses (2026-11-27, v0.3.0):** the G2 plugin now shows the same Bets + Parlays lists (tap switches, swipe pages); the old
+followed-team scoreboard is gone (glasses/README.md). Repacked `glasses/deepsports-glasses.ehpk`; the owner uploads it to Even Hub.
+The local app's Bets screen has **Games | Parlays** tabs (`#/bets?tab=parlays`): every parlay logged in the moon
+ledger (`deepsports moon log parlay`), ungraded or graded but placed today (PT; settled ones drop off the next day), with each leg's time, matchup, bet, live
+score and ✓/✗/●/○. API `GET /api/parlays` (docs/API.md). The owner uses this local app only (BetDesk is unused);
+BetDesk got the same tab, undeployed.
+
 ## To The Moon (betting)
 **Since 2026-11-23 moon is the nightly lotto card** (root `docs/DECISIONS.md` 2026-11-23): the 21:00 job turns tomorrow's
 et-v1 legs into a $1 top-7 test ticket + 18 x $0.25 7-leg spread tickets (rule `lotto-v2`, pre-registered) → Discord + `reports/moon/lotto/cards.jsonl`; `deepsports moon lotto grade`.
@@ -72,8 +80,8 @@ give uv's Python Full Disk Access; deploying BetDesk is still the owner's (`../B
 - **NBA night-before pull (owner OK 2026-11-23):** pre-registered `nt-v1` (`docs/results/2026-11-23-nba-totals-preregistration.md`,
   commits f8ce5bc + 6bda7aa on branch `research/nba-totals-preregistration`) before the pull; totals only, 10 books,
   -1@21:00 / 0@09:00 / 0@15:00, 2023-24 to 2025-26 (~19K credits; log `work/nba-totals-prereg-2026-11-23/pull.log`).
-  2026-27 to date is pulled later (its plan includes future days). Next: score nt-v1 exactly as written.
-- **Odds API credits:** about 22K left after the NBA pull, usable until about 2026-12-23; the live capture needs ~2.6K.
+  Scored 2026-11-23: **FAIL** (pooled -3.45%, 0 of 3 seasons positive; `docs/results/2026-11-23-nba-totals-nt-v1-results.md`); NBA night-before totals dropped, no 2026-27 pull needed.
+- **Odds API credits:** 22,580 left after the NBA pull, usable until about 2026-12-23; the live capture needs ~2.6K.
 - **To do:**
   - Grade the Nov 23 bets after the 2026-11-24 08:00 sync (games tip tonight) in `logs/college_basketball/betting/bets.csv`: 13 WH and 2 Circa, plus a $0.25 13-leg parlay and a $3 2-leg Circa parlay.
 

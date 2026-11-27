@@ -13,7 +13,8 @@ legs (college totals at William Hill's night-before line) by average edge and bu
 - the **test ticket**: legs 1-7, $1 (nights with 7+ legs; under 7, no card);
 - **spread tickets**, $0.25 each, 7 legs: with 9+ legs, 18 tickets from legs 1-9, each leaving out a different pair
   (every leg sits out 4); with 8 legs, 8 tickets that each leave out one leg. At most $5.50 a night.
-The card goes to Discord and is logged once per game date to `<REPORTS_DIR>/moon/lotto/cards.jsonl` (append-only,
+Legs show the team names as the William Hill app does (from the night's WH screenshot lines; the ESPN abbreviation
+only for a game without a screenshot line). The card goes to Discord and is logged once per game date to `<REPORTS_DIR>/moon/lotto/cards.jsonl` (append-only,
 notional stakes), so `moon lotto grade` scores every card, and the pre-registered sweep test, whether or not you
 played it. Log the tickets you actually place with
 `log parlay --tier lotto --book WilliamHill --leg ... --stake 1 --price ...` (the price WH paid).

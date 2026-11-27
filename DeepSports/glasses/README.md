@@ -1,39 +1,54 @@
 # DeepSports for Even Realities G2
 
-A glasses plugin that shows your followed teams' games at a glance, NBA and college
-(Nevada): live scores first, then today's finals and upcoming tip-offs. It is a small TypeScript web page that runs inside
-the Even Realities phone app and draws text on the G2's 576×288 green display.
+A glasses plugin that tracks the owner's open bets, the same two lists as the web app's Bets
+screen: **Bets** (every game with an open bet: live score and how each bet stands) and
+**Parlays** (each ticket and its legs). It is a small TypeScript web page that runs inside the
+Even Realities phone app and draws text on the G2's 576×288 green display. Labels and odds only,
+never stakes. (Until v0.2.0 it showed followed teams' scores; that was replaced on 2026-11-27.)
 
 ```
-Scores · 7:42 PM                 Page 1/2
-● LAL 98-95 SAC  Q4 2:31
-● NCAA UNLV 68-70 NEV  OT 1:05
-NCAA SMC @ NEV  1:30 PM
-NY 104-112 BOS  Final
-
-Tap: details · Swipe: more
+Bets 2-1 · 2 live · 12:27 PM                 1/5
+● ME 53-47 LEM  2nd 11:13
+  Under 139 · 100 · pace 139
+● FRES 65-50 USA  2nd 6:53
+  Over 144.5 · 115 · pace 139
+UMBC @ GW  1:00 PM
+  Under 152.5
+Tap: parlays · Swipe: more
+```
+```
+Parlays · 12:28 PM                           3/5
+LOST +21.2M · 2-1 · 16/19 left
+W UVA/XAV U156.5  154
+L STMN/LIB O146.5  143
+● ME/LEM U139  101, 2nd 11:11
+○ UMBC/GW U152.5  1:00 PM
+Tap: bets · Swipe: more
 ```
 
 ## Using it on the glasses
 
 | Gesture | What happens |
 |---|---|
-| Tap | Opens the next game: score by quarter (by half for college), time left, who's ahead, the model's pick, TV channel. After the last game, a tap goes back to the list. |
-| Swipe down / up | In the list: next/previous page (5 games per page). In a game: next/previous game. Swiping up from the first game goes back to the list. |
+| Tap | Switches between Bets and Parlays (back to page 1). |
+| Swipe down / up | Next/previous page. |
 | Double-tap | Asks the system to close the app (the glasses show a confirm dialog). |
 
-- `●` marks a game that's being played right now.
-- `NCAA` marks a college game (plain text, since emoji aren't in the glasses font). College games
-  have two halves, shown as H1/H2 (then OT).
-- `Model: BOS 81% · by ~6` in a game's detail is the DeepSports prediction made before tip-off:
-  Boston has an 81% chance to win, by about 6 points. Once the game is final it says whether the
-  pick was `right` or `wrong`. It's for context and doesn't beat the betting market. College games
-  have no predictions yet, so the line is simply absent.
-- The header shows when the scores were last updated. **"stale 3m"** means the last update
-  failed: you're looking at scores from 3 minutes ago, and the app keeps retrying every 30 s.
-- With no followed games today it says **"No followed games today"** and shows the next one,
-  from either league (the server's `next_followed_game`).
-- Scores refresh every 30 s while a game is live and every 5 min otherwise (the server decides,
+- **Bets** (`GET /api/bets`): live games first, then upcoming, then finals not graded yet in the
+  log, in the server's order. Each game line is followed by one line per bet:
+  - totals: points so far and `pace N` (projected final total at the current scoring rate, from
+    5 minutes in, not in OT), or `WON 154` / `LOST 143`. A live over already past the line shows
+    WON and a live under past it LOST, since those can't change;
+  - spreads: `covering by 2` / `short by 3` / `on the number`; moneylines: `up 3` / `down 3`;
+  - first-half bets (`1H`) use the first-half points and are decided once the half ends.
+  The header shows today's tally of decided bets on screen (`2-1`) and how many games are live.
+  A game drops off once its bet is graded in the log.
+- **Parlays** (`GET /api/parlays`): alive tickets first, then settled or dead ones (placed today).
+  The first line is the ticket: result (`ALIVE`, `LOST`, `WON`), price, legs won-lost and legs
+  left. Then 7 legs a page: `W`/`L`/`P` decided, `●` live, `○` not started.
+- `●` marks a live game. The header shows when the data was last updated. **"stale 3m"** means
+  the last update failed: you're looking at data from 3 minutes ago, and it retries every 30 s.
+- Refreshes every 30 s while a game is live and every 5 min otherwise (the server decides,
   never faster than every 15 s).
 
 ## One-time setup (owner)
@@ -59,7 +74,7 @@ npm run build       # writes glasses/dist, which the server serves at /glasses/
 npm run qr          # QR code for http://172.16.0.61:8787/glasses/
 ```
 
-In the Even app open **Even Hub → Scan QR** and scan the code. The scoreboard opens on the
+In the Even app open **Even Hub → Scan QR** and scan the code. The bets list opens on the
 glasses. The Mac's LAN IP is currently `172.16.0.61`. If it changes, run
 `npx evenhub qr --url http://<new-ip>:8787/glasses/` (find the IP in System Settings → Wi-Fi → Details).
 
@@ -69,7 +84,7 @@ proxies `/api` to the server on 8787) and scan `npx evenhub qr --url http://172.
 ## Packaged build for Even Hub (private upload)
 
 ```bash
-cd glasses && npm run pack:lan   # -> glasses/deepsports-glasses.ehpk (currently v0.2.0: college + predictions)
+cd glasses && npm run pack:lan   # -> glasses/deepsports-glasses.ehpk (currently v0.3.0: bets + parlays)
 ```
 This builds into `dist-pack/` with relative asset paths and `VITE_API_BASE=http://172.16.0.61:8787`
 baked in (the server sends `Access-Control-Allow-Origin: *`), then packs with `app.json` (network
@@ -93,14 +108,11 @@ Add `?scenario=...` to the URL to see each state. For example:
 
 | Scenario | Shows |
 |---|---|
-| `default` | One live game, one final, one upcoming |
-| `busy` | 7 games: paging, overtime, a postponed game |
-| `empty` | No followed games today; next is Nevada tomorrow (NBA's is in 2 days) |
+| `default` | 3 live games (incl. an NBA spread + total), 2 upcoming, 2 finals; a dead 9-leg parlay and an alive 2-leg one |
+| `busy` | 10 games: paging, a game with two bets |
+| `empty` | No open bets, no parlays |
 | `flaky` | First load works, then every fetch fails ("stale Xm") |
 | `down` | The server is unreachable from the start |
-| `v1` | A pre-v2 server: no `league` field, ignores `league=` (college requests return NBA games, which are dropped) |
-
-`default` and `busy` also include Nevada's game vs Saint Mary's and, in `busy`, a live college game in OT.
 
 `npm run simulate:auto` also starts the simulator's automation API on port 9898. You can use it
 to take screenshots (`curl -o shot.png localhost:9898/api/screenshot/glasses`), send gestures
@@ -119,7 +131,6 @@ shows the glasses text and has Tap/Swipe/Double-tap buttons (or use Enter, arrow
   This needs testing on your own phone.
 - Plugins can't appear on the G2's built-in head-up dashboard yet (Even lists widgets as "coming").
 - QR-loaded dev plugins launch from the phone app, not from the glasses menu.
-- The firmware font is proportional, so the quarter-by-quarter columns line up only approximately.
 - The packaged build (`npm run pack:lan`) has the Mac's address built in; see "Packaged build" above.
 
 ## Code layout
@@ -131,17 +142,15 @@ shows the glasses text and has Tap/Swipe/Double-tap buttons (or use Enter, arrow
 | `src/preview.ts` | Mirrors the glasses text on the phone page, plus the `?preview` browser stand-in |
 | `src/app.ts` | Polling, caching the last good data (localStorage), input, and redrawing only changed text |
 | `src/view.ts` | Pure view state: gestures → state, state → header/body text |
-| `src/format.ts`, `src/width.ts` | Pure formatting: game lines, detail view, header, pixel-width fitting (≤ 34 chars / ~560 px) |
-| `src/api.ts` | `/api/scoreboard?league=` client for both leagues (in parallel; one failing keeps the other), next-game lookahead fallback, poll interval |
+| `src/format.ts`, `src/width.ts` | Pure formatting: bet status (totals, spreads, ML, 1H, pace), game/bet/leg lines, pages, header, pixel-width fitting (≤ 34 chars / ~560 px) |
+| `src/api.ts` | `/api/bets` + `/api/parlays` clients, poll interval |
 | `src/mock/fixtures.ts` | Mock API for `dev:mock` and the tests |
 | `test/format.test.ts` | `npm test`: Node's built-in test runner; checks text widths and glyphs against `@evenrealities/pretext` (the firmware font metrics) |
 
-Data source: the plugin polls `GET /api/scoreboard?league=nba` and `?league=ncaab` instead of
-`/api/glance`. Glance lines are plain strings, so there's no way to put live games first, open a
-detail view (quarters, TV, prediction), or find the next game from them. The next game comes from
-each scoreboard's `next_followed_game` (earliest of the two); on a server without that field the
-plugin falls back to scanning the next 7 days of both leagues. If one league's fetch fails, the
-other still updates and the header shows `stale Xm` (age of the oldest data).
+Data source: the plugin polls `GET /api/bets` and `GET /api/parlays` together (docs/API.md). If one
+fails, the other still updates and the header shows `stale Xm` (age of the older data). Bet status
+is worked out on the glasses from the card's score and the bet label; parlay leg status comes from
+the server.
 
 Versions are pinned exactly and were installed with `npm install --before=2026-10-21`.
 Requires Node ≥ 22.6 for `npm test`.

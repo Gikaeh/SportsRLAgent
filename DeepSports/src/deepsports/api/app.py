@@ -12,11 +12,12 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from deepsports import config
-from deepsports.api import bets, views, warehouse
+from deepsports.api import bets, parlays, views, warehouse
 from deepsports.api import circa as circa_api
 from deepsports.api import picks as picks_api
 from deepsports.api.live import LEAGUES, LiveService, UnknownLeague
 from deepsports.http import FetchError
+from deepsports.moon import ledger as moon_ledger
 from deepsports.pipeline import league_today
 
 WEB_DIST = config.ROOT / "web" / "dist"
@@ -215,6 +216,35 @@ def create_app(
             "live": is_live,
             "refresh_seconds": live.refresh_seconds(is_live),
         }
+
+    @app.get("/api/parlays")
+    def parlays_view():
+        """The owner's parlays (To The Moon ledger) that are ungraded, or graded but placed
+        today (PT), each leg with its game, live score and won/lost/push/pending. Labels and odds
+        only, never the stake or payout."""
+        try:
+            rows = moon_ledger.read_rows()
+        except Exception:
+            rows = []
+        found = parlays.recent_parlays(rows, datetime.now(UTC))
+        wanted = {str(lg["game_id"]) for p in found for lg in p["legs"]}
+        cards: dict[str, dict] = {}
+        if wanted:
+            today = league_today()
+            for lg in LEAGUES:
+                for offset in (-2, -1, 0, 1, 2):
+                    if wanted <= cards.keys():
+                        break
+                    try:
+                        raw = live.scoreboard(today + timedelta(days=offset), lg)
+                    except FetchError:
+                        continue
+                    for c in views.scoreboard_cards(raw, followed_teams(lg), lg):
+                        if c["id"] in wanted:
+                            cards.setdefault(c["id"], c)
+        out = [parlays.view(p, cards) for p in found]
+        is_live = any(lg["state"] == "in" for p in out for lg in p["legs"])
+        return {"parlays": out, "live": is_live, "refresh_seconds": live.refresh_seconds(is_live)}
 
     @app.get("/api/picks/today")
     def picks_today():

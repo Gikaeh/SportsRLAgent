@@ -2120,3 +2120,133 @@ button {
 .pick-edges {
   margin: 6px 0 0;
 }
+
+/* ---------- Bets: Games | Parlays tabs and parlay cards ---------- */
+.bets-tabs {
+  display: flex;
+  gap: 8px;
+}
+.parlay-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.parlay-title {
+  margin: 0;
+  font-size: 17px;
+}
+.parlay-odds {
+  color: var(--text-2);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.parlay-sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.parlay-badge {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+.parlay-won {
+  color: var(--pos);
+}
+.parlay-lost {
+  color: var(--neg);
+}
+.parlay-alive {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.parlay-tally {
+  margin: 8px 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  gap: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.leg-won,
+.parlay-leg.leg-won .leg-mark {
+  color: var(--pos);
+}
+.leg-lost,
+.parlay-leg.leg-lost .leg-mark {
+  color: var(--neg);
+}
+.leg-pending {
+  color: var(--text-3);
+}
+.parlay-legs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.parlay-leg {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+.leg-mark {
+  flex: none;
+  width: 24px;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--text-3);
+}
+.parlay-leg.leg-live .leg-mark {
+  color: var(--live);
+}
+.parlay-leg.leg-lost .leg-label {
+  text-decoration: line-through;
+}
+.leg-body {
+  min-width: 0;
+  flex: 1;
+}
+.leg-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 700;
+}
+.leg-time {
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.leg-matchup {
+  font-size: 14px;
+  color: var(--text-2);
+}
+.leg-status {
+  font-size: 13px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.parlay-leg.leg-live .leg-status {
+  color: var(--live);
+}
+.parlay-card,
+.card-list > li {
+  min-width: 0;
+  max-width: 100%;
+}
+.parlay-head > div,
+.leg-matchup,
+.leg-status {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.leg-label {
+  flex: none;
+}

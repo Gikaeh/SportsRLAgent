@@ -392,10 +392,14 @@ def cmd_lotto(args) -> int:
     now = datetime.now(config.LOCAL_TZ)
     day = args.date or (now.date() + timedelta(days=1)).isoformat()
     path = args.cards or lotto.cards_path()
+    from deepsports.circa.reader import lines_path
+
+    wh_lines, _ = circa_mod.load(lines_path(date.fromisoformat(day), "williamhill", early=True))
     card, new = lotto.get_or_make(
         day,
         et_rows=lotto.read_jsonl(args.et_bets or lotto.et_bets_path()),
         cards=lotto.read_jsonl(path),
+        names=lotto.app_names(wh_lines),
     )
     if new and card["tickets"] and not args.dry_run:
         lotto.append_card(card, path)

@@ -10,6 +10,7 @@ const ALLOWED = [
   /^\/api\/games\/[A-Za-z0-9_-]{1,32}$/,
   /^\/api\/predictions\/record$/,
   /^\/api\/bets$/,
+  /^\/api\/parlays$/,
   /^\/api\/standings$/,
   /^\/api\/teams\/[A-Za-z0-9]{1,8}$/,
   /^\/api\/followed$/,

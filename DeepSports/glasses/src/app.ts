@@ -1,26 +1,13 @@
-// Controller: polling, input, and pushing text to the display only when it changed.
-import {
-  LEAGUES,
-  RETRY_SECONDS,
-  earliest,
-  findNextFollowed,
-  getAllScoreboards,
-  pollSeconds,
-  type FetchJson,
-} from './api.ts'
+// Controller: polling /api/bets + /api/parlays, input, and pushing text to the display only when it changed.
+import { RETRY_SECONDS, getBets, getParlays, pollSeconds, type FetchJson } from './api.ts'
 import type { Display, DisplayInput, Slot } from './display.ts'
-import { orderGames } from './format.ts'
-import type { GameCard, League } from './types.ts'
+import type { BetGame, Parlay } from './types.ts'
 import { INITIAL_VIEW, reduce, render, type Model, type ViewState } from './view.ts'
 
-const CACHE_KEY = 'deepsports.glasses.v2' // v2: games from both leagues
-const NEXT_GAME_TTL_MS = 30 * 60_000
+const CACHE_KEY = 'deepsports.glasses.v3' // v3: bets + parlays
 const HEARTBEAT_MS = 5_000
 
-type Cache = { games: GameCard[]; next: GameCard | null; lastOk: number }
-
-/** Last good followed games per league, so one league failing keeps the other's scores fresh. */
-type PerLeague = Partial<Record<League, GameCard[]>>
+type Cache = { games: BetGame[] | null; parlays: Parlay[] | null; lastOk: number }
 
 function loadCache(): Cache | null {
   try {
@@ -43,16 +30,13 @@ export async function runApp(display: Display, fetchJson: FetchJson): Promise<vo
   const cached = loadCache()
   const model: Model = {
     games: cached?.games ?? null,
-    next: cached?.next ?? null,
+    parlays: cached?.parlays ?? null,
     lastOk: cached?.lastOk ?? null,
     // Cached data is old until the first fetch succeeds: show it as stale.
     failing: cached != null,
   }
   let view: ViewState = INITIAL_VIEW
-  let nextCheckedAt = 0
-  const byLeague: PerLeague = {}
-  const okAt: Partial<Record<League, number>> = {}
-  for (const g of cached?.games ?? []) (byLeague[g.league ?? 'nba'] ??= []).push(g)
+  const okAt: { bets?: number; parlays?: number } = {}
   let nextPollAt = 0 // ms; 0 = poll on the next beat
   let stopped = false
 
@@ -77,41 +61,24 @@ export async function runApp(display: Display, fetchJson: FetchJson): Promise<vo
     if (stopped || inFlight) return
     inFlight = true
     let wait = RETRY_SECONDS
-    try {
-      const results = await getAllScoreboards(fetchJson)
-      const ok = results.flatMap((r) => (r.ok ? [r.sb] : []))
-      for (const r of results) {
-        if (r.ok) {
-          byLeague[r.league] = r.sb.games.filter((g) => g.followed)
-          okAt[r.league] = Date.now()
-        } else console.warn(`${r.league} scoreboard fetch failed:`, r.error)
-      }
-      if (ok.length === 0) throw new Error('every scoreboard fetch failed')
-      model.games = orderGames(LEAGUES.flatMap((l) => byLeague[l] ?? []))
-      // "stale" whenever any league failed; the age shown is that of the oldest league's data.
-      model.failing = ok.length < results.length
-      model.lastOk = Math.min(...Object.values(okAt))
-      wait = model.failing ? RETRY_SECONDS : pollSeconds(Math.min(...ok.map((sb) => sb.refresh_seconds)))
-      if (model.games.length === 0) {
-        // v2 servers send next_followed_game on today's scoreboard; older ones need a lookahead scan.
-        if (ok.every((sb) => sb.next_followed_game !== undefined)) {
-          model.next = earliest(ok.map((sb) => sb.next_followed_game))
-        } else {
-          const now = Date.now()
-          const nextPassed = model.next != null && Date.parse(model.next.start_time) < now
-          if (model.next == null ? now - nextCheckedAt > NEXT_GAME_TTL_MS : nextPassed) {
-            nextCheckedAt = now
-            model.next = await findNextFollowed(fetchJson, ok[0].date, undefined, LEAGUES).catch(() => model.next)
-          }
-        }
-      } else {
-        model.next = null
-      }
-      saveCache({ games: model.games, next: model.next, lastOk: model.lastOk })
-    } catch (e) {
-      console.warn('scoreboard fetch failed:', e)
-      model.failing = true
-    }
+    const [bets, parlays] = await Promise.allSettled([getBets(fetchJson), getParlays(fetchJson)])
+    const refresh: number[] = []
+    if (bets.status === 'fulfilled') {
+      model.games = bets.value.games
+      okAt.bets = Date.now()
+      refresh.push(bets.value.refresh_seconds)
+    } else console.warn('bets fetch failed:', bets.reason)
+    if (parlays.status === 'fulfilled') {
+      model.parlays = parlays.value.parlays
+      okAt.parlays = Date.now()
+      refresh.push(parlays.value.refresh_seconds)
+    } else console.warn('parlays fetch failed:', parlays.reason)
+    // "stale" whenever either failed; the age shown is that of the older data.
+    model.failing = refresh.length < 2
+    const times = Object.values(okAt)
+    if (times.length) model.lastOk = Math.min(...times)
+    if (!model.failing) wait = pollSeconds(Math.min(...refresh))
+    if (refresh.length) saveCache({ games: model.games, parlays: model.parlays, lastOk: model.lastOk ?? Date.now() })
     nextPollAt = Date.now() + wait * 1000
     inFlight = false
     paint()
@@ -134,7 +101,7 @@ export async function runApp(display: Display, fetchJson: FetchJson): Promise<vo
       case 'tap':
       case 'up':
       case 'down':
-        view = reduce(view, input, model.games ?? [])
+        view = reduce(view, input, model)
         paint()
         return
       case 'foreground':

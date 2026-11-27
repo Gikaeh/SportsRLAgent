@@ -3,30 +3,29 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { getAdvW, getTextWidth } from '@evenrealities/pretext'
 import {
+  betLine,
+  betPages,
+  betStatus,
+  betTally,
   clockTime,
-  detailBody,
-  emptyBody,
   gameLine,
   headerText,
-  linescoreTable,
-  listBody,
-  orderGames,
-  periodLabel,
-  predictionLine,
-  statusLine,
+  legLine,
+  paceTotal,
+  parlayPages,
+  parlaySummary,
+  parseLabel,
+  priceText,
+  BODY_LINES,
 } from '../src/format.ts'
-import { addDays, pollSeconds, findNextFollowed, getAllScoreboards, getScoreboard, earliest } from '../src/api.ts'
+import { getBets, getParlays, pollSeconds } from '../src/api.ts'
 import { reduce, render, INITIAL_VIEW, type Model } from '../src/view.ts'
 import { textWidth, fit, BODY_WIDTH_PX } from '../src/width.ts'
-import { scoreboardFor, mockFetchJson } from '../src/mock/fixtures.ts'
-import type { GameCard } from '../src/types.ts'
+import { betsFor, game, mockFetchJson, parlaysFor, SPECS } from '../src/mock/fixtures.ts'
+import type { BetGame } from '../src/types.ts'
 
 const TZ = 'America/Los_Angeles'
 const RELIABLE = new Set([...'●○■□★☆━─·▲▼↑↓'])
-
-function etToday(): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date())
-}
 
 /** Every line fits the width budget, and every glyph exists in the firmware font. */
 function assertDisplayable(text: string, maxPx = BODY_WIDTH_PX + 8) {
@@ -41,12 +40,16 @@ function assertDisplayable(text: string, maxPx = BODY_WIDTH_PX + 8) {
   }
 }
 
-const today = etToday()
-const busy = orderGames(scoreboardFor(today, 'busy').games)
-const byId = (id: string) => busy.find((g) => g.id === id) as GameCard
+const byId = (id: string) => game(SPECS.find((s) => s.id === id)!)
+const model = (scenario: string): Model => ({
+  games: betsFor(scenario).games,
+  parlays: parlaysFor(scenario).parlays,
+  lastOk: Date.now(),
+  failing: false,
+})
 
 test('width table matches pretext within kerning slack', () => {
-  for (const s of ['LAL 98-95 SAC  Q4 2:31', '● GS 101-99 MIA  Q4 0:42', 'Tap: details · Swipe: more', 'Wed, Nov 5 · 7:30 PM']) {
+  for (const s of ['● FRES 62-48 USA  2nd 8:49', '  Over 144.5 · 110 · pace 158', 'Tap: parlays · Swipe: more']) {
     const diff = textWidth(s) - getTextWidth(s)
     assert.ok(diff >= -1 && diff <= getTextWidth(s) * 0.08, `${s}: est ${textWidth(s)} vs ${getTextWidth(s)}`)
   }
@@ -58,207 +61,148 @@ test('fit truncates by chars and pixels', () => {
   assert.ok([...long].length <= 34 && textWidth(long) <= BODY_WIDTH_PX && long.endsWith('..'))
 })
 
-test('orderGames: followed only, live first, server order otherwise', () => {
-  assert.ok(busy.every((g) => g.followed))
-  const firstNonLive = busy.findIndex((g) => g.state !== 'in')
-  assert.ok(busy.slice(0, firstNonLive).every((g) => g.state === 'in'))
-  assert.ok(busy.slice(firstNonLive).every((g) => g.state !== 'in'))
-  assert.ok(!busy.some((g) => g.id === '401810004'), 'unfollowed MIL-ORL excluded')
+test('parseLabel reads every label the bets API sends', () => {
+  assert.deepEqual(parseLabel('Over 144.5'), { kind: 'total', side: 'over', line: 144.5, half: false })
+  assert.deepEqual(parseLabel('Under 70.5 1H'), { kind: 'total', side: 'under', line: 70.5, half: true })
+  assert.deepEqual(parseLabel('NEV -1'), { kind: 'spread', side: 'NEV', line: -1, half: false })
+  assert.deepEqual(parseLabel('NEV 1H -0.5'), { kind: 'spread', side: 'NEV', line: -0.5, half: true })
+  assert.deepEqual(parseLabel('TA&M ML'), { kind: 'ml', side: 'TA&M', line: 0, half: false })
+  assert.equal(parseLabel('something else'), null)
+})
+
+test('totals: live pace, decided early, final result', () => {
+  // ME 53-45 LEM with 12:25 left in the 2nd: 27.6 min played, 98 pts -> pace 142.
+  assert.equal(paceTotal(byId('1')), 142)
+  assert.deepEqual(betStatus('Under 139', byId('1')), { result: 'pending', note: '98 · pace 142' })
+  assert.equal(betLine('Under 139', byId('1')), '  Under 139 · 98 · pace 142')
+  assert.deepEqual(betStatus('Under 156.5', byId('6')), { result: 'won', note: '154' })
+  assert.equal(betLine('Over 146.5', byId('7')), '  Over 146.5 · LOST 143')
+  assert.equal(betStatus('Under 90', byId('1')).result, 'lost') // live under already past the line
+  assert.equal(betStatus('Over 90', byId('1')).result, 'won')
+  const pre = byId('4')
+  assert.equal(betLine('Under 152.5', pre), '  Under 152.5')
+})
+
+test('spreads, moneylines and first-half bets', () => {
+  const lal = byId('3') // LAL 98-95 SAC, Q4 2:31
+  assert.deepEqual(betStatus('LAL -2.5', lal), { result: 'pending', note: 'covering by 0.5' })
+  assert.deepEqual(betStatus('SAC +2.5', lal), { result: 'pending', note: 'short by 0.5' })
+  assert.deepEqual(betStatus('LAL ML', lal), { result: 'pending', note: 'up 3' })
+  assert.deepEqual(betStatus('LAL -3', lal), { result: 'pending', note: 'on the number' })
+  // NBA first half = Q1 + Q2 (LAL 53, SAC 51), decided since Q3 started.
+  assert.equal(betStatus('Over 100.5 1H', lal).result, 'won')
+  assert.equal(betStatus('LAL 1H -2', lal).result, 'push')
+  const fin = byId('6') // UVA 83-71 XAV final
+  assert.equal(betStatus('XAV +12', fin).result, 'push')
+  assert.equal(betStatus('UVA ML', fin).result, 'won')
+  assert.equal(betStatus('ZZZ -1', fin).result, 'pending') // unknown team: no guess
 })
 
 test('game lines', () => {
-  assert.match(gameLine(byId('401810001')), /^● LAL \d+-\d+ SAC {2}Q4 \d:\d\d$/)
-  assert.equal(gameLine(byId('401810002')), 'NY 104-112 BOS  Final')
-  assert.equal(gameLine(byId('401810003')), 'GS @ MIA  7:30 PM')
-  assert.equal(gameLine(byId('401810008')), 'DAL @ LAL  Postponed')
-  for (const g of busy) assertDisplayable(gameLine(g))
+  assert.equal(gameLine(byId('1')), '● ME 53-45 LEM  2nd 12:25')
+  assert.equal(gameLine(byId('4')), 'UMBC @ GW  1:00 PM')
+  assert.equal(gameLine(byId('7')), 'STMN 67-76 LIB  Final')
 })
 
-test('status lines in plain language', () => {
-  assert.equal(statusLine(byId('401810002')), 'Final · BOS won by 8')
-  assert.equal(statusLine(byId('401810006')), 'Q1 · 7:42 left · LAL up 3')
-  assert.equal(statusLine(byId('401810003'), TZ), 'Tip-off 7:30 PM')
-  assert.equal(statusLine(byId('401810008'), TZ), 'Postponed')
+test('bet pages keep a game with its bets and stay within 8 lines', () => {
+  const games = betsFor('busy').games
+  const pages = betPages(games)
+  assert.equal(pages.flat().length, games.length + games.reduce((n, g) => n + g.bets.length, 0))
+  for (const p of pages) assert.ok(p.length <= BODY_LINES)
+  for (const p of pages) assert.ok(!p[0].startsWith('  '), 'a page starts with a game line, not a bet')
 })
 
-test('linescore table includes OT columns and totals', () => {
-  const t = linescoreTable(byId('401810005'))
-  assert.equal(t.length, 3)
-  assert.match(t[0], /Q1\s+Q2\s+Q3\s+Q4\s+OT\s+Total/)
-  assert.match(t[1], /^DEN\s+25\s+30\s+22\s+28\s+12\s+117$/)
-  assert.deepEqual(linescoreTable(byId('401810003')), [])
-  // Q1-only live game pads unplayed quarters with '-'.
-  assert.match(linescoreTable(byId('401810006'))[1], /^LAL\s+12\s+-\s+-\s+-\s+12$/)
+test('tally counts decided bets and live games', () => {
+  assert.deepEqual(betTally(betsFor('default').games), { won: 1, lost: 1, push: 0, live: 3 })
 })
 
-test('every view of every scenario fits the display (<= 9 lines, width, glyphs)', () => {
-  for (const g of busy) {
-    const body = detailBody(g, false, TZ)
-    assert.ok(body.split('\n').length <= 9, body)
-    assertDisplayable(body)
+test('parlay pages: summary, 7 legs a page, alive tickets first', () => {
+  const parlays = parlaysFor('default').parlays
+  assert.equal(priceText(21213755), '+21.2M')
+  assert.equal(priceText(62877), '+62.9K')
+  assert.equal(priceText(-120), '-120')
+  assert.equal(parlaySummary(parlays[0]), 'LOST +21.2M · 1-1 · 7/9 left')
+  const pages = parlayPages(parlays, TZ)
+  assert.equal(pages.length, 3) // the alive 2-leg ticket, then the lost 9-leg one over 2 pages
+  assert.equal(pages[0][0], 'ALIVE +257 · 1-0 · 1/2 left')
+  assert.match(pages[2][0], /^LOST · legs 8-9 of 9$/)
+  assert.equal(pages[1].length, 8)
+  const legs = parlays[0].legs
+  assert.equal(legLine(legs[0], TZ), 'W UVA/XAV U156.5  154')
+  assert.equal(legLine(legs[1], TZ), 'L STMN/LIB O146.5  143')
+  assert.equal(legLine(legs[2], TZ), '● ME/LEM U139  98, 2nd 12:25')
+  assert.equal(legLine(legs[4], TZ), '○ UMBC/GW U152.5  1:00 PM')
+  // Older servers send no abbreviations: fall back to the matchup's first words.
+  assert.equal(legLine({ ...legs[4], away_abbr: undefined, matchup: 'UMBC Retrievers @ George Washington' }, TZ), '○ UMBC/George U152.5  1:00 PM')
+})
+
+test('every screen of every scenario fits the display (<= 9 lines, width, glyphs)', () => {
+  for (const scenario of ['default', 'busy', 'empty']) {
+    const m = model(scenario)
+    for (const tab of ['bets', 'parlays'] as const) {
+      for (let page = 0; page < 6; page++) {
+        const s = render({ tab, page }, m, Date.now(), TZ)
+        assert.ok(s.body.split('\n').length <= 9, `${scenario}/${tab}/${page}: ${s.body}`)
+        assertDisplayable(s.body)
+        assertDisplayable(s.header, 576 - 8)
+      }
+    }
   }
-  for (const page of [0, 1]) {
-    const body = listBody(busy, page)
-    assert.ok(body.split('\n').length <= 9)
-    assertDisplayable(body)
-  }
+})
+
+test('reduce: tap switches tabs, swipes page and clamp', () => {
+  const m = model('busy')
+  let v = INITIAL_VIEW
+  v = reduce(v, 'up', m)
+  assert.deepEqual(v, { tab: 'bets', page: 0 })
+  v = reduce(reduce(v, 'down', m), 'down', m)
+  const n = betPages(m.games!).length
+  assert.equal(v.page, Math.min(2, n - 1))
+  for (let i = 0; i < 10; i++) v = reduce(v, 'down', m)
+  assert.equal(v.page, n - 1)
+  v = reduce(v, 'tap', m)
+  assert.deepEqual(v, { tab: 'parlays', page: 0 })
+  v = reduce(v, 'tap', m)
+  assert.deepEqual(v, { tab: 'bets', page: 0 })
+})
+
+test('render: header tally, page indicator, hints, empty, loading, offline', () => {
+  const now = Date.parse('2026-11-27T12:21:00-08:00')
+  const m = { ...model('busy'), lastOk: now }
+  const s = render(INITIAL_VIEW, m, now, TZ)
+  assert.match(s.header, /^Bets 1-1 · 3 live · 12:21 PM +1\/\d$/)
+  assert.ok(s.body.endsWith('Tap: parlays · Swipe: more'))
+  const p = render({ tab: 'parlays', page: 0 }, m, now, TZ)
+  assert.match(p.header, /^Parlays · 1 alive · 12:21 PM +1\/3$/)
+  assert.match(render(INITIAL_VIEW, { ...model('empty'), lastOk: now }, now, TZ).body, /^No open bets/)
+  assert.match(render({ tab: 'parlays', page: 0 }, { ...model('empty'), lastOk: now }, now, TZ).body, /^No parlays today/)
+  const none: Model = { games: null, parlays: null, lastOk: null, failing: false }
+  assert.equal(render(INITIAL_VIEW, none, now).body, 'Loading bets...')
+  assert.match(render(INITIAL_VIEW, { ...none, failing: true }, now).body, /^Can't reach DeepSports/)
+  assert.match(render(INITIAL_VIEW, { ...m, failing: true }, now + 3 * 60_000, TZ).header, /stale 3m/)
 })
 
 test('header: time, stale marker, right-aligned indicator', () => {
   const lastOk = Date.parse('2026-11-03T19:42:00-08:00')
-  assert.equal(headerText({ now: lastOk, lastOk, failing: false, timeZone: TZ }), 'Scores · 7:42 PM')
-  assert.equal(
-    headerText({ now: lastOk + 5 * 60_000 + 10, lastOk, failing: true, timeZone: TZ }),
-    'Scores · 7:42 PM · stale 5m',
-  )
-  assert.equal(headerText({ now: 0, lastOk: null, failing: false }), 'Scores · connecting')
-  const h = headerText({ now: lastOk, lastOk, failing: true, right: 'Game 2/7', timeZone: TZ })
-  assert.match(h, /^Scores · 7:42 PM · stale 1m +Game 2\/7$/)
+  assert.equal(headerText({ title: 'Bets', now: lastOk, lastOk, failing: false, timeZone: TZ }), 'Bets · 7:42 PM')
+  assert.equal(headerText({ title: 'Bets', now: 0, lastOk: null, failing: false }), 'Bets · connecting')
+  const h = headerText({ title: 'Bets 12-11 · 4 live', now: lastOk + 61_000, lastOk, failing: true, right: '12/12', timeZone: TZ })
+  assert.match(h, /12\/12$/)
   assertDisplayable(h, 576 - 8)
-  assert.ok(!/\u202f/.test(clockTime(lastOk, TZ)), 'no narrow no-break space')
+  assert.ok(!/ /.test(clockTime(lastOk, TZ)), 'no narrow no-break space')
 })
 
-test('empty state shows the next followed game', async () => {
-  const next = await findNextFollowed(mockFetchJson('empty'), today)
-  assert.ok(next)
-  assert.equal(next.start_time.slice(0, 10), addDays(today, 2))
-  const body = emptyBody(next, TZ)
-  assert.match(body, /^No followed games today\n\nNext up:\nLAL @ BOS\n\w{3}, \w{3} \d+ · 4:30 PM\nTV: ESPN$/)
-  assertDisplayable(body)
-  assert.equal(emptyBody(null), 'No followed games today')
-})
-
-test('reduce: tap cycles details then back to list; swipes page', () => {
-  let v = reduce(INITIAL_VIEW, 'down', busy)
-  assert.deepEqual(v, { mode: 'list', page: 1 })
-  assert.deepEqual(reduce(v, 'down', busy), { mode: 'list', page: 1 }, 'clamped at last page')
-  v = reduce(INITIAL_VIEW, 'tap', busy)
-  assert.deepEqual(v, { mode: 'detail', gameId: busy[0].id })
-  for (let i = 1; i < busy.length; i++) v = reduce(v, 'tap', busy)
-  assert.deepEqual(v, { mode: 'detail', gameId: busy[busy.length - 1].id })
-  assert.deepEqual(reduce(v, 'tap', busy), INITIAL_VIEW, 'tap after last game returns to list')
-  assert.deepEqual(reduce({ mode: 'detail', gameId: busy[0].id }, 'up', busy), INITIAL_VIEW)
-  assert.deepEqual(reduce({ mode: 'detail', gameId: 'gone' }, 'tap', busy), { mode: 'detail', gameId: busy[0].id })
-  assert.deepEqual(reduce(INITIAL_VIEW, 'tap', []), INITIAL_VIEW)
-})
-
-test('render: loading, offline, stale data, empty', () => {
-  const now = Date.now()
-  const base: Model = { games: null, next: null, lastOk: null, failing: false }
-  assert.equal(render(INITIAL_VIEW, base, now).body, 'Loading scores...')
-  assert.match(render(INITIAL_VIEW, { ...base, failing: true }, now).body, /^Can't reach DeepSports/)
-  const stale = render(INITIAL_VIEW, { ...base, games: busy, lastOk: now - 180_000, failing: true }, now)
-  assert.match(stale.header, /stale 3m +Page 1\/2$/)
-  assert.ok(stale.body.startsWith('● '))
-  assert.equal(render(INITIAL_VIEW, { ...base, games: [], lastOk: now }, now).body, 'No followed games today')
-})
-
-test('poll interval honours refresh_seconds with a 15 s floor', () => {
+test('api: shapes checked, poll interval has a 15 s floor', async () => {
+  const f = mockFetchJson('default')
+  assert.ok((await getBets(f)).games.length > 0)
+  assert.ok((await getParlays(f)).parlays.length > 0)
+  await assert.rejects(getBets(async () => ({ nope: 1 })))
   assert.equal(pollSeconds(30), 30)
-  assert.equal(pollSeconds(300), 300)
   assert.equal(pollSeconds(5), 15)
   assert.equal(pollSeconds(undefined), 60)
 })
 
-// ---------- v2: college + predictions ----------
-const college = scoreboardFor(today, 'busy', 'ncaab').games
-const both = orderGames([...scoreboardFor(today, 'busy').games, ...college])
-const anyId = (id: string) => both.find((g) => g.id === id) as GameCard
-
-test('college: halves, NCAA marker, followed only', () => {
-  assert.equal(periodLabel(2, 'ncaab'), 'H2')
-  assert.equal(periodLabel(3, 'ncaab'), 'OT')
-  assert.equal(periodLabel(4, 'ncaab'), '2OT')
-  assert.equal(periodLabel(4), 'Q4')
-  assert.equal(gameLine(anyId('401830200')), 'NCAA SMC @ NEV  1:30 PM')
-  assert.match(gameLine(anyId('401830202')), /^● NCAA UNLV 68-70 NEV {2}OT 1:05$/)
-  assert.ok(!both.some((g) => g.id === '401830201'), 'unfollowed DUKE-KU excluded')
-  assert.equal(statusLine(anyId('401830202')), 'OT · 1:05 left · NEV up 2')
-  const t = linescoreTable(anyId('401830202'))
-  assert.match(t[0], /H1\s+H2\s+OT\s+Total/)
-  assert.ok(!/Q3/.test(t[0]), 'no empty quarter columns for college')
-})
-
-test('mixed leagues: live first across leagues, then by start time', () => {
-  const firstNonLive = both.findIndex((g) => g.state !== 'in')
-  assert.ok(both.slice(0, firstNonLive).some((g) => g.league === 'ncaab'))
-  assert.ok(both.slice(firstNonLive).every((g) => g.state !== 'in'))
-  const rest = both.slice(firstNonLive).map((g) => Date.parse(g.start_time))
-  assert.deepEqual(rest, [...rest].sort((a, b) => a - b))
-  for (const g of both) {
-    const body = detailBody(g, false, TZ)
-    assert.ok(body.split('\n').length <= 9, body)
-    assertDisplayable(body)
-    assertDisplayable(gameLine(g))
-  }
-  for (const page of [0, 1, 2]) assertDisplayable(listBody(both, page))
-})
-
-test('prediction line in the detail view', () => {
-  assert.equal(predictionLine(anyId('401810003')), 'Prediction: GS 62% · by ~4')
-  assert.equal(predictionLine(anyId('401810002')), 'Prediction: BOS 81% · right')
-  assert.equal(predictionLine(anyId('401830200')), null, 'college has no prediction')
-  const pre = detailBody(anyId('401810003'), false, TZ)
-  assert.match(pre, /^GS @ MIA|^Warriors @ Heat/)
-  assert.match(pre.split('\n')[2], /^Prediction: GS 62%/)
-  const fin = detailBody(anyId('401810002'), false, TZ).split('\n')
-  assert.equal(fin[2], 'Prediction: BOS 81% · right')
-  assert.ok(fin.length <= 9)
-  assert.ok(!/Model/.test(detailBody(anyId('401830200'), false, TZ)))
-})
-
-test('college prediction: same line, long abbreviations still fit', () => {
-  // Fixture: UNLV @ NEV (live, OT) has an ncaab-v1 prediction favoring UNLV.
-  const live = anyId('401830202')
-  assert.equal(live.prediction?.model_version, 'ncaab-v1')
-  assert.equal(predictionLine(live), 'Prediction: UNLV 71% · by ~6')
-  const body = detailBody(live, false, TZ).split('\n')
-  assert.equal(body[2], 'Prediction: UNLV 71% · by ~6')
-  assert.ok(body.length <= 9, body.join('\n'))
-  assertDisplayable(body.join('\n'))
-  // Worst case: a 5-letter favorite, 100%-ish, double-digit margin, pre and graded.
-  const base = { ...live, home: { ...live.home, abbr: 'WAKE' }, away: { ...live.away, abbr: 'UCONN' } }
-  const pred = { ...live.prediction!, favorite_abbr: 'UCONN', favorite_prob: 0.996, pred_home_margin: -24.4 }
-  const pre: GameCard = { ...base, state: 'pre', prediction: { ...pred, result: undefined } }
-  assert.equal(predictionLine(pre), 'Prediction: UCONN 100% · by ~24')
-  const fin: GameCard = {
-    ...base,
-    state: 'post',
-    prediction: { ...pred, result: { winner_correct: false, margin_error: 30, total_error: 12 } },
-  }
-  assert.equal(predictionLine(fin), 'Prediction: UCONN 100% · wrong')
-  for (const g of [pre, fin]) {
-    assertDisplayable(predictionLine(g)!)
-    assertDisplayable(detailBody(g, true, TZ))
-  }
-})
-
-test('getScoreboard drops NBA games a v1 server returns for league=ncaab', async () => {
-  const sb = await getScoreboard(mockFetchJson('v1'), undefined, 'ncaab')
-  assert.equal(sb.games.length, 0)
-  assert.equal(sb.next_followed_game, undefined, 'v1: no next_followed_game, so the app falls back to lookahead')
-  const nba = await getScoreboard(mockFetchJson('v1'))
-  assert.ok(nba.games.length > 0)
-})
-
-test('next_followed_game: earliest across both leagues', async () => {
-  const results = await getAllScoreboards(mockFetchJson('empty'))
-  assert.ok(results.every((r) => r.ok))
-  const nexts = results.map((r) => (r.ok ? r.sb.next_followed_game : null))
-  const next = earliest(nexts)
-  assert.ok(next)
-  assert.equal(next.league, 'ncaab')
-  const body = emptyBody(next, TZ)
-  assert.match(body, /^No followed games today\n\nNext up:\nNCAA SMC @ NEV\n\w{3}, \w{3} \d+ · 1:30 PM\nTV: CBSSN$/)
-  assertDisplayable(body)
-  // The lookahead fallback (v1 servers) also checks college.
-  const scanned = await findNextFollowed(mockFetchJson('empty'), today, 7, ['nba', 'ncaab'])
-  assert.equal(scanned?.id, '401830210')
-})
-
-test('early-season college predictions are never shown on the glasses', () => {
-  const live = anyId('401830202')
-  assert.ok(live.prediction)
-  const early = { ...live, prediction: { ...live.prediction, model_version: 'ncaab-v1-early', early: true } }
-  assert.equal(predictionLine(early), null)
+test('real-world label shapes never crash a bet line', () => {
+  const g: BetGame = byId('3')
+  for (const label of ['Over 216.5', 'TOR -2.5', 'LAL ML', 'Under 110.5 1H', '', 'weird label']) assertDisplayable(betLine(label, g))
 })

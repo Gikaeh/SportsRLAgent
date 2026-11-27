@@ -837,3 +837,11 @@ Verdict once, at H1 n = 400 or D = 2027-03-07; one month (~180-250 H1 bets) can 
 owner decides the continuation source by 2026-12-16 (renewed key, or OddsPapi + ESPN DK, H3 then stops).
 Pass -> a watch-only `mom-v1` rule version; real money only by the owner. et-v1 is unchanged.
 Doc: `docs/results/2026-11-23-momentum-forward-preregistration.md`.
+
+### 2026-11-27: the glasses plugin becomes a bets tracker (v0.3.0)
+**Why:** the owner tracks only the web app's Bets screen (games with open bets + parlays) and asked for the same
+on the G2, with the old features removed. **What:** the plugin polls `/api/bets` + `/api/parlays` instead of the
+followed-team scoreboards; two tabs (tap switches, swipe pages): each bet game with its bets' status (totals with
+points and a pace projection, spreads covering/short, ML up/down, 1H on first-half points), and each parlay's legs
+(W/L/P, live, not started). Followed-team scores, the game detail view and predictions are gone from the glasses.
+`/api/parlays` legs gain `away_abbr`/`home_abbr` (additive) for short leg lines. Labels and odds only, never stakes.

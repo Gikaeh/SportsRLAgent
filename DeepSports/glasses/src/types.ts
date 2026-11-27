@@ -1,65 +1,66 @@
-// Subset of the read API contract (docs/API.md) that the glasses use.
+// Subset of the read API contract (docs/API.md) that the glasses use: /api/bets and /api/parlays.
 
 export type GameState = 'pre' | 'in' | 'post'
 
-/** v2: live endpoints take league=nba|ncaab (default nba). */
+/** Live endpoints take league=nba|ncaab; a card without `league` is NBA. */
 export type League = 'nba' | 'ncaab'
 
-export type Prediction = {
-  model: string
-  model_version: string
-  created_at: string
-  p_home_win: number
-  pred_home_margin: number
-  pred_total: number
-  favorite_abbr: string
-  favorite_prob: number
-  /** college early-season prediction (a team has < 5 games); the glasses never show these */
-  early?: boolean
-  result?: { winner_correct: boolean; margin_error: number; total_error: number }
-}
-
-export type TeamRef = {
+export type Side = {
   id: string
   abbr: string
   name: string
   short_name: string
-  logo: string | null
-  record: string | null
-  followed: boolean
+  score: number | null
+  linescores: number[]
 }
 
-export type Side = TeamRef & { score: number | null; linescores: number[] }
-
-export type GameCard = {
+/** A scoreboard game card plus the owner's open bet labels ("Over 144.5", "NEV -1", "NEV ML", "Over 70.5 1H"). */
+export type BetGame = {
   id: string
-  /** true at a neutral site: show "vs" instead of "@" */
+  league?: League
   neutral_site?: boolean
   state: GameState
   status: string
-  status_text: string
+  status_text: string // "1:00 PM", "2nd 12:25", "Halftime", "Final"
   period: number | null
   clock: string | null
   start_time: string
   home: Side
   away: Side
-  broadcasts: string[]
-  odds: string | null
-  venue: string | null
-  followed: boolean
-  /** v2; missing on a v1 server, which means "nba". */
-  league?: League
-  /** v2; null when there's no pre-tip prediction (many college games: both teams need >= 5 games). */
-  prediction?: Prediction | null
+  bets: string[]
 }
 
-export type ScoreboardResponse = {
-  date: string
-  games: GameCard[]
-  live: boolean
-  refresh_seconds: number
-  /** Today only: first followed game not yet started, up to 7 days ahead. Missing on old servers. */
-  next_followed_game?: GameCard | null
+export type BetsResponse = { games: BetGame[]; live: boolean; refresh_seconds: number }
+
+export type LegStatus = 'won' | 'lost' | 'push' | 'pending'
+
+export type ParlayLeg = {
+  game_id: string
+  label: string // "Over 145.5"
+  matchup: string | null // "Away Team @ Home Team"; null when the game isn't on a scoreboard
+  away_abbr?: string | null // newer servers only
+  home_abbr?: string | null
+  start_time: string | null
+  state: GameState | null
+  status_text: string | null
+  away_score: number | null
+  home_score: number | null
+  status: LegStatus // decided early when a live total can't change
+  note: string | null
 }
 
-export type GlanceResponse = { lines: string[]; refresh_seconds: number }
+export type Parlay = {
+  id: string
+  placed_at: string
+  book: string | null
+  tier: string | null
+  price: number // American odds of the ticket (never the stake)
+  status: string // "alive" | "won" | "lost" | "push" (or a graded "win"/"loss")
+  won: number
+  lost: number
+  push: number
+  pending: number
+  legs: ParlayLeg[]
+}
+
+export type ParlaysResponse = { parlays: Parlay[]; live: boolean; refresh_seconds: number }

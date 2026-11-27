@@ -57,6 +57,41 @@ export type GameCard = {
 };
 
 /** Games with an open owner bet, live games first, finals last (until the bet is graded). */
+export type ParlayLegStatus = "won" | "lost" | "push" | "pending";
+
+export type ParlayLeg = {
+  game_id: string;
+  label: string; // "Over 145.5"
+  matchup: string | null; // "Eastern Michigan Eagles @ Kennesaw State Owls"; null if the game isn't on a scoreboard
+  start_time: string | null; // local ISO
+  state: "pre" | "in" | "post" | null;
+  status_text: string | null; // "7:30 PM", "2nd 4:12", "Final"
+  away_score: number | null;
+  home_score: number | null;
+  status: ParlayLegStatus; // decided early when a live total can't change (over past the line = won)
+  note: string | null; // "130 pts, needs 11 more"
+};
+
+export type Parlay = {
+  id: string;
+  placed_at: string;
+  book: string | null;
+  tier: string | null;
+  price: number; // American odds of the whole ticket; never the stake or payout
+  status: "alive" | "won" | "lost" | "push" | "win" | "loss" | "void";
+  won: number;
+  lost: number;
+  push: number;
+  pending: number;
+  legs: ParlayLeg[]; // in tip order
+};
+
+export type ParlaysResponse = {
+  parlays: Parlay[];
+  live: boolean;
+  refresh_seconds: number;
+};
+
 export type BetsResponse = {
   games: GameCard[];
   live: boolean;

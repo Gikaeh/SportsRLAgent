@@ -85,3 +85,15 @@ def test_cli_logs_first_card_once(tmp_path, capsys):
     assert main([*args, "--date", "2026-11-30"]) == 0  # no legs: no card, nothing logged
     assert "no card" in capsys.readouterr().out.splitlines()[-1]
     assert len(cards.read_text().splitlines()) == 1
+
+
+def test_legs_and_card_use_the_apps_team_names():
+    line = {"game_id": "1", "away": "CENTRAL MICHIGAN", "home": "NOTRE DAME", "market": "total"}
+    payload = {"lines": [line]}
+    names = lotto.app_names(payload)
+    assert names == {"1": ("CENTRAL MICHIGAN", "NOTRE DAME")} and lotto.app_names(None) == {}
+    rows = [et_row(str(i), 20 - i) for i in range(1, 8)]
+    card = lotto.build_card(lotto.legs_for(rows, "2026-11-24", names), "2026-11-24")
+    text = lotto.render(card)
+    assert "1. CENTRAL MICHIGAN @ NOTRE DAME Over 140 -110" in text
+    assert "2. A2 @ H2 Over 140" in text  # no screenshot line: falls back to the abbreviation

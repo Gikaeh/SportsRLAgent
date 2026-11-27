@@ -1,5 +1,11 @@
 # BetDesk handoff
 
+## State (2026-11-23): Parlays tab
+The Bets screen has **Games | Parlays** tabs (`#/bets?tab=parlays` opens the second). Parlays shows each logged
+parlay from DeepSports' `GET /api/parlays` (allowlisted in `worker/src/origin.ts`): odds, an Alive/Won/Lost badge, a
+✓/✗/○ tally, and every leg in tip order with its time, matchup, bet, live score and a mark (✓ won, ✗ lost, = push,
+● live, ○ not started). No stakes or payouts. `npm run check` passes. **Not deployed yet** (owner deploys).
+
 ## State (2026-11-14): Picks button
 Today has a **Picks** button (top right) that opens `#/picks`: the latest model-picks run from
 `GET /api/picks/today` (allowlisted in `worker/src/origin.ts`), top 5 with Circa's and William Hill's

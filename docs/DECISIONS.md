@@ -190,3 +190,10 @@ investigation.md`) found et-v1's same-night legs swept far above chance in 2022-
 2025-26, with no per-leg edge; spreads, moneylines and NBA showed nothing. So the card is entertainment money and
 the forward test of that clustering, pre-registered in `DeepSports/docs/results/2026-11-23-lotto-v2-
 preregistration.md`. Spreads and moneylines are dropped from betting research (no edge, no clustering).
+
+### 2026-11-23: NBA night-before totals dropped (nt-v1 FAIL)
+Pre-registered test (`DeepSports/docs/results/2026-11-23-nba-totals-preregistration.md`) of NBA v1.1 totals (edge
+>= 4) at William Hill's 21:00 PT line, 2023-24 to 2025-26, after the owner approved the Odds API NBA pull (~19K
+credits): 755-739-11, ROI -3.45% [-8.50, +1.54], positive in 0 of 3 seasons. **What:** NBA night-before totals are
+dropped; no re-test on these seasons with a changed rule; the 2026-27 NBA pull is not needed. College et-v1 remains
+the only forward-tested totals rule. Results: `DeepSports/docs/results/2026-11-23-nba-totals-nt-v1-results.md`.

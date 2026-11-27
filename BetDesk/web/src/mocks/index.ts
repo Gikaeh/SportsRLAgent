@@ -73,6 +73,23 @@ export async function mockFetch(path: string, signal?: AbortSignal): Promise<Res
     return json(predictionRecord(days, mode === "record0"));
   }
 
+  if (p === "/api/parlays") {
+    const t = (h: number) => new Date(Date.now() + h * 3600_000).toISOString();
+    const leg = (id: string, label: string, matchup: string, h: number, state: "pre" | "in" | "post", status: "won" | "lost" | "push" | "pending", away: number | null, home: number | null, note: string | null, text: string) =>
+      ({ game_id: id, label, matchup, start_time: t(h), state, status_text: text, away_score: away, home_score: home, status, note });
+    const legs = [
+      leg("m1", "Over 145.5", "Eastern Michigan Eagles @ Kennesaw State Owls", -3, "post", "won", 78, 74, "152 pts", "Final"),
+      leg("m2", "Under 161.5", "Creighton Bluejays @ Michigan Wolverines", -1, "in", "pending", 52, 48, "100 pts, 61.5 under", "2nd 12:40"),
+      leg("m3", "Over 134.5", "DePaul Blue Demons @ Purdue Boilermakers", -1, "in", "won", 70, 66, "136 pts", "2nd 3:10"),
+      leg("m4", "Under 173.5", "Baylor Bears @ Alabama Crimson Tide", 3, "pre", "pending", null, null, null, "7:00 PM"),
+    ];
+    const count = (s: string) => legs.filter((l) => l.status === s).length;
+    const parlay = { id: "28", placed_at: t(-20), book: "WilliamHill", tier: "lotto", price: 9142, status: "alive", won: count("won"), lost: 0, push: 0, pending: count("pending"), legs };
+    const lost = { ...parlay, id: "31", price: 9144, status: "alive", lost: 1, won: 0, pending: 3, legs: [{ ...legs[0], status: "lost", label: "Under 145.5" }, ...legs.slice(1)] };
+    lost.status = "lost";
+    return json({ parlays: mode === "empty" ? [] : [parlay, lost], live: true, refresh_seconds: 30 });
+  }
+
   if (p === "/api/bets") {
     const games = slateFor(etToday(), "nba")
       .filter((g) => g.bets?.length)

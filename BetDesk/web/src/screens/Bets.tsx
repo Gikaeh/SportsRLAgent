@@ -1,13 +1,26 @@
-import { api, type BetsResponse } from "../api/client";
+import { useState } from "react";
+import { api, type BetsResponse, type ParlaysResponse } from "../api/client";
 import { GameCardView } from "../components/GameCard";
 import { PageHeader, UpdatedAt } from "../components/Layout";
 import { PullToRefresh } from "../components/PullToRefresh";
 import { Empty, ErrorState, Skeleton, StaleBanner } from "../components/States";
 import { useApi } from "../hooks/useApi";
+import { ParlaysView } from "./Parlays";
+
+type Tab = "games" | "parlays";
 
 /** Every game with an open bet in one list, live scores updating, so several can be tracked at once. */
 export function Bets() {
-  const q = useApi<BetsResponse>(api.bets(), { refreshSeconds: (d) => d.refresh_seconds });
+  const [tab, setTab] = useState<Tab>(() => {
+    const fromLink = new URLSearchParams(window.location.hash.split("?")[1] ?? "").get("tab");
+    return (fromLink ?? sessionStorage.getItem("bets-tab")) === "parlays" ? "parlays" : "games";
+  });
+  const pick = (t: Tab) => {
+    setTab(t);
+    sessionStorage.setItem("bets-tab", t);
+  };
+  const q = useApi<BetsResponse>(tab === "games" ? api.bets() : null, { refreshSeconds: (d) => d.refresh_seconds });
+  const pq = useApi<ParlaysResponse>(tab === "parlays" ? api.parlays() : null, { refreshSeconds: (d) => d.refresh_seconds });
   const games = q.data?.games ?? [];
   const liveCount = games.filter((g) => g.state === "in").length;
   const live = games.filter((g) => g.state === "in");
@@ -15,11 +28,13 @@ export function Bets() {
   const done = games.filter((g) => g.state === "post");
 
   return (
-    <PullToRefresh onRefresh={q.refresh}>
+    <PullToRefresh onRefresh={tab === "games" ? q.refresh : pq.refresh}>
       <PageHeader
         title="Open bets"
         subtitle={
-          q.data ? (
+          tab === "parlays" ? (
+            pq.data ? <>{pq.data.parlays.length} {pq.data.parlays.length === 1 ? "parlay" : "parlays"}</> : undefined
+          ) : q.data ? (
             <>
               {games.length} {games.length === 1 ? "game" : "games"}
               {liveCount > 0 && <span className="live-count"> · {liveCount} live</span>}
@@ -28,6 +43,24 @@ export function Bets() {
         }
       />
       <main className="content">
+        <div className="bets-tabs" role="tablist" aria-label="Bets view">
+          {(["games", "parlays"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              role="tab"
+              aria-selected={tab === t}
+              className={`chip${tab === t ? " chip-active" : ""}`}
+              onClick={() => pick(t)}
+            >
+              {t === "games" ? "Games" : "Parlays"}
+            </button>
+          ))}
+        </div>
+        {tab === "parlays" ? (
+          <ParlaysView q={pq} />
+        ) : (
+        <>
         {q.data && q.error != null && <StaleBanner error={q.error} onRetry={q.refresh} />}
         {q.loading && !q.data ? (
           <Skeleton rows={3} />
@@ -44,6 +77,8 @@ export function Bets() {
             <Section id="done-h" title="Finished, not graded yet" games={done} />
             <UpdatedAt at={q.updatedAt} refreshing={q.refreshing} live={q.data.live} />
           </>
+        )}
+        </>
         )}
       </main>
     </PullToRefresh>
